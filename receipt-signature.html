@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>发送签收单 - WMS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1E40AF',
+            secondary: '#3B82F6',
+            accent: '#60A5FA',
+            success: '#10B981',
+            warning: '#F59E0B',
+            danger: '#EF4444',
+            neutral: '#F3F4F6',
+            'neutral-dark': '#1F2937',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .transition-all-300 {
+        transition: all 300ms ease-in-out;
+      }
+      .shadow-card {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      .modal-overlay {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+      .drawer-slide-up {
+        animation: slideUp 0.3s ease-out forwards;
+      }
+      .drawer-slide-down {
+        animation: slideDown 0.3s ease-in forwards;
+      }
+      @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
+      @keyframes slideDown {
+        from { transform: translateY(0); }
+        to { transform: translateY(100%); }
+      }
+      .photo-upload-area {
+        border: 2px dashed #D1D5DB;
+        transition: all 0.3s ease;
+      }
+      .photo-upload-area:hover {
+        border-color: #3B82F6;
+        background-color: #EFF6FF;
+      }
+      .photo-preview {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        border-radius: 0.375rem;
+        overflow: hidden;
+      }
+      .photo-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .photo-preview .remove-btn {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background-color: rgba(239, 68, 68, 0.9);
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        cursor: pointer;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen flex flex-col">
+  <!-- 顶部导航栏 -->
+  <header class="bg-white shadow-sm sticky top-0 z-10">
+    <div class="flex items-center justify-between px-4 py-3">
+      <div class="flex items-center">
+        <button class="text-gray-500 mr-3" onclick="window.history.back()">
+          <i class="fa fa-arrow-left"></i>
+        </button>
+        <h1 class="text-lg font-semibold text-gray-800">收货管理</h1>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button class="text-gray-500">
+          <i class="fa fa-search"></i>
+        </button>
+        <button class="text-gray-500">
+          <i class="fa fa-bell"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main class="flex-1 p-4">
+    <!-- 订单信息卡片 -->
+    <div class="bg-white rounded-lg shadow-card p-4 mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-md font-semibold text-gray-800">订单信息</h2>
+        <span class="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">待签收确认</span>
+      </div>
+      <div class="space-y-2">
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">工作单号</span>
+          <span class="text-sm font-medium text-gray-800">WMS20240304001</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">司机姓名</span>
+          <span class="text-sm font-medium text-gray-800">张三</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">车牌号</span>
+          <span class="text-sm font-medium text-gray-800">沪A12345</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">预计件数</span>
+          <span class="text-sm font-medium text-gray-800">100</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">卸货完成时间</span>
+          <span class="text-sm font-medium text-gray-800">2024-03-04 14:30</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
+      <button id="openSignatureBtn" class="w-full px-4 py-3 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md flex items-center justify-center">
+        <i class="fa fa-paper-plane mr-2"></i> 发送签收单
+      </button>
+    </div>
+  </main>
+
+  <!-- 签收单弹窗 -->
+  <div id="signatureModal" class="fixed inset-0 z-50 hidden">
+    <div class="modal-overlay absolute inset-0" onclick="closeSignatureModal()"></div>
+    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl shadow-2xl max-h-[90vh] overflow-y-auto drawer-slide-up">
+      <!-- 弹窗头部 -->
+      <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+        <button onclick="closeSignatureModal()" class="text-gray-500 hover:text-gray-700">
+          <i class="fa fa-arrow-left"></i>
+        </button>
+        <h3 class="text-lg font-semibold text-gray-800">发送签收单</h3>
+        <div class="w-5"></div> <!-- 占位 -->
+      </div>
+
+      <!-- 弹窗内容 -->
+      <div class="p-4 space-y-6">
+        <!-- 订单信息区 -->
+        <div class="bg-gray-50 rounded-lg p-4">
+          <h4 class="text-sm font-medium text-gray-700 mb-3">订单信息</h4>
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-xs text-gray-500">工作单号</span>
+              <span class="text-xs font-medium text-gray-800">WMS20240304001</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-xs text-gray-500">司机姓名</span>
+              <span class="text-xs font-medium text-gray-800">张三</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-xs text-gray-500">车牌号</span>
+              <span class="text-xs font-medium text-gray-800">沪A12345</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-xs text-gray-500">预计件数</span>
+              <span class="text-xs font-medium text-gray-800">100</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-xs text-gray-500">卸货完成时间</span>
+              <span class="text-xs font-medium text-gray-800">2024-03-04 14:30</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 收货件数和板数 -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">收货件数 <span class="text-danger">*</span></label>
+            <input type="number" id="receivedQty" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary" placeholder="请输入收货件数" min="0">
+            <p id="receivedQtyError" class="mt-1 text-xs text-danger hidden">请输入有效收货件数</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">收货板数</label>
+            <input type="number" id="receivedPallets" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary" placeholder="请输入收货板数" min="0">
+          </div>
+        </div>
+
+        <!-- 包装异常 -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <label class="block text-sm font-medium text-gray-700">包装异常</label>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="packagingAbnormal" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+          
+          <!-- 入仓号选项卡 -->
+          <div id="warehouseTabsContainer" class="hidden mb-4">
+            <div class="border-b border-gray-200">
+              <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="warehouseTabs" role="tablist">
+                <li class="mr-2" role="presentation">
+                  <button class="inline-block p-4 border-b-2 border-primary text-primary rounded-t-lg active" id="warehouse1-tab" data-tab="warehouse1" type="button" role="tab" aria-controls="warehouse1" aria-selected="true">
+                    入仓号1
+                  </button>
+                </li>
+                <li class="mr-2" role="presentation">
+                  <button class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg" id="warehouse2-tab" data-tab="warehouse2" type="button" role="tab" aria-controls="warehouse2" aria-selected="false">
+                    入仓号2
+                  </button>
+                </li>
+                <li role="presentation">
+                  <button class="inline-block p-4 border-b-2 border-transparent hover:text-gray-600 hover:border-gray-300 rounded-t-lg" id="warehouse3-tab" data-tab="warehouse3" type="button" role="tab" aria-controls="warehouse3" aria-selected="false">
+                    入仓号3
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- 具体异常选项 -->
+          <div id="abnormalOptions" class="hidden space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" class="abnormal-type" value="外箱破损" class="mr-2 text-primary">
+                <span class="text-sm font-medium text-gray-700">外箱破损</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" class="abnormal-type" value="渗水/受潮" class="mr-2 text-primary">
+                <span class="text-sm font-medium text-gray-700">渗水/受潮</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" class="abnormal-type" value="变形" class="mr-2 text-primary">
+                <span class="text-sm font-medium text-gray-700">变形</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" class="abnormal-type" value="撕裂" class="mr-2 text-primary">
+                <span class="text-sm font-medium text-gray-700">撕裂</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" class="abnormal-type" value="胶带重新封装" class="mr-2 text-primary">
+                <span class="text-sm font-medium text-gray-700">胶带重新封装</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" class="abnormal-type" value="标签破损" class="mr-2 text-primary">
+                <span class="text-sm font-medium text-gray-700">标签破损</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" class="abnormal-type" value="外包装脏污" class="mr-2 text-primary">
+                <span class="text-sm font-medium text-gray-700">外包装脏污</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" class="abnormal-type" value="托盘断裂" class="mr-2 text-primary">
+                <span class="text-sm font-medium text-gray-700">托盘断裂</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" class="abnormal-type" value="托盘倾斜" class="mr-2 text-primary">
+                <span class="text-sm font-medium text-gray-700">托盘倾斜</span>
+              </label>
+              <label class="flex items-center p-2 border border-gray-200 rounded-md cursor-pointer hover:bg-gray-50">
+                <input type="checkbox" class="abnormal-type" value="其他" class="mr-2 text-primary">
+                <span class="text-sm font-medium text-gray-700">其他</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 异常备注 -->
+          <div id="abnormalRemarkSection" class="hidden mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">异常备注 <span class="text-danger">*</span></label>
+            <textarea id="abnormalRemark" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary" rows="3" placeholder="请描述异常情况"></textarea>
+            <p class="mt-1 text-xs text-gray-500">最多200字</p>
+            <p id="abnormalRemarkError" class="mt-1 text-xs text-danger hidden">异常情况下必须填写备注</p>
+          </div>
+
+          <!-- 现场拍照上传 -->
+          <div id="photoUploadSection" class="hidden mt-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">现场拍照上传 <span class="text-danger">*</span></label>
+            <div class="flex flex-wrap gap-3">
+              <div id="photoUploadArea" class="photo-upload-area w-20 h-20 rounded-md flex flex-col items-center justify-center cursor-pointer">
+                <i class="fa fa-camera text-gray-400 text-xl mb-1"></i>
+                <span class="text-xs text-gray-500">添加照片</span>
+                <input type="file" id="photoInput" class="hidden" accept="image/*" multiple>
+              </div>
+              <div id="photoPreviewContainer" class="flex flex-wrap gap-3">
+                <!-- 照片预览将在这里动态添加 -->
+              </div>
+            </div>
+            <p class="mt-2 text-xs text-gray-500">最多上传6张照片，单张不超过5MB</p>
+            <p id="photoError" class="mt-1 text-xs text-danger hidden">异常情况下必须上传现场照片</p>
+          </div>
+        </div>
+
+
+      </div>
+
+      <!-- 弹窗底部 -->
+      <div class="p-4 border-t border-gray-200 space-y-3">
+        <button onclick="closeSignatureModal()" class="w-full px-4 py-3 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center">
+          取消
+        </button>
+        <button id="confirmSendBtn" class="w-full px-4 py-3 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md flex items-center justify-center">
+          <i class="fa fa-paper-plane mr-2"></i> 确认发送
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 成功提示弹窗 -->
+  <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="modal-overlay absolute inset-0"></div>
+    <div class="bg-white rounded-lg shadow-2xl p-6 max-w-sm z-10">
+      <div class="flex flex-col items-center">
+        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-4">
+          <i class="fa fa-check-circle text-3xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">发送成功</h3>
+        <p class="text-sm text-gray-500 text-center mb-6">签收单已成功发送，订单状态已更新为已签收</p>
+        <button id="successOkBtn" class="w-full px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md">
+          确定
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 打开签收单弹窗
+      document.getElementById('openSignatureBtn').addEventListener('click', function() {
+        document.getElementById('signatureModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      });
+
+      // 关闭签收单弹窗
+      window.closeSignatureModal = function() {
+        const modal = document.getElementById('signatureModal');
+        modal.querySelector('.drawer-slide-up').classList.remove('drawer-slide-up');
+        modal.querySelector('.drawer-slide-up').classList.add('drawer-slide-down');
+        
+        setTimeout(() => {
+          modal.classList.add('hidden');
+          modal.querySelector('.drawer-slide-down').classList.remove('drawer-slide-down');
+          modal.querySelector('.drawer-slide-down').classList.add('drawer-slide-up');
+          document.body.style.overflow = '';
+        }, 300);
+      };
+
+      // 包装异常开关切换
+      const packagingAbnormal = document.getElementById('packagingAbnormal');
+      const warehouseTabsContainer = document.getElementById('warehouseTabsContainer');
+      const abnormalOptions = document.getElementById('abnormalOptions');
+      const abnormalRemarkSection = document.getElementById('abnormalRemarkSection');
+      const photoUploadSection = document.getElementById('photoUploadSection');
+
+      packagingAbnormal.addEventListener('change', function() {
+        if (this.checked) {
+          warehouseTabsContainer.classList.remove('hidden');
+          abnormalOptions.classList.remove('hidden');
+          // 异常备注初始隐藏，只有选择"其他"时才显示
+          abnormalRemarkSection.classList.add('hidden');
+          photoUploadSection.classList.remove('hidden');
+        } else {
+          warehouseTabsContainer.classList.add('hidden');
+          abnormalOptions.classList.add('hidden');
+          abnormalRemarkSection.classList.add('hidden');
+          photoUploadSection.classList.add('hidden');
+          
+          // 清空异常选项和备注
+          document.querySelectorAll('.abnormal-type').forEach(checkbox => {
+            checkbox.checked = false;
+          });
+          document.getElementById('abnormalRemark').value = '';
+          
+          // 清空照片
+          const photoPreviewContainer = document.getElementById('photoPreviewContainer');
+          photoPreviewContainer.innerHTML = '';
+          
+          // 隐藏错误提示
+          document.getElementById('abnormalRemarkError').classList.add('hidden');
+          document.getElementById('photoError').classList.add('hidden');
+        }
+      });
+
+      // 入仓号选项卡切换
+      const tabButtons = document.querySelectorAll('#warehouseTabs button');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // 切换选项卡样式
+          tabButtons.forEach(btn => {
+            btn.classList.remove('border-primary', 'text-primary', 'active');
+            btn.classList.add('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+            btn.setAttribute('aria-selected', 'false');
+          });
+          
+          this.classList.remove('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300');
+          this.classList.add('border-primary', 'text-primary', 'active');
+          this.setAttribute('aria-selected', 'true');
+        });
+      });
+
+      // 异常类型选择，控制"其他"选项的备注显示
+      document.querySelectorAll('.abnormal-type').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const isOtherSelected = document.querySelector('.abnormal-type[value="其他"]:checked');
+          
+          if (isOtherSelected) {
+            abnormalRemarkSection.classList.remove('hidden');
+          } else {
+            // 取消选择"其他"后，直接隐藏备注框
+            abnormalRemarkSection.classList.add('hidden');
+          }
+        });
+      });
+
+      // 照片上传
+      const photoUploadArea = document.getElementById('photoUploadArea');
+      const photoInput = document.getElementById('photoInput');
+      const photoPreviewContainer = document.getElementById('photoPreviewContainer');
+
+      photoUploadArea.addEventListener('click', function() {
+        photoInput.click();
+      });
+
+      photoInput.addEventListener('change', function(e) {
+        const files = e.target.files;
+        if (files.length > 0) {
+          for (let i = 0; i < files.length; i++) {
+            if (photoPreviewContainer.children.length >= 6) {
+              alert('最多只能上传6张照片');
+              break;
+            }
+            
+            const file = files[i];
+            if (file.size > 5 * 1024 * 1024) {
+              alert('单张照片大小不能超过5MB');
+              continue;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const preview = document.createElement('div');
+              preview.className = 'photo-preview';
+              preview.innerHTML = `
+                <img src="${e.target.result}" alt="照片">
+                <div class="remove-btn" onclick="removePhoto(this)">
+                  <i class="fa fa-times"></i>
+                </div>
+              `;
+              photoPreviewContainer.appendChild(preview);
+            };
+            reader.readAsDataURL(file);
+          }
+          
+          // 重置input，允许重复选择同一文件
+          photoInput.value = '';
+        }
+      });
+
+      // 移除照片
+      window.removePhoto = function(btn) {
+        const preview = btn.closest('.photo-preview');
+        preview.remove();
+      };
+
+      // 确认发送
+      document.getElementById('confirmSendBtn').addEventListener('click', function() {
+        // 校验收货件数
+        const receivedQty = document.getElementById('receivedQty').value;
+        const receivedQtyError = document.getElementById('receivedQtyError');
+        if (!receivedQty || receivedQty < 0) {
+          receivedQtyError.classList.remove('hidden');
+          return;
+        } else {
+          receivedQtyError.classList.add('hidden');
+        }
+
+        // 校验包装异常
+        const isPackagingAbnormal = document.getElementById('packagingAbnormal').checked;
+
+        if (isPackagingAbnormal) {
+          // 校验异常备注
+          const abnormalRemark = document.getElementById('abnormalRemark').value;
+          const abnormalRemarkError = document.getElementById('abnormalRemarkError');
+          
+          // 检查是否选择了"其他"或有其他异常选项被选中
+          const isOtherSelected = document.querySelector('.abnormal-type[value="其他"]:checked');
+          const hasOtherAbnormal = document.querySelectorAll('.abnormal-type:not([value="其他"]):checked').length > 0;
+          
+          if ((isOtherSelected || hasOtherAbnormal) && !abnormalRemark) {
+            abnormalRemarkError.classList.remove('hidden');
+            return;
+          } else {
+            abnormalRemarkError.classList.add('hidden');
+          }
+
+          // 校验照片
+          const photoCount = photoPreviewContainer.children.length;
+          const photoError = document.getElementById('photoError');
+          if (photoCount === 0) {
+            photoError.classList.remove('hidden');
+            return;
+          } else {
+            photoError.classList.add('hidden');
+          }
+        }
+
+        // 模拟发送过程
+        this.disabled = true;
+        this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 发送中...';
+
+        setTimeout(() => {
+          // 显示成功提示
+          document.getElementById('successModal').classList.remove('hidden');
+          document.body.style.overflow = 'hidden';
+
+          // 恢复按钮状态
+          this.disabled = false;
+          this.innerHTML = '<i class="fa fa-paper-plane mr-2"></i> 确认发送';
+        }, 2000);
+      });
+
+      // 成功提示确定按钮
+      document.getElementById('successOkBtn').addEventListener('click', function() {
+        document.getElementById('successModal').classList.add('hidden');
+        document.body.style.overflow = '';
+        closeSignatureModal();
+
+        // 更新订单状态
+        const statusBadge = document.querySelector('.bg-blue-50');
+        statusBadge.className = 'px-2 py-1 text-xs font-medium text-green-600 bg-green-50 rounded-full';
+        statusBadge.textContent = '已签收';
+
+        // 禁用发送签收单按钮
+        const openSignatureBtn = document.getElementById('openSignatureBtn');
+        openSignatureBtn.disabled = true;
+        openSignatureBtn.className = 'w-full px-4 py-3 text-sm font-medium text-gray-500 bg-gray-200 rounded-md flex items-center justify-center cursor-not-allowed';
+        openSignatureBtn.innerHTML = '<i class="fa fa-check mr-2"></i> 已发送签收单';
+      });
+    });
+  </script>
+</body>
+</html>

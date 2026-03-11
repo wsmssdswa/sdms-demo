@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WMS 工作台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              700: '#334155',
+              800: '#1e293b',
+              850: '#172033',
+              900: '#0f172a',
+              950: '#020617',
+            },
+            accent: {
+              cyan: '#06b6d4',
+              cyanLight: '#22d3ee',
+              amber: '#f59e0b',
+              amberLight: '#fbbf24',
+              emerald: '#10b981',
+              emeraldLight: '#34d399',
+              rose: '#f43f5e',
+              roseLight: '#fb7185',
+              violet: '#8b5cf6',
+              violetLight: '#a78bfa',
+            },
+            stat: {
+              blue: '#3b82f6',
+              blueLight: '#60a5fa',
+              green: '#22c55e',
+              greenLight: '#4ade80',
+              purple: '#a855f7',
+              purpleLight: '#c084fc',
+              yellow: '#eab308',
+              yellowLight: '#facc15',
+              red: '#ef4444',
+              redLight: '#f87171',
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+            'slide-up': 'slideUp 0.5s ease-out forwards',
+            'slide-in-right': 'slideInRight 0.4s ease-out forwards',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'glow': 'glow 2s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            slideInRight: {
+              '0%': { opacity: '0', transform: 'translateX(20px)' },
+              '100%': { opacity: '1', transform: 'translateX(0)' },
+            },
+            glow: {
+              '0%': { boxShadow: '0 0 20px rgba(6, 182, 212, 0.3)' },
+              '100%': { boxShadow: '0 0 30px rgba(6, 182, 212, 0.5)' },
+            },
+          },
+        },
+      }
+    }
+  </script>
+  <style>
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #334155 transparent;
+    }
+    *::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    *::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    *::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    *::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      background-attachment: fixed;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(245, 158, 11, 0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .glass-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(71, 85, 105, 0.3);
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.3),
+        0 2px 4px -2px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    }
+    
+    .glass-card-light {
+      background: linear-gradient(135deg, rgba(51, 65, 85, 0.6) 0%, rgba(30, 41, 59, 0.7) 100%);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(71, 85, 105, 0.4);
+    }
+    
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-color), var(--accent-color-light));
+      opacity: 0.8;
+    }
+    
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
+      opacity: 0.1;
+      transform: translate(30%, -30%);
+    }
+    
+    .nav-item {
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: linear-gradient(180deg, #06b6d4, #22d3ee);
+      border-radius: 0 2px 2px 0;
+      transition: height 0.3s ease;
+    }
+    
+    .nav-item:hover::before,
+    .nav-item.active::before {
+      height: 60%;
+    }
+    
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(6, 182, 212, 0.15) 0%, transparent 100%);
+    }
+    
+    .drag-handle {
+      cursor: move;
+    }
+    
+    .sortable-ghost {
+      opacity: 0.4;
+      background: rgba(6, 182, 212, 0.1);
+    }
+    
+    .sortable-drag {
+      opacity: 1;
+    }
+    
+    .modal-overlay {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+    }
+    
+    .component-item {
+      transition: all 0.3s ease;
+    }
+    
+    .component-item:hover {
+      transform: translateX(4px);
+      border-color: rgba(6, 182, 212, 0.5);
+    }
+    
+    .width-btn {
+      color: #cbd5e1;
+      background: rgba(51, 65, 85, 0.5);
+    }
+
+    .width-btn.active {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+      color: white !important;
+      border-color: transparent !important;
+    }
+
+    .width-btn:not(.active):hover {
+      background: rgba(71, 85, 105, 0.7);
+      color: #e2e8f0;
+    }
+
+    body.light-mode .width-btn:not(.active) {
+      color: #475569;
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    body.light-mode .width-btn:not(.active):hover {
+      background: rgba(226, 232, 240, 0.9);
+      color: #334155;
+    }
+    
+    .glow-dot {
+      box-shadow: 0 0 8px currentColor;
+    }
+    
+    .task-item {
+      transition: all 0.3s ease;
+    }
+    
+    .task-item:hover {
+      transform: translateX(4px);
+    }
+    
+    .alert-item {
+      border-left: 3px solid;
+      transition: all 0.3s ease;
+    }
+    
+    .alert-item:hover {
+      transform: translateX(4px);
+    }
+    
+    .flow-node {
+      transition: all 0.3s ease;
+    }
+    
+    .flow-node:hover {
+      transform: scale(1.05);
+    }
+    
+    .flow-time {
+      transition: all 0.2s ease;
+    }
+    
+    .flow-time:hover {
+      transform: scale(1.1);
+    }
+    
+    .flow-time.abnormal {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    
+    .shimmer {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 2s infinite;
+    }
+    
+    .text-gradient {
+      background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      box-shadow: 0 4px 14px -3px rgba(6, 182, 212, 0.4);
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px -3px rgba(6, 182, 212, 0.5);
+      transform: translateY(-1px);
+    }
+    
+    .input-dark {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(71, 85, 105, 0.5);
+      transition: all 0.3s ease;
+    }
+    
+    .input-dark:focus {
+      border-color: #06b6d4;
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+    }
+    
+    .table-row {
+      transition: all 0.2s ease;
+    }
+    
+    .table-row:hover {
+      background: rgba(6, 182, 212, 0.05);
+    }
+    
+    .shortcut-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .shortcut-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    
+    .notification-item {
+      transition: all 0.3s ease;
+    }
+    
+    .notification-item:hover {
+      background: rgba(51, 65, 85, 0.5);
+    }
+    
+    /* 亮色模式样式 */
+    body.light-mode {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%);
+    }
+    
+    body.light-mode::before {
+      background: 
+        radial-gradient(ellipse at 20% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(245, 158, 11, 0.03) 0%, transparent 70%);
+    }
+    
+    body.light-mode *::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+    }
+    
+    body.light-mode *::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    
+    body.light-mode .glass-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.08),
+        0 2px 4px -2px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 1);
+    }
+    
+    body.light-mode .glass-card-light {
+      background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.95) 100%);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    
+    body.light-mode .stat-card::after {
+      opacity: 0.15;
+    }
+    
+    body.light-mode .nav-item.active {
+      background: linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, transparent 100%);
+    }
+    
+    body.light-mode .modal-overlay {
+      background: rgba(0, 0, 0, 0.4);
+    }
+    
+    body.light-mode .input-dark {
+      background: rgba(248, 250, 252, 0.8);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    
+    body.light-mode .table-row:hover {
+      background: rgba(6, 182, 212, 0.08);
+    }
+    
+    body.light-mode .shortcut-btn:hover {
+      box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+    
+    body.light-mode .notification-item:hover {
+      background: rgba(241, 245, 249, 0.8);
+    }
+    
+    body.light-mode .flow-node {
+      background: rgba(241, 245, 249, 0.8);
+      border-color: rgba(226, 232, 240, 0.8);
+    }
+    
+    body.light-mode .flow-time:not(.abnormal) {
+      background: rgba(241, 245, 249, 0.8);
+    }
+    
+    body.light-mode .text-surface-100 {
+      color: #0f172a !important;
+    }
+    
+    body.light-mode .text-surface-200 {
+      color: #334155 !important;
+    }
+    
+    body.light-mode .text-surface-200\/60,
+    body.light-mode .text-surface-200\/70 {
+      color: #475569 !important;
+    }
+    
+    body.light-mode .text-surface-200\/40,
+    body.light-mode .text-surface-200\/50 {
+      color: #64748b !important;
+    }
+    
+    body.light-mode .text-gradient {
+      background: linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #0891b2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    body.light-mode .border-surface-700\/50 {
+      border-color: rgba(226, 232, 240, 0.8) !important;
+    }
+    
+    body.light-mode .bg-surface-700\/30,
+    body.light-mode .bg-surface-700\/50 {
+      background-color: rgba(241, 245, 249, 0.8) !important;
+    }
+    
+    body.light-mode .hover\:bg-surface-700\/50:hover {
+      background-color: rgba(241, 245, 249, 0.8) !important;
+    }
+    
+    body.light-mode .bg-surface-800 {
+      background-color: #f1f5f9 !important;
+    }
+    
+    body.light-mode .border-surface-700 {
+      border-color: #e2e8f0 !important;
+    }
+    
+    body.light-mode .bg-surface-700\/50 {
+      background-color: rgba(241, 245, 249, 0.8) !important;
+    }
+    
+    body.light-mode .text-surface-200\/40 {
+      color: #94a3b8 !important;
+    }
+    
+    /* 主题切换按钮动画 */
+    .theme-toggle {
+      position: relative;
+      width: 56px;
+      height: 28px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(71, 85, 105, 0.5);
+    }
+    
+    body.light-mode .theme-toggle {
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      border-color: transparent;
+    }
+    
+    .theme-toggle-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    body.light-mode .theme-toggle-knob {
+      left: 31px;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+    }
+    
+    .theme-toggle-knob i {
+      font-size: 12px;
+      color: #1e293b;
+    }
+    
+    body.light-mode .theme-toggle-knob i {
+      color: #f59e0b;
+    }
+  </style>
+</head>
+<body class="font-sans text-surface-100 min-h-screen relative">
+  <div class="flex h-screen overflow-hidden relative z-10">
+    <!-- 侧边栏 -->
+    <aside class="w-64 glass-card flex flex-col flex-shrink-0">
+      <!-- 侧边栏头部 -->
+      <div class="p-5 border-b border-surface-700/50">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-cyan to-accent-cyanLight flex items-center justify-center shadow-lg">
+            <i class="ri-store-3-line text-xl text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-gradient">WMS Pro</h1>
+            <p class="text-xs text-surface-200/60">智能仓储管理</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 导航菜单 -->
+      <div class="flex-1 overflow-y-auto py-4">
+        <nav class="space-y-1 px-3">
+          <a href="#" class="nav-item active flex items-center px-4 py-3 rounded-lg text-accent-cyanLight font-medium">
+            <i class="ri-dashboard-3-line text-xl mr-3"></i>
+            <span>工作台</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/30">
+            <i class="ri-file-list-3-line text-xl mr-3"></i>
+            <span>订单管理</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/30">
+            <i class="ri-truck-line text-xl mr-3"></i>
+            <span>出库管理</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/30">
+            <i class="ri-inbox-archive-line text-xl mr-3"></i>
+            <span>入库管理</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/30">
+            <i class="ri-stack-line text-xl mr-3"></i>
+            <span>库存管理</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/30">
+            <i class="ri-bar-chart-box-line text-xl mr-3"></i>
+            <span>报表中心</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/30">
+            <i class="ri-settings-4-line text-xl mr-3"></i>
+            <span>系统设置</span>
+          </a>
+        </nav>
+      </div>
+      
+      <!-- 侧边栏底部 -->
+      <div class="p-4 border-t border-surface-700/50">
+        <div class="flex items-center p-2 rounded-xl bg-surface-800/50">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-violet to-accent-violetLight flex items-center justify-center text-white font-semibold shadow-lg">
+            李
+          </div>
+          <div class="ml-3 flex-1 min-w-0">
+            <p class="text-sm font-semibold text-surface-100 truncate">李明</p>
+            <p class="text-xs text-surface-200/60">仓库经理</p>
+          </div>
+          <button class="p-2 text-surface-200/50 hover:text-accent-rose hover:bg-surface-700/50 rounded-lg transition-colors">
+            <i class="ri-logout-box-r-line text-lg"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- 主内容区 -->
+    <main class="flex-1 overflow-y-auto">
+      <!-- 顶部导航 -->
+      <header class="glass-card sticky top-0 z-20 py-4 px-6 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div>
+            <h2 class="text-xl font-bold text-surface-100">工作台</h2>
+            <p class="text-xs text-surface-200/50 mt-0.5">实时监控仓库运营状态</p>
+          </div>
+          <span class="px-3 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 border border-accent-cyan/20 rounded-full">
+            仓库经理视图
+          </span>
+          <!-- 仓库选择器 -->
+          <div class="relative" id="warehouseSelector">
+            <button id="warehouseBtn" class="flex items-center px-4 py-2.5 text-sm font-medium text-surface-200 bg-surface-700/50 hover:bg-surface-700 border border-surface-700/50 rounded-xl transition-all">
+              <i class="ri-building-2-line mr-2 text-accent-cyan"></i>
+              <span id="warehouseText">全部仓库</span>
+              <i class="ri-arrow-down-s-line ml-2 text-surface-200/50"></i>
+            </button>
+            <div id="warehouseDropdown" class="hidden absolute left-0 mt-2 w-72 glass-card rounded-xl shadow-2xl z-50 overflow-hidden">
+              <div class="p-3 border-b border-surface-700/50">
+                <label class="flex items-center cursor-pointer hover:bg-surface-700/30 p-2 rounded-lg transition-colors">
+                  <input type="checkbox" id="selectAllWarehouses" class="w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0" checked>
+                  <span class="ml-3 text-sm font-medium text-surface-100">全部仓库</span>
+                </label>
+              </div>
+              <div class="max-h-60 overflow-y-auto p-2" id="warehouseList">
+                <label class="flex items-center cursor-pointer hover:bg-surface-700/30 p-2 rounded-lg transition-colors">
+                  <input type="checkbox" class="warehouse-checkbox w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0" value="WH001" checked>
+                  <span class="ml-3 text-sm text-surface-200">北京仓</span>
+                </label>
+                <label class="flex items-center cursor-pointer hover:bg-surface-700/30 p-2 rounded-lg transition-colors">
+                  <input type="checkbox" class="warehouse-checkbox w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0" value="WH002" checked>
+                  <span class="ml-3 text-sm text-surface-200">上海仓</span>
+                </label>
+                <label class="flex items-center cursor-pointer hover:bg-surface-700/30 p-2 rounded-lg transition-colors">
+                  <input type="checkbox" class="warehouse-checkbox w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0" value="WH003" checked>
+                  <span class="ml-3 text-sm text-surface-200">广州仓</span>
+                </label>
+                <label class="flex items-center cursor-pointer hover:bg-surface-700/30 p-2 rounded-lg transition-colors">
+                  <input type="checkbox" class="warehouse-checkbox w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0" value="WH004" checked>
+                  <span class="ml-3 text-sm text-surface-200">深圳仓</span>
+                </label>
+                <label class="flex items-center cursor-pointer hover:bg-surface-700/30 p-2 rounded-lg transition-colors">
+                  <input type="checkbox" class="warehouse-checkbox w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0" value="WH005" checked>
+                  <span class="ml-3 text-sm text-surface-200">成都仓</span>
+                </label>
+                <label class="flex items-center cursor-pointer hover:bg-surface-700/30 p-2 rounded-lg transition-colors">
+                  <input type="checkbox" class="warehouse-checkbox w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0" value="WH006" checked>
+                  <span class="ml-3 text-sm text-surface-200">武汉仓</span>
+                </label>
+              </div>
+              <div class="p-3 border-t border-surface-700/50">
+                <button id="applyWarehouseBtn" class="w-full px-4 py-2.5 text-sm font-medium text-white btn-primary rounded-xl">
+                  确定
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center space-x-3">
+          <!-- 主题切换 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-surface-200/50 hidden sm:inline">深夜</span>
+            <div id="themeToggle" class="theme-toggle" title="切换显示模式">
+              <div class="theme-toggle-knob">
+                <i class="ri-moon-line"></i>
+              </div>
+            </div>
+            <span class="text-xs text-surface-200/50 hidden sm:inline">白天</span>
+          </div>
+          <button class="relative p-2.5 text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/50 rounded-xl transition-all">
+            <i class="ri-notification-3-line text-xl"></i>
+            <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-accent-rose rounded-full glow-dot"></span>
+          </button>
+          <button id="layoutBtn" class="px-4 py-2.5 text-sm font-medium text-surface-200 hover:text-surface-100 hover:bg-surface-700/50 border border-surface-700/50 rounded-xl flex items-center transition-all">
+            <i class="ri-layout-grid-line mr-2 text-accent-cyan"></i> 布局配置
+          </button>
+          <button id="saveLayoutBtn" class="px-4 py-2.5 text-sm font-medium text-white btn-primary rounded-xl flex items-center">
+            <i class="ri-save-line mr-2"></i> 保存布局
+          </button>
+        </div>
+      </header>
+      
+      <!-- 全局KPI区域 -->
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <!-- 今日出库量 -->
+          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" style="--accent-color: #3b82f6; --accent-color-light: #60a5fa; animation-delay: 0.1s;">
+            <div class="flex items-start justify-between relative z-10">
+              <div>
+                <p class="text-sm font-medium text-surface-200/60">今日出库量</p>
+                <h3 class="text-3xl font-bold text-surface-100 mt-2 font-mono">1,234</h3>
+                <div class="flex items-center mt-2 text-accent-emerald text-sm">
+                  <i class="ri-arrow-up-line mr-1"></i>
+                  <span class="font-medium">12.5%</span>
+                  <span class="text-surface-200/40 ml-1">较昨日</span>
+                </div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-stat-blue/20 flex items-center justify-center">
+                <i class="ri-truck-line text-2xl text-stat-blueLight"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 今日入库量 -->
+          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" style="--accent-color: #22c55e; --accent-color-light: #4ade80; animation-delay: 0.15s;">
+            <div class="flex items-start justify-between relative z-10">
+              <div>
+                <p class="text-sm font-medium text-surface-200/60">今日入库量</p>
+                <h3 class="text-3xl font-bold text-surface-100 mt-2 font-mono">856</h3>
+                <div class="flex items-center mt-2 text-accent-emerald text-sm">
+                  <i class="ri-arrow-up-line mr-1"></i>
+                  <span class="font-medium">8.3%</span>
+                  <span class="text-surface-200/40 ml-1">较昨日</span>
+                </div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-stat-green/20 flex items-center justify-center">
+                <i class="ri-inbox-archive-line text-2xl text-stat-greenLight"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 当前库存 -->
+          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" style="--accent-color: #a855f7; --accent-color-light: #c084fc; animation-delay: 0.2s;">
+            <div class="flex items-start justify-between relative z-10">
+              <div>
+                <p class="text-sm font-medium text-surface-200/60">当前库存</p>
+                <h3 class="text-3xl font-bold text-surface-100 mt-2 font-mono">45,678</h3>
+                <div class="flex items-center mt-2 text-surface-200/50 text-sm">
+                  <i class="ri-subtract-line mr-1"></i>
+                  <span>持平</span>
+                </div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-stat-purple/20 flex items-center justify-center">
+                <i class="ri-stack-line text-2xl text-stat-purpleLight"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 客诉率 -->
+          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" style="--accent-color: #eab308; --accent-color-light: #facc15; animation-delay: 0.25s;">
+            <div class="flex items-start justify-between relative z-10">
+              <div>
+                <p class="text-sm font-medium text-surface-200/60">客诉率</p>
+                <h3 class="text-3xl font-bold text-surface-100 mt-2 font-mono">2.3%</h3>
+                <div class="flex items-center mt-2 text-accent-emerald text-sm">
+                  <i class="ri-arrow-down-line mr-1"></i>
+                  <span class="font-medium">0.5%</span>
+                  <span class="text-surface-200/40 ml-1">下降</span>
+                </div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-stat-yellow/20 flex items-center justify-center">
+                <i class="ri-customer-service-2-line text-2xl text-stat-yellowLight"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 签收率 -->
+          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" style="--accent-color: #22c55e; --accent-color-light: #4ade80; animation-delay: 0.3s;">
+            <div class="flex items-start justify-between relative z-10">
+              <div>
+                <p class="text-sm font-medium text-surface-200/60">签收率</p>
+                <h3 class="text-3xl font-bold text-surface-100 mt-2 font-mono">96.8%</h3>
+                <div class="flex items-center mt-2 text-accent-emerald text-sm">
+                  <i class="ri-arrow-up-line mr-1"></i>
+                  <span class="font-medium">1.2%</span>
+                  <span class="text-surface-200/40 ml-1">提升</span>
+                </div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-stat-green/20 flex items-center justify-center">
+                <i class="ri-checkbox-circle-line text-2xl text-stat-greenLight"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 重派率 -->
+          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" style="--accent-color: #ef4444; --accent-color-light: #f87171; animation-delay: 0.35s;">
+            <div class="flex items-start justify-between relative z-10">
+              <div>
+                <p class="text-sm font-medium text-surface-200/60">重派率</p>
+                <h3 class="text-3xl font-bold text-surface-100 mt-2 font-mono">3.2%</h3>
+                <div class="flex items-center mt-2 text-accent-rose text-sm">
+                  <i class="ri-arrow-up-line mr-1"></i>
+                  <span class="font-medium">0.8%</span>
+                  <span class="text-surface-200/40 ml-1">上升</span>
+                </div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-stat-red/20 flex items-center justify-center">
+                <i class="ri-refresh-line text-2xl text-stat-redLight"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 可拖拽组件区 -->
+      <div class="px-6 pb-6">
+        <div id="dashboardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- 待办任务组件 -->
+          <div class="glass-card rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="todo" style="animation-delay: 0.4s;">
+            <div class="flex items-center justify-between mb-5 drag-handle">
+              <h3 class="font-semibold text-surface-100 flex items-center text-lg">
+                <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center mr-3">
+                  <i class="ri-task-line text-accent-cyan"></i>
+                </div>
+                待办任务
+              </h3>
+              <div class="flex items-center space-x-2 text-surface-200/50 text-xs">
+                <span>自动刷新</span>
+                <span class="w-2 h-2 bg-accent-emerald rounded-full glow-dot animate-pulse"></span>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <!-- 待上架订单 -->
+              <div class="task-item flex items-center justify-between p-4 bg-stat-blue/10 border border-stat-blue/20 rounded-xl cursor-pointer hover:bg-stat-blue/15">
+                <div class="flex items-center">
+                  <div class="w-11 h-11 rounded-xl bg-stat-blue/20 flex items-center justify-center">
+                    <i class="ri-upload-2-line text-xl text-stat-blueLight"></i>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-surface-100">待上架订单</p>
+                    <p class="text-xs text-surface-200/50 mt-0.5">需要及时处理</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-bold text-surface-100 font-mono">156</p>
+                  <p class="text-xs text-accent-rose mt-0.5 flex items-center justify-end">
+                    <i class="ri-time-line mr-1"></i>超时 23
+                  </p>
+                </div>
+              </div>
+              
+              <!-- 待出库订单 -->
+              <div class="task-item flex items-center justify-between p-4 bg-stat-green/10 border border-stat-green/20 rounded-xl cursor-pointer hover:bg-stat-green/15">
+                <div class="flex items-center">
+                  <div class="w-11 h-11 rounded-xl bg-stat-green/20 flex items-center justify-center">
+                    <i class="ri-truck-line text-xl text-stat-greenLight"></i>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-surface-100">待出库订单</p>
+                    <p class="text-xs text-surface-200/50 mt-0.5">今日待处理</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-bold text-surface-100 font-mono">89</p>
+                  <p class="text-xs text-accent-emerald mt-0.5 flex items-center justify-end">
+                    <i class="ri-checkbox-circle-line mr-1"></i>正常
+                  </p>
+                </div>
+              </div>
+              
+              <!-- 待装车订单 -->
+              <div class="task-item flex items-center justify-between p-4 bg-stat-yellow/10 border border-stat-yellow/20 rounded-xl cursor-pointer hover:bg-stat-yellow/15">
+                <div class="flex items-center">
+                  <div class="w-11 h-11 rounded-xl bg-stat-yellow/20 flex items-center justify-center">
+                    <i class="ri-car-line text-xl text-stat-yellowLight"></i>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-surface-100">待装车订单</p>
+                    <p class="text-xs text-surface-200/50 mt-0.5">等待装车</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-bold text-surface-100 font-mono">45</p>
+                  <p class="text-xs text-accent-rose mt-0.5 flex items-center justify-end">
+                    <i class="ri-time-line mr-1"></i>超时 12
+                  </p>
+                </div>
+              </div>
+              
+              <!-- 待审核单据 -->
+              <div class="task-item flex items-center justify-between p-4 bg-stat-purple/10 border border-stat-purple/20 rounded-xl cursor-pointer hover:bg-stat-purple/15">
+                <div class="flex items-center">
+                  <div class="w-11 h-11 rounded-xl bg-stat-purple/20 flex items-center justify-center">
+                    <i class="ri-file-text-line text-xl text-stat-purpleLight"></i>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-surface-100">待审核单据</p>
+                    <p class="text-xs text-surface-200/50 mt-0.5">需要审核</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-bold text-surface-100 font-mono">23</p>
+                  <p class="text-xs text-accent-emerald mt-0.5 flex items-center justify-end">
+                    <i class="ri-checkbox-circle-line mr-1"></i>正常
+                  </p>
+                </div>
+              </div>
+              
+              <!-- 未处理客诉 -->
+              <div class="task-item flex items-center justify-between p-4 bg-stat-red/10 border border-stat-red/20 rounded-xl cursor-pointer hover:bg-stat-red/15">
+                <div class="flex items-center">
+                  <div class="w-11 h-11 rounded-xl bg-stat-red/20 flex items-center justify-center">
+                    <i class="ri-alarm-warning-line text-xl text-stat-redLight"></i>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-surface-100">未处理客诉</p>
+                    <p class="text-xs text-surface-200/50 mt-0.5">紧急处理</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-2xl font-bold text-surface-100 font-mono">8</p>
+                  <p class="text-xs text-accent-rose mt-0.5 flex items-center justify-end">
+                    <i class="ri-time-line mr-1"></i>超时 5
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 异常预警组件 -->
+          <div class="glass-card rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="alert" style="animation-delay: 0.45s;">
+            <div class="flex items-center justify-between mb-5 drag-handle">
+              <h3 class="font-semibold text-surface-100 flex items-center text-lg">
+                <div class="w-8 h-8 rounded-lg bg-accent-rose/20 flex items-center justify-center mr-3">
+                  <i class="ri-alarm-warning-line text-accent-rose"></i>
+                </div>
+                异常预警
+              </h3>
+              <div class="flex items-center space-x-2 text-surface-200/50 text-xs">
+                <span>30秒刷新</span>
+                <span class="w-2 h-2 bg-accent-emerald rounded-full glow-dot animate-pulse"></span>
+              </div>
+            </div>
+            <div class="space-y-3">
+              <!-- 高级异常 -->
+              <div class="alert-item p-3 bg-accent-rose/10 border-accent-rose rounded-xl">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-accent-roseLight">出库积压严重</p>
+                    <p class="text-xs text-surface-200/60 mt-1">当前积压订单 256 单，超过阈值 200</p>
+                  </div>
+                  <span class="px-2 py-1 text-xs font-medium text-white bg-accent-rose rounded-md flex-shrink-0 ml-2">高</span>
+                </div>
+              </div>
+              
+              <!-- 中级异常 -->
+              <div class="alert-item p-3 bg-accent-amber/10 border-accent-amber rounded-xl">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-accent-amberLight">库存预警</p>
+                    <p class="text-xs text-surface-200/60 mt-1">SKU001 库存低于安全库存</p>
+                  </div>
+                  <span class="px-2 py-1 text-xs font-medium text-surface-800 bg-accent-amber rounded-md flex-shrink-0 ml-2">中</span>
+                </div>
+              </div>
+              
+              <!-- 低级异常 -->
+              <div class="alert-item p-3 bg-accent-cyan/10 border-accent-cyan rounded-xl">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-accent-cyanLight">设备离线</p>
+                    <p class="text-xs text-surface-200/60 mt-1">PDA设备 #003 已离线 10 分钟</p>
+                  </div>
+                  <span class="px-2 py-1 text-xs font-medium text-surface-800 bg-accent-cyan rounded-md flex-shrink-0 ml-2">低</span>
+                </div>
+              </div>
+              
+              <!-- 低级异常 -->
+              <div class="alert-item p-3 bg-accent-cyan/10 border-accent-cyan rounded-xl">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-accent-cyanLight">温湿度异常</p>
+                    <p class="text-xs text-surface-200/60 mt-1">A区温度 28°C，超出设定范围</p>
+                  </div>
+                  <span class="px-2 py-1 text-xs font-medium text-surface-800 bg-accent-cyan rounded-md flex-shrink-0 ml-2">低</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 出库趋势组件 -->
+          <div class="glass-card rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="trend" style="animation-delay: 0.5s;">
+            <div class="flex items-center justify-between mb-5 drag-handle">
+              <h3 class="font-semibold text-surface-100 flex items-center text-lg">
+                <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center mr-3">
+                  <i class="ri-line-chart-line text-accent-cyan"></i>
+                </div>
+                出入库趋势
+              </h3>
+              <div class="flex space-x-2">
+                <button class="px-3 py-1.5 text-xs font-medium text-white btn-primary rounded-lg">7日</button>
+                <button class="px-3 py-1.5 text-xs font-medium text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/50 rounded-lg transition-colors">30日</button>
+                <button class="px-3 py-1.5 text-xs font-medium text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/50 rounded-lg transition-colors">自定义</button>
+              </div>
+            </div>
+            <div class="h-64">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+          
+          <!-- 快捷操作组件 -->
+          <div class="glass-card rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="shortcut" style="animation-delay: 0.55s;">
+            <div class="flex items-center justify-between mb-5 drag-handle">
+              <h3 class="font-semibold text-surface-100 flex items-center text-lg">
+                <div class="w-8 h-8 rounded-lg bg-accent-violet/20 flex items-center justify-center mr-3">
+                  <i class="ri-flashlight-line text-accent-violet"></i>
+                </div>
+                快捷操作
+              </h3>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button class="shortcut-btn flex flex-col items-center justify-center p-4 bg-stat-blue/10 border border-stat-blue/20 rounded-xl hover:bg-stat-blue/20">
+                <i class="ri-add-circle-line text-2xl text-stat-blueLight mb-2"></i>
+                <span class="text-sm font-medium text-surface-100">新建入库</span>
+              </button>
+              <button class="shortcut-btn flex flex-col items-center justify-center p-4 bg-stat-green/10 border border-stat-green/20 rounded-xl hover:bg-stat-green/20">
+                <i class="ri-send-plane-line text-2xl text-stat-greenLight mb-2"></i>
+                <span class="text-sm font-medium text-surface-100">新建出库</span>
+              </button>
+              <button class="shortcut-btn flex flex-col items-center justify-center p-4 bg-stat-purple/10 border border-stat-purple/20 rounded-xl hover:bg-stat-purple/20">
+                <i class="ri-search-eye-line text-2xl text-stat-purpleLight mb-2"></i>
+                <span class="text-sm font-medium text-surface-100">库存查询</span>
+              </button>
+              <button class="shortcut-btn flex flex-col items-center justify-center p-4 bg-stat-yellow/10 border border-stat-yellow/20 rounded-xl hover:bg-stat-yellow/20">
+                <i class="ri-qr-scan-2-line text-2xl text-stat-yellowLight mb-2"></i>
+                <span class="text-sm font-medium text-surface-100">扫码作业</span>
+              </button>
+              <button class="shortcut-btn flex flex-col items-center justify-center p-4 bg-accent-cyan/10 border border-accent-cyan/20 rounded-xl hover:bg-accent-cyan/20">
+                <i class="ri-printer-line text-2xl text-accent-cyanLight mb-2"></i>
+                <span class="text-sm font-medium text-surface-100">打印标签</span>
+              </button>
+              <button class="shortcut-btn flex flex-col items-center justify-center p-4 bg-accent-rose/10 border border-accent-rose/20 rounded-xl hover:bg-accent-rose/20">
+                <i class="ri-alarm-warning-line text-2xl text-accent-roseLight mb-2"></i>
+                <span class="text-sm font-medium text-surface-100">异常处理</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- 库存分布组件 -->
+          <div class="glass-card rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="inventory" style="animation-delay: 0.6s;">
+            <div class="flex items-center justify-between mb-5 drag-handle">
+              <h3 class="font-semibold text-surface-100 flex items-center text-lg">
+                <div class="w-8 h-8 rounded-lg bg-accent-emerald/20 flex items-center justify-center mr-3">
+                  <i class="ri-pie-chart-line text-accent-emerald"></i>
+                </div>
+                库存分布
+              </h3>
+            </div>
+            <div class="h-64">
+              <canvas id="inventoryChart"></canvas>
+            </div>
+          </div>
+          
+          <!-- 人效统计列表组件 -->
+          <div class="glass-card rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="efficiency" style="animation-delay: 0.65s;">
+            <div class="flex items-center justify-between mb-5 drag-handle">
+              <h3 class="font-semibold text-surface-100 flex items-center text-lg">
+                <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center mr-3">
+                  <i class="ri-team-line text-accent-cyan"></i>
+                </div>
+                人效统计
+              </h3>
+              <div class="flex items-center space-x-2">
+                <button id="efficiency7Days" class="efficiency-range-btn px-3 py-1.5 text-xs font-medium text-white btn-primary rounded-lg" data-range="7">7日</button>
+                <button id="efficiency30Days" class="efficiency-range-btn px-3 py-1.5 text-xs font-medium text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/50 rounded-lg transition-colors" data-range="30">30日</button>
+                <button id="efficiencyCustom" class="efficiency-range-btn px-3 py-1.5 text-xs font-medium text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/50 rounded-lg transition-colors" data-range="custom">自定义</button>
+              </div>
+            </div>
+            <!-- 自定义时间选择器 -->
+            <div id="efficiencyDateRange" class="hidden mb-4 p-3 glass-card-light rounded-xl">
+              <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2">
+                  <label class="text-xs text-surface-200/60">开始日期:</label>
+                  <input type="date" id="efficiencyStartDate" class="input-dark rounded-lg px-3 py-1.5 text-sm text-surface-100 focus:outline-none">
+                </div>
+                <div class="flex items-center space-x-2">
+                  <label class="text-xs text-surface-200/60">结束日期:</label>
+                  <input type="date" id="efficiencyEndDate" class="input-dark rounded-lg px-3 py-1.5 text-sm text-surface-100 focus:outline-none">
+                </div>
+                <button id="efficiencyApplyDate" class="px-4 py-1.5 text-xs font-medium text-white btn-primary rounded-lg">查询</button>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full">
+                <thead>
+                  <tr class="border-b border-surface-700/50">
+                    <th id="th-name" scope="col" class="px-4 py-3 text-left text-xs font-semibold text-surface-200/60 uppercase tracking-wider cursor-pointer hover:text-surface-100 transition-colors select-none" onclick="sortEfficiencyTable('name')">
+                      <span class="flex items-center">
+                        人员
+                        <i id="sort-icon-name" class="ri-arrow-up-down-line ml-1 text-surface-200/40"></i>
+                      </span>
+                    </th>
+                    <th id="th-入库" scope="col" class="px-4 py-3 text-left text-xs font-semibold text-surface-200/60 uppercase tracking-wider cursor-pointer hover:text-surface-100 transition-colors select-none" onclick="sortEfficiencyTable('入库')">
+                      <span class="flex items-center">
+                        入库
+                        <i id="sort-icon-入库" class="ri-arrow-up-down-line ml-1 text-surface-200/40"></i>
+                      </span>
+                    </th>
+                    <th id="th-上架" scope="col" class="px-4 py-3 text-left text-xs font-semibold text-surface-200/60 uppercase tracking-wider cursor-pointer hover:text-surface-100 transition-colors select-none" onclick="sortEfficiencyTable('上架')">
+                      <span class="flex items-center">
+                        上架
+                        <i id="sort-icon-上架" class="ri-arrow-up-down-line ml-1 text-surface-200/40"></i>
+                      </span>
+                    </th>
+                    <th id="th-拣货" scope="col" class="px-4 py-3 text-left text-xs font-semibold text-surface-200/60 uppercase tracking-wider cursor-pointer hover:text-surface-100 transition-colors select-none" onclick="sortEfficiencyTable('拣货')">
+                      <span class="flex items-center">
+                        拣货
+                        <i id="sort-icon-拣货" class="ri-arrow-up-down-line ml-1 text-surface-200/40"></i>
+                      </span>
+                    </th>
+                    <th id="th-打包" scope="col" class="px-4 py-3 text-left text-xs font-semibold text-surface-200/60 uppercase tracking-wider cursor-pointer hover:text-surface-100 transition-colors select-none" onclick="sortEfficiencyTable('打包')">
+                      <span class="flex items-center">
+                        打包
+                        <i id="sort-icon-打包" class="ri-arrow-up-down-line ml-1 text-surface-200/40"></i>
+                      </span>
+                    </th>
+                    <th id="th-出库" scope="col" class="px-4 py-3 text-left text-xs font-semibold text-surface-200/60 uppercase tracking-wider cursor-pointer hover:text-surface-100 transition-colors select-none" onclick="sortEfficiencyTable('出库')">
+                      <span class="flex items-center">
+                        出库
+                        <i id="sort-icon-出库" class="ri-arrow-up-down-line ml-1 text-surface-200/40"></i>
+                      </span>
+                    </th>
+                    <th id="th-总量" scope="col" class="px-4 py-3 text-left text-xs font-semibold text-accent-cyan uppercase tracking-wider cursor-pointer hover:text-accent-cyanLight transition-colors select-none" onclick="sortEfficiencyTable('总量')">
+                      <span class="flex items-center">
+                        总量
+                        <i id="sort-icon-总量" class="ri-arrow-up-down-line ml-1 text-accent-cyan/40"></i>
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="efficiencyTableBody" class="divide-y divide-surface-700/30">
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- 时效统计流程图组件 -->
+          <div class="glass-card rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="timeliness" style="animation-delay: 0.7s;">
+            <div class="flex items-center justify-between mb-4 drag-handle">
+              <h3 class="font-semibold text-surface-100 flex items-center text-lg">
+                <div class="w-8 h-8 rounded-lg bg-accent-amber/20 flex items-center justify-center mr-3">
+                  <i class="ri-time-line text-accent-amber"></i>
+                </div>
+                时效统计
+              </h3>
+              <div class="flex space-x-2">
+                <button class="px-3 py-1.5 text-xs font-medium text-white btn-primary rounded-lg">7日</button>
+                <button class="px-3 py-1.5 text-xs font-medium text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/50 rounded-lg transition-colors">30日</button>
+              </div>
+            </div>
+            <div class="flex space-x-2 mb-4">
+              <button id="tabBeihuo" onclick="switchTimelinessTab('beihuo')" class="px-4 py-2 text-sm font-medium text-white btn-primary rounded-lg">备货</button>
+              <button id="tabGanxian" onclick="switchTimelinessTab('ganxian')" class="px-4 py-2 text-sm font-medium text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/50 rounded-lg transition-colors">干线</button>
+            </div>
+            <div class="h-56 overflow-hidden">
+              <div id="timelinessFlow" class="flex flex-col items-center justify-center h-full gap-3 px-2">
+              </div>
+            </div>
+          </div>
+          
+          <!-- 消息通知组件 -->
+          <div class="glass-card rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="message" style="animation-delay: 0.75s;">
+            <div class="flex items-center justify-between mb-5 drag-handle">
+              <h3 class="font-semibold text-surface-100 flex items-center text-lg">
+                <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center mr-3">
+                  <i class="ri-notification-3-line text-accent-cyan"></i>
+                </div>
+                消息通知
+              </h3>
+              <button class="text-sm text-accent-cyan hover:text-accent-cyanLight transition-colors">查看全部</button>
+            </div>
+            <div class="space-y-3">
+              <div class="notification-item flex items-start p-4 bg-surface-700/30 rounded-xl cursor-pointer">
+                <div class="w-10 h-10 rounded-xl bg-stat-blue/20 flex items-center justify-center flex-shrink-0">
+                  <i class="ri-information-line text-lg text-stat-blueLight"></i>
+                </div>
+                <div class="ml-4 flex-1 min-w-0">
+                  <p class="text-sm font-medium text-surface-100">系统维护通知</p>
+                  <p class="text-xs text-surface-200/60 mt-1">系统将于今晚 22:00-24:00 进行维护升级</p>
+                  <p class="text-xs text-surface-200/40 mt-2">10分钟前</p>
+                </div>
+              </div>
+              <div class="notification-item flex items-start p-4 bg-surface-700/30 rounded-xl cursor-pointer">
+                <div class="w-10 h-10 rounded-xl bg-stat-green/20 flex items-center justify-center flex-shrink-0">
+                  <i class="ri-checkbox-circle-line text-lg text-stat-greenLight"></i>
+                </div>
+                <div class="ml-4 flex-1 min-w-0">
+                  <p class="text-sm font-medium text-surface-100">订单完成通知</p>
+                  <p class="text-xs text-surface-200/60 mt-1">订单 #20240304001 已完成出库</p>
+                  <p class="text-xs text-surface-200/40 mt-2">30分钟前</p>
+                </div>
+              </div>
+              <div class="notification-item flex items-start p-4 bg-surface-700/30 rounded-xl cursor-pointer">
+                <div class="w-10 h-10 rounded-xl bg-stat-yellow/20 flex items-center justify-center flex-shrink-0">
+                  <i class="ri-alarm-warning-line text-lg text-stat-yellowLight"></i>
+                </div>
+                <div class="ml-4 flex-1 min-w-0">
+                  <p class="text-sm font-medium text-surface-100">库存预警</p>
+                  <p class="text-xs text-surface-200/60 mt-1">商品 SKU001 库存低于安全库存</p>
+                  <p class="text-xs text-surface-200/40 mt-2">1小时前</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- 布局配置模态框 -->
+  <div id="layoutModal" class="fixed inset-0 z-50 hidden">
+    <div class="modal-overlay absolute inset-0" onclick="closeLayoutModal()"></div>
+    <div class="absolute right-0 top-0 h-full w-full max-w-md glass-card shadow-2xl flex flex-col animate-slide-in-right">
+      <!-- 模态框头部 -->
+      <div class="p-6 border-b border-surface-700/50 flex items-center justify-between">
+        <div>
+          <h3 class="text-xl font-semibold text-surface-100">布局配置</h3>
+          <p class="text-sm text-surface-200/50 mt-1">自定义工作台组件显示和布局</p>
+        </div>
+        <button onclick="closeLayoutModal()" class="text-surface-200/50 hover:text-surface-100 hover:bg-surface-700/50 rounded-xl p-2 transition-colors">
+          <i class="ri-close-line text-2xl"></i>
+        </button>
+      </div>
+      
+      <!-- 模态框内容 -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <div class="flex items-center justify-between mb-4 px-2">
+          <p class="text-sm text-surface-200/50">拖拽调整组件顺序</p>
+          <span class="text-xs text-surface-200/40"><i class="ri-drag-move-line mr-1"></i>按住手柄拖拽</span>
+        </div>
+        <div id="layoutConfigList" class="space-y-3">
+          <!-- 待办任务组件配置 -->
+          <div class="component-item glass-card-light rounded-xl p-4 border border-surface-700/50" data-config="todo">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center">
+                <div class="drag-handle-config cursor-move text-surface-200/50 hover:text-accent-cyan mr-3 p-1 rounded-lg hover:bg-surface-700/50 transition-colors">
+                  <i class="ri-draggable text-lg"></i>
+                </div>
+                <input type="checkbox" id="showTodo" checked class="w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0">
+                <label for="showTodo" class="ml-3 font-medium text-surface-100">待办任务</label>
+              </div>
+              <span class="text-xs text-surface-200/40">实时刷新</span>
+            </div>
+            <div class="flex items-center space-x-2 ml-10">
+              <span class="text-sm text-surface-200/60">宽度:</span>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors active" data-width="2">2列</button>
+            </div>
+          </div>
+          
+          <!-- 异常预警组件配置 -->
+          <div class="component-item glass-card-light rounded-xl p-4 border border-surface-700/50" data-config="alert">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center">
+                <div class="drag-handle-config cursor-move text-surface-200/50 hover:text-accent-cyan mr-3 p-1 rounded-lg hover:bg-surface-700/50 transition-colors">
+                  <i class="ri-draggable text-lg"></i>
+                </div>
+                <input type="checkbox" id="showAlert" checked class="w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0">
+                <label for="showAlert" class="ml-3 font-medium text-surface-100">异常预警</label>
+              </div>
+              <span class="text-xs text-surface-200/40">30秒刷新</span>
+            </div>
+            <div class="flex items-center space-x-2 ml-10">
+              <span class="text-sm text-surface-200/60">宽度:</span>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors active" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors" data-width="2">2列</button>
+            </div>
+          </div>
+          
+          <!-- 出入库趋势组件配置 -->
+          <div class="component-item glass-card-light rounded-xl p-4 border border-surface-700/50" data-config="trend">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center">
+                <div class="drag-handle-config cursor-move text-surface-200/50 hover:text-accent-cyan mr-3 p-1 rounded-lg hover:bg-surface-700/50 transition-colors">
+                  <i class="ri-draggable text-lg"></i>
+                </div>
+                <input type="checkbox" id="showTrend" checked class="w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0">
+                <label for="showTrend" class="ml-3 font-medium text-surface-100">出入库趋势</label>
+              </div>
+              <span class="text-xs text-surface-200/40">手动刷新</span>
+            </div>
+            <div class="flex items-center space-x-2 ml-10">
+              <span class="text-sm text-surface-200/60">宽度:</span>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors active" data-width="2">2列</button>
+            </div>
+          </div>
+          
+          <!-- 快捷操作组件配置 -->
+          <div class="component-item glass-card-light rounded-xl p-4 border border-surface-700/50" data-config="shortcut">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center">
+                <div class="drag-handle-config cursor-move text-surface-200/50 hover:text-accent-cyan mr-3 p-1 rounded-lg hover:bg-surface-700/50 transition-colors">
+                  <i class="ri-draggable text-lg"></i>
+                </div>
+                <input type="checkbox" id="showShortcut" checked class="w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0">
+                <label for="showShortcut" class="ml-3 font-medium text-surface-100">快捷操作</label>
+              </div>
+              <span class="text-xs text-surface-200/40">静态</span>
+            </div>
+            <div class="flex items-center space-x-2 ml-10">
+              <span class="text-sm text-surface-200/60">宽度:</span>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors active" data-width="1">1列</button>
+            </div>
+          </div>
+          
+          <!-- 库存分布组件配置 -->
+          <div class="component-item glass-card-light rounded-xl p-4 border border-surface-700/50" data-config="inventory">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center">
+                <div class="drag-handle-config cursor-move text-surface-200/50 hover:text-accent-cyan mr-3 p-1 rounded-lg hover:bg-surface-700/50 transition-colors">
+                  <i class="ri-draggable text-lg"></i>
+                </div>
+                <input type="checkbox" id="showInventory" checked class="w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0">
+                <label for="showInventory" class="ml-3 font-medium text-surface-100">库存分布</label>
+              </div>
+              <span class="text-xs text-surface-200/40">手动刷新</span>
+            </div>
+            <div class="flex items-center space-x-2 ml-10">
+              <span class="text-sm text-surface-200/60">宽度:</span>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors active" data-width="1">1列</button>
+            </div>
+          </div>
+          
+          <!-- 人效统计组件配置 -->
+          <div class="component-item glass-card-light rounded-xl p-4 border border-surface-700/50" data-config="efficiency">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center">
+                <div class="drag-handle-config cursor-move text-surface-200/50 hover:text-accent-cyan mr-3 p-1 rounded-lg hover:bg-surface-700/50 transition-colors">
+                  <i class="ri-draggable text-lg"></i>
+                </div>
+                <input type="checkbox" id="showEfficiency" checked class="w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0">
+                <label for="showEfficiency" class="ml-3 font-medium text-surface-100">人效统计</label>
+              </div>
+              <span class="text-xs text-surface-200/40">手动刷新</span>
+            </div>
+            <div class="flex items-center space-x-2 ml-10">
+              <span class="text-sm text-surface-200/60">宽度:</span>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors active" data-width="2">2列</button>
+            </div>
+          </div>
+          
+          <!-- 时效统计组件配置 -->
+          <div class="component-item glass-card-light rounded-xl p-4 border border-surface-700/50" data-config="timeliness">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center">
+                <div class="drag-handle-config cursor-move text-surface-200/50 hover:text-accent-cyan mr-3 p-1 rounded-lg hover:bg-surface-700/50 transition-colors">
+                  <i class="ri-draggable text-lg"></i>
+                </div>
+                <input type="checkbox" id="showTimeliness" checked class="w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0">
+                <label for="showTimeliness" class="ml-3 font-medium text-surface-100">时效统计</label>
+              </div>
+              <span class="text-xs text-surface-200/40">手动刷新</span>
+            </div>
+            <div class="flex items-center space-x-2 ml-10">
+              <span class="text-sm text-surface-200/60">宽度:</span>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors active" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors" data-width="2">2列</button>
+            </div>
+          </div>
+          
+          <!-- 消息通知组件配置 -->
+          <div class="component-item glass-card-light rounded-xl p-4 border border-surface-700/50" data-config="message">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center">
+                <div class="drag-handle-config cursor-move text-surface-200/50 hover:text-accent-cyan mr-3 p-1 rounded-lg hover:bg-surface-700/50 transition-colors">
+                  <i class="ri-draggable text-lg"></i>
+                </div>
+                <input type="checkbox" id="showMessage" checked class="w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0">
+                <label for="showMessage" class="ml-3 font-medium text-surface-100">消息通知</label>
+              </div>
+              <span class="text-xs text-surface-200/40">实时</span>
+            </div>
+            <div class="flex items-center space-x-2 ml-10">
+              <span class="text-sm text-surface-200/60">宽度:</span>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-surface-700/50 rounded-lg hover:bg-surface-700/50 transition-colors active" data-width="2">2列</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 模态框底部 -->
+      <div class="p-6 border-t border-surface-700/50 space-y-3">
+        <button onclick="resetToDefault()" class="w-full px-4 py-3 text-sm font-medium text-surface-200 border border-surface-700/50 hover:bg-surface-700/50 rounded-xl flex items-center justify-center transition-colors">
+          <i class="ri-refresh-line mr-2"></i> 恢复默认布局
+        </button>
+        <button onclick="applyLayout()" class="w-full px-4 py-3 text-sm font-medium text-white btn-primary rounded-xl flex items-center justify-center">
+          <i class="ri-check-line mr-2"></i> 应用布局
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 时效详情弹窗 -->
+  <div id="timelinessDetailModal" class="fixed inset-0 z-50 hidden">
+    <div class="modal-overlay absolute inset-0" onclick="closeTimelinessDetail()"></div>
+    <div class="absolute inset-4 md:inset-10 lg:inset-20 glass-card rounded-2xl shadow-2xl flex flex-col animate-slide-up overflow-hidden">
+      <!-- 弹窗头部 -->
+      <div class="p-6 border-b border-surface-700/50 flex items-center justify-between flex-shrink-0">
+        <div>
+          <h3 id="timelinessDetailTitle" class="text-xl font-semibold text-surface-100">时效统计详情</h3>
+          <p id="timelinessDetailSubtitle" class="text-sm text-surface-200/50 mt-1">节点时效趋势分析</p>
+        </div>
+        <button onclick="closeTimelinessDetail()" class="text-surface-200/50 hover:text-surface-100 hover:bg-surface-700/50 rounded-xl p-2 transition-colors">
+          <i class="ri-close-line text-2xl"></i>
+        </button>
+      </div>
+      
+      <!-- 弹窗内容 -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <!-- 时间范围选择 -->
+        <div class="flex flex-wrap items-center gap-4 mb-6">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-surface-200/60">时间范围:</span>
+            <div class="flex rounded-lg overflow-hidden border border-surface-700/50">
+              <button class="timeliness-range-btn px-4 py-2 text-sm font-medium bg-accent-cyan text-white" data-range="7">近7天</button>
+              <button class="timeliness-range-btn px-4 py-2 text-sm font-medium text-surface-200/70 hover:bg-surface-700/30 transition-colors" data-range="14">近14天</button>
+              <button class="timeliness-range-btn px-4 py-2 text-sm font-medium text-surface-200/70 hover:bg-surface-700/30 transition-colors" data-range="30">近30天</button>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3 ml-auto">
+            <label class="flex items-center cursor-pointer">
+              <input type="checkbox" id="showAverageLine" checked class="w-4 h-4 text-accent-cyan rounded border-surface-700 bg-surface-800 focus:ring-accent-cyan focus:ring-offset-0">
+              <span class="ml-2 text-sm text-surface-200/70">显示平均时效线</span>
+            </label>
+          </div>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="glass-card-light rounded-xl p-4">
+            <p class="text-xs text-surface-200/50 mb-1">平均时效</p>
+            <p id="avgTime" class="text-2xl font-bold text-accent-cyan font-mono">--</p>
+          </div>
+          <div class="glass-card-light rounded-xl p-4">
+            <p class="text-xs text-surface-200/50 mb-1">最短时效</p>
+            <p id="minTime" class="text-2xl font-bold text-accent-emerald font-mono">--</p>
+          </div>
+          <div class="glass-card-light rounded-xl p-4">
+            <p class="text-xs text-surface-200/50 mb-1">最长时效</p>
+            <p id="maxTime" class="text-2xl font-bold text-accent-rose font-mono">--</p>
+          </div>
+          <div class="glass-card-light rounded-xl p-4">
+            <p class="text-xs text-surface-200/50 mb-1">异常次数</p>
+            <p id="abnormalCount" class="text-2xl font-bold text-accent-amber font-mono">--</p>
+          </div>
+        </div>
+        
+        <!-- 图表区域 -->
+        <div class="glass-card-light rounded-xl p-4">
+          <div class="h-80">
+            <canvas id="timelinessDetailChart"></canvas>
+          </div>
+        </div>
+        
+        <!-- 异常记录表格 -->
+        <div class="mt-6">
+          <h4 class="text-sm font-semibold text-surface-100 mb-3">
+            <i class="ri-alert-line text-accent-amber mr-2"></i>异常记录
+          </h4>
+          <div class="glass-card-light rounded-xl overflow-hidden">
+            <table class="w-full">
+              <thead>
+                <tr class="border-b border-surface-700/50">
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-surface-200/70">日期</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-surface-200/70">时效</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-surface-200/70">异常原因</th>
+                </tr>
+              </thead>
+              <tbody id="abnormalTableBody">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    let selectedWarehouses = ['WH001', 'WH002', 'WH003', 'WH004', 'WH005', 'WH006'];
+    
+    const defaultLayout = {
+      todo: { show: true, width: 2 },
+      alert: { show: true, width: 1 },
+      trend: { show: true, width: 2 },
+      shortcut: { show: true, width: 1 },
+      inventory: { show: true, width: 1 },
+      efficiency: { show: true, width: 2 },
+      timeliness: { show: true, width: 1 },
+      message: { show: true, width: 2 }
+    };
+    
+    let currentLayout = JSON.parse(JSON.stringify(defaultLayout));
+    let efficiencyData = [];
+    let originalEfficiencyData = [];
+    let efficiencySortState = null;
+    let currentSortColumn = '总量';
+    let currentTimelinessTab = 'beihuo';
+    
+    function formatTime(seconds) {
+      if (seconds >= 3600) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        return `${hours}h${minutes}m${secs}s`;
+      } else {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes}m${secs}s`;
+      }
+    }
+    
+    const beihuoData = [
+      { name: '入库', time: 915, abnormal: false, reason: '' },
+      { name: '上架', time: 2118, abnormal: true, reason: '上架员设备故障' },
+      { name: '拣货', time: 2723, abnormal: false, reason: '' },
+      { name: '打包', time: 1508, abnormal: true, reason: '打包台空间不足' },
+      { name: '出库', time: 612, abnormal: false, reason: '' }
+    ];
+    
+    const ganxianData = [
+      { name: '司机登记', time: 485, abnormal: false, reason: '' },
+      { name: '入库', time: 1215, abnormal: false, reason: '' },
+      { name: '上架', time: 1822, abnormal: true, reason: '货架空间紧张' },
+      { name: '数据确认', time: 918, abnormal: false, reason: '' },
+      { name: '通知出库', time: 607, abnormal: false, reason: '' },
+      { name: '配载出库', time: 1533, abnormal: false, reason: '' },
+      { name: '装车', time: 5448, abnormal: true, reason: '装卸人员不足' },
+      { name: '机场预约', time: 726, abnormal: false, reason: '' },
+      { name: '发车', time: 312, abnormal: false, reason: '' }
+    ];
+    
+    function switchTimelinessTab(tab) {
+      currentTimelinessTab = tab;
+      const tabBeihuo = document.getElementById('tabBeihuo');
+      const tabGanxian = document.getElementById('tabGanxian');
+      
+      if (tab === 'beihuo') {
+        tabBeihuo.className = 'px-4 py-2 text-sm font-medium text-white btn-primary rounded-lg';
+        tabGanxian.className = 'px-4 py-2 text-sm font-medium text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/50 rounded-lg transition-colors';
+      } else {
+        tabBeihuo.className = 'px-4 py-2 text-sm font-medium text-surface-200/70 hover:text-surface-100 hover:bg-surface-700/50 rounded-lg transition-colors';
+        tabGanxian.className = 'px-4 py-2 text-sm font-medium text-white btn-primary rounded-lg';
+      }
+      initTimelinessFlow();
+    }
+    
+    function initTimelinessFlow() {
+      const timelinessData = currentTimelinessTab === 'beihuo' ? beihuoData : ganxianData;
+      const flowContainer = document.getElementById('timelinessFlow');
+      if (!flowContainer) return;
+      flowContainer.innerHTML = '';
+      
+      const timelinessComponent = document.querySelector('[data-component="timeliness"]');
+      const isWide = timelinessComponent && timelinessComponent.classList.contains('md:col-span-2');
+      const nodesPerRow = isWide ? 6 : 4;
+      const totalRows = Math.ceil(timelinessData.length / nodesPerRow);
+      
+      const nodes = timelinessData.map((item) => {
+        const node = document.createElement('div');
+        node.className = `flow-node bg-surface-700/50 border border-surface-700 rounded-lg px-3 py-2 min-w-[70px] text-center`;
+        node.innerHTML = `<div class="font-semibold text-surface-100 text-sm">${item.name}</div>`;
+        return node;
+      });
+      
+      for (let row = 0; row < totalRows; row++) {
+        const startIndex = row * nodesPerRow;
+        const endIndex = Math.min(startIndex + nodesPerRow, timelinessData.length);
+        const isOddRow = row % 2 === 0;
+        
+        const rowElement = document.createElement('div');
+        rowElement.className = 'flex items-center w-full' + (isOddRow ? ' justify-between gap-2' : ' justify-end gap-2');
+        
+        if (isOddRow) {
+          for (let i = startIndex; i < endIndex; i++) {
+            rowElement.appendChild(nodes[i]);
+            if (i < endIndex - 1) {
+              const nextIndex = i + 1;
+              const arrow = createArrow(timelinessData[i].time, timelinessData[nextIndex].abnormal, timelinessData[nextIndex].reason, '→', timelinessData[nextIndex].name, nextIndex);
+              rowElement.appendChild(arrow);
+            }
+          }
+        } else {
+          for (let i = endIndex - 1; i >= startIndex; i--) {
+            if (i < endIndex - 1) {
+              const nextIndex = i + 1;
+              const arrow = createArrow(timelinessData[i].time, timelinessData[nextIndex].abnormal, timelinessData[nextIndex].reason, '←', timelinessData[nextIndex].name, nextIndex);
+              rowElement.appendChild(arrow);
+            }
+            rowElement.appendChild(nodes[i]);
+          }
+        }
+        
+        flowContainer.appendChild(rowElement);
+        
+        if (row < totalRows - 1) {
+          const lastIndexOfRow = endIndex - 1;
+          const nextIndex = endIndex;
+          const downArrow = createDownArrow(timelinessData[lastIndexOfRow].time, timelinessData[nextIndex].abnormal, timelinessData[nextIndex].reason, timelinessData[nextIndex].name, nextIndex, isOddRow);
+          flowContainer.appendChild(downArrow);
+        }
+      }
+    }
+    
+    function createArrow(time, isAbnormal, reason, direction, nextName, nextIndex) {
+      const arrow = document.createElement('div');
+      arrow.className = 'flex flex-col items-center justify-center px-1';
+      const timeLabel = document.createElement('div');
+      timeLabel.className = `flow-time ${isAbnormal ? 'bg-accent-rose/20 border-2 border-accent-rose text-accent-roseLight abnormal' : 'bg-surface-700/50 text-surface-200/70'} rounded-full px-2 py-0.5 text-xs font-mono font-medium cursor-pointer relative mb-1 hover:ring-2 hover:ring-accent-cyan/50 transition-all`;
+      timeLabel.textContent = formatTime(time);
+      timeLabel.onclick = () => openTimelinessDetail(nextName, time, isAbnormal, reason);
+      arrow.appendChild(timeLabel);
+      
+      const arrowIcon = document.createElement('div');
+      arrowIcon.className = 'text-surface-200/40 text-lg';
+      arrowIcon.textContent = direction;
+      arrow.appendChild(arrowIcon);
+      
+      return arrow;
+    }
+    
+    function createDownArrow(time, isAbnormal, reason, nextName, nextIndex, alignRight) {
+      const downArrowContainer = document.createElement('div');
+      downArrowContainer.className = alignRight ? 'flex justify-end w-full' : 'flex justify-start w-full';
+      const downArrow = document.createElement('div');
+      downArrow.className = 'flex items-center';
+      
+      const arrowIcon = document.createElement('div');
+      arrowIcon.className = 'text-surface-200/40 text-2xl mr-1';
+      arrowIcon.textContent = '↓';
+      downArrow.appendChild(arrowIcon);
+      
+      const timeLabel = document.createElement('div');
+      timeLabel.className = `flow-time ${isAbnormal ? 'bg-accent-rose/20 border-2 border-accent-rose text-accent-roseLight abnormal' : 'bg-surface-700/50 text-surface-200/70'} rounded-full px-2 py-0.5 text-xs font-mono font-medium cursor-pointer relative hover:ring-2 hover:ring-accent-cyan/50 transition-all`;
+      timeLabel.textContent = formatTime(time);
+      timeLabel.onclick = () => openTimelinessDetail(nextName, time, isAbnormal, reason);
+      downArrow.appendChild(timeLabel);
+      
+      downArrowContainer.appendChild(downArrow);
+      return downArrowContainer;
+    }
+    
+    let timelinessDetailChart = null;
+    let currentTimelinessNode = null;
+    let currentTimelinessRange = 7;
+    let currentTimelinessData = null;
+    let currentAbnormalRecords = null;
+    let currentAvgTime = 0;
+    
+    function openTimelinessDetail(nodeName, currentTime, isAbnormal, reason) {
+      currentTimelinessNode = nodeName;
+      document.getElementById('timelinessDetailModal').classList.remove('hidden');
+      document.getElementById('timelinessDetailTitle').textContent = `${nodeName} - 时效统计详情`;
+      document.getElementById('timelinessDetailSubtitle').textContent = `当前时效: ${formatTime(currentTime)}${isAbnormal ? ' (异常)' : ''}`;
+      
+      generateAndRenderChart();
+      bindTimelinessRangeButtons();
+      bindAverageLineToggle();
+    }
+    
+    function closeTimelinessDetail() {
+      document.getElementById('timelinessDetailModal').classList.add('hidden');
+      if (timelinessDetailChart) {
+        timelinessDetailChart.destroy();
+        timelinessDetailChart = null;
+      }
+      currentTimelinessData = null;
+      currentAbnormalRecords = null;
+    }
+    
+    function bindTimelinessRangeButtons() {
+      document.querySelectorAll('.timeliness-range-btn').forEach(btn => {
+        btn.onclick = function() {
+          document.querySelectorAll('.timeliness-range-btn').forEach(b => {
+            b.classList.remove('bg-accent-cyan', 'text-white');
+            b.classList.add('text-surface-200/70');
+          });
+          this.classList.add('bg-accent-cyan', 'text-white');
+          this.classList.remove('text-surface-200/70');
+          currentTimelinessRange = parseInt(this.dataset.range);
+          generateAndRenderChart();
+        };
+      });
+    }
+    
+    function bindAverageLineToggle() {
+      const checkbox = document.getElementById('showAverageLine');
+      checkbox.onchange = function() {
+        renderChart();
+      };
+    }
+    
+    function generateTimelinessData(days) {
+      const data = [];
+      const abnormalRecords = [];
+      const baseTime = Math.floor(Math.random() * 1000) + 500;
+      const today = new Date();
+      
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+        
+        const variance = Math.floor(Math.random() * 800) - 300;
+        const time = Math.max(300, baseTime + variance);
+        const isAbnormal = time > 2000 || Math.random() < 0.1;
+        
+        data.push({
+          date: dateStr,
+          time: time,
+          isAbnormal: isAbnormal,
+          reason: isAbnormal ? getRandomReason() : ''
+        });
+        
+        if (isAbnormal) {
+          abnormalRecords.push({
+            date: dateStr,
+            time: time,
+            reason: getRandomReason()
+          });
+        }
+      }
+      
+      return { data, abnormalRecords };
+    }
+    
+    function getRandomReason() {
+      const reasons = [
+        '设备故障',
+        '人员不足',
+        '系统异常',
+        '空间不足',
+        '物料短缺',
+        '订单激增',
+        '网络延迟',
+        '操作失误'
+      ];
+      return reasons[Math.floor(Math.random() * reasons.length)];
+    }
+    
+    function generateAndRenderChart() {
+      const { data, abnormalRecords } = generateTimelinessData(currentTimelinessRange);
+      currentTimelinessData = data;
+      currentAbnormalRecords = abnormalRecords;
+      currentAvgTime = Math.round(data.reduce((sum, d) => sum + d.time, 0) / data.length);
+      renderChart();
+    }
+    
+    function renderChart() {
+      const data = currentTimelinessData;
+      const abnormalRecords = currentAbnormalRecords;
+      const avgTime = currentAvgTime;
+      const minTime = Math.min(...data.map(d => d.time));
+      const maxTime = Math.max(...data.map(d => d.time));
+      
+      document.getElementById('avgTime').textContent = formatTime(avgTime);
+      document.getElementById('minTime').textContent = formatTime(minTime);
+      document.getElementById('maxTime').textContent = formatTime(maxTime);
+      document.getElementById('abnormalCount').textContent = abnormalRecords.length;
+      
+      const tbody = document.getElementById('abnormalTableBody');
+      if (abnormalRecords.length > 0) {
+        tbody.innerHTML = abnormalRecords.map(r => `
+          <tr class="table-row border-b border-surface-700/30">
+            <td class="px-4 py-3 text-sm text-surface-100">${r.date}</td>
+            <td class="px-4 py-3 text-sm text-accent-rose font-mono">${formatTime(r.time)}</td>
+            <td class="px-4 py-3 text-sm text-surface-200">${r.reason}</td>
+          </tr>
+        `).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-6 text-sm text-surface-200/50 text-center">暂无异常记录</td></tr>';
+      }
+      
+      const ctx = document.getElementById('timelinessDetailChart').getContext('2d');
+      
+      if (timelinessDetailChart) {
+        timelinessDetailChart.destroy();
+      }
+      
+      const isLight = document.body.classList.contains('light-mode');
+      const textColor = isLight ? '#475569' : '#94a3b8';
+      const gridColor = isLight ? 'rgba(148, 163, 184, 0.3)' : 'rgba(71, 85, 105, 0.3)';
+      const showAverage = document.getElementById('showAverageLine').checked;
+      
+      const avgLinePlugin = {
+        id: 'avgLinePlugin',
+        afterDraw: (chart) => {
+          if (!showAverage) return;
+          
+          const yAxis = chart.scales.y;
+          const xAxis = chart.scales.x;
+          const ctx = chart.ctx;
+          
+          const yPixel = yAxis.getPixelForValue(avgTime);
+          const xStart = xAxis.left;
+          const xEnd = xAxis.right;
+          
+          ctx.save();
+          ctx.beginPath();
+          ctx.setLineDash([8, 4]);
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 2;
+          ctx.moveTo(xStart, yPixel);
+          ctx.lineTo(xEnd, yPixel);
+          ctx.stroke();
+          
+          ctx.setLineDash([]);
+          ctx.fillStyle = '#f59e0b';
+          ctx.font = 'bold 12px Plus Jakarta Sans';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(`平均: ${formatTime(avgTime)}`, xEnd - 5, yPixel - 5);
+          
+          ctx.restore();
+        }
+      };
+      
+      timelinessDetailChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.map(d => d.date),
+          datasets: [
+            {
+              label: '每日时效',
+              data: data.map(d => d.time),
+              borderColor: '#06b6d4',
+              backgroundColor: 'rgba(6, 182, 212, 0.1)',
+              tension: 0.4,
+              fill: true,
+              pointRadius: data.map(d => d.isAbnormal ? 6 : 3),
+              pointBackgroundColor: data.map(d => d.isAbnormal ? '#f43f5e' : '#06b6d4'),
+              pointBorderColor: data.map(d => d.isAbnormal ? '#f43f5e' : '#06b6d4'),
+              pointBorderWidth: 2
+            }
+          ]
+        },
+        plugins: [avgLinePlugin],
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                color: textColor,
+                usePointStyle: true
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `时效: ${formatTime(context.raw)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                callback: function(value) {
+                  return formatTime(value);
+                }
+              }
+            },
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: textColor }
+            }
+          }
+        }
+      });
+    }
+    
+    function sortEfficiencyTable(column) {
+      const columns = ['name', '入库', '上架', '拣货', '打包', '出库', '总量'];
+      
+      if (!efficiencySortState) {
+        efficiencySortState = {};
+        columns.forEach(col => efficiencySortState[col] = 'none');
+      }
+      
+      const currentState = efficiencySortState[column];
+      let newState;
+      
+      if (currentState === 'none') {
+        newState = 'asc';
+      } else if (currentState === 'asc') {
+        newState = 'desc';
+      } else {
+        newState = 'none';
+      }
+      
+      if (newState === 'none') {
+        currentSortColumn = '总量';
+      } else {
+        currentSortColumn = column;
+      }
+      
+      columns.forEach(col => {
+        const icon = document.getElementById(`sort-icon-${col}`);
+        const th = document.getElementById(`th-${col}`);
+        
+        if (icon) {
+          if (col === currentSortColumn) {
+            if (newState === 'asc' || (col !== column && efficiencySortState[col] !== 'none')) {
+              icon.className = 'ri-arrow-up-line ml-1 text-accent-cyan';
+            } else if (newState === 'desc' || (col !== column && efficiencySortState[col] !== 'none')) {
+              icon.className = 'ri-arrow-down-line ml-1 text-accent-cyan';
+            } else {
+              icon.className = 'ri-arrow-up-down-line ml-1 text-accent-cyan/40';
+            }
+          } else {
+            icon.className = 'ri-arrow-up-down-line ml-1 text-surface-200/40';
+          }
+        }
+        
+        if (th) {
+          if (col === currentSortColumn) {
+            th.classList.remove('text-surface-200/60');
+            th.classList.add('text-accent-cyan');
+          } else {
+            th.classList.remove('text-accent-cyan');
+            th.classList.add('text-surface-200/60');
+          }
+        }
+        
+        efficiencySortState[col] = col === column ? newState : 'none';
+      });
+      
+      if (newState === 'none') {
+        efficiencyData = JSON.parse(JSON.stringify(originalEfficiencyData));
+        efficiencyData.sort((a, b) => b['总量'] - a['总量']);
+      } else {
+        efficiencyData.sort((a, b) => {
+          if (column === 'name') {
+            return newState === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+          }
+          return newState === 'asc' ? a[column] - b[column] : b[column] - a[column];
+        });
+      }
+      
+      renderEfficiencyTable();
+    }
+    
+    function renderEfficiencyTable() {
+      const tbody = document.getElementById('efficiencyTableBody');
+      const highlightCol = currentSortColumn;
+      tbody.innerHTML = efficiencyData.map(item => `
+        <tr class="table-row">
+          <td class="px-4 py-3 text-sm ${highlightCol === 'name' ? 'text-accent-cyan font-bold' : 'text-surface-100 font-medium'}">${item.name}</td>
+          <td class="px-4 py-3 text-sm ${highlightCol === '入库' ? 'text-accent-cyan font-mono font-bold' : 'text-surface-200 font-mono'}">${item.入库}</td>
+          <td class="px-4 py-3 text-sm ${highlightCol === '上架' ? 'text-accent-cyan font-mono font-bold' : 'text-surface-200 font-mono'}">${item.上架}</td>
+          <td class="px-4 py-3 text-sm ${highlightCol === '拣货' ? 'text-accent-cyan font-mono font-bold' : 'text-surface-200 font-mono'}">${item.拣货}</td>
+          <td class="px-4 py-3 text-sm ${highlightCol === '打包' ? 'text-accent-cyan font-mono font-bold' : 'text-surface-200 font-mono'}">${item.打包}</td>
+          <td class="px-4 py-3 text-sm ${highlightCol === '出库' ? 'text-accent-cyan font-mono font-bold' : 'text-surface-200 font-mono'}">${item.出库}</td>
+          <td class="px-4 py-3 text-sm ${highlightCol === '总量' ? 'text-accent-cyan font-mono font-bold' : 'text-surface-200 font-mono'}">${item.总量}</td>
+        </tr>
+      `).join('');
+    }
+    
+    function generateEfficiencyData(days) {
+      const names = ['张三', '李四', '王五', '赵六', '钱七'];
+      const multiplier = days / 7;
+      return names.map(name => {
+        const base = {
+          name: name,
+          入库: Math.floor((Math.random() * 10 + 8) * multiplier),
+          上架: Math.floor((Math.random() * 8 + 6) * multiplier),
+          拣货: Math.floor((Math.random() * 12 + 10) * multiplier),
+          打包: Math.floor((Math.random() * 8 + 7) * multiplier),
+          出库: Math.floor((Math.random() * 10 + 12) * multiplier)
+        };
+        base.总量 = base.入库 + base.上架 + base.拣货 + base.打包 + base.出库;
+        return base;
+      });
+    }
+    
+    function initEfficiencyRangeButtons() {
+      const buttons = document.querySelectorAll('.efficiency-range-btn');
+      const dateRangeDiv = document.getElementById('efficiencyDateRange');
+      
+      buttons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          buttons.forEach(b => {
+            b.classList.remove('text-white', 'btn-primary');
+            b.classList.add('text-surface-200/70');
+          });
+          this.classList.add('text-white', 'btn-primary');
+          this.classList.remove('text-surface-200/70');
+          
+          const range = this.dataset.range;
+          if (range === 'custom') {
+            dateRangeDiv.classList.remove('hidden');
+            const today = new Date();
+            const weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            document.getElementById('efficiencyStartDate').value = weekAgo.toISOString().split('T')[0];
+            document.getElementById('efficiencyEndDate').value = today.toISOString().split('T')[0];
+          } else {
+            dateRangeDiv.classList.add('hidden');
+            const days = parseInt(range);
+            efficiencyData = generateEfficiencyData(days);
+            originalEfficiencyData = JSON.parse(JSON.stringify(efficiencyData));
+            efficiencySortState = null;
+            resetSortIcons();
+            renderEfficiencyTable();
+          }
+        });
+      });
+      
+      document.getElementById('efficiencyApplyDate').addEventListener('click', function() {
+        const startDate = new Date(document.getElementById('efficiencyStartDate').value);
+        const endDate = new Date(document.getElementById('efficiencyEndDate').value);
+        const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+        
+        if (days > 0 && days <= 365) {
+          efficiencyData = generateEfficiencyData(days);
+          originalEfficiencyData = JSON.parse(JSON.stringify(efficiencyData));
+          efficiencySortState = null;
+          resetSortIcons();
+          renderEfficiencyTable();
+        } else {
+          alert('请选择有效的日期范围（1-365天）');
+        }
+      });
+    }
+    
+    function resetSortIcons() {
+      const columns = ['name', '入库', '上架', '拣货', '打包', '出库', '总量'];
+      columns.forEach(col => {
+        const icon = document.getElementById(`sort-icon-${col}`);
+        const th = document.getElementById(`th-${col}`);
+        if (icon) {
+          icon.className = col === '总量' ? 'ri-arrow-up-down-line ml-1 text-accent-cyan/40' : 'ri-arrow-up-down-line ml-1 text-surface-200/40';
+        }
+        if (th) {
+          if (col === '总量') {
+            th.classList.remove('text-surface-200/60');
+            th.classList.add('text-accent-cyan');
+          } else {
+            th.classList.remove('text-accent-cyan');
+            th.classList.add('text-surface-200/60');
+          }
+        }
+      });
+      currentSortColumn = '总量';
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      Chart.register(ChartDataLabels);
+      loadLayoutFromStorage();
+      
+      const trendCtx = document.getElementById('trendChart').getContext('2d');
+      new Chart(trendCtx, {
+        type: 'line',
+        data: {
+          labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+          datasets: [
+            {
+              label: '出库订单量',
+              data: [980, 1050, 1120, 1080, 1230, 890, 1234],
+              borderColor: '#06b6d4',
+              backgroundColor: 'rgba(6, 182, 212, 0.1)',
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: '入库订单量',
+              data: [720, 850, 780, 920, 880, 650, 856],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { color: '#94a3b8' } },
+            datalabels: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(71, 85, 105, 0.3)' }, ticks: { color: '#94a3b8' } },
+            x: { grid: { color: 'rgba(71, 85, 105, 0.3)' }, ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+      
+      const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+      new Chart(inventoryCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['电子产品', '服装', '家居用品', '食品', '其他'],
+          datasets: [{
+            data: [35, 25, 20, 12, 8],
+            backgroundColor: ['#06b6d4', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 15 } },
+            datalabels: {
+              display: true,
+              color: '#FFFFFF',
+              font: { size: 12, weight: 'bold' },
+              formatter: (value, context) => {
+                const total = context.dataset.data.reduce((sum, val) => sum + val, 0);
+                return Math.round((value / total) * 100) + '%';
+              }
+            }
+          }
+        }
+      });
+      
+      efficiencyData = generateEfficiencyData(7);
+      originalEfficiencyData = JSON.parse(JSON.stringify(efficiencyData));
+      efficiencyData.sort((a, b) => b['总量'] - a['总量']);
+      renderEfficiencyTable();
+      initEfficiencyRangeButtons();
+      initTimelinessFlow();
+      
+      const grid = document.getElementById('dashboardGrid');
+      new Sortable(grid, { animation: 150, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', handle: '.drag-handle' });
+      
+      const layoutConfigList = document.getElementById('layoutConfigList');
+      new Sortable(layoutConfigList, { animation: 150, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', handle: '.drag-handle-config', onEnd: syncConfigOrderToGrid });
+      
+      document.getElementById('layoutBtn').addEventListener('click', openLayoutModal);
+      document.getElementById('saveLayoutBtn').addEventListener('click', () => { saveLayoutToStorage(); alert('布局已保存！'); });
+      
+      document.querySelectorAll('.width-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const componentItem = this.closest('.component-item');
+          const componentName = componentItem.dataset.config;
+          const width = parseInt(this.dataset.width);
+          if (!currentLayout[componentName]) return;
+          componentItem.querySelectorAll('.width-btn').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          currentLayout[componentName].width = width;
+          const component = grid.querySelector(`[data-component="${componentName}"]`);
+          if (component) {
+            component.classList.remove('col-span-1', 'col-span-2', 'md:col-span-1', 'md:col-span-2');
+            component.classList.add('col-span-1', width === 2 ? 'md:col-span-2' : 'md:col-span-1');
+            if (componentName === 'timeliness') initTimelinessFlow();
+          }
+        });
+      });
+      
+      document.querySelectorAll('.component-item input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const componentItem = this.closest('.component-item');
+          const componentName = componentItem.dataset.config;
+          currentLayout[componentName].show = this.checked;
+        });
+      });
+      
+      document.getElementById('warehouseBtn').addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('warehouseDropdown').classList.toggle('hidden');
+      });
+      
+      document.getElementById('selectAllWarehouses').addEventListener('change', function() {
+        document.querySelectorAll('.warehouse-checkbox').forEach(cb => cb.checked = this.checked);
+      });
+      
+      document.getElementById('applyWarehouseBtn').addEventListener('click', function() {
+        const checked = document.querySelectorAll('.warehouse-checkbox:checked');
+        document.getElementById('warehouseText').textContent = checked.length === 6 ? '全部仓库' : `已选 ${checked.length} 个`;
+        document.getElementById('warehouseDropdown').classList.add('hidden');
+      });
+      
+      document.addEventListener('click', function(e) {
+        if (!document.getElementById('warehouseSelector').contains(e.target)) {
+          document.getElementById('warehouseDropdown').classList.add('hidden');
+        }
+      });
+      
+      // 主题切换功能
+      const themeToggle = document.getElementById('themeToggle');
+      if (themeToggle) {
+        const themeKnob = themeToggle.querySelector('.theme-toggle-knob');
+        const themeIcon = themeKnob ? themeKnob.querySelector('i') : null;
+
+        function setTheme(isLight) {
+          try {
+            if (isLight) {
+              document.body.classList.add('light-mode');
+              if (themeIcon) themeIcon.className = 'ri-sun-line';
+              localStorage.setItem('wmsTheme', 'light');
+            } else {
+              document.body.classList.remove('light-mode');
+              if (themeIcon) themeIcon.className = 'ri-moon-line';
+              localStorage.setItem('wmsTheme', 'dark');
+            }
+            // 强制触发重绘，确保样式生效
+            void document.body.offsetHeight;
+            updateChartColors();
+          } catch (e) {
+            console.error('主题切换错误:', e);
+          }
+        }
+
+        function updateChartColors() {
+          const isLight = document.body.classList.contains('light-mode');
+          const textColor = isLight ? '#475569' : '#94a3b8';
+          const gridColor = isLight ? 'rgba(148, 163, 184, 0.3)' : 'rgba(71, 85, 105, 0.3)';
+
+          if (typeof Chart !== 'undefined' && Chart.instances) {
+            Chart.instances.forEach(chart => {
+              if (chart.options.plugins && chart.options.plugins.legend) {
+                chart.options.plugins.legend.labels.color = textColor;
+              }
+              if (chart.options.scales) {
+                if (chart.options.scales.y) {
+                  chart.options.scales.y.grid.color = gridColor;
+                  chart.options.scales.y.ticks.color = textColor;
+                }
+                if (chart.options.scales.x) {
+                  chart.options.scales.x.grid.color = gridColor;
+                  chart.options.scales.x.ticks.color = textColor;
+                }
+              }
+              chart.update();
+            });
+          }
+        }
+
+        // 加载保存的主题
+        try {
+          const savedTheme = localStorage.getItem('wmsTheme');
+          if (savedTheme === 'light') {
+            setTheme(true);
+          }
+        } catch (e) {
+          console.error('加载主题失败:', e);
+        }
+
+        // 使用多种事件确保兼容性
+        themeToggle.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const isLight = !document.body.classList.contains('light-mode');
+          setTheme(isLight);
+        });
+
+        themeToggle.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+        });
+
+        // 触摸设备支持
+        themeToggle.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          const isLight = !document.body.classList.contains('light-mode');
+          setTheme(isLight);
+        });
+      }
+    });
+    
+    function openLayoutModal() {
+      document.getElementById('layoutModal').classList.remove('hidden');
+      syncGridOrderToConfig();
+      syncLayoutToModal();
+    }
+    
+    function closeLayoutModal() {
+      document.getElementById('layoutModal').classList.add('hidden');
+    }
+    
+    function syncLayoutToModal() {
+      document.querySelectorAll('.component-item').forEach(item => {
+        const componentName = item.dataset.config;
+        const config = currentLayout[componentName];
+        if (!config) return;
+        item.querySelector('input[type="checkbox"]').checked = config.show;
+        item.querySelectorAll('.width-btn').forEach(btn => {
+          btn.classList.remove('active');
+          if (parseInt(btn.dataset.width) === config.width) btn.classList.add('active');
+        });
+      });
+    }
+    
+    function applyLayout() {
+      const grid = document.getElementById('dashboardGrid');
+      Object.keys(currentLayout).forEach(componentName => {
+        const component = grid.querySelector(`[data-component="${componentName}"]`);
+        if (component) {
+          const config = currentLayout[componentName];
+          component.classList.toggle('hidden', !config.show);
+          component.classList.remove('col-span-1', 'col-span-2', 'md:col-span-1', 'md:col-span-2');
+          component.classList.add('col-span-1', config.width === 2 ? 'md:col-span-2' : 'md:col-span-1');
+          if (componentName === 'timeliness') initTimelinessFlow();
+        }
+      });
+      closeLayoutModal();
+      saveLayoutToStorage();
+      alert('布局已应用！');
+    }
+    
+    function resetToDefault() {
+      if (confirm('确定要恢复默认布局吗？')) {
+        currentLayout = JSON.parse(JSON.stringify(defaultLayout));
+        syncLayoutToModal();
+        applyLayout();
+        saveLayoutToStorage();
+      }
+    }
+    
+    function saveLayoutToStorage() {
+      const grid = document.getElementById('dashboardGrid');
+      const components = [];
+      document.querySelectorAll('#dashboardGrid > div:not(.hidden)').forEach((item, index) => {
+        const componentName = item.dataset.component;
+        if (componentName && currentLayout[componentName]) {
+          components.push({ component: componentName, position: index, width: currentLayout[componentName].width });
+        }
+      });
+      localStorage.setItem('wmsWorkbenchLayout', JSON.stringify({ components, config: currentLayout }));
+    }
+    
+    function loadLayoutFromStorage() {
+      const savedLayout = localStorage.getItem('wmsWorkbenchLayout');
+      if (savedLayout) {
+        try {
+          const layoutData = JSON.parse(savedLayout);
+          if (layoutData.config) currentLayout = { ...defaultLayout, ...layoutData.config };
+          const grid = document.getElementById('dashboardGrid');
+          Object.keys(currentLayout).forEach(componentName => {
+            const component = grid.querySelector(`[data-component="${componentName}"]`);
+            if (component) {
+              const config = currentLayout[componentName];
+              component.classList.toggle('hidden', !config.show);
+              component.classList.remove('col-span-1', 'col-span-2', 'md:col-span-1', 'md:col-span-2');
+              component.classList.add('col-span-1', config.width === 2 ? 'md:col-span-2' : 'md:col-span-1');
+            }
+          });
+          if (layoutData.components) {
+            layoutData.components.forEach(item => {
+              const component = grid.querySelector(`[data-component="${item.component}"]`);
+              if (component) grid.appendChild(component);
+            });
+          }
+          initTimelinessFlow();
+        } catch (e) { console.error('加载布局失败:', e); }
+      }
+    }
+    
+    function syncConfigOrderToGrid() {
+      const layoutConfigList = document.getElementById('layoutConfigList');
+      const grid = document.getElementById('dashboardGrid');
+      layoutConfigList.querySelectorAll('.component-item').forEach(item => {
+        const component = grid.querySelector(`[data-component="${item.dataset.config}"]`);
+        if (component) grid.appendChild(component);
+      });
+    }
+    
+    function syncGridOrderToConfig() {
+      const layoutConfigList = document.getElementById('layoutConfigList');
+      const grid = document.getElementById('dashboardGrid');
+      grid.querySelectorAll('[data-component]').forEach(gridItem => {
+        const configItem = layoutConfigList.querySelector(`[data-config="${gridItem.dataset.component}"]`);
+        if (configItem) layoutConfigList.appendChild(configItem);
+      });
+    }
+  </script>
+</body>
+</html>
