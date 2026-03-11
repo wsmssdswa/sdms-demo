@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>签收单确认 - 司机端</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#6B7280',
+            success: '#10B981',
+            warning: '#F59E0B',
+            danger: '#EF4444',
+          },
+          fontFamily: {
+            sans: ['PingFang SC', 'Helvetica Neue', 'Arial', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .safe-area-inset-bottom {
+        padding-bottom: env(safe-area-inset-bottom, 20px);
+      }
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 滑动确认功能
+      const slideContainer = document.getElementById('slide-container');
+      const slideButton = document.getElementById('slide-button');
+      let isDragging = false;
+      let startX;
+      let containerWidth;
+      let buttonWidth;
+      let threshold;
+      
+      // 计算滑动阈值
+      function calculateDimensions() {
+        containerWidth = slideContainer.offsetWidth;
+        buttonWidth = slideButton.offsetWidth;
+        threshold = containerWidth - buttonWidth;
+      }
+      
+      // 初始化
+      setTimeout(calculateDimensions, 100); // 确保DOM完全加载
+      window.addEventListener('resize', calculateDimensions);
+      
+      // 开始拖动
+      function handleStart(e) {
+        isDragging = true;
+        // 获取起始位置
+        if (e.type === 'touchstart') {
+          startX = e.touches[0].clientX;
+        } else {
+          startX = e.clientX;
+        }
+        slideButton.style.transition = 'none';
+      }
+      
+      // 拖动中
+      function handleMove(e) {
+        if (!isDragging) return;
+        
+        // 确保threshold已计算
+        if (!threshold) {
+          calculateDimensions();
+        }
+        
+        // 阻止默认行为，防止页面滚动
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+        
+        // 计算当前位置
+        let clientX;
+        if (e.type === 'touchmove') {
+          clientX = e.touches[0].clientX;
+        } else {
+          clientX = e.clientX;
+        }
+        
+        // 计算移动距离
+        const deltaX = clientX - startX;
+        
+        // 限制移动范围
+        if (deltaX > 0 && threshold) {
+          const moveDistance = Math.min(deltaX, threshold);
+          slideButton.style.transform = `translateX(${moveDistance}px)`;
+        }
+      }
+      
+      // 结束拖动
+      function handleEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        slideButton.style.transition = 'transform 0.3s ease';
+        
+        // 确保threshold已计算
+        if (!threshold) {
+          calculateDimensions();
+        }
+        
+        // 获取当前位置
+        const computedStyle = getComputedStyle(slideButton);
+        const transform = computedStyle.transform;
+        
+        // 提取 translateX 值
+        let translateX = 0;
+        if (transform !== 'none') {
+          // 简单处理：直接解析 transform 字符串
+          const match = transform.match(/matrix\(1, 0, 0, 1, ([0-9.]+), 0\)/);
+          if (match) {
+            translateX = parseFloat(match[1]);
+          }
+        }
+        
+        // 检查是否达到阈值
+        if (threshold && translateX >= threshold * 0.8) {
+          // 触发确认
+          slideButton.style.transform = `translateX(${threshold}px)`;
+          setTimeout(() => {
+            // 更改容器样式和文本
+            slideContainer.classList.remove('bg-gray-100');
+            slideContainer.classList.add('bg-green-100');
+            
+            // 更改文本
+            const textElement = slideContainer.querySelector('span');
+            if (textElement) {
+              textElement.textContent = '异常已确认';
+              textElement.classList.remove('text-gray-700');
+              textElement.classList.add('text-green-700');
+            }
+            
+            // 隐藏滑动按钮
+            slideButton.classList.add('hidden');
+            
+            // 禁用滑动功能
+            isDragging = false;
+            slideButton.removeEventListener('mousedown', handleStart);
+            slideButton.removeEventListener('touchstart', handleStart);
+            
+            alert('异常确认成功，签收单已提交！');
+            // 这里可以添加跳转到其他页面的逻辑
+          }, 300);
+        } else {
+          // 重置位置
+          slideButton.style.transform = 'translateX(0)';
+        }
+      }
+      
+      // 添加事件监听器
+      slideButton.addEventListener('mousedown', handleStart);
+      slideButton.addEventListener('touchstart', handleStart, { passive: false });
+      
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('touchmove', handleMove, { passive: false });
+      
+      document.addEventListener('mouseup', handleEnd);
+      document.addEventListener('mouseleave', handleEnd);
+      document.addEventListener('touchend', handleEnd);
+      document.addEventListener('touchcancel', handleEnd);
+
+      // 照片查看功能
+      document.querySelectorAll('.photo-item').forEach(item => {
+        item.addEventListener('click', function() {
+          const imgSrc = this.querySelector('img').src;
+          // 这里可以实现照片预览功能
+          alert('照片预览功能');
+        });
+      });
+
+      // 签收单预览功能
+      const viewReceiptBtn = document.getElementById('view-receipt-btn');
+      const receiptModal = document.getElementById('receipt-modal');
+      const closeReceiptModal = document.getElementById('close-receipt-modal');
+      
+      viewReceiptBtn.addEventListener('click', function() {
+        receiptModal.classList.remove('hidden');
+      });
+      
+      closeReceiptModal.addEventListener('click', function() {
+        receiptModal.classList.add('hidden');
+      });
+      
+      // 点击模态框外部关闭
+      receiptModal.addEventListener('click', function(e) {
+        if (e.target === receiptModal) {
+          receiptModal.classList.add('hidden');
+        }
+      });
+    });
+  </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- 头部导航栏 -->
+  <header class="bg-white shadow-sm sticky top-0 z-10">
+    <div class="flex items-center justify-between px-4 py-3">
+      <button class="text-gray-500">
+        <i class="fa fa-arrow-left text-lg"></i>
+      </button>
+      <h1 class="text-lg font-medium text-gray-900">签收单确认</h1>
+      <div class="w-5"></div> <!-- 占位元素，保持标题居中 -->
+    </div>
+  </header>
+
+  <!-- 主要内容 -->
+  <main class="px-4 py-4">
+    <!-- 订单信息卡片 -->
+    <div class="bg-white rounded-lg shadow-sm mb-4 p-4">
+      <h2 class="text-base font-medium text-gray-900 mb-3">订单信息</h2>
+      <div class="space-y-2">
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">订单编号</span>
+          <span class="text-sm text-gray-900">ORD-20230721-001</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">客户名称</span>
+          <span class="text-sm text-gray-900">上海某某贸易有限公司</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">送达时间</span>
+          <span class="text-sm text-gray-900">2023-07-21 14:30</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">卸货地点</span>
+          <span class="text-sm text-gray-900">上海市浦东新区张江高科技园区</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 收货信息卡片 -->
+    <div class="bg-white rounded-lg shadow-sm mb-4 p-4">
+      <h2 class="text-base font-medium text-gray-900 mb-3">收货信息</h2>
+      <div class="space-y-2">
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">收货人</span>
+          <span class="text-sm text-gray-900">张三</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">联系电话</span>
+          <span class="text-sm text-gray-900">138****1234</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">收货件数</span>
+          <span class="text-sm text-gray-900">120 件</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-sm text-gray-500">收货板数</span>
+          <span class="text-sm text-gray-900">8 板</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 异常信息卡片 -->
+    <div class="bg-white rounded-lg shadow-sm mb-6 p-4">
+      <h2 class="text-base font-medium text-gray-900 mb-3">异常信息</h2>
+      
+      <!-- 入仓号1异常 -->
+      <div class="mb-4 pb-4 border-b border-gray-100">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-sm font-medium text-gray-900">入仓号：WHS-20230721-001</span>
+          <span class="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-full">有异常</span>
+        </div>
+        
+        <div class="space-y-3">
+          <div>
+            <p class="text-xs text-gray-500 mb-1">异常类型</p>
+            <div class="flex flex-wrap gap-2">
+              <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">外箱破损</span>
+              <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">变形</span>
+              <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">标签破损</span>
+              <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">渗水/受潮</span>
+            </div>
+          </div>
+          
+          <div>
+            <p class="text-xs text-gray-500 mb-1">异常备注</p>
+            <p class="text-sm text-gray-700">外箱多处破损，部分货物变形，标签脱落，有渗水痕迹</p>
+          </div>
+          
+          <div>
+            <p class="text-xs text-gray-500 mb-1">现场照片</p>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="photo-item relative">
+                <img src="https://picsum.photos/seed/box1/200/200" alt="外箱破损" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-md">
+                  <i class="fa fa-search-plus text-white"></i>
+                </div>
+              </div>
+              <div class="photo-item relative">
+                <img src="https://picsum.photos/seed/box2/200/200" alt="变形" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-md">
+                  <i class="fa fa-search-plus text-white"></i>
+                </div>
+              </div>
+              <div class="photo-item relative">
+                <img src="https://picsum.photos/seed/box3/200/200" alt="标签破损" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-md">
+                  <i class="fa fa-search-plus text-white"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 入仓号2异常 -->
+      <div class="mb-4 pb-4 border-b border-gray-100">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-sm font-medium text-gray-900">入仓号：WHS-20230721-002</span>
+          <span class="text-xs px-2 py-1 bg-red-100 text-red-600 rounded-full">有异常</span>
+        </div>
+        
+        <div class="space-y-3">
+          <div>
+            <p class="text-xs text-gray-500 mb-1">异常类型</p>
+            <div class="flex flex-wrap gap-2">
+              <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">渗水/受潮</span>
+              <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">淋雨</span>
+              <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">其他</span>
+            </div>
+          </div>
+          
+          <div>
+            <p class="text-xs text-gray-500 mb-1">异常备注</p>
+            <p class="text-sm text-gray-700">部分货物包装渗水，疑似运输过程中淋雨</p>
+          </div>
+          
+          <div>
+            <p class="text-xs text-gray-500 mb-1">现场照片</p>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="photo-item relative">
+                <img src="https://picsum.photos/seed/water1/200/200" alt="渗水" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-md">
+                  <i class="fa fa-search-plus text-white"></i>
+                </div>
+              </div>
+              <div class="photo-item relative">
+                <img src="https://picsum.photos/seed/water2/200/200" alt="受潮" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-md">
+                  <i class="fa fa-search-plus text-white"></i>
+                </div>
+              </div>
+              <div class="photo-item relative">
+                <img src="https://picsum.photos/seed/water3/200/200" alt="包装情况" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 rounded-md">
+                  <i class="fa fa-search-plus text-white"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 异常确认提示 -->
+      <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+        <div class="flex">
+          <i class="fa fa-exclamation-triangle text-yellow-500 mr-2 mt-0.5"></i>
+          <p class="text-sm text-yellow-700">请仔细核对异常信息，确认后将视为您认可上述异常情况。</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 签收单预览模态框 -->
+  <div id="receipt-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 hidden">
+    <div class="relative w-full max-w-md">
+      <button id="close-receipt-modal" class="absolute top-2 right-2 bg-white bg-opacity-50 text-gray-900 w-8 h-8 rounded-full flex items-center justify-center hover:bg-opacity-100 transition-colors">
+        <i class="fa fa-times"></i>
+      </button>
+      <div class="bg-white rounded-lg p-2">
+        <img src="https://picsum.photos/seed/receipt/800/1200" alt="签收单" class="w-full h-auto rounded">
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部操作栏 -->
+  <footer class="fixed bottom-0 left-0 right-0 bg-white shadow-sm px-4 py-3 safe-area-inset-bottom">
+    <div class="flex items-center space-x-3">
+      <button id="view-receipt-btn" class="flex-shrink-0 px-4 py-3 border border-primary text-primary rounded-lg text-sm font-medium">
+        查看签收单
+      </button>
+      <div id="slide-container" class="flex-1 relative h-12 bg-gray-100 rounded-lg overflow-hidden">
+        <div id="slide-button" class="absolute left-0 top-0 bottom-0 w-16 bg-primary flex items-center justify-center rounded-lg shadow-md cursor-pointer transition-transform duration-300 user-select-none">
+          <i class="fa fa-arrow-right text-white"></i>
+        </div>
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span class="text-sm font-medium text-gray-700">滑动确认异常信息并提交</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
