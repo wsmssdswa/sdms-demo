@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>操作费配置 - 报价管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f5f7fa;
+        }
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        /* 标签页激活状态 */
+        .tab-active {
+            color: #1890ff;
+            border-bottom: 2px solid #1890ff;
+        }
+        /* 表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table thead tr {
+            background-color: #fafafa;
+        }
+        .data-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 500;
+            color: #262626;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        .data-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #595959;
+        }
+        .data-table tbody tr:hover {
+            background-color: #fafafa;
+        }
+        /* 操作按钮 */
+        .action-link {
+            color: #1890ff;
+            cursor: pointer;
+            margin-right: 16px;
+            font-size: 14px;
+        }
+        .action-link:hover {
+            color: #40a9ff;
+        }
+        .action-link.delete {
+            color: #ff4d4f;
+        }
+        .action-link.delete:hover {
+            color: #ff7875;
+        }
+        /* 状态标签 */
+        .status-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-size: 12px;
+        }
+        .status-tag.active {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+        .status-tag.inactive {
+            background-color: #fff1f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+        /* 输入框样式 */
+        .input-field {
+            width: 100%;
+            height: 32px;
+            padding: 4px 11px;
+            border: 1px solid #d9d9d9;
+            border-radius: 2px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .input-field:hover {
+            border-color: #40a9ff;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+        /* 按钮样式 */
+        .btn {
+            height: 32px;
+            padding: 4px 15px;
+            border-radius: 2px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+        .btn-primary {
+            background-color: #1890ff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #40a9ff;
+        }
+        .btn-default {
+            background-color: white;
+            border-color: #d9d9d9;
+            color: #595959;
+        }
+        .btn-default:hover {
+            color: #40a9ff;
+            border-color: #40a9ff;
+        }
+        /* 下拉选择框 */
+        .select-field {
+            width: 100%;
+            height: 32px;
+            padding: 4px 11px;
+            border: 1px solid #d9d9d9;
+            border-radius: 2px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+        }
+        .select-field:hover {
+            border-color: #40a9ff;
+        }
+        .select-field:focus {
+            outline: none;
+            border-color: #40a9ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+        /* 弹窗遮罩 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.45);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        /* 弹窗内容 */
+        .modal-content {
+            background-color: white;
+            border-radius: 2px;
+            box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+            width: 650px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #000000d9;
+        }
+        .modal-close {
+            cursor: pointer;
+            font-size: 18px;
+            color: #00000073;
+            transition: color 0.3s;
+        }
+        .modal-close:hover {
+            color: #000000d9;
+        }
+        .modal-body {
+            padding: 24px;
+        }
+        .modal-footer {
+            padding: 10px 16px;
+            border-top: 1px solid #f0f0f0;
+            text-align: right;
+        }
+        .modal-footer .btn {
+            margin-left: 8px;
+        }
+        /* 表单项 */
+        .form-item {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #000000d9;
+        }
+        .form-label .required {
+            color: #ff4d4f;
+            margin-right: 4px;
+        }
+        .form-item-inline {
+            display: flex;
+            gap: 12px;
+        }
+        .form-item-inline .form-item {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        /* 必填星号 */
+        .required-star {
+            color: #ff4d4f;
+            margin-right: 4px;
+        }
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 16px 0;
+            gap: 8px;
+        }
+        .pagination-item {
+            min-width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d9d9d9;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .pagination-item:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+        .pagination-item.active {
+            background-color: #1890ff;
+            border-color: #1890ff;
+            color: white;
+        }
+        .pagination-item.disabled {
+            cursor: not-allowed;
+            color: #00000040;
+            border-color: #d9d9d9;
+        }
+        .pagination-total {
+            margin-right: 16px;
+            font-size: 14px;
+            color: #000000d9;
+        }
+        /* 工具栏 */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .toolbar-left {
+            display: flex;
+            gap: 8px;
+        }
+        .toolbar-right {
+            display: flex;
+            gap: 8px;
+        }
+        /* 搜索框 */
+        .search-box {
+            position: relative;
+            width: 200px;
+        }
+        .search-box input {
+            padding-right: 30px;
+        }
+        .search-box::after {
+            content: '🔍';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #bfbfbf;
+        }
+        /* 面包屑 */
+        .breadcrumb {
+            font-size: 14px;
+            color: #595959;
+            margin-bottom: 16px;
+        }
+        .breadcrumb span {
+            margin: 0 8px;
+            color: #d9d9d9;
+        }
+        .breadcrumb a {
+            color: #595959;
+            text-decoration: none;
+        }
+        .breadcrumb a:hover {
+            color: #1890ff;
+        }
+        .breadcrumb .current {
+            color: #595959;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen bg-gray-50">
+        <!-- 主容器 -->
+        <div class="max-w-[1600px] mx-auto p-6">
+            <!-- 面包屑 -->
+            <div class="breadcrumb mb-4">
+                <a href="#">报价管理</a>
+                <span>/</span>
+                <a href="#">报价详情</a>
+                <span>/</span>
+                <span class="current">操作费</span>
+            </div>
+
+            <!-- 页面标题 -->
+            <div class="mb-6">
+                <h1 class="text-2xl font-semibold text-gray-900">操作费配置</h1>
+            </div>
+
+            <!-- 标签页 -->
+            <div class="bg-white rounded-sm border border-gray-200 mb-4">
+                <div class="flex border-b border-gray-200">
+                    <div class="px-5 py-4 text-sm cursor-pointer hover:text-blue-500 transition-colors" onclick="switchTab(this, 'basic')">基本信息</div>
+                    <div class="px-5 py-4 text-sm cursor-pointer hover:text-blue-500 transition-colors" onclick="switchTab(this, 'storage')">仓储费</div>
+                    <div class="px-5 py-4 text-sm cursor-pointer tab-active" onclick="switchTab(this, 'operation')">操作费</div>
+                    <div class="px-5 py-4 text-sm cursor-pointer hover:text-blue-500 transition-colors" onclick="switchTab(this, 'additional')">附加费</div>
+                    <div class="px-5 py-4 text-sm cursor-pointer hover:text-blue-500 transition-colors" onclick="switchTab(this, 'fuel')">燃油规则</div>
+                </div>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="bg-white rounded-sm border border-gray-200">
+                <!-- 工具栏 -->
+                <div class="toolbar p-4 border-b border-gray-200">
+                    <div class="toolbar-left">
+                        <button class="btn btn-primary" onclick="openAddModal()">
+                            + 新增操作费
+                        </button>
+                        <button class="btn btn-default" onclick="batchDelete()">
+                            批量删除
+                        </button>
+                    </div>
+                    <div class="toolbar-right">
+                        <div class="search-box">
+                            <input type="text" class="input-field" placeholder="搜索收费项目" onkeyup="handleSearch(event)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据表格 -->
+                <div class="overflow-x-auto">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+                                </th>
+                                <th style="width: 80px;">序号</th>
+                                <th>收费项目</th>
+                                <th>计费方式</th>
+                                <th>计费单位</th>
+                                <th>单价（元）</th>
+                                <th>最低收费（元）</th>
+                                <th>备注</th>
+                                <th style="width: 120px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- 数据行将通过JS动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination" id="pagination">
+                    <span class="pagination-total">共 0 条</span>
+                    <div class="pagination-item disabled" onclick="prevPage()">《</div>
+                    <div class="pagination-item active">1</div>
+                    <div class="pagination-item disabled" onclick="nextPage()">》</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增/编辑弹窗 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">新增操作费</div>
+                <div class="modal-close" onclick="closeModal()">×</div>
+            </div>
+            <div class="modal-body">
+                <form id="operationForm">
+                    <div class="form-item">
+                        <label class="form-label">
+                            <span class="required-star">*</span>
+                            收费项目
+                        </label>
+                        <select class="select-field" id="chargeItem" required>
+                            <option value="">请选择收费项目</option>
+                            <option value="卸货费">卸货费</option>
+                            <option value="装货费">装货费</option>
+                            <option value="理货费">理货费</option>
+                            <option value="打托费">打托费</option>
+                            <option value="贴标费">贴标费</option>
+                            <option value="缠膜费">缠膜费</option>
+                            <option value="分拣费">分拣费</option>
+                            <option value="盘点费">盘点费</option>
+                            <option value="打包费">打包费</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+
+                    <div class="form-item-inline">
+                        <div class="form-item">
+                            <label class="form-label">
+                                <span class="required-star">*</span>
+                                计费方式
+                            </label>
+                            <select class="select-field" id="chargeMethod" required>
+                                <option value="">请选择计费方式</option>
+                                <option value="按重量">按重量</option>
+                                <option value="按体积">按体积</option>
+                                <option value="按件数">按件数</option>
+                                <option value="按托盘">按托盘</option>
+                                <option value="按时长">按时长</option>
+                                <option value="固定金额">固定金额</option>
+                            </select>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">
+                                <span class="required-star">*</span>
+                                计费单位
+                            </label>
+                            <select class="select-field" id="chargeUnit" required>
+                                <option value="">请选择计费单位</option>
+                                <option value="kg">kg</option>
+                                <option value="m³">m³</option>
+                                <option value="件">件</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-item-inline">
+                        <div class="form-item">
+                            <label class="form-label">
+                                <span class="required-star">*</span>
+                                单价（元）
+                            </label>
+                            <input type="number" class="input-field" id="unitPrice" step="0.01" min="0" placeholder="请输入单价" required>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">最低收费（元）</label>
+                            <input type="number" class="input-field" id="minCharge" step="0.01" min="0" placeholder="请输入最低收费">
+                        </div>
+                    </div>
+
+                    <div class="form-item">
+                        <label class="form-label">备注</label>
+                        <textarea class="input-field" id="remark" rows="3" placeholder="请输入备注，最多255个字符" maxlength="255"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveOperation()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据
+        let operationData = [
+            {
+                id: 1,
+                chargeItem: '卸货费',
+                chargeMethod: '按重量',
+                chargeUnit: 'kg',
+                unitPrice: '0.50',
+                minCharge: '50.00',
+                remark: '最低收费50元'
+            },
+            {
+                id: 2,
+                chargeItem: '装货费',
+                chargeMethod: '按件数',
+                chargeUnit: '件',
+                unitPrice: '2.00',
+                minCharge: '100.00',
+                remark: '最低收费100元'
+            },
+            {
+                id: 3,
+                chargeItem: '打托费',
+                chargeMethod: '按托盘',
+                chargeUnit: '托',
+                unitPrice: '30.00',
+                minCharge: '',
+                remark: '包含打托材料费'
+            },
+            {
+                id: 4,
+                chargeItem: '贴标费',
+                chargeMethod: '按件数',
+                chargeUnit: '件',
+                unitPrice: '0.50',
+                minCharge: '20.00',
+                remark: '每个标签0.5元'
+            },
+            {
+                id: 5,
+                chargeItem: '理货费',
+                chargeMethod: '按件数',
+                chargeUnit: '件',
+                unitPrice: '1.00',
+                minCharge: '80.00',
+                remark: ''
+            },
+            {
+                id: 6,
+                chargeItem: '缠膜费',
+                chargeMethod: '按托盘',
+                chargeUnit: '托',
+                unitPrice: '15.00',
+                minCharge: '',
+                remark: '包含缠膜材料'
+            }
+        ];
+
+        let currentPage = 1;
+        let pageSize = 10;
+        let selectedIds = [];
+        let editingId = null;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+            updatePagination();
+        });
+
+        // 渲染表格
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            operationData.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <input type="checkbox" class="row-checkbox" data-id="${item.id}" ${selectedIds.includes(item.id) ? 'checked' : ''} onchange="toggleSelectRow(${item.id}, this)">
+                    </td>
+                    <td>${index + 1}</td>
+                    <td>${item.chargeItem}</td>
+                    <td>${item.chargeMethod}</td>
+                    <td>${item.chargeUnit}</td>
+                    <td>${parseFloat(item.unitPrice).toFixed(2)}</td>
+                    <td>${item.minCharge ? parseFloat(item.minCharge).toFixed(2) : '--'}</td>
+                    <td>${item.remark || '--'}</td>
+                    <td>
+                        <span class="action-link" onclick="editOperation(${item.id})">编辑</span>
+                        <span class="action-link delete" onclick="deleteOperation(${item.id})">删除</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 更新分页
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            const total = operationData.length;
+            const totalPages = Math.ceil(total / pageSize);
+
+            pagination.innerHTML = `
+                <span class="pagination-total">共 ${total} 条</span>
+                <div class="pagination-item ${currentPage === 1 ? 'disabled' : ''}" onclick="prevPage()">《</div>
+                <div class="pagination-item active">${currentPage}</div>
+                ${totalPages > 1 ? `<div class="pagination-item" onclick="goToPage(2)">2</div>` : ''}
+                <div class="pagination-item ${currentPage >= totalPages ? 'disabled' : ''}" onclick="nextPage()">》</div>
+            `;
+        }
+
+        // 全选/取消全选
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+                const id = parseInt(cb.dataset.id);
+                if (checkbox.checked && !selectedIds.includes(id)) {
+                    selectedIds.push(id);
+                } else if (!checkbox.checked && selectedIds.includes(id)) {
+                    selectedIds = selectedIds.filter(item => item !== id);
+                }
+            });
+        }
+
+        // 选择行
+        function toggleSelectRow(id, checkbox) {
+            if (checkbox.checked && !selectedIds.includes(id)) {
+                selectedIds.push(id);
+            } else if (!checkbox.checked && selectedIds.includes(id)) {
+                selectedIds = selectedIds.filter(item => item !== id);
+            }
+        }
+
+        // 打开新增弹窗
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = '新增操作费';
+            document.getElementById('operationForm').reset();
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        // 编辑操作费
+        function editOperation(id) {
+            const item = operationData.find(d => d.id === id);
+            if (!item) return;
+
+            editingId = id;
+            document.getElementById('modalTitle').textContent = '编辑操作费';
+            document.getElementById('chargeItem').value = item.chargeItem;
+            document.getElementById('chargeMethod').value = item.chargeMethod;
+            document.getElementById('chargeUnit').value = item.chargeUnit;
+            document.getElementById('unitPrice').value = item.unitPrice;
+            document.getElementById('minCharge').value = item.minCharge || '';
+            document.getElementById('remark').value = item.remark || '';
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        // 保存操作费
+        function saveOperation() {
+            const form = document.getElementById('operationForm');
+            const chargeItem = document.getElementById('chargeItem').value;
+            const chargeMethod = document.getElementById('chargeMethod').value;
+            const chargeUnit = document.getElementById('chargeUnit').value;
+            const unitPrice = document.getElementById('unitPrice').value;
+            const minCharge = document.getElementById('minCharge').value;
+            const remark = document.getElementById('remark').value;
+
+            if (!chargeItem || !chargeMethod || !chargeUnit || !unitPrice) {
+                alert('请填写必填项！');
+                return;
+            }
+
+            if (editingId) {
+                // 编辑
+                const index = operationData.findIndex(d => d.id === editingId);
+                if (index !== -1) {
+                    operationData[index] = {
+                        ...operationData[index],
+                        chargeItem,
+                        chargeMethod,
+                        chargeUnit,
+                        unitPrice,
+                        minCharge,
+                        remark
+                    };
+                }
+                alert('修改成功！');
+            } else {
+                // 新增
+                const newId = Math.max(...operationData.map(d => d.id)) + 1;
+                operationData.push({
+                    id: newId,
+                    chargeItem,
+                    chargeMethod,
+                    chargeUnit,
+                    unitPrice,
+                    minCharge,
+                    remark
+                });
+                alert('新增成功！');
+            }
+
+            closeModal();
+            renderTable();
+            updatePagination();
+        }
+
+        // 删除操作费
+        function deleteOperation(id) {
+            if (!confirm('删除后数据不可恢复，是否确认删除？')) {
+                return;
+            }
+
+            operationData = operationData.filter(d => d.id !== id);
+            selectedIds = selectedIds.filter(itemId => itemId !== id);
+            renderTable();
+            updatePagination();
+            alert('删除成功！');
+        }
+
+        // 批量删除
+        function batchDelete() {
+            if (selectedIds.length === 0) {
+                alert('请选择要删除的数据！');
+                return;
+            }
+
+            if (!confirm(`确认删除选中的 ${selectedIds.length} 条数据？删除后数据不可恢复！`)) {
+                return;
+            }
+
+            operationData = operationData.filter(d => !selectedIds.includes(d.id));
+            selectedIds = [];
+            document.getElementById('selectAll').checked = false;
+            renderTable();
+            updatePagination();
+            alert('批量删除成功！');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            editingId = null;
+        }
+
+        // 上一页
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+                updatePagination();
+            }
+        }
+
+        // 下一页
+        function nextPage() {
+            const totalPages = Math.ceil(operationData.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+                updatePagination();
+            }
+        }
+
+        // 跳转页
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
+            updatePagination();
+        }
+
+        // 搜索
+        function handleSearch(event) {
+            const keyword = event.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#tableBody tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(keyword) ? '' : 'none';
+            });
+        }
+
+        // 切换标签页
+        function switchTab(element, tabName) {
+            // 移除所有激活状态
+            document.querySelectorAll('.tab-active').forEach(el => {
+                el.classList.remove('tab-active');
+            });
+
+            // 添加当前激活状态
+            element.classList.add('tab-active');
+
+            // 这里可以添加切换内容的逻辑
+            if (tabName !== 'operation') {
+                alert('演示模式：仅展示操作费页面');
+            }
+        }
+
+        // 点击遮罩关闭弹窗
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
