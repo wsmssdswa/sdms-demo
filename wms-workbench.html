@@ -560,9 +560,6 @@
           <button id="layoutBtn" class="px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center transition-all">
             <i class="ri-layout-grid-line mr-2 text-accent-cyan"></i> 布局配置
           </button>
-          <button id="saveLayoutBtn" class="px-4 py-2.5 text-sm font-medium text-white btn-primary rounded-xl flex items-center">
-            <i class="ri-save-line mr-2"></i> 保存布局
-          </button>
         </div>
       </header>
       
@@ -2772,13 +2769,12 @@
       initTimelinessFlow();
       
       const grid = document.getElementById('dashboardGrid');
-      new Sortable(grid, { animation: 150, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', handle: '.drag-handle' });
+      new Sortable(grid, { animation: 150, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', handle: '.drag-handle', filter: 'button, input, select, textarea', preventOnFilter: false });
       
       const layoutConfigList = document.getElementById('layoutConfigList');
       new Sortable(layoutConfigList, { animation: 150, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', handle: '.drag-handle-config', onEnd: syncConfigOrderToGrid });
       
       document.getElementById('layoutBtn').addEventListener('click', openLayoutModal);
-      document.getElementById('saveLayoutBtn').addEventListener('click', () => { saveLayoutToStorage(); alert('布局已保存！'); });
 
       // KPI配置初始化
       loadKpiConfigFromStorage();
