@@ -422,6 +422,98 @@
     .notification-item:hover {
       background: rgba(241, 245, 249, 0.8);
     }
+
+    .module-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .module-header-title {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 0;
+    }
+
+    .module-header-filter {
+      display: flex;
+      justify-content: flex-end;
+      flex: 1 1 240px;
+      min-width: 0;
+      margin-left: auto;
+    }
+
+    .module-date-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 40px;
+      padding: 0 14px;
+      max-width: 100%;
+      border-radius: 14px;
+      background: rgba(248, 250, 252, 0.9);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      color: #334155;
+      transition: all 0.25s ease;
+    }
+
+    .module-date-trigger:hover {
+      border-color: rgba(6, 182, 212, 0.45);
+      box-shadow: 0 10px 24px -18px rgba(6, 182, 212, 0.55);
+    }
+
+    .module-date-trigger:focus-visible {
+      outline: none;
+      border-color: #06b6d4;
+      box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+    }
+
+    .module-date-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .module-date-popover {
+      width: min(344px, calc(100vw - 3rem));
+    }
+
+    .module-preset-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .module-preset-btn {
+      padding: 6px 12px;
+      border-radius: 9999px;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      background: rgba(248, 250, 252, 0.95);
+      color: rgba(71, 85, 105, 0.9);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      transition: all 0.2s ease;
+    }
+
+    .module-preset-btn:hover {
+      color: #0f172a;
+      border-color: rgba(6, 182, 212, 0.35);
+      background: rgba(236, 254, 255, 0.8);
+    }
+
+    .module-preset-btn.active {
+      color: #ffffff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      box-shadow: 0 8px 18px -12px rgba(6, 182, 212, 0.9);
+    }
   </style>
 </head>
 <body class="font-sans text-slate-800 min-h-screen relative">
@@ -954,17 +1046,43 @@
           
           <!-- 出库趋势组件 -->
           <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="trend" style="animation-delay: 0.5s;">
-            <div class="flex items-center justify-between mb-5 drag-handle">
-              <h3 class="font-semibold text-slate-800 flex items-center text-lg">
+            <div class="module-header mb-5 drag-handle">
+              <h3 class="module-header-title font-semibold text-slate-800 text-lg">
                 <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center mr-3">
                   <i class="ri-line-chart-line text-accent-cyan"></i>
                 </div>
                 出入库趋势
               </h3>
-              <div class="flex space-x-2">
-                <button class="px-3 py-1.5 text-xs font-medium text-white btn-primary rounded-lg">7日</button>
-                <button class="px-3 py-1.5 text-xs font-medium text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">30日</button>
-                <button class="px-3 py-1.5 text-xs font-medium text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">自定义</button>
+              <div class="module-header-filter" data-module-filter="trend">
+                <div class="relative max-w-full">
+                  <button type="button" id="trendDateTrigger" data-module-date-trigger="trend" class="module-date-trigger max-w-full text-sm font-medium">
+                    <i class="ri-calendar-2-line text-base text-accent-cyan"></i>
+                    <span id="trendDateLabel" class="module-date-label">--</span>
+                    <i class="ri-arrow-down-s-line text-base text-slate-400"></i>
+                  </button>
+                  <div id="trendDatePopover" class="module-date-popover hidden absolute right-0 top-full z-20 mt-2 glass-card rounded-2xl p-4">
+                    <div class="module-preset-group">
+                      <button type="button" data-module-range-preset="trend" data-preset-value="7" class="module-preset-btn">7日</button>
+                      <button type="button" data-module-range-preset="trend" data-preset-value="30" class="module-preset-btn">30日</button>
+                      <button type="button" data-module-range-preset="trend" data-preset-value="180" class="module-preset-btn">半年</button>
+                      <button type="button" data-module-range-preset="trend" data-preset-value="365" class="module-preset-btn">一年</button>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <label class="block text-xs text-slate-600/70">
+                        开始日期
+                        <input type="date" id="trendStartDate" data-module-date-start="trend" class="input-light mt-1 w-full rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none">
+                      </label>
+                      <label class="block text-xs text-slate-600/70">
+                        结束日期
+                        <input type="date" id="trendEndDate" data-module-date-end="trend" class="input-light mt-1 w-full rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none">
+                      </label>
+                    </div>
+                    <div class="mt-4 flex items-center justify-end gap-2">
+                      <button type="button" data-module-date-cancel="trend" class="px-3 py-2 text-xs font-medium text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors">取消</button>
+                      <button type="button" data-module-date-apply="trend" class="px-4 py-2 text-xs font-medium text-white btn-primary rounded-xl">确定</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="module-content module-chart">
@@ -1039,34 +1157,46 @@
           
           <!-- 人效统计列表组件 -->
           <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="efficiency" style="animation-delay: 0.65s;">
-            <div class="flex items-center justify-between mb-5 drag-handle">
-              <h3 class="font-semibold text-slate-800 flex items-center text-lg">
+            <div class="module-header mb-5 drag-handle">
+              <h3 class="module-header-title font-semibold text-slate-800 text-lg">
                 <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center mr-3">
                   <i class="ri-team-line text-accent-cyan"></i>
                 </div>
                 人效统计
               </h3>
-              <div class="flex items-center space-x-2">
-                <button id="efficiency7Days" class="efficiency-range-btn px-3 py-1.5 text-xs font-medium text-white btn-primary rounded-lg" data-range="7">7日</button>
-                <button id="efficiency30Days" class="efficiency-range-btn px-3 py-1.5 text-xs font-medium text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors" data-range="30">30日</button>
-                <button id="efficiencyCustom" class="efficiency-range-btn px-3 py-1.5 text-xs font-medium text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors" data-range="custom">自定义</button>
+              <div class="module-header-filter" data-module-filter="efficiency">
+                <div class="relative max-w-full">
+                  <button type="button" id="efficiencyDateTrigger" data-module-date-trigger="efficiency" class="module-date-trigger max-w-full text-sm font-medium">
+                    <i class="ri-calendar-2-line text-base text-accent-cyan"></i>
+                    <span id="efficiencyDateLabel" class="module-date-label">--</span>
+                    <i class="ri-arrow-down-s-line text-base text-slate-400"></i>
+                  </button>
+                  <div id="efficiencyDatePopover" class="module-date-popover hidden absolute right-0 top-full z-20 mt-2 glass-card rounded-2xl p-4">
+                    <div class="module-preset-group">
+                      <button type="button" data-module-range-preset="efficiency" data-preset-value="7" class="module-preset-btn">7日</button>
+                      <button type="button" data-module-range-preset="efficiency" data-preset-value="30" class="module-preset-btn">30日</button>
+                      <button type="button" data-module-range-preset="efficiency" data-preset-value="180" class="module-preset-btn">半年</button>
+                      <button type="button" data-module-range-preset="efficiency" data-preset-value="365" class="module-preset-btn">一年</button>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <label class="block text-xs text-slate-600/70">
+                        开始日期
+                        <input type="date" id="efficiencyStartDate" data-module-date-start="efficiency" class="input-light mt-1 w-full rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none">
+                      </label>
+                      <label class="block text-xs text-slate-600/70">
+                        结束日期
+                        <input type="date" id="efficiencyEndDate" data-module-date-end="efficiency" class="input-light mt-1 w-full rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none">
+                      </label>
+                    </div>
+                    <div class="mt-4 flex items-center justify-end gap-2">
+                      <button type="button" data-module-date-cancel="efficiency" class="px-3 py-2 text-xs font-medium text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors">取消</button>
+                      <button type="button" data-module-date-apply="efficiency" class="px-4 py-2 text-xs font-medium text-white btn-primary rounded-xl">确定</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="module-content module-fill">
-            <!-- 自定义时间选择器 -->
-            <div id="efficiencyDateRange" class="hidden mb-4 p-3 glass-card-light rounded-xl">
-              <div class="flex items-center space-x-3">
-                <div class="flex items-center space-x-2">
-                  <label class="text-xs text-slate-600/60">开始日期:</label>
-                  <input type="date" id="efficiencyStartDate" class="input-light rounded-lg px-3 py-1.5 text-sm text-slate-800 focus:outline-none">
-                </div>
-                <div class="flex items-center space-x-2">
-                  <label class="text-xs text-slate-600/60">结束日期:</label>
-                  <input type="date" id="efficiencyEndDate" class="input-light rounded-lg px-3 py-1.5 text-sm text-slate-800 focus:outline-none">
-                </div>
-                <button id="efficiencyApplyDate" class="px-4 py-1.5 text-xs font-medium text-white btn-primary rounded-lg">查询</button>
-              </div>
-            </div>
             <div class="module-table">
               <table class="min-w-full">
                 <thead>
@@ -1124,16 +1254,43 @@
           
           <!-- 时效统计流程图组件 -->
           <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="timeliness" style="animation-delay: 0.7s;">
-            <div class="flex items-center justify-between mb-4 drag-handle">
-              <h3 class="font-semibold text-slate-800 flex items-center text-lg">
+            <div class="module-header mb-4 drag-handle">
+              <h3 class="module-header-title font-semibold text-slate-800 text-lg">
                 <div class="w-8 h-8 rounded-lg bg-accent-amber/20 flex items-center justify-center mr-3">
                   <i class="ri-time-line text-accent-amber"></i>
                 </div>
                 时效统计
               </h3>
-              <div class="flex space-x-2">
-                <button class="px-3 py-1.5 text-xs font-medium text-white btn-primary rounded-lg">7日</button>
-                <button class="px-3 py-1.5 text-xs font-medium text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">30日</button>
+              <div class="module-header-filter" data-module-filter="timeliness">
+                <div class="relative max-w-full">
+                  <button type="button" id="timelinessDateTrigger" data-module-date-trigger="timeliness" class="module-date-trigger max-w-full text-sm font-medium">
+                    <i class="ri-calendar-2-line text-base text-accent-cyan"></i>
+                    <span id="timelinessDateLabel" class="module-date-label">--</span>
+                    <i class="ri-arrow-down-s-line text-base text-slate-400"></i>
+                  </button>
+                  <div id="timelinessDatePopover" class="module-date-popover hidden absolute right-0 top-full z-20 mt-2 glass-card rounded-2xl p-4">
+                    <div class="module-preset-group">
+                      <button type="button" data-module-range-preset="timeliness" data-preset-value="7" class="module-preset-btn">7日</button>
+                      <button type="button" data-module-range-preset="timeliness" data-preset-value="30" class="module-preset-btn">30日</button>
+                      <button type="button" data-module-range-preset="timeliness" data-preset-value="180" class="module-preset-btn">半年</button>
+                      <button type="button" data-module-range-preset="timeliness" data-preset-value="365" class="module-preset-btn">一年</button>
+                    </div>
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <label class="block text-xs text-slate-600/70">
+                        开始日期
+                        <input type="date" id="timelinessStartDate" data-module-date-start="timeliness" class="input-light mt-1 w-full rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none">
+                      </label>
+                      <label class="block text-xs text-slate-600/70">
+                        结束日期
+                        <input type="date" id="timelinessEndDate" data-module-date-end="timeliness" class="input-light mt-1 w-full rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none">
+                      </label>
+                    </div>
+                    <div class="mt-4 flex items-center justify-end gap-2">
+                      <button type="button" data-module-date-cancel="timeliness" class="px-3 py-2 text-xs font-medium text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors">取消</button>
+                      <button type="button" data-module-date-apply="timeliness" class="px-4 py-2 text-xs font-medium text-white btn-primary rounded-xl">确定</button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="module-content module-fill">
@@ -1948,6 +2105,327 @@
         return `${minutes}m${secs}s`;
       }
     }
+
+    const MODULE_TIME_FILTER_KEYS = ['trend', 'efficiency', 'timeliness'];
+    const MODULE_RANGE_PRESET_MAP = {
+      '7': 7,
+      '30': 30,
+      '180': 180,
+      '365': 365
+    };
+
+    let workbenchTimeFilters = {
+      trend: createPresetDateRange('7'),
+      efficiency: createPresetDateRange('7'),
+      timeliness: createPresetDateRange('7')
+    };
+    let trendChart = null;
+
+    function padDateNumber(value) {
+      return String(value).padStart(2, '0');
+    }
+
+    function parseDateValue(value) {
+      if (!value) return null;
+      const parts = value.split('-').map(Number);
+      if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+      const date = new Date(parts[0], parts[1] - 1, parts[2]);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    function formatDateValue(date) {
+      const normalizedDate = new Date(date);
+      normalizedDate.setHours(0, 0, 0, 0);
+      return `${normalizedDate.getFullYear()}-${padDateNumber(normalizedDate.getMonth() + 1)}-${padDateNumber(normalizedDate.getDate())}`;
+    }
+
+    function getTodayDate() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return today;
+    }
+
+    function createPresetDateRange(preset) {
+      const days = MODULE_RANGE_PRESET_MAP[preset] || 7;
+      const endDate = getTodayDate();
+      const startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - days + 1);
+      return {
+        preset,
+        startDate: formatDateValue(startDate),
+        endDate: formatDateValue(endDate)
+      };
+    }
+
+    function calculateDateRangeDays(startValue, endValue) {
+      const startDate = parseDateValue(startValue);
+      const endDate = parseDateValue(endValue);
+      if (!startDate || !endDate || endDate < startDate) return 0;
+      return Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    function formatTrendAxisLabel(date, totalDays) {
+      if (totalDays <= 31) {
+        return `${padDateNumber(date.getMonth() + 1)}/${padDateNumber(date.getDate())}`;
+      }
+      if (totalDays <= 180) {
+        return `${date.getMonth() + 1}月${date.getDate()}日`;
+      }
+      return `${String(date.getFullYear()).slice(-2)}/${padDateNumber(date.getMonth() + 1)}`;
+    }
+
+    function getModuleRangeDays(moduleKey) {
+      const dateFilter = workbenchTimeFilters[moduleKey];
+      return calculateDateRangeDays(dateFilter.startDate, dateFilter.endDate) || 7;
+    }
+
+    function syncModuleDateInputs(moduleKey) {
+      const dateFilter = workbenchTimeFilters[moduleKey];
+      const startInput = document.getElementById(`${moduleKey}StartDate`);
+      const endInput = document.getElementById(`${moduleKey}EndDate`);
+      if (startInput) startInput.value = dateFilter.startDate;
+      if (endInput) endInput.value = dateFilter.endDate;
+    }
+
+    function renderModuleDateFilter(moduleKey) {
+      const dateFilter = workbenchTimeFilters[moduleKey];
+      const label = document.getElementById(`${moduleKey}DateLabel`);
+      if (label) label.textContent = `${dateFilter.startDate}~${dateFilter.endDate}`;
+      document.querySelectorAll(`[data-module-range-preset="${moduleKey}"]`).forEach(button => {
+        button.classList.toggle('active', button.dataset.presetValue === dateFilter.preset);
+      });
+      syncModuleDateInputs(moduleKey);
+    }
+
+    function closeModuleDatePopover(moduleKey) {
+      const popover = document.getElementById(`${moduleKey}DatePopover`);
+      if (popover) popover.classList.add('hidden');
+      renderModuleDateFilter(moduleKey);
+    }
+
+    function closeAllModuleDatePopovers(exceptModuleKey = null) {
+      MODULE_TIME_FILTER_KEYS.forEach(moduleKey => {
+        if (moduleKey !== exceptModuleKey) {
+          closeModuleDatePopover(moduleKey);
+        }
+      });
+    }
+
+    function openModuleDatePopover(moduleKey) {
+      closeAllModuleDatePopovers(moduleKey);
+      syncModuleDateInputs(moduleKey);
+      const popover = document.getElementById(`${moduleKey}DatePopover`);
+      if (popover) popover.classList.remove('hidden');
+    }
+
+    function updateModuleDateFilterByPreset(moduleKey, presetValue) {
+      if (presetValue === 'custom') {
+        openModuleDatePopover(moduleKey);
+        return;
+      }
+
+      workbenchTimeFilters[moduleKey] = createPresetDateRange(presetValue);
+      renderModuleDateFilter(moduleKey);
+      closeModuleDatePopover(moduleKey);
+      applyWorkbenchTimeFilter(moduleKey);
+    }
+
+    function applyCustomModuleDateFilter(moduleKey) {
+      const startInput = document.getElementById(`${moduleKey}StartDate`);
+      const endInput = document.getElementById(`${moduleKey}EndDate`);
+      const startValue = startInput?.value;
+      const endValue = endInput?.value;
+      const rangeDays = calculateDateRangeDays(startValue, endValue);
+
+      if (!rangeDays || rangeDays > 365) {
+        alert('请选择有效的日期范围（1-365天）');
+        return;
+      }
+
+      workbenchTimeFilters[moduleKey] = {
+        preset: 'custom',
+        startDate: startValue,
+        endDate: endValue
+      };
+      renderModuleDateFilter(moduleKey);
+      closeModuleDatePopover(moduleKey);
+      applyWorkbenchTimeFilter(moduleKey);
+    }
+
+    function bindWorkbenchTimeFilterEvents() {
+      document.querySelectorAll('[data-module-date-trigger]').forEach(button => {
+        button.addEventListener('click', function() {
+          const moduleKey = this.dataset.moduleDateTrigger;
+          const popover = document.getElementById(`${moduleKey}DatePopover`);
+          const isHidden = popover?.classList.contains('hidden');
+          if (isHidden) {
+            openModuleDatePopover(moduleKey);
+          } else {
+            closeModuleDatePopover(moduleKey);
+          }
+        });
+      });
+
+      document.querySelectorAll('[data-module-range-preset]').forEach(button => {
+        button.addEventListener('click', function() {
+          updateModuleDateFilterByPreset(this.dataset.moduleRangePreset, this.dataset.presetValue);
+        });
+      });
+
+      document.querySelectorAll('[data-module-date-apply]').forEach(button => {
+        button.addEventListener('click', function() {
+          applyCustomModuleDateFilter(this.dataset.moduleDateApply);
+        });
+      });
+
+      document.querySelectorAll('[data-module-date-cancel]').forEach(button => {
+        button.addEventListener('click', function() {
+          const moduleKey = this.dataset.moduleDateCancel;
+          syncModuleDateInputs(moduleKey);
+          closeModuleDatePopover(moduleKey);
+        });
+      });
+
+      document.addEventListener('click', function(event) {
+        if (!event.target.closest('[data-module-filter]')) {
+          closeAllModuleDatePopovers();
+        }
+      });
+
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+          closeAllModuleDatePopovers();
+        }
+      });
+    }
+
+    function buildTrendSeries() {
+      const dateFilter = workbenchTimeFilters.trend;
+      const totalDays = calculateDateRangeDays(dateFilter.startDate, dateFilter.endDate) || 7;
+      const startDate = parseDateValue(dateFilter.startDate) || getTodayDate();
+      const endDate = parseDateValue(dateFilter.endDate) || getTodayDate();
+      const pointCount = totalDays <= 7 ? totalDays : totalDays <= 30 ? 8 : totalDays <= 180 ? 6 : 12;
+      const step = pointCount <= 1 ? 0 : Math.max(1, Math.floor((totalDays - 1) / (pointCount - 1)));
+      const labels = [];
+      const outboundData = [];
+      const inboundData = [];
+
+      for (let index = 0; index < pointCount; index += 1) {
+        let currentDate = new Date(startDate);
+        if (index === pointCount - 1) {
+          currentDate = new Date(endDate);
+        } else {
+          currentDate.setDate(startDate.getDate() + step * index);
+        }
+
+        labels.push(formatTrendAxisLabel(currentDate, totalDays));
+
+        const trendFactor = 1 + Math.sin((index + 1) * 0.9) * 0.09;
+        const rangeFactor = totalDays <= 30 ? 1 : totalDays <= 180 ? 1.07 : 1.14;
+        const outboundValue = Math.round((920 + totalDays * 2.2 + index * 24) * trendFactor * rangeFactor);
+        const inboundValue = Math.round((680 + totalDays * 1.6 + index * 18) * (1 + Math.cos((index + 1) * 0.7) * 0.08) * (rangeFactor - 0.03));
+
+        outboundData.push(outboundValue);
+        inboundData.push(inboundValue);
+      }
+
+      return { labels, outboundData, inboundData };
+    }
+
+    function initTrendChart() {
+      const trendCtx = document.getElementById('trendChart').getContext('2d');
+      trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: '出库订单量',
+              data: [],
+              borderColor: '#06b6d4',
+              backgroundColor: 'rgba(6, 182, 212, 0.1)',
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: '入库订单量',
+              data: [],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top', labels: { color: '#64748b' } },
+            datalabels: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.3)' }, ticks: { color: '#64748b' } },
+            x: { grid: { color: 'rgba(148, 163, 184, 0.3)' }, ticks: { color: '#64748b' } }
+          }
+        }
+      });
+    }
+
+    function refreshTrendChart() {
+      if (!trendChart) return;
+      const { labels, outboundData, inboundData } = buildTrendSeries();
+      trendChart.data.labels = labels;
+      trendChart.data.datasets[0].data = outboundData;
+      trendChart.data.datasets[1].data = inboundData;
+      trendChart.update();
+    }
+
+    function refreshEfficiencyModule() {
+      const days = getModuleRangeDays('efficiency');
+      efficiencyData = generateEfficiencyData(days);
+      originalEfficiencyData = JSON.parse(JSON.stringify(efficiencyData));
+      efficiencyData.sort((leftItem, rightItem) => rightItem['总量'] - leftItem['总量']);
+      efficiencySortState = null;
+      resetSortIcons();
+      renderEfficiencyTable();
+    }
+
+    function getTimelinessFlowData() {
+      const baseData = currentTimelinessTab === 'beihuo' ? beihuoData : ganxianData;
+      const days = getModuleRangeDays('timeliness');
+      const rangeFactor = days <= 30 ? 1 : days <= 180 ? 1.08 : 1.15;
+      return baseData.map((item, index) => {
+        const waveFactor = 1 + ((((days + index * 7) % 11) - 5) * 0.018);
+        return {
+          ...item,
+          time: Math.max(120, Math.round(item.time * rangeFactor * waveFactor))
+        };
+      });
+    }
+
+    function applyWorkbenchTimeFilter(moduleKey) {
+      if (moduleKey === 'trend') {
+        refreshTrendChart();
+        return;
+      }
+      if (moduleKey === 'efficiency') {
+        refreshEfficiencyModule();
+        return;
+      }
+      if (moduleKey === 'timeliness') {
+        initTimelinessFlow();
+      }
+    }
+
+    function initWorkbenchTimeFilters() {
+      bindWorkbenchTimeFilterEvents();
+      MODULE_TIME_FILTER_KEYS.forEach(moduleKey => {
+        renderModuleDateFilter(moduleKey);
+        applyWorkbenchTimeFilter(moduleKey);
+      });
+    }
     
     const beihuoData = [
       { name: '入库', time: 915, abnormal: false, reason: '' },
@@ -1985,7 +2463,7 @@
     }
     
     function initTimelinessFlow() {
-      const timelinessData = currentTimelinessTab === 'beihuo' ? beihuoData : ganxianData;
+      const timelinessData = getTimelinessFlowData();
       const flowContainer = document.getElementById('timelinessFlow');
       if (!flowContainer) return;
       flowContainer.innerHTML = '';
@@ -2420,56 +2898,6 @@
       });
     }
     
-    function initEfficiencyRangeButtons() {
-      const buttons = document.querySelectorAll('.efficiency-range-btn');
-      const dateRangeDiv = document.getElementById('efficiencyDateRange');
-      
-      buttons.forEach(btn => {
-        btn.addEventListener('click', function() {
-          buttons.forEach(b => {
-            b.classList.remove('text-white', 'btn-primary');
-            b.classList.add('text-slate-600/70');
-          });
-          this.classList.add('text-white', 'btn-primary');
-          this.classList.remove('text-slate-600/70');
-          
-          const range = this.dataset.range;
-          if (range === 'custom') {
-            dateRangeDiv.classList.remove('hidden');
-            const today = new Date();
-            const weekAgo = new Date(today);
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            document.getElementById('efficiencyStartDate').value = weekAgo.toISOString().split('T')[0];
-            document.getElementById('efficiencyEndDate').value = today.toISOString().split('T')[0];
-          } else {
-            dateRangeDiv.classList.add('hidden');
-            const days = parseInt(range);
-            efficiencyData = generateEfficiencyData(days);
-            originalEfficiencyData = JSON.parse(JSON.stringify(efficiencyData));
-            efficiencySortState = null;
-            resetSortIcons();
-            renderEfficiencyTable();
-          }
-        });
-      });
-      
-      document.getElementById('efficiencyApplyDate').addEventListener('click', function() {
-        const startDate = new Date(document.getElementById('efficiencyStartDate').value);
-        const endDate = new Date(document.getElementById('efficiencyEndDate').value);
-        const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-        
-        if (days > 0 && days <= 365) {
-          efficiencyData = generateEfficiencyData(days);
-          originalEfficiencyData = JSON.parse(JSON.stringify(efficiencyData));
-          efficiencySortState = null;
-          resetSortIcons();
-          renderEfficiencyTable();
-        } else {
-          alert('请选择有效的日期范围（1-365天）');
-        }
-      });
-    }
-    
     function resetSortIcons() {
       const columns = ['name', '入库', '上架', '拣货', '打包', '出库', '总量'];
       columns.forEach(col => {
@@ -2695,43 +3123,7 @@
       document.getElementById('resetKpiConfigBtn').addEventListener('click', resetKpiConfig);
       initKpiCheckboxListeners();
 
-      const trendCtx = document.getElementById('trendChart').getContext('2d');
-      new Chart(trendCtx, {
-        type: 'line',
-        data: {
-          labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-          datasets: [
-            {
-              label: '出库订单量',
-              data: [980, 1050, 1120, 1080, 1230, 890, 1234],
-              borderColor: '#06b6d4',
-              backgroundColor: 'rgba(6, 182, 212, 0.1)',
-              tension: 0.4,
-              fill: true
-            },
-            {
-              label: '入库订单量',
-              data: [720, 850, 780, 920, 880, 650, 856],
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              tension: 0.4,
-              fill: true
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'top', labels: { color: '#64748b' } },
-            datalabels: { display: false }
-          },
-          scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.3)' }, ticks: { color: '#64748b' } },
-            x: { grid: { color: 'rgba(148, 163, 184, 0.3)' }, ticks: { color: '#64748b' } }
-          }
-        }
-      });
+      initTrendChart();
       
       const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
       new Chart(inventoryCtx, {
@@ -2761,12 +3153,7 @@
         }
       });
       
-      efficiencyData = generateEfficiencyData(7);
-      originalEfficiencyData = JSON.parse(JSON.stringify(efficiencyData));
-      efficiencyData.sort((a, b) => b['总量'] - a['总量']);
-      renderEfficiencyTable();
-      initEfficiencyRangeButtons();
-      initTimelinessFlow();
+      initWorkbenchTimeFilters();
       
       const grid = document.getElementById('dashboardGrid');
       new Sortable(grid, { animation: 150, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', handle: '.drag-handle', filter: 'button, input, select, textarea', preventOnFilter: false });
