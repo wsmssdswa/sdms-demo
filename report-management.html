@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报表管理 - 千仓SDMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f7fa;
+        }
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+        /* 菜单激活状态 */
+        .menu-item.active {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-right: 3px solid #2563eb;
+        }
+        .menu-item:hover {
+            background-color: #f3f4f6;
+        }
+        /* 表格样式 */
+        .data-table th {
+            background-color: #f8fafc;
+            font-weight: 500;
+            color: #475569;
+        }
+        .data-table td {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .data-table tr:hover td {
+            background-color: #f8fafc;
+        }
+        /* 卡片阴影 */
+        .card {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+        }
+        /* 按钮样式 */
+        .btn-primary {
+            background-color: #2563eb;
+            color: white;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-secondary {
+            background-color: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            background-color: #f9fafb;
+        }
+        /* 输入框聚焦 */
+        .form-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        /* 统计卡片渐变 */
+        .stat-card-blue {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .stat-card-green {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .stat-card-orange {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .stat-card-purple {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        /* Toast 提示 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+        }
+        .toast-success {
+            background-color: #10b981;
+        }
+        .toast-error {
+            background-color: #ef4444;
+        }
+        .toast-warning {
+            background-color: #f59e0b;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        /* 下拉菜单 */
+        .dropdown {
+            position: relative;
+        }
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            min-width: 160px;
+            z-index: 100;
+            display: none;
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        .dropdown-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+        }
+        /* 加载动画 */
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden">
+    <!-- 顶部导航 -->
+    <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 fixed top-0 left-0 right-0 z-50">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+                <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H6v-2h6v2zm4-4H6v-2h10v2zm0-4H6V7h10v2z"/>
+                </svg>
+                <span class="text-lg font-semibold text-gray-800">千仓SDMS</span>
+            </div>
+            <span class="text-gray-300">|</span>
+            <span class="text-gray-600">报表管理</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button class="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+            </button>
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm">张</div>
+                <span class="text-sm text-gray-700">张三</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex pt-14 h-full">
+        <!-- 左侧菜单 -->
+        <aside class="w-56 bg-white border-r border-gray-200 flex-shrink-0 overflow-y-auto">
+            <div class="p-4">
+                <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">入库报表</div>
+                <nav class="space-y-1">
+                    <a href="#" class="menu-item block px-3 py-2 text-sm text-gray-700 rounded-l-md" data-report="stocking-shelf">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                            备货上架量报表
+                        </span>
+                    </a>
+                    <a href="#" class="menu-item block px-3 py-2 text-sm text-gray-700 rounded-l-md" data-report="return-inbound">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                            </svg>
+                            退件入仓数据报表
+                        </span>
+                    </a>
+                </nav>
+
+                <div class="text-xs text-gray-400 uppercase tracking-wider mb-2 mt-6">出库报表</div>
+                <nav class="space-y-1">
+                    <a href="#" class="menu-item block px-3 py-2 text-sm text-gray-700 rounded-l-md" data-report="stocking-outbound">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                            备货出货量报表
+                        </span>
+                    </a>
+                    <a href="#" class="menu-item block px-3 py-2 text-sm text-gray-700 rounded-l-md" data-report="redispatch">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            重派订单数据报表
+                        </span>
+                    </a>
+                </nav>
+
+                <div class="text-xs text-gray-400 uppercase tracking-wider mb-2 mt-6">库存报表</div>
+                <nav class="space-y-1">
+                    <a href="#" class="menu-item block px-3 py-2 text-sm text-gray-700 rounded-l-md" data-report="inventory">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            库存报表
+                        </span>
+                    </a>
+                    <a href="#" class="menu-item active block px-3 py-2 text-sm text-gray-700 rounded-l-md" data-report="business-overview">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            综合业务处理报表
+                        </span>
+                    </a>
+                </nav>
+
+                <div class="text-xs text-gray-400 uppercase tracking-wider mb-2 mt-6">服务质量报表</div>
+                <nav class="space-y-1">
+                    <a href="#" class="menu-item block px-3 py-2 text-sm text-gray-700 rounded-l-md" data-report="sign-rate">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            客户签收率报表
+                        </span>
+                    </a>
+                    <a href="#" class="menu-item block px-3 py-2 text-sm text-gray-700 rounded-l-md" data-report="complaint">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            客诉报表
+                        </span>
+                    </a>
+                    <a href="#" class="menu-item block px-3 py-2 text-sm text-gray-700 rounded-l-md" data-report="compensation">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            赔付报表
+                        </span>
+                    </a>
+                </nav>
+
+                <div class="text-xs text-gray-400 uppercase tracking-wider mb-2 mt-6">自定义报表</div>
+                <nav class="space-y-1">
+                    <a href="#" class="menu-item block px-3 py-2 text-sm text-gray-700 rounded-l-md" data-report="custom">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/>
+                            </svg>
+                            自定义报表配置
+                        </span>
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="flex-1 overflow-y-auto p-6">
+            <!-- 查询条件区 -->
+            <div class="bg-white rounded-lg card p-4 mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-medium text-gray-800">综合业务处理报表</h2>
+                    <div class="flex items-center space-x-2">
+                        <button class="btn-secondary px-3 py-1.5 rounded-md text-sm flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                            </svg>
+                            收藏
+                        </button>
+                        <button class="btn-secondary px-3 py-1.5 rounded-md text-sm flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            订阅
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-5 gap-4">
+                    <!-- 时间范围 -->
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">时间范围 <span class="text-red-500">*</span></label>
+                        <div class="flex items-center space-x-2">
+                            <input type="date" class="form-input w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm" value="2026-03-01" id="startDate">
+                            <span class="text-gray-400">~</span>
+                            <input type="date" class="form-input w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm" value="2026-03-18" id="endDate">
+                        </div>
+                    </div>
+                    <!-- 仓库 -->
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">仓库</label>
+                        <select class="form-input w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm" id="warehouse">
+                            <option value="">全部仓库</option>
+                            <option value="WH001">深圳兴围仓</option>
+                            <option value="WH002">广州白云仓</option>
+                            <option value="WH003">香港葵涌仓</option>
+                        </select>
+                    </div>
+                    <!-- 业务类型 -->
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">业务类型</label>
+                        <select class="form-input w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm" id="businessType">
+                            <option value="">全部类型</option>
+                            <option value="stocking">备货</option>
+                            <option value="return">退件重派</option>
+                            <option value="exchange">换单订单</option>
+                        </select>
+                    </div>
+                    <!-- 时间粒度 -->
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">时间粒度</label>
+                        <select class="form-input w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm" id="timeGranularity">
+                            <option value="day">按日</option>
+                            <option value="week">按周</option>
+                            <option value="month" selected>按月</option>
+                        </select>
+                    </div>
+                    <!-- 操作按钮 -->
+                    <div class="flex items-end space-x-2">
+                        <button class="btn-primary px-4 py-1.5 rounded-md text-sm flex items-center" id="queryBtn">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            查询
+                        </button>
+                        <button class="btn-secondary px-4 py-1.5 rounded-md text-sm" id="resetBtn">重置</button>
+                    </div>
+                </div>
+                <!-- 快捷时间选择 -->
+                <div class="flex items-center mt-3 space-x-2">
+                    <span class="text-xs text-gray-500">快捷选择：</span>
+                    <button class="quick-time px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200" data-days="7">近7天</button>
+                    <button class="quick-time px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200" data-days="30">近30天</button>
+                    <button class="quick-time px-2 py-0.5 text-xs bg-blue-100 text-blue-600 rounded" data-days="90">近3个月</button>
+                    <button class="quick-time px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200" data-days="180">近半年</button>
+                    <button class="quick-time px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200" data-days="365">近一年</button>
+                </div>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="grid grid-cols-4 gap-4 mb-4">
+                <div class="stat-card-blue rounded-lg p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm opacity-80">备货订单</div>
+                            <div class="text-2xl font-bold mt-1">12,586</div>
+                            <div class="text-xs opacity-70 mt-1">较上期 <span class="text-green-300">+12.5%</span></div>
+                        </div>
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card-green rounded-lg p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm opacity-80">退件重派</div>
+                            <div class="text-2xl font-bold mt-1">3,247</div>
+                            <div class="text-xs opacity-70 mt-1">较上期 <span class="text-red-300">-3.2%</span></div>
+                        </div>
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card-orange rounded-lg p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm opacity-80">换单订单</div>
+                            <div class="text-2xl font-bold mt-1">892</div>
+                            <div class="text-xs opacity-70 mt-1">较上期 <span class="text-green-300">+8.7%</span></div>
+                        </div>
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card-purple rounded-lg p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm opacity-80">总处理量</div>
+                            <div class="text-2xl font-bold mt-1">16,725</div>
+                            <div class="text-xs opacity-70 mt-1">较上期 <span class="text-green-300">+10.1%</span></div>
+                        </div>
+                        <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <!-- 趋势图 -->
+                <div class="bg-white rounded-lg card p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-medium text-gray-800">业务处理趋势</h3>
+                        <div class="flex items-center space-x-4 text-xs">
+                            <span class="flex items-center"><span class="w-3 h-3 bg-blue-500 rounded-full mr-1"></span>备货</span>
+                            <span class="flex items-center"><span class="w-3 h-3 bg-green-500 rounded-full mr-1"></span>退件重派</span>
+                            <span class="flex items-center"><span class="w-3 h-3 bg-orange-500 rounded-full mr-1"></span>换单</span>
+                        </div>
+                    </div>
+                    <div style="height: 280px;">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <!-- 饼图 -->
+                <div class="bg-white rounded-lg card p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-medium text-gray-800">业务类型分布</h3>
+                        <select class="text-xs border border-gray-300 rounded px-2 py-1">
+                            <option>按单量</option>
+                            <option>按件数</option>
+                            <option>按重量</option>
+                        </select>
+                    </div>
+                    <div style="height: 280px;">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据表格区 -->
+            <div class="bg-white rounded-lg card">
+                <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                    <h3 class="text-sm font-medium text-gray-800">明细数据</h3>
+                    <div class="flex items-center space-x-2">
+                        <button class="btn-secondary px-3 py-1.5 rounded-md text-sm flex items-center" id="exportBtn">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            导出Excel
+                        </button>
+                        <div class="dropdown">
+                            <button class="btn-secondary px-3 py-1.5 rounded-md text-sm flex items-center" id="moreBtn">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                                </svg>
+                                更多
+                            </button>
+                            <div class="dropdown-menu" id="moreMenu">
+                                <div class="dropdown-item text-sm">导出PDF</div>
+                                <div class="dropdown-item text-sm">打印预览</div>
+                                <div class="dropdown-item text-sm">设置列显示</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="data-table w-full text-sm">
+                        <thead>
+                            <tr class="h-10">
+                                <th class="px-4 text-left font-medium">日期</th>
+                                <th class="px-4 text-left font-medium">仓库</th>
+                                <th class="px-4 text-left font-medium">业务类型</th>
+                                <th class="px-4 text-right font-medium">订单量</th>
+                                <th class="px-4 text-right font-medium">件数</th>
+                                <th class="px-4 text-right font-medium">重量(kg)</th>
+                                <th class="px-4 text-right font-medium">体积(CBM)</th>
+                                <th class="px-4 text-right font-medium">处理率</th>
+                                <th class="px-4 text-right font-medium">平均时效(h)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- 数据由JS渲染 -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- 分页 -->
+                <div class="p-4 border-t border-gray-200 flex items-center justify-between">
+                    <div class="text-sm text-gray-500">
+                        共 <span id="totalCount">156</span> 条记录，当前显示第 <span id="currentPage">1</span>-<span id="endPage">20</span> 条
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50" id="prevBtn" disabled>上一页</button>
+                        <div class="flex items-center space-x-1" id="pageNumbers">
+                            <button class="px-3 py-1 text-sm bg-blue-500 text-white rounded">1</button>
+                            <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">2</button>
+                            <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">3</button>
+                            <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">4</button>
+                            <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">5</button>
+                            <span class="px-2 text-gray-400">...</span>
+                            <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50">8</button>
+                        </div>
+                        <button class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50" id="nextBtn">下一页</button>
+                        <select class="px-2 py-1 text-sm border border-gray-300 rounded" id="pageSize">
+                            <option value="20" selected>20条/页</option>
+                            <option value="50">50条/页</option>
+                            <option value="100">100条/页</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast 容器 -->
+    <div id="toastContainer"></div>
+
+    <script>
+        // ==================== 状态管理 ====================
+        const state = {
+            currentReport: 'business-overview',
+            loading: false,
+            filters: {
+                startDate: '2026-03-01',
+                endDate: '2026-03-18',
+                warehouse: '',
+                businessType: '',
+                timeGranularity: 'month'
+            },
+            pagination: {
+                currentPage: 1,
+                pageSize: 20,
+                total: 156
+            }
+        };
+
+        // ==================== Mock 数据 ====================
+        const mockTableData = [
+            { date: '2026-03', warehouse: '深圳兴围仓', businessType: '备货', orderCount: 4526, pieceCount: 12589, weight: 8562.5, volume: 125.6, processRate: 98.5, avgTime: 4.2 },
+            { date: '2026-03', warehouse: '深圳兴围仓', businessType: '退件重派', orderCount: 1247, pieceCount: 3562, weight: 2156.3, volume: 32.8, processRate: 96.2, avgTime: 6.8 },
+            { date: '2026-03', warehouse: '深圳兴围仓', businessType: '换单订单', orderCount: 312, pieceCount: 856, weight: 523.6, volume: 8.2, processRate: 97.8, avgTime: 5.5 },
+            { date: '2026-03', warehouse: '广州白云仓', businessType: '备货', orderCount: 3892, pieceCount: 10256, weight: 7256.8, volume: 98.5, processRate: 97.2, avgTime: 4.8 },
+            { date: '2026-03', warehouse: '广州白云仓', businessType: '退件重派', orderCount: 985, pieceCount: 2856, weight: 1856.2, volume: 28.6, processRate: 95.6, avgTime: 7.2 },
+            { date: '2026-03', warehouse: '广州白云仓', businessType: '换单订单', orderCount: 256, pieceCount: 698, weight: 425.3, volume: 6.5, processRate: 96.5, avgTime: 5.8 },
+            { date: '2026-03', warehouse: '香港葵涌仓', businessType: '备货', orderCount: 4168, pieceCount: 11235, weight: 8125.6, volume: 115.2, processRate: 98.8, avgTime: 3.9 },
+            { date: '2026-03', warehouse: '香港葵涌仓', businessType: '退件重派', orderCount: 1015, pieceCount: 2965, weight: 1956.8, volume: 29.8, processRate: 97.2, avgTime: 6.5 },
+            { date: '2026-03', warehouse: '香港葵涌仓', businessType: '换单订单', orderCount: 324, pieceCount: 856, weight: 568.2, volume: 8.8, processRate: 98.2, avgTime: 4.9 },
+            { date: '2026-02', warehouse: '深圳兴围仓', businessType: '备货', orderCount: 4012, pieceCount: 11256, weight: 7652.3, volume: 112.5, processRate: 97.8, avgTime: 4.5 },
+            { date: '2026-02', warehouse: '深圳兴围仓', businessType: '退件重派', orderCount: 1295, pieceCount: 3652, weight: 2256.5, volume: 35.2, processRate: 95.8, avgTime: 7.1 },
+            { date: '2026-02', warehouse: '深圳兴围仓', businessType: '换单订单', orderCount: 285, pieceCount: 756, weight: 456.8, volume: 7.2, processRate: 96.2, avgTime: 5.9 },
+            { date: '2026-02', warehouse: '广州白云仓', businessType: '备货', orderCount: 3568, pieceCount: 9652, weight: 6852.6, volume: 92.8, processRate: 96.5, avgTime: 5.1 },
+            { date: '2026-02', warehouse: '广州白云仓', businessType: '退件重派', orderCount: 1025, pieceCount: 2956, weight: 1925.3, volume: 29.5, processRate: 94.8, avgTime: 7.5 },
+            { date: '2026-02', warehouse: '广州白云仓', businessType: '换单订单', orderCount: 235, pieceCount: 652, weight: 395.6, volume: 6.1, processRate: 95.8, avgTime: 6.2 },
+            { date: '2026-02', warehouse: '香港葵涌仓', businessType: '备货', orderCount: 3856, pieceCount: 10256, weight: 7456.2, volume: 105.6, processRate: 98.2, avgTime: 4.1 },
+            { date: '2026-02', warehouse: '香港葵涌仓', businessType: '退件重派', orderCount: 1056, pieceCount: 3056, weight: 2015.6, volume: 30.5, processRate: 96.5, avgTime: 6.9 },
+            { date: '2026-02', warehouse: '香港葵涌仓', businessType: '换单订单', orderCount: 298, pieceCount: 798, weight: 525.8, volume: 8.2, processRate: 97.5, avgTime: 5.2 },
+            { date: '2026-01', warehouse: '深圳兴围仓', businessType: '备货', orderCount: 4256, pieceCount: 11856, weight: 8056.5, volume: 118.6, processRate: 97.5, avgTime: 4.6 },
+            { date: '2026-01', warehouse: '深圳兴围仓', businessType: '退件重派', orderCount: 1186, pieceCount: 3456, weight: 2125.6, volume: 33.5, processRate: 95.2, avgTime: 7.3 },
+        ];
+
+        // ==================== 工具函数 ====================
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function formatNumber(num) {
+            if (num === null || num === undefined) return '--';
+            return num.toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        }
+
+        function formatPercent(num) {
+            if (num === null || num === undefined) return '--';
+            return num.toFixed(1) + '%';
+        }
+
+        // ==================== 渲染函数 ====================
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const start = (state.pagination.currentPage - 1) * state.pagination.pageSize;
+            const end = start + state.pagination.pageSize;
+            const pageData = mockTableData.slice(start, end);
+
+            tbody.innerHTML = pageData.map(row => `
+                <tr class="h-12">
+                    <td class="px-4">${row.date}</td>
+                    <td class="px-4">${row.warehouse}</td>
+                    <td class="px-4">
+                        <span class="px-2 py-0.5 text-xs rounded ${row.businessType === '备货' ? 'bg-blue-100 text-blue-600' : row.businessType === '退件重派' ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-600'}">
+                            ${row.businessType}
+                        </span>
+                    </td>
+                    <td class="px-4 text-right">${formatNumber(row.orderCount)}</td>
+                    <td class="px-4 text-right">${formatNumber(row.pieceCount)}</td>
+                    <td class="px-4 text-right">${formatNumber(row.weight)}</td>
+                    <td class="px-4 text-right">${formatNumber(row.volume)}</td>
+                    <td class="px-4 text-right">
+                        <span class="${row.processRate >= 98 ? 'text-green-600' : row.processRate >= 95 ? 'text-orange-600' : 'text-red-600'}">${formatPercent(row.processRate)}</span>
+                    </td>
+                    <td class="px-4 text-right">${formatNumber(row.avgTime)}</td>
+                </tr>
+            `).join('');
+
+            // 更新分页信息
+            document.getElementById('totalCount').textContent = state.pagination.total;
+            document.getElementById('currentPage').textContent = start + 1;
+            document.getElementById('endPage').textContent = Math.min(end, state.pagination.total);
+        }
+
+        // ==================== 图表初始化 ====================
+        function initCharts() {
+            // 趋势图
+            const trendCtx = document.getElementById('trendChart').getContext('2d');
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2026-01', '2026-02', '2026-03'],
+                    datasets: [
+                        {
+                            label: '备货',
+                            data: [12368, 11636, 12586],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: '退件重派',
+                            data: [3458, 3376, 3247],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: '换单订单',
+                            data: [968, 818, 892],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f3f4f6' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // 饼图
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['备货订单', '退件重派', '换单订单'],
+                    datasets: [{
+                        data: [12586, 3247, 892],
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        // ==================== 事件处理 ====================
+        function initEvents() {
+            // 菜单切换
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    const report = this.dataset.report;
+                    if (report) {
+                        state.currentReport = report;
+                        showToast(`已切换到：${this.textContent.trim()}`);
+                    }
+                });
+            });
+
+            // 查询按钮
+            document.getElementById('queryBtn').addEventListener('click', function() {
+                state.filters.startDate = document.getElementById('startDate').value;
+                state.filters.endDate = document.getElementById('endDate').value;
+                state.filters.warehouse = document.getElementById('warehouse').value;
+                state.filters.businessType = document.getElementById('businessType').value;
+                state.filters.timeGranularity = document.getElementById('timeGranularity').value;
+
+                showToast('查询成功', 'success');
+                renderTable();
+            });
+
+            // 重置按钮
+            document.getElementById('resetBtn').addEventListener('click', function() {
+                document.getElementById('startDate').value = '2026-03-01';
+                document.getElementById('endDate').value = '2026-03-18';
+                document.getElementById('warehouse').value = '';
+                document.getElementById('businessType').value = '';
+                document.getElementById('timeGranularity').value = 'month';
+                showToast('已重置查询条件');
+            });
+
+            // 快捷时间选择
+            document.querySelectorAll('.quick-time').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const days = parseInt(this.dataset.days);
+                    const endDate = new Date();
+                    const startDate = new Date();
+                    startDate.setDate(startDate.getDate() - days);
+
+                    document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+                    document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+
+                    document.querySelectorAll('.quick-time').forEach(b => {
+                        b.classList.remove('bg-blue-100', 'text-blue-600');
+                        b.classList.add('bg-gray-100', 'text-gray-600');
+                    });
+                    this.classList.remove('bg-gray-100', 'text-gray-600');
+                    this.classList.add('bg-blue-100', 'text-blue-600');
+                });
+            });
+
+            // 导出按钮
+            document.getElementById('exportBtn').addEventListener('click', function() {
+                showToast('正在导出Excel...', 'warning');
+                setTimeout(() => showToast('导出成功，共156条数据', 'success'), 1500);
+            });
+
+            // 更多下拉菜单
+            document.getElementById('moreBtn').addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.getElementById('moreMenu').classList.toggle('show');
+            });
+
+            // 点击外部关闭下拉菜单
+            document.addEventListener('click', function() {
+                document.getElementById('moreMenu').classList.remove('show');
+            });
+
+            // 分页事件
+            document.getElementById('prevBtn').addEventListener('click', function() {
+                if (state.pagination.currentPage > 1) {
+                    state.pagination.currentPage--;
+                    renderTable();
+                    updatePagination();
+                }
+            });
+
+            document.getElementById('nextBtn').addEventListener('click', function() {
+                const maxPage = Math.ceil(state.pagination.total / state.pagination.pageSize);
+                if (state.pagination.currentPage < maxPage) {
+                    state.pagination.currentPage++;
+                    renderTable();
+                    updatePagination();
+                }
+            });
+
+            document.getElementById('pageSize').addEventListener('change', function() {
+                state.pagination.pageSize = parseInt(this.value);
+                state.pagination.currentPage = 1;
+                renderTable();
+                updatePagination();
+            });
+
+            // Enter键查询
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        document.getElementById('queryBtn').click();
+                    }
+                });
+            });
+        }
+
+        function updatePagination() {
+            const maxPage = Math.ceil(state.pagination.total / state.pagination.pageSize);
+            document.getElementById('prevBtn').disabled = state.pagination.currentPage === 1;
+            document.getElementById('nextBtn').disabled = state.pagination.currentPage === maxPage;
+        }
+
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+            initCharts();
+            initEvents();
+        });
+    </script>
+</body>
+</html>

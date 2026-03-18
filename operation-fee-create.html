@@ -1725,7 +1725,7 @@
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M6 6h12v12H6z"></path>
           </svg>
-          <span>新增操作费</span>
+          <span id="pageTabLabel">新增操作费</span>
           <span class="close-mark">×</span>
         </div>
       </div>
@@ -1733,7 +1733,7 @@
       <main class="content-wrap">
         <section class="page-card">
           <div class="page-card-head">
-            <div class="page-title">新增操作费</div>
+            <div class="page-title" id="pageTitleLabel">新增操作费</div>
             <div class="page-actions">
               <button class="btn btn-outline" id="simulateBtn" type="button">费用试算</button>
               <button class="btn btn-primary" id="saveBtn" type="button">保存</button>
@@ -4169,6 +4169,17 @@
       ruleEditorModal.addEventListener('dragend', () => {
         resetDraggingCondition();
       });
+
+      const pageParams = new URLSearchParams(window.location.search);
+      const pageMode = pageParams.get('mode');
+      const pageTitleLabel = document.getElementById('pageTitleLabel');
+      const pageTabLabel = document.getElementById('pageTabLabel');
+
+      if (pageMode === 'edit') {
+        document.title = '编辑操作费';
+        if (pageTitleLabel) pageTitleLabel.textContent = '编辑操作费';
+        if (pageTabLabel) pageTabLabel.textContent = '编辑操作费';
+      }
 
       document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && modalState.open) {
