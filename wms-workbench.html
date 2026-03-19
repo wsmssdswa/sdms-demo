@@ -514,6 +514,125 @@
       background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
       box-shadow: 0 8px 18px -12px rgba(6, 182, 212, 0.9);
     }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      width: 100%;
+    }
+
+    .report-card {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      min-height: 102px;
+      border-radius: 14px;
+      border: 1px solid rgba(147, 167, 237, 0.18);
+      background: linear-gradient(135deg, #eef3ff 0%, #dde7ff 100%);
+      box-shadow: 0 12px 24px -24px rgba(79, 70, 229, 0.5);
+      cursor: pointer;
+      transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+    }
+
+    .report-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0%, transparent 36%);
+      pointer-events: none;
+    }
+
+    .report-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 76px;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(132, 149, 235, 0.08) 0%, rgba(115, 132, 221, 0.42) 100%);
+      clip-path: polygon(42% 0, 100% 0, 100% 100%, 0 100%);
+      pointer-events: none;
+    }
+
+    .report-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(79, 70, 229, 0.22);
+      box-shadow: 0 16px 28px -24px rgba(79, 70, 229, 0.72);
+    }
+
+    .report-card:focus-visible {
+      outline: none;
+      border-color: rgba(79, 70, 229, 0.35);
+      box-shadow:
+        0 0 0 3px rgba(99, 102, 241, 0.18),
+        0 16px 28px -24px rgba(79, 70, 229, 0.72);
+    }
+
+    .report-card:hover .report-icon {
+      transform: translateY(-1px);
+    }
+
+    .report-icon {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.4);
+      border: 1px solid rgba(59, 130, 246, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.28s ease;
+    }
+
+    .report-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 24px;
+    }
+
+    .report-bars span {
+      width: 4px;
+      border-radius: 9999px 9999px 2px 2px;
+      background: linear-gradient(180deg, #5b8bff 0%, #3f72ea 100%);
+      box-shadow: 0 4px 10px -6px rgba(63, 114, 234, 0.9);
+    }
+
+    .report-bars span:nth-child(1) {
+      height: 10px;
+    }
+
+    .report-bars span:nth-child(2) {
+      height: 18px;
+    }
+
+    .report-bars span:nth-child(3) {
+      height: 24px;
+    }
+
+    .report-bars span:nth-child(4) {
+      height: 14px;
+    }
+
+    .report-badge {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 1;
+      min-width: 34px;
+      padding: 4px 8px 5px;
+      border-radius: 0 14px 0 12px;
+      background: linear-gradient(135deg, #ff7b72 0%, #ff4d67 100%);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      text-align: center;
+      box-shadow: 0 12px 22px -16px rgba(255, 77, 103, 0.95);
+    }
   </style>
 </head>
 <body class="font-sans text-slate-800 min-h-screen relative">
@@ -1154,6 +1273,131 @@
               <canvas id="inventoryChart"></canvas>
             </div>
           </div>
+
+          <!-- 经营报表组件 -->
+          <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="operatingReport" style="animation-delay: 0.63s;">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-5 drag-handle">
+              <h3 class="font-semibold text-slate-800 flex items-center text-lg">
+                <div class="w-8 h-8 rounded-lg bg-stat-blue/15 flex items-center justify-center mr-3">
+                  <i class="ri-file-chart-line text-stat-blueLight"></i>
+                </div>
+                经营报表
+              </h3>
+              <div class="flex flex-wrap items-center justify-end gap-3">
+                <span class="inline-flex items-center px-3 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 border border-accent-cyan/20 rounded-full">
+                  <span class="glow-dot w-2 h-2 rounded-full bg-accent-cyan mr-2"></span>
+                  月度自动推送
+                </span>
+                <button type="button" class="text-sm text-accent-cyan hover:text-accent-cyanLight transition-colors">查看全部</button>
+              </div>
+            </div>
+            <div class="module-content module-scroll">
+              <div class="report-grid">
+                <button type="button" class="report-card text-left p-4">
+                  <span class="report-badge">新</span>
+                  <div class="relative z-[1] flex items-center gap-3.5">
+                    <div class="report-icon" aria-hidden="true">
+                      <div class="report-bars">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                    <div class="min-w-0 flex-1 pr-2">
+                      <p class="text-sm font-semibold text-[#4364db] leading-5">25年6月经营分析报表</p>
+                      <p class="mt-1.5 text-xs font-medium text-slate-600/70">2025.06.01 ~ 2025.06.30</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button type="button" class="report-card text-left p-4">
+                  <div class="relative z-[1] flex items-center gap-3.5">
+                    <div class="report-icon" aria-hidden="true">
+                      <div class="report-bars">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                    <div class="min-w-0 flex-1 pr-2">
+                      <p class="text-sm font-semibold text-[#4364db] leading-5">25年5月经营分析报表</p>
+                      <p class="mt-1.5 text-xs font-medium text-slate-600/70">2025.05.01 ~ 2025.05.31</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button type="button" class="report-card text-left p-4">
+                  <div class="relative z-[1] flex items-center gap-3.5">
+                    <div class="report-icon" aria-hidden="true">
+                      <div class="report-bars">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                    <div class="min-w-0 flex-1 pr-2">
+                      <p class="text-sm font-semibold text-[#4364db] leading-5">25年4月经营分析报表</p>
+                      <p class="mt-1.5 text-xs font-medium text-slate-600/70">2025.04.01 ~ 2025.04.30</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button type="button" class="report-card text-left p-4">
+                  <div class="relative z-[1] flex items-center gap-3.5">
+                    <div class="report-icon" aria-hidden="true">
+                      <div class="report-bars">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                    <div class="min-w-0 flex-1 pr-2">
+                      <p class="text-sm font-semibold text-[#4364db] leading-5">25年3月经营分析报表</p>
+                      <p class="mt-1.5 text-xs font-medium text-slate-600/70">2025.03.01 ~ 2025.03.31</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button type="button" class="report-card text-left p-4">
+                  <div class="relative z-[1] flex items-center gap-3.5">
+                    <div class="report-icon" aria-hidden="true">
+                      <div class="report-bars">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                    <div class="min-w-0 flex-1 pr-2">
+                      <p class="text-sm font-semibold text-[#4364db] leading-5">25年2月经营分析报表</p>
+                      <p class="mt-1.5 text-xs font-medium text-slate-600/70">2025.02.01 ~ 2025.02.28</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button type="button" class="report-card text-left p-4">
+                  <div class="relative z-[1] flex items-center gap-3.5">
+                    <div class="report-icon" aria-hidden="true">
+                      <div class="report-bars">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    </div>
+                    <div class="min-w-0 flex-1 pr-2">
+                      <p class="text-sm font-semibold text-[#4364db] leading-5">25年1月经营分析报表</p>
+                      <p class="mt-1.5 text-xs font-medium text-slate-600/70">2025.01.01 ~ 2025.01.31</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
           
           <!-- 人效统计列表组件 -->
           <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="efficiency" style="animation-delay: 0.65s;">
@@ -1469,6 +1713,25 @@
               <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="1">1列</button>
             </div>
           </div>
+
+          <!-- 经营报表组件配置 -->
+          <div class="component-item glass-card-light rounded-xl p-4 border border-slate-200" data-config="operatingReport">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center">
+                <div class="drag-handle-config cursor-move text-slate-600/50 hover:text-accent-cyan mr-3 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                  <i class="ri-draggable text-lg"></i>
+                </div>
+                <input type="checkbox" id="showOperatingReport" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+                <label for="showOperatingReport" class="ml-3 font-medium text-slate-800">经营报表</label>
+              </div>
+              <span class="text-xs text-slate-600/40">定时推送</span>
+            </div>
+            <div class="flex items-center space-x-2 ml-10">
+              <span class="text-sm text-slate-600/60">宽度:</span>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="2">2列</button>
+            </div>
+          </div>
           
           <!-- 人效统计组件配置 -->
           <div class="component-item glass-card-light rounded-xl p-4 border border-slate-200" data-config="efficiency">
@@ -1717,7 +1980,7 @@
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
               <i class="ri-draggable text-lg"></i>
             </div>
-            <input type="checkbox" data-kpi-checkbox="outboundWeight" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <input type="checkbox" data-kpi-checkbox="outboundWeight" class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
             <div class="w-8 h-8 rounded-lg bg-sky-500/20 flex items-center justify-center flex-shrink-0">
               <i class="ri-scales-line text-sky-400"></i>
             </div>
@@ -1733,7 +1996,7 @@
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
               <i class="ri-draggable text-lg"></i>
             </div>
-            <input type="checkbox" data-kpi-checkbox="outboundPieces" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <input type="checkbox" data-kpi-checkbox="outboundPieces" class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
             <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center flex-shrink-0">
               <i class="ri-inbox-line text-accent-cyanLight"></i>
             </div>
@@ -1749,7 +2012,7 @@
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
               <i class="ri-draggable text-lg"></i>
             </div>
-            <input type="checkbox" data-kpi-checkbox="inboundWeight" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <input type="checkbox" data-kpi-checkbox="inboundWeight" class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
             <div class="w-8 h-8 rounded-lg bg-teal-500/20 flex items-center justify-center flex-shrink-0">
               <i class="ri-weight-line text-teal-400"></i>
             </div>
@@ -1765,7 +2028,7 @@
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
               <i class="ri-draggable text-lg"></i>
             </div>
-            <input type="checkbox" data-kpi-checkbox="inboundPieces" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <input type="checkbox" data-kpi-checkbox="inboundPieces" class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
             <div class="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
               <i class="ri-archive-line text-emerald-400"></i>
             </div>
@@ -1845,7 +2108,7 @@
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
               <i class="ri-draggable text-lg"></i>
             </div>
-            <input type="checkbox" data-kpi-checkbox="orphanOrders" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <input type="checkbox" data-kpi-checkbox="orphanOrders" class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
             <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
               <i class="ri-file-warning-line text-orange-400"></i>
             </div>
@@ -1955,6 +2218,10 @@
   
   <script>
     let selectedWarehouses = ['WH001', 'WH002', 'WH003', 'WH004', 'WH005', 'WH006'];
+    const LAYOUT_STORAGE_VERSION = 2;
+    const KPI_STORAGE_VERSION = 2;
+    const DEFAULT_COMPONENT_ORDER = ['todo', 'alert', 'trend', 'shortcut', 'operatingReport', 'inventory', 'efficiency', 'timeliness', 'message'];
+    const DEFAULT_HIDDEN_KPI_KEYS = ['outboundWeight', 'outboundPieces', 'inboundWeight', 'inboundPieces', 'orphanOrders'];
     
     const defaultLayout = {
       todo: { show: true, width: 2 },
@@ -1962,6 +2229,7 @@
       trend: { show: true, width: 2 },
       shortcut: { show: true, width: 1 },
       inventory: { show: true, width: 1 },
+      operatingReport: { show: true, width: 2 },
       efficiency: { show: true, width: 2 },
       timeliness: { show: true, width: 1 },
       message: { show: true, width: 2 }
@@ -1992,19 +2260,76 @@
       items: [
         { key: 'outboundQty', show: true },
         { key: 'inboundQty', show: true },
-        { key: 'outboundWeight', show: true },
-        { key: 'outboundPieces', show: true },
-        { key: 'inboundWeight', show: true },
-        { key: 'inboundPieces', show: true },
+        { key: 'outboundWeight', show: false },
+        { key: 'outboundPieces', show: false },
+        { key: 'inboundWeight', show: false },
+        { key: 'inboundPieces', show: false },
         { key: 'inventory', show: true },
         { key: 'complaintRate', show: true },
         { key: 'signRate', show: true },
         { key: 'redispatchRate', show: true },
-        { key: 'orphanOrders', show: true }
+        { key: 'orphanOrders', show: false }
       ]
     };
 
     let currentKpiConfig = JSON.parse(JSON.stringify(defaultKpiConfig));
+
+    function moveComponentBefore(order, movingKey, beforeKey) {
+      const nextOrder = [...order];
+      const movingIndex = nextOrder.indexOf(movingKey);
+      const beforeIndex = nextOrder.indexOf(beforeKey);
+      if (movingIndex === -1 || beforeIndex === -1 || movingIndex < beforeIndex) return nextOrder;
+      nextOrder.splice(movingIndex, 1);
+      nextOrder.splice(nextOrder.indexOf(beforeKey), 0, movingKey);
+      return nextOrder;
+    }
+
+    function normalizeComponentOrder(order = []) {
+      const normalized = order.filter(component => DEFAULT_COMPONENT_ORDER.includes(component));
+      DEFAULT_COMPONENT_ORDER.forEach(component => {
+        if (!normalized.includes(component)) {
+          normalized.push(component);
+        }
+      });
+      return normalized;
+    }
+
+    function applyDashboardComponentOrder(order = DEFAULT_COMPONENT_ORDER) {
+      const normalizedOrder = normalizeComponentOrder(order);
+      const grid = document.getElementById('dashboardGrid');
+      const layoutConfigList = document.getElementById('layoutConfigList');
+
+      if (grid) {
+        normalizedOrder.forEach(componentName => {
+          const component = grid.querySelector(`[data-component="${componentName}"]`);
+          if (component) grid.appendChild(component);
+        });
+      }
+
+      if (layoutConfigList) {
+        normalizedOrder.forEach(componentName => {
+          const configItem = layoutConfigList.querySelector(`[data-config="${componentName}"]`);
+          if (configItem) layoutConfigList.appendChild(configItem);
+        });
+      }
+    }
+
+    function normalizeKpiConfigItems(items = [], shouldUseLatestDefaultVisibility = false) {
+      const savedMap = new Map(items.map(item => [item.key, item]));
+      return defaultKpiConfig.items.map(defaultItem => {
+        const savedItem = savedMap.get(defaultItem.key);
+        if (!savedItem) return { ...defaultItem };
+
+        return {
+          key: defaultItem.key,
+          show: shouldUseLatestDefaultVisibility && DEFAULT_HIDDEN_KPI_KEYS.includes(defaultItem.key)
+            ? defaultItem.show
+            : typeof savedItem.show === 'boolean'
+              ? savedItem.show
+              : defaultItem.show
+        };
+      });
+    }
 
     function syncShortcutGridLayout() {
       const shortcutGrid = document.getElementById('shortcutGrid');
@@ -3057,7 +3382,10 @@
     }
 
     function saveKpiConfigToStorage() {
-      localStorage.setItem('wmsKpiConfig', JSON.stringify(currentKpiConfig));
+      localStorage.setItem('wmsKpiConfig', JSON.stringify({
+        version: KPI_STORAGE_VERSION,
+        config: currentKpiConfig.items
+      }));
     }
 
     function loadKpiConfigFromStorage() {
@@ -3065,16 +3393,25 @@
       if (savedConfig) {
         try {
           const data = JSON.parse(savedConfig);
-          if (data.config) {
-            // 合并保存的配置，保留新增的KPI
-            const savedKeys = data.config.map(c => c.key);
-            const newKpis = defaultKpiConfig.items.filter(c => !savedKeys.includes(c.key));
-            currentKpiConfig.items = [...data.config, ...newKpis];
+          let savedItems = null;
+          let shouldMigrateDefaultVisibility = false;
+
+          if (Array.isArray(data?.config)) {
+            savedItems = data.config;
+            shouldMigrateDefaultVisibility = !data.version || data.version < KPI_STORAGE_VERSION;
+          } else if (Array.isArray(data?.items)) {
+            savedItems = data.items;
+            shouldMigrateDefaultVisibility = true;
           } else if (Array.isArray(data)) {
-            // 兼容旧格式（直接是数组）
-            const savedKeys = data.map(c => c.key);
-            const newKpis = defaultKpiConfig.items.filter(c => !savedKeys.includes(c.key));
-            currentKpiConfig.items = [...data, ...newKpis];
+            savedItems = data;
+            shouldMigrateDefaultVisibility = true;
+          }
+
+          if (savedItems) {
+            currentKpiConfig.items = normalizeKpiConfigItems(savedItems, shouldMigrateDefaultVisibility);
+            if (shouldMigrateDefaultVisibility) {
+              saveKpiConfigToStorage();
+            }
           }
         } catch (e) {
           console.error('加载KPI配置失败:', e);
@@ -3281,6 +3618,7 @@
     function resetToDefault() {
       if (confirm('确定要恢复默认布局吗？')) {
         currentLayout = JSON.parse(JSON.stringify(defaultLayout));
+        applyDashboardComponentOrder(DEFAULT_COMPONENT_ORDER);
         syncLayoutToModal();
         applyLayout();
         saveLayoutToStorage();
@@ -3296,11 +3634,20 @@
           components.push({ component: componentName, position: index, width: currentLayout[componentName].width });
         }
       });
-      localStorage.setItem('wmsWorkbenchLayout', JSON.stringify({ components, config: currentLayout }));
+      localStorage.setItem('wmsWorkbenchLayout', JSON.stringify({
+        version: LAYOUT_STORAGE_VERSION,
+        components,
+        config: currentLayout
+      }));
     }
     
     function loadLayoutFromStorage() {
       const savedLayout = localStorage.getItem('wmsWorkbenchLayout');
+      if (!savedLayout) {
+        applyDashboardComponentOrder(DEFAULT_COMPONENT_ORDER);
+        return;
+      }
+
       if (savedLayout) {
         try {
           const layoutData = JSON.parse(savedLayout);
@@ -3315,11 +3662,17 @@
               component.classList.add('col-span-1', config.width === 2 ? 'md:col-span-2' : 'md:col-span-1');
             }
           });
-          if (layoutData.components) {
-            layoutData.components.forEach(item => {
-              const component = grid.querySelector(`[data-component="${item.component}"]`);
-              if (component) grid.appendChild(component);
-            });
+          const savedOrder = Array.isArray(layoutData.components)
+            ? layoutData.components.map(item => item.component)
+            : DEFAULT_COMPONENT_ORDER;
+          let componentOrder = normalizeComponentOrder(savedOrder);
+          if (!layoutData.version || layoutData.version < LAYOUT_STORAGE_VERSION) {
+            componentOrder = moveComponentBefore(componentOrder, 'operatingReport', 'inventory');
+          }
+          applyDashboardComponentOrder(componentOrder);
+
+          if (!layoutData.version || layoutData.version < LAYOUT_STORAGE_VERSION) {
+            saveLayoutToStorage();
           }
           syncShortcutGridLayout();
           initTimelinessFlow();
