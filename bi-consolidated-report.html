@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BI综合报表-千仓SDMS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: '#2563eb',
+            ink: '#0f172a',
+            success: '#10b981',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            violet: '#4f46e5'
+          },
+          boxShadow: {
+            soft: '0 12px 32px rgba(15, 23, 42, 0.08)',
+            panel: '0 24px 60px rgba(15, 23, 42, 0.10)'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    html {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow: hidden;
+      font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+      color: #0f172a;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(79, 70, 229, 0.10), transparent 22%),
+        linear-gradient(180deg, #f4f8fd 0%, #edf3fb 48%, #e8eef8 100%);
+    }
+
+    .app-layout {
+      height: calc(100dvh - 4rem);
+      overflow: hidden;
+    }
+
+    .report-main {
+      min-width: 0;
+      min-height: 0;
+      height: 100%;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @supports not (height: 100dvh) {
+      .app-layout {
+        height: calc(100vh - 4rem);
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.36);
+      border-radius: 999px;
+    }
+
+    .shell-card {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(219, 228, 240, 0.92);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+    }
+
+    .panel-hero {
+      position: relative;
+      overflow: hidden;
+      color: #ffffff;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.18), transparent 30%),
+        linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(29, 78, 216, 0.92) 46%, rgba(15, 118, 110, 0.88) 100%);
+    }
+
+    .menu-item {
+      border-right: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .menu-item:hover {
+      background: #f8fbff;
+      color: #1d4ed8;
+    }
+
+    .menu-item.active {
+      background: linear-gradient(90deg, rgba(239, 246, 255, 0.96) 0%, rgba(234, 244, 255, 0.96) 100%);
+      border-right-color: #2563eb;
+      color: #1d4ed8;
+    }
+
+    .menu-item.active .menu-icon {
+      background: rgba(37, 99, 235, 0.14);
+      color: #1d4ed8;
+    }
+
+    .menu-icon {
+      display: inline-flex;
+      width: 28px;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(148, 163, 184, 0.12);
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
+
+    .report-tab {
+      border: 1px solid rgba(219, 228, 240, 0.92);
+      border-radius: 999px;
+      background: rgba(248, 250, 252, 0.92);
+      color: #475569;
+      transition: all 0.2s ease;
+    }
+
+    .report-tab.active {
+      background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+      border-color: transparent;
+      color: #ffffff;
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.24);
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 12px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.24);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.92);
+      color: #334155;
+      border: 1px solid rgba(209, 219, 234, 0.96);
+    }
+
+    .btn-secondary:hover,
+    .report-tab:hover {
+      background: #f8fbff;
+      color: #1d4ed8;
+      border-color: rgba(37, 99, 235, 0.24);
+    }
+
+    .form-input {
+      width: 100%;
+      height: 40px;
+      border: 1px solid rgba(203, 213, 225, 0.96);
+      border-radius: 12px;
+      padding: 0 14px;
+      background: rgba(255, 255, 255, 0.96);
+      color: #0f172a;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: rgba(37, 99, 235, 0.6);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .quick-range {
+      border-radius: 999px;
+      background: rgba(241, 245, 249, 0.92);
+      color: #64748b;
+      transition: all 0.2s ease;
+    }
+
+    .quick-range.active {
+      background: rgba(239, 246, 255, 0.96);
+      color: #1d4ed8;
+    }
+
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 24px;
+      padding: 22px 20px;
+      color: #ffffff;
+      box-shadow: 0 20px 42px rgba(15, 23, 42, 0.12);
+    }
+
+    .stat-card::after {
+      content: "";
+      position: absolute;
+      right: -20px;
+      top: -20px;
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.20), transparent 70%);
+    }
+
+    .tone-blue {
+      background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+    }
+
+    .tone-green {
+      background: linear-gradient(135deg, #059669 0%, #0f766e 100%);
+    }
+
+    .tone-orange {
+      background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+    }
+
+    .tone-violet {
+      background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+    }
+
+    .data-table thead th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .data-table td,
+    .data-table th {
+      border-bottom: 1px solid rgba(226, 232, 240, 0.90);
+    }
+
+    .data-table tbody tr:hover td {
+      background: #f8fbff;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 72px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .badge-blue {
+      background: rgba(37, 99, 235, 0.10);
+      color: #2563eb;
+    }
+
+    .badge-green {
+      background: rgba(16, 185, 129, 0.10);
+      color: #059669;
+    }
+
+    .badge-orange {
+      background: rgba(245, 158, 11, 0.10);
+      color: #d97706;
+    }
+
+    .badge-red {
+      background: rgba(239, 68, 68, 0.10);
+      color: #dc2626;
+    }
+
+    .toolbar-tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: rgba(241, 245, 249, 0.92);
+      padding: 6px 10px;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .toast {
+      position: fixed;
+      top: 84px;
+      right: 20px;
+      z-index: 120;
+      border-radius: 14px;
+      padding: 12px 16px;
+      color: #ffffff;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+      animation: toast-in 0.28s ease;
+    }
+
+    .toast-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .toast-warning {
+      background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+    }
+
+    .toast-error {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    @keyframes toast-in {
+      from {
+        transform: translateY(-8px) translateX(24px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0) translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body class="h-screen">
+  <header class="topbar fixed inset-x-0 top-0 z-40 border-b border-white/60">
+    <div class="flex h-16 items-center justify-between px-4 md:px-6">
+      <div class="flex items-center gap-3">
+        <button id="menuToggle" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-soft md:hidden">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 7h16M4 12h16M4 17h16"></path>
+          </svg>
+        </button>
+        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-violet text-white shadow-soft">
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 18.5v-13Zm3 1.75a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5H7Zm0 4a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5H7Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5H7Z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="text-base font-semibold text-ink">千仓SDMS</div>
+          <div class="text-xs text-slate-500">BI综合报表中心</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500 shadow-soft lg:flex lg:items-center lg:gap-2">
+          <span class="inline-flex h-2 w-2 rounded-full bg-success"></span>
+          数据同步正常
+        </div>
+        <div class="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-2 py-1.5 shadow-soft">
+          <div class="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">赵</div>
+          <div class="pr-2">
+            <div class="text-sm font-medium text-slate-700">赵敏</div>
+            <div class="text-[11px] text-slate-400">BI运营</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-layout flex pt-16">
+    <div id="sidebarOverlay" class="fixed inset-0 z-20 hidden bg-slate-950/30 md:hidden"></div>
+
+    <aside id="sidebar" class="shell-card fixed inset-y-16 left-0 z-30 w-72 -translate-x-full overflow-y-auto rounded-none border-l-0 border-t-0 border-b-0 transition-transform duration-300 md:static md:h-full md:shrink-0 md:translate-x-0 md:border-y-0 md:border-r">
+      <div class="border-b border-slate-200/80 px-5 py-5">
+        <div class="text-sm font-semibold text-slate-800">报表导航</div>
+        <div class="mt-1 text-xs leading-5 text-slate-500">参考报表管理页的分组方式，统一整合出入库、库存和服务质量视图。</div>
+      </div>
+      <div class="px-4 py-4">
+        <div class="mb-6">
+          <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">出库报表</div>
+          <nav class="space-y-1">
+            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="shipment"><span class="menu-icon">出</span><span>备货订单出货报表</span></button>
+            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="reassign"><span class="menu-icon">重</span><span>重派订单报表</span></button>
+          </nav>
+        </div>
+        <div class="mb-6">
+          <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">入库报表</div>
+          <nav class="space-y-1">
+            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="putaway"><span class="menu-icon">上</span><span>上架量报表</span></button>
+            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="return"><span class="menu-icon">退</span><span>退件入仓报表</span></button>
+          </nav>
+        </div>
+        <div class="mb-6">
+          <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">库存报表</div>
+          <nav class="space-y-1">
+            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="inventory"><span class="menu-icon">库</span><span>库存报表</span></button>
+          </nav>
+        </div>
+        <div>
+          <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">服务质量报表</div>
+          <nav class="space-y-1">
+            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="sign-rate"><span class="menu-icon">签</span><span>客户签收率报表</span></button>
+            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="complaint"><span class="menu-icon">诉</span><span>客诉分析报表</span></button>
+            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="compensation"><span class="menu-icon">赔</span><span>赔付分析报表</span></button>
+          </nav>
+        </div>
+      </div>
+    </aside>
+
+    <main class="report-main flex-1 px-4 py-5 md:px-6 md:py-6 lg:px-8">
+      <section class="panel-hero shell-card mb-4 rounded-[28px] border-0 p-5 md:p-7">
+        <div class="relative z-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div class="max-w-4xl">
+            <div class="mb-3 flex flex-wrap items-center gap-2">
+              <span class="rounded-full bg-white/16 px-3 py-1.5 text-xs text-white/90">BI综合报表中心</span>
+              <span id="heroCurrentReport" class="rounded-full bg-white/16 px-3 py-1.5 text-xs text-white/90">备货订单出货报表</span>
+            </div>
+            <h1 class="text-2xl font-semibold tracking-wide md:text-3xl">统一查看仓配核心指标、趋势波动与风险提醒</h1>
+            <p id="heroDescription" class="mt-3 max-w-3xl text-sm leading-7 text-white/80 md:text-base"></p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="favoriteBtn" class="btn-secondary h-11 px-4 text-white/90" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.14);">收藏视图</button>
+            <button id="subscribeBtn" class="btn-secondary h-11 px-4 text-white/90" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.14);">订阅日报</button>
+          </div>
+        </div>
+        <div id="heroMeta" class="relative z-10 mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"></div>
+      </section>
+
+      <section class="shell-card mb-4 rounded-[28px] p-4 md:p-5">
+        <div class="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">快捷切换</div>
+            <h2 class="text-lg font-semibold text-slate-900">综合报表主题导航</h2>
+          </div>
+          <div class="text-xs text-slate-500">已对齐参考页的信息节奏，适合评审演示与方案对比。</div>
+        </div>
+        <div id="reportTabs" class="flex flex-wrap gap-2"></div>
+      </section>
+
+      <section class="shell-card mb-4 rounded-[28px] p-4 md:p-5">
+        <div class="mb-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">查询条件</div>
+            <h2 id="reportTitle" class="text-xl font-semibold text-slate-900"></h2>
+            <p id="reportSummary" class="mt-2 text-sm leading-6 text-slate-500"></p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="scopeTag" class="toolbar-tag"></span>
+            <span id="syncTag" class="toolbar-tag"></span>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+          <div class="md:col-span-2 xl:col-span-2">
+            <label class="mb-1.5 block text-xs text-slate-500">时间范围<span class="text-red-500">*</span></label>
+            <div class="grid grid-cols-[minmax(0,1fr)_16px_minmax(0,1fr)] items-center gap-2">
+              <input id="startDate" type="date" class="form-input min-w-0" value="2026-01-01">
+              <span class="text-center text-slate-400">~</span>
+              <input id="endDate" type="date" class="form-input min-w-0" value="2026-03-18">
+            </div>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs text-slate-500">仓库</label>
+            <select id="warehouse" class="form-input">
+              <option value="">全部仓库</option>
+              <option value="深圳兴围仓">深圳兴围仓</option>
+              <option value="广州白云仓">广州白云仓</option>
+              <option value="香港葵涌仓">香港葵涌仓</option>
+            </select>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs text-slate-500">客户/货主</label>
+            <select id="customer" class="form-input"></select>
+          </div>
+          <div>
+            <label id="filterALabel" class="mb-1.5 block text-xs text-slate-500">主题维度</label>
+            <select id="filterA" class="form-input"></select>
+          </div>
+          <div>
+            <label id="filterBLabel" class="mb-1.5 block text-xs text-slate-500">状态</label>
+            <select id="filterB" class="form-input"></select>
+          </div>
+        </div>
+        <div class="mt-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs text-slate-500">快捷时间:</span>
+            <button class="quick-range px-3 py-1.5 text-xs" data-days="7">近7天</button>
+            <button class="quick-range px-3 py-1.5 text-xs" data-days="30">近30天</button>
+            <button class="quick-range active px-3 py-1.5 text-xs" data-days="90">近3个月</button>
+            <button class="quick-range px-3 py-1.5 text-xs" data-days="180">近半年</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="resetBtn" class="btn-secondary h-10 px-4">重置</button>
+            <button id="exportBtn" class="btn-secondary h-10 px-4">导出</button>
+            <button id="queryBtn" class="btn-primary h-10 px-4">查询</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="statCards" class="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"></section>
+
+      <section class="mb-4 grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
+        <div class="shell-card rounded-[28px] p-5">
+          <div class="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">趋势分析</div>
+              <h3 id="trendTitle" class="text-lg font-semibold text-slate-900"></h3>
+            </div>
+            <span class="toolbar-tag">统计维度:按日</span>
+          </div>
+          <div class="h-[320px]">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="shell-card rounded-[28px] p-5">
+            <div class="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">结构分析</div>
+                <h3 id="structureTitle" class="text-lg font-semibold text-slate-900"></h3>
+              </div>
+              <span class="toolbar-tag">按占比</span>
+            </div>
+            <div class="h-[240px]">
+              <canvas id="structureChart"></canvas>
+            </div>
+          </div>
+          <div class="shell-card rounded-[28px] p-5">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <div class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">运营提示</div>
+                <h3 class="text-lg font-semibold text-slate-900">当前关注点</h3>
+              </div>
+              <span class="toolbar-tag">评审摘要</span>
+            </div>
+            <div id="insightList" class="space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="shell-card overflow-hidden rounded-[28px]">
+        <div class="border-b border-slate-200/80 p-5">
+          <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div>
+              <div class="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">明细数据</div>
+              <h3 id="tableTitle" class="text-lg font-semibold text-slate-900"></h3>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="toolbar-tag">默认每页20条</span>
+              <input id="keywordInput" maxlength="50" class="form-input w-[260px]" placeholder="搜索编号/客户/仓库">
+            </div>
+          </div>
+        </div>
+        <div id="tableToolbar" class="flex flex-wrap gap-2 border-b border-slate-200/80 bg-slate-50/90 px-5 py-3"></div>
+        <div class="overflow-x-auto">
+          <table class="data-table w-full min-w-[980px] text-sm">
+            <thead>
+              <tr class="h-11">
+                <th class="px-4 text-left">编号</th>
+                <th class="px-4 text-left">客户/货主</th>
+                <th class="px-4 text-left">仓库</th>
+                <th id="tagHeader" class="px-4 text-left">主题标签</th>
+                <th id="valueHeader" class="px-4 text-right">关键值</th>
+                <th class="px-4 text-left">更新时间</th>
+                <th class="px-4 text-left">状态</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        <div class="flex flex-col gap-3 border-t border-slate-200/80 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="text-sm text-slate-500">共<span id="totalCount" class="font-medium text-slate-800">0</span>条记录，当前显示第<span id="currentStart" class="font-medium text-slate-800">0</span>-<span id="currentEnd" class="font-medium text-slate-800">0</span>条</div>
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="prevBtn" class="btn-secondary h-9 px-3 text-sm" disabled>上一页</button>
+            <div id="pageNumbers" class="flex flex-wrap items-center gap-1"></div>
+            <button id="nextBtn" class="btn-secondary h-9 px-3 text-sm" disabled>下一页</button>
+            <select id="pageSize" class="form-input h-9 w-[110px] px-3 text-sm">
+              <option value="20" selected>20条/页</option>
+              <option value="50">50条/页</option>
+              <option value="100">100条/页</option>
+            </select>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toastContainer"></div>
+
+  <script>
+    const REPORT_ORDER = ['shipment', 'reassign', 'putaway', 'return', 'inventory', 'sign-rate', 'complaint', 'compensation'];
+    const COMMON_WAREHOUSES = ['深圳兴围仓', '广州白云仓', '香港葵涌仓'];
+    const COMMON_CUSTOMERS = ['Anker跨境', 'SHEIN华南', 'Temu直发', 'Lazada华南', '菜鸟云配', '敏捷供应链'];
+    const ANCHOR_DATE = new Date('2026-03-18T00:00:00');
+    const charts = { trend: null, structure: null };
+
+    const state = {
+      currentReport: 'shipment',
+      filters: {
+        startDate: '2026-01-01',
+        endDate: '2026-03-18',
+        warehouse: '',
+        customer: '',
+        filterA: '',
+        filterB: '',
+        keyword: '',
+        quickDays: 90
+      },
+      pagination: {
+        currentPage: 1,
+        pageSize: 20
+      }
+    };
+
+    const reportDefinitions = {};
+
+    function pad(value) {
+      return String(value).padStart(2, '0');
+    }
+
+    function pick(list, index) {
+      return list[index % list.length];
+    }
+
+    function hexToRgba(hex, alpha) {
+      const normalized = hex.replace('#', '');
+      const bigint = parseInt(normalized, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function formatDateTime(date, index) {
+      const draft = new Date(date);
+      draft.setHours(8 + (index % 9), (index * 7) % 60, 0, 0);
+      return `${draft.getFullYear()}-${pad(draft.getMonth() + 1)}-${pad(draft.getDate())} ${pad(draft.getHours())}:${pad(draft.getMinutes())}:00`;
+    }
+
+    function formatMoney(value) {
+      return `¥${Number(value).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function buildRows(config) {
+      return Array.from({ length: 26 }, (_, index) => {
+        const rowDate = new Date(ANCHOR_DATE);
+        rowDate.setDate(rowDate.getDate() - (index % 18));
+
+        let value = '';
+        if (config.mode === 'currency') {
+          value = formatMoney(config.base + index * config.step);
+        } else if (config.mode === 'percent') {
+          value = `${(config.base + (index % 5) * config.step).toFixed(1)}%`;
+        } else {
+          value = `${(config.base + index * config.step).toLocaleString('zh-CN')}${config.unit}`;
+        }
+
+        return {
+          code: `${config.prefix}-202603${pad((index % 28) + 1)}-${pad((index % 9) + 1)}`,
+          customer: pick(COMMON_CUSTOMERS, index),
+          warehouse: pick(COMMON_WAREHOUSES, index),
+          tag: pick(config.tags, index),
+          value,
+          time: formatDateTime(rowDate, index),
+          status: pick(config.statuses, index)
+        };
+      });
+    }
+
+    function createReport(config) {
+      return {
+        ...config,
+        hero: [
+          config.focus,
+          config.note,
+          `责任团队:${config.owner}`,
+          config.review
+        ],
+        rows: buildRows(config.rowsConfig)
+      };
+    }
+
+    Object.assign(reportDefinitions, {
+      shipment: createReport({
+        tabLabel: '备货出货',
+        title: '备货订单出货报表',
+        summary: '聚焦出库执行效率、渠道结构与签收前链路时效，适合仓配运营晨会快速查看。',
+        scope: '数据范围:深圳兴围仓/广州白云仓/香港葵涌仓',
+        sync: '最近同步:2026-03-18 23:40:18',
+        focus: '重点关注出库波峰与准点率',
+        note: '口径=已创建出库单+运输回传',
+        owner: '华南仓配BI组',
+        review: '适合评审晨会快速查看',
+        filterA: { label: '业务渠道', options: ['电商直发', '代理转运', '海外仓补货'] },
+        filterB: { label: '订单状态', options: ['已签收', '运输中', '待装车'] },
+        tagHeader: '业务渠道',
+        valueHeader: '订单量',
+        stats: [
+          { label: '订单总量', value: '12,846', delta: '较上期+8.2%', tone: 'tone-blue', hint: '峰值出现在03-16' },
+          { label: '准点出库率', value: '97.8%', delta: '较上期+1.4%', tone: 'tone-green', hint: '已接近目标值98%' },
+          { label: '平均出库时效', value: '4.1小时', delta: '较上期-0.6小时', tone: 'tone-orange', hint: '夜班出库提速明显' },
+          { label: '异常拦截单', value: '36', delta: '较上期-5单', tone: 'tone-violet', hint: '集中在香港葵涌仓' }
+        ],
+        trend: {
+          title: '近18天出货量与准点数',
+          type: 'line',
+          labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'],
+          datasets: [
+            { label: '出货量', data: [986, 1032, 1016, 1098, 1124, 1182, 1214, 1280, 1236], color: '#2563eb' },
+            { label: '签收前准点数', data: [932, 988, 972, 1055, 1089, 1136, 1178, 1228, 1192], color: '#10b981' }
+          ]
+        },
+        structure: {
+          title: '渠道结构占比',
+          type: 'doughnut',
+          labels: ['电商直发', '代理转运', '海外仓补货'],
+          values: [54, 28, 18]
+        },
+        insights: [
+          '深圳兴围仓03-16出现单日峰值，建议复核排班与月台占用。',
+          '海外仓补货单时效最稳定，可作为基线口径。',
+          '香港葵涌仓异常拦截偏高，适合继续下钻安检复核场景。'
+        ],
+        toolbar: ['默认按创建时间倒序', '单次导出限制100000条', '当前口径:出库单+运输回传'],
+        rowsConfig: {
+          prefix: 'OUT',
+          tags: ['电商直发', '代理转运', '海外仓补货'],
+          statuses: ['已签收', '运输中', '待装车'],
+          unit: '单',
+          base: 620,
+          step: 24
+        }
+      }),
+      reassign: createReport({
+        tabLabel: '重派订单',
+        title: '重派订单报表',
+        summary: '用于识别重派原因、责任归属与高频异常客户，辅助优化地址校验与客服前置拦截。',
+        scope: '数据范围:华南跨境出库链路',
+        sync: '最近同步:2026-03-18 23:15:20',
+        focus: '重点关注重派原因与责任归属',
+        note: '口径=已生成重派任务单',
+        owner: '时效提升专项组',
+        review: '适合联动末端承运商复盘',
+        filterA: { label: '重派原因', options: ['地址错误', '客户拒收', '配送延迟', '二次派送'] },
+        filterB: { label: '处理状态', options: ['处理中', '已闭环', '待复核'] },
+        tagHeader: '重派原因',
+        valueHeader: '工单量',
+        stats: [
+          { label: '重派订单数', value: '486', delta: '较上期-7.6%', tone: 'tone-blue', hint: '地址错误持续下降' },
+          { label: '一次重派成功率', value: '91.4%', delta: '较上期+2.8%', tone: 'tone-green', hint: '客服预沟通效果提升' },
+          { label: '超24小时未闭环', value: '18', delta: '较上期+4单', tone: 'tone-orange', hint: '建议复核高优先级工单' },
+          { label: '高风险客户数', value: '9', delta: '较上期持平', tone: 'tone-violet', hint: '集中在代理转运渠道' }
+        ],
+        trend: {
+          title: '近18天重派单量趋势',
+          type: 'line',
+          labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'],
+          datasets: [
+            { label: '重派订单数', data: [48, 46, 52, 45, 58, 54, 50, 47, 43], color: '#ef4444' },
+            { label: '已闭环订单数', data: [39, 41, 44, 40, 48, 47, 45, 43, 39], color: '#2563eb' }
+          ]
+        },
+        structure: {
+          title: '重派原因占比',
+          type: 'doughnut',
+          labels: ['地址错误', '客户拒收', '配送延迟', '二次派送'],
+          values: [38, 27, 19, 16]
+        },
+        insights: [
+          '地址错误场景下降明显，说明前置地址校验开始生效。',
+          '客户拒收仍集中在晚间波次，建议增加妥投前提醒。',
+          '二次派送超时单主要在北京末端，可联动承运商补字段。'
+        ],
+        toolbar: ['默认按创建时间倒序', '高优先级需人工确认', '口径:已创建重派任务'],
+        rowsConfig: {
+          prefix: 'RA',
+          tags: ['地址错误', '客户拒收', '配送延迟', '二次派送'],
+          statuses: ['处理中', '已闭环', '待复核'],
+          unit: '单',
+          base: 18,
+          step: 3
+        }
+      }),
+      putaway: createReport({
+        tabLabel: '上架量',
+        title: '上架量报表',
+        summary: '用于查看入库后上架任务密度、库区负载与平均完成时长，辅助入仓波峰安排。',
+        scope: '数据范围:入仓任务池',
+        sync: '最近同步:2026-03-18 22:56:32',
+        focus: '重点关注库区负载与上架时长',
+        note: '口径=已开始收货并生成上架任务',
+        owner: '入仓作业组',
+        review: '适合查看AGV协同效果',
+        filterA: { label: '库区', options: ['A区', 'B区', 'C区', '暂存区'] },
+        filterB: { label: '任务状态', options: ['已完成', '处理中', '待上架'] },
+        tagHeader: '库区',
+        valueHeader: '任务量',
+        stats: [
+          { label: '上架任务数', value: '1,236', delta: '较上期+6.5%', tone: 'tone-blue', hint: 'A区入仓波峰明显' },
+          { label: '平均完成时长', value: '2.6小时', delta: '较上期-0.4小时', tone: 'tone-green', hint: 'AGV协同效果提升' },
+          { label: '待上架件数', value: '318', delta: '较上期-9.1%', tone: 'tone-orange', hint: '暂存区库存回落' },
+          { label: '异常库位占比', value: '1.8%', delta: '较上期持平', tone: 'tone-violet', hint: '主要为库位禁用占比' }
+        ],
+        trend: {
+          title: '近18天上架任务趋势',
+          type: 'bar',
+          labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'],
+          datasets: [
+            { label: '上架任务数', data: [122, 136, 128, 145, 142, 151, 158, 162, 156], color: '#2563eb' }
+          ]
+        },
+        structure: {
+          title: '库区任务占比',
+          type: 'doughnut',
+          labels: ['A区', 'B区', 'C区', '暂存区'],
+          values: [39, 26, 22, 13]
+        },
+        insights: [
+          'A区上架任务增长最快，建议关注卡板补位与路径拥堵。',
+          '散货笼平均时长最高，适合追加拆分规则。',
+          '暂存区待上架持续下降，说明收货到上架衔接改善。'
+        ],
+        toolbar: ['默认按创建时间倒序', 'AGV任务与人工任务合并展示', '口径:收货完成后上架任务'],
+        rowsConfig: {
+          prefix: 'PA',
+          tags: ['A区', 'B区', 'C区', '暂存区'],
+          statuses: ['已完成', '处理中', '待上架'],
+          unit: '单',
+          base: 42,
+          step: 5
+        }
+      }),
+      return: createReport({
+        tabLabel: '退件入仓',
+        title: '退件入仓报表',
+        summary: '聚焦退件来源、入仓效率与异常退件占比，支持评审时快速判断退件链路是否稳定。',
+        scope: '数据范围:退件处理链路',
+        sync: '最近同步:2026-03-18 22:42:06',
+        focus: '重点关注退件原因与入仓时效',
+        note: '口径=已完成退件收货登记',
+        owner: '退件运营组',
+        review: '适合联动客服与仓内复核流程查看',
+        filterA: { label: '退件原因', options: ['客户拒收', '质检不通过', '地址异常', '包装破损'] },
+        filterB: { label: '复核状态', options: ['已复核', '待复核', '处理中'] },
+        tagHeader: '退件原因',
+        valueHeader: '退件量',
+        stats: [
+          { label: '退件入仓量', value: '1,082', delta: '较上期-3.4%', tone: 'tone-blue', hint: '客户拒收单回落' },
+          { label: '平均入仓时长', value: '5.3小时', delta: '较上期-0.8小时', tone: 'tone-green', hint: '夜间交接效率提升' },
+          { label: '异常退件占比', value: '6.1%', delta: '较上期+0.7%', tone: 'tone-orange', hint: '包装破损需重点跟进' },
+          { label: '待复核件数', value: '49', delta: '较上期-11件', tone: 'tone-violet', hint: '复核池压力下降' }
+        ],
+        trend: {
+          title: '近18天退件入仓趋势',
+          type: 'line',
+          labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'],
+          datasets: [
+            { label: '退件量', data: [116, 121, 118, 127, 124, 120, 117, 112, 109], color: '#ef4444' },
+            { label: '已完成复核', data: [98, 101, 96, 103, 105, 99, 97, 94, 92], color: '#10b981' }
+          ]
+        },
+        structure: {
+          title: '退件原因占比',
+          type: 'doughnut',
+          labels: ['客户拒收', '质检不通过', '地址异常', '包装破损'],
+          values: [41, 24, 18, 17]
+        },
+        insights: [
+          '客户拒收仍是第一大来源，建议加强妥投前确认。',
+          '海外仓回流入仓最平稳，可作为对标样本。',
+          '包装破损异常占比略升，适合联动运输段复盘。'
+        ],
+        toolbar: ['默认按创建时间倒序', '支持查看退件来源渠道', '口径:已登记退件入仓'],
+        rowsConfig: {
+          prefix: 'RT',
+          tags: ['客户拒收', '质检不通过', '地址异常', '包装破损'],
+          statuses: ['已复核', '待复核', '处理中'],
+          unit: '件',
+          base: 24,
+          step: 4
+        }
+      })
+    });
+
+    Object.assign(reportDefinitions, {
+      inventory: createReport({
+        tabLabel: '库存',
+        title: '库存报表',
+        summary: '用于观察库存结构、库龄健康与高占用SKU，适合在周会中快速判断库容与呆滞风险。',
+        scope: '数据范围:三仓即时库存',
+        sync: '最近同步:2026-03-18 23:01:05',
+        focus: '重点关注库龄健康与高占用SKU',
+        note: '口径=可用库存+待复核库存',
+        owner: '库存控制组',
+        review: '适合查看库容与呆滞风险',
+        filterA: { label: '商品分类', options: ['电子产品', '服饰鞋包', '家居用品', '美妆个护'] },
+        filterB: { label: '库存健康度', options: ['健康', '临期关注', '待复核'] },
+        tagHeader: '商品分类',
+        valueHeader: '库存量',
+        stats: [
+          { label: '库存总量', value: '245,860', delta: '较上期+4.8%', tone: 'tone-blue', hint: '电子类增长最快' },
+          { label: '库龄健康占比', value: '92.3%', delta: '较上期+1.1%', tone: 'tone-green', hint: '临期库存下降' },
+          { label: '高占用SKU', value: '58', delta: '较上期+6个', tone: 'tone-orange', hint: '重点看A区与高位货架' },
+          { label: '待复核库存', value: '1,236', delta: '较上期-13.5%', tone: 'tone-violet', hint: '差异盘点逐步清理' }
+        ],
+        trend: {
+          title: '近18天库存量趋势',
+          type: 'line',
+          labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'],
+          datasets: [
+            { label: '库存总量', data: [236800, 238420, 239580, 240260, 241900, 243120, 244580, 245100, 245860], color: '#2563eb' }
+          ]
+        },
+        structure: {
+          title: '分类库存占比',
+          type: 'doughnut',
+          labels: ['电子产品', '服饰鞋包', '家居用品', '美妆个护'],
+          values: [43, 24, 19, 14]
+        },
+        insights: [
+          '电子产品库存拉升明显，需要同步查看出货节奏。',
+          '临期关注库存集中在广州白云仓，建议追加清理策略。',
+          '待复核库存下降明显，差异闭环效率优于上月。'
+        ],
+        toolbar: ['默认按创建时间倒序', '空数据统一展示--', '口径:可用+待复核库存'],
+        rowsConfig: {
+          prefix: 'SKU',
+          tags: ['电子产品', '服饰鞋包', '家居用品', '美妆个护'],
+          statuses: ['健康', '临期关注', '待复核'],
+          unit: '件',
+          base: 9860,
+          step: 820
+        }
+      }),
+      'sign-rate': createReport({
+        tabLabel: '签收率',
+        title: '客户签收率报表',
+        summary: '用于跟踪签收率波动、仓库对比和重点客户表现，是服务质量复盘的核心视图。',
+        scope: '数据范围:跨境尾程签收链路',
+        sync: '最近同步:2026-03-18 22:48:46',
+        focus: '重点关注仓库签收率差异',
+        note: '口径=已发货订单且存在签收回传',
+        owner: '服务质量组',
+        review: '适合联动末端履约和客诉复盘',
+        filterA: { label: '服务线路', options: ['经济线', '标准线', '特快线'] },
+        filterB: { label: '表现分层', options: ['优秀', '关注', '预警'] },
+        tagHeader: '服务线路',
+        valueHeader: '签收率',
+        stats: [
+          { label: '整体签收率', value: '96.8%', delta: '较上期+0.9%', tone: 'tone-blue', hint: '深圳兴围仓表现最佳' },
+          { label: '48小时签收率', value: '82.4%', delta: '较上期+1.6%', tone: 'tone-green', hint: '特快线恢复明显' },
+          { label: '低于95%客户数', value: '7', delta: '较上期-2家', tone: 'tone-orange', hint: '主要是代理转运客户' },
+          { label: '签收异常单', value: '214', delta: '较上期-11单', tone: 'tone-violet', hint: '末端回传更完整' }
+        ],
+        trend: {
+          title: '近18天签收率趋势',
+          type: 'line',
+          labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'],
+          datasets: [
+            { label: '签收率', data: [95.6, 96.1, 95.8, 96.6, 96.5, 97.0, 96.7, 96.9, 96.8], color: '#10b981' }
+          ],
+          yRange: { min: 92, max: 100 }
+        },
+        structure: {
+          title: '仓库签收率对比',
+          type: 'bar',
+          labels: ['深圳兴围仓', '广州白云仓', '香港葵涌仓'],
+          values: [97.4, 96.1, 96.8]
+        },
+        insights: [
+          '深圳兴围仓签收率稳定在97%以上，可作为流程对标样本。',
+          '经济线仍是波动最大的线路，建议补齐承运商回传颗粒度。',
+          '低签收客户已缩减到7家，专项治理策略正在起效。'
+        ],
+        toolbar: ['默认按创建时间倒序', '签收率低于95%默认高亮', '口径:发货订单签收回传'],
+        rowsConfig: {
+          prefix: 'SR',
+          tags: ['经济线', '标准线', '特快线'],
+          statuses: ['优秀', '关注', '预警'],
+          mode: 'percent',
+          base: 95.2,
+          step: 0.4
+        }
+      }),
+      complaint: createReport({
+        tabLabel: '客诉分析',
+        title: '客诉分析报表',
+        summary: '用于查看客诉量、问题类型与处理进度，帮助识别重复问题和高风险客户。',
+        scope: '数据范围:客服工单系统',
+        sync: '最近同步:2026-03-18 21:58:12',
+        focus: '重点关注高风险客诉与响应时效',
+        note: '口径=已登记且有效的客诉工单',
+        owner: '客服质控组',
+        review: '适合联动签收率与赔付视图查看',
+        filterA: { label: '客诉类型', options: ['配送延迟', '货物损坏', '服务态度', '数量差异'] },
+        filterB: { label: '处理状态', options: ['处理中', '已闭环', '待确认'] },
+        tagHeader: '客诉类型',
+        valueHeader: '客诉量',
+        stats: [
+          { label: '客诉工单数', value: '142', delta: '较上期+6.0%', tone: 'tone-blue', hint: '配送延迟上升明显' },
+          { label: '24小时响应率', value: '94.6%', delta: '较上期+2.1%', tone: 'tone-green', hint: '客服响应提速' },
+          { label: '高风险工单', value: '16', delta: '较上期+3单', tone: 'tone-orange', hint: '需专项跟进' },
+          { label: '重复问题客户', value: '5', delta: '较上期持平', tone: 'tone-violet', hint: '集中在同一代理渠道' }
+        ],
+        trend: {
+          title: '近18天客诉趋势',
+          type: 'line',
+          labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'],
+          datasets: [
+            { label: '客诉量', data: [13, 12, 15, 14, 16, 15, 18, 20, 19], color: '#ef4444' },
+            { label: '已闭环工单', data: [9, 10, 12, 11, 13, 14, 15, 17, 16], color: '#2563eb' }
+          ]
+        },
+        structure: {
+          title: '客诉类型占比',
+          type: 'doughnut',
+          labels: ['配送延迟', '货物损坏', '服务态度', '数量差异'],
+          values: [36, 28, 21, 15]
+        },
+        insights: [
+          '配送延迟成为首位客诉类型，建议联动签收率报表一起查看。',
+          '24小时响应率稳定提升，说明工单分派更合理。',
+          '高风险工单多集中在同一代理渠道，可考虑加规则拦截。'
+        ],
+        toolbar: ['默认按创建时间倒序', '高风险工单需二次确认', '口径:有效客诉工单'],
+        rowsConfig: {
+          prefix: 'CS',
+          tags: ['配送延迟', '货物损坏', '服务态度', '数量差异'],
+          statuses: ['处理中', '已闭环', '待确认'],
+          unit: '单',
+          base: 5,
+          step: 2
+        }
+      }),
+      compensation: createReport({
+        tabLabel: '赔付分析',
+        title: '赔付分析报表',
+        summary: '用于查看赔付金额、类型分布与审批流转情况，支持在评审中快速识别高成本异常场景。',
+        scope: '数据范围:赔付审批链路',
+        sync: '最近同步:2026-03-18 22:11:09',
+        focus: '重点关注高金额赔付与审批滞留',
+        note: '口径=已提交赔付申请单',
+        owner: '财务结算组',
+        review: '适合联动客诉与装车视频复盘',
+        filterA: { label: '赔付类型', options: ['货物丢失', '货物损坏', '配送延迟', '服务补偿'] },
+        filterB: { label: '审批阶段', options: ['待审批', '审批中', '已完成'] },
+        tagHeader: '赔付类型',
+        valueHeader: '赔付金额',
+        stats: [
+          { label: '赔付金额', value: '¥142,380.00', delta: '较上期+12.3%', tone: 'tone-blue', hint: '高金额单需专项复盘' },
+          { label: '已完成审批率', value: '88.6%', delta: '较上期+4.5%', tone: 'tone-green', hint: '财务审核更稳定' },
+          { label: '超3天未审批', value: '11', delta: '较上期-2单', tone: 'tone-orange', hint: '仍需压缩长尾审批' },
+          { label: '高金额案件', value: '6', delta: '较上期+1件', tone: 'tone-violet', hint: '集中在货损场景' }
+        ],
+        trend: {
+          title: '近18天赔付金额趋势',
+          type: 'bar',
+          labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'],
+          datasets: [
+            { label: '赔付金额', data: [11200, 10860, 12940, 11820, 14600, 13240, 15180, 16420, 16120], color: '#ef4444' }
+          ]
+        },
+        structure: {
+          title: '赔付类型占比',
+          type: 'doughnut',
+          labels: ['货物丢失', '货物损坏', '配送延迟', '服务补偿'],
+          values: [32, 36, 18, 14]
+        },
+        insights: [
+          '货物损坏仍是赔付金额最高类型，建议联动装车视频复盘。',
+          '超3天未审批单持续下降，审批链路效率提升。',
+          '高金额案件集中在同一仓库，建议补充视频留存要求。'
+        ],
+        toolbar: ['默认按创建时间倒序', '金额保留2位小数', '口径:已提交赔付申请'],
+        rowsConfig: {
+          prefix: 'PF',
+          tags: ['货物丢失', '货物损坏', '配送延迟', '服务补偿'],
+          statuses: ['待审批', '审批中', '已完成'],
+          mode: 'currency',
+          base: 1680,
+          step: 320
+        }
+      })
+    });
+
+    function statusClass(value) {
+      if (['已签收', '已完成', '已闭环', '健康', '优秀'].includes(value)) return 'badge-green';
+      if (['运输中', '处理中', '审批中'].includes(value)) return 'badge-blue';
+      if (['待装车', '待上架', '待复核', '待审批', '关注'].includes(value)) return 'badge-orange';
+      if (['预警', '待确认'].includes(value)) return 'badge-red';
+      return 'badge-blue';
+    }
+
+    function tagClass(value) {
+      const styles = ['badge-blue', 'badge-green', 'badge-orange', 'badge-red'];
+      const score = Array.from(String(value)).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+      return styles[score % styles.length];
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 2400);
+    }
+
+    function renderTabs() {
+      document.getElementById('reportTabs').innerHTML = REPORT_ORDER.map(key => `
+        <button class="report-tab px-4 py-2 text-sm font-medium ${state.currentReport === key ? 'active' : ''}" data-report="${key}">${reportDefinitions[key].tabLabel}</button>
+      `).join('');
+    }
+
+    function renderSidebar() {
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.report === state.currentReport);
+      });
+    }
+
+    function renderHero() {
+      const report = reportDefinitions[state.currentReport];
+      document.getElementById('heroCurrentReport').textContent = report.title;
+      document.getElementById('heroDescription').textContent = report.summary;
+      document.getElementById('heroMeta').innerHTML = report.hero.map(text => `
+        <div class="rounded-[18px] border border-white/12 bg-white/8 p-4 backdrop-blur-md">
+          <div class="text-xs text-white/70">视图摘要</div>
+          <div class="mt-2 text-sm leading-6 text-white">${text}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderFilters() {
+      const report = reportDefinitions[state.currentReport];
+      document.getElementById('reportTitle').textContent = report.title;
+      document.getElementById('reportSummary').textContent = report.summary;
+      document.getElementById('scopeTag').textContent = report.scope;
+      document.getElementById('syncTag').textContent = report.sync;
+      document.getElementById('filterALabel').textContent = report.filterA.label;
+      document.getElementById('filterBLabel').textContent = report.filterB.label;
+      document.getElementById('customer').innerHTML = `<option value="">全部客户/货主</option>${COMMON_CUSTOMERS.map(item => `<option value="${item}">${item}</option>`).join('')}`;
+      document.getElementById('filterA').innerHTML = `<option value="">全部${report.filterA.label}</option>${report.filterA.options.map(item => `<option value="${item}">${item}</option>`).join('')}`;
+      document.getElementById('filterB').innerHTML = `<option value="">全部${report.filterB.label}</option>${report.filterB.options.map(item => `<option value="${item}">${item}</option>`).join('')}`;
+      document.getElementById('startDate').value = state.filters.startDate;
+      document.getElementById('endDate').value = state.filters.endDate;
+      document.getElementById('warehouse').value = state.filters.warehouse;
+      document.getElementById('customer').value = state.filters.customer;
+      document.getElementById('filterA').value = state.filters.filterA;
+      document.getElementById('filterB').value = state.filters.filterB;
+      document.getElementById('keywordInput').value = state.filters.keyword;
+    }
+
+    function renderStats() {
+      const report = reportDefinitions[state.currentReport];
+      document.getElementById('statCards').innerHTML = report.stats.map(item => `
+        <div class="stat-card ${item.tone}">
+          <div class="relative z-10">
+            <div class="text-sm text-white/72">${item.label}</div>
+            <div class="mt-3 text-[30px] font-semibold tracking-wide">${item.value}</div>
+            <div class="mt-2 text-xs text-white/78">${item.delta}</div>
+            <div class="mt-4 text-xs text-white/78">${item.hint}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function buildTrendChart(report) {
+      const type = report.trend.type;
+      return {
+        type,
+        data: {
+          labels: report.trend.labels,
+          datasets: report.trend.datasets.map(dataset => ({
+            label: dataset.label,
+            data: dataset.data,
+            borderColor: dataset.color,
+            backgroundColor: type === 'line' ? hexToRgba(dataset.color, 0.12) : hexToRgba(dataset.color, 0.82),
+            tension: 0.35,
+            fill: type === 'line',
+            borderWidth: 2,
+            pointRadius: type === 'line' ? 3 : 0,
+            borderRadius: type === 'bar' ? 10 : 0,
+            maxBarThickness: type === 'bar' ? 24 : undefined
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                usePointStyle: true,
+                color: '#475569'
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: !report.trend.yRange,
+              min: report.trend.yRange ? report.trend.yRange.min : undefined,
+              max: report.trend.yRange ? report.trend.yRange.max : undefined,
+              grid: { color: 'rgba(226, 232, 240, 0.70)' },
+              ticks: { color: '#64748b' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#64748b' }
+            }
+          }
+        }
+      };
+    }
+
+    function buildStructureChart(report) {
+      if (report.structure.type === 'bar') {
+        return {
+          type: 'bar',
+          data: {
+            labels: report.structure.labels,
+            datasets: [{
+              label: report.structure.title,
+              data: report.structure.values,
+              backgroundColor: report.structure.labels.map((_, index) => hexToRgba(['#2563eb', '#10b981', '#7c3aed'][index % 3], 0.82)),
+              borderRadius: 10,
+              maxBarThickness: 34
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                min: 90,
+                max: 100,
+                grid: { color: 'rgba(226, 232, 240, 0.70)' },
+                ticks: { color: '#64748b' }
+              },
+              x: {
+                grid: { display: false },
+                ticks: { color: '#64748b' }
+              }
+            }
+          }
+        };
+      }
+
+      return {
+        type: 'doughnut',
+        data: {
+          labels: report.structure.labels,
+          datasets: [{
+            data: report.structure.values,
+            backgroundColor: report.structure.labels.map((_, index) => ['#2563eb', '#10b981', '#f59e0b', '#7c3aed'][index % 4]),
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '60%',
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                usePointStyle: true,
+                color: '#475569',
+                padding: 16
+              }
+            }
+          }
+        }
+      };
+    }
+
+    function renderCharts() {
+      const report = reportDefinitions[state.currentReport];
+      document.getElementById('trendTitle').textContent = report.trend.title;
+      document.getElementById('structureTitle').textContent = report.structure.title;
+
+      if (charts.trend) charts.trend.destroy();
+      if (charts.structure) charts.structure.destroy();
+
+      charts.trend = new Chart(document.getElementById('trendChart').getContext('2d'), buildTrendChart(report));
+      charts.structure = new Chart(document.getElementById('structureChart').getContext('2d'), buildStructureChart(report));
+    }
+
+    function renderInsights() {
+      const report = reportDefinitions[state.currentReport];
+      document.getElementById('insightList').innerHTML = report.insights.map((text, index) => `
+        <div class="rounded-2xl border border-slate-200/90 bg-slate-50/90 p-4">
+          <div class="text-sm font-semibold text-slate-800">关注点${index + 1}</div>
+          <div class="mt-2 text-sm leading-6 text-slate-500">${text}</div>
+        </div>
+      `).join('');
+    }
+
+    function collectFilters() {
+      state.filters.startDate = document.getElementById('startDate').value;
+      state.filters.endDate = document.getElementById('endDate').value;
+      state.filters.warehouse = document.getElementById('warehouse').value;
+      state.filters.customer = document.getElementById('customer').value;
+      state.filters.filterA = document.getElementById('filterA').value;
+      state.filters.filterB = document.getElementById('filterB').value;
+      state.filters.keyword = document.getElementById('keywordInput').value.trim();
+    }
+
+    function getFilteredRows() {
+      const report = reportDefinitions[state.currentReport];
+      return report.rows.filter(row => {
+        const rowDate = row.time.slice(0, 10);
+        const matchDate = (!state.filters.startDate || rowDate >= state.filters.startDate) && (!state.filters.endDate || rowDate <= state.filters.endDate);
+        const matchWarehouse = !state.filters.warehouse || row.warehouse === state.filters.warehouse;
+        const matchCustomer = !state.filters.customer || row.customer === state.filters.customer;
+        const matchTag = !state.filters.filterA || row.tag === state.filters.filterA;
+        const matchStatus = !state.filters.filterB || row.status === state.filters.filterB;
+        const matchKeyword = !state.filters.keyword || Object.values(row).some(value => String(value).toLowerCase().includes(state.filters.keyword.toLowerCase()));
+        return matchDate && matchWarehouse && matchCustomer && matchTag && matchStatus && matchKeyword;
+      });
+    }
+
+    function renderPagination(total) {
+      const maxPage = Math.max(1, Math.ceil(total / state.pagination.pageSize));
+      if (state.pagination.currentPage > maxPage) {
+        state.pagination.currentPage = maxPage;
+      }
+
+      document.getElementById('prevBtn').disabled = state.pagination.currentPage === 1;
+      document.getElementById('nextBtn').disabled = state.pagination.currentPage === maxPage;
+
+      const startPage = Math.max(1, state.pagination.currentPage - 2);
+      const endPage = Math.min(maxPage, startPage + 4);
+      const pageMarkup = [];
+
+      for (let page = startPage; page <= endPage; page += 1) {
+        pageMarkup.push(`
+          <button class="${page === state.pagination.currentPage ? 'h-9 rounded-xl bg-brand px-3 text-sm text-white shadow-soft' : 'btn-secondary h-9 px-3 text-sm'}" data-page="${page}">
+            ${page}
+          </button>
+        `);
+      }
+
+      document.getElementById('pageNumbers').innerHTML = pageMarkup.join('');
+    }
+
+    function renderTable() {
+      const report = reportDefinitions[state.currentReport];
+      const filteredRows = getFilteredRows();
+      const maxPage = Math.max(1, Math.ceil(filteredRows.length / state.pagination.pageSize));
+      if (state.pagination.currentPage > maxPage) {
+        state.pagination.currentPage = maxPage;
+      }
+      const start = (state.pagination.currentPage - 1) * state.pagination.pageSize;
+      const pageRows = filteredRows.slice(start, start + state.pagination.pageSize);
+
+      document.getElementById('tagHeader').textContent = report.tagHeader;
+      document.getElementById('valueHeader').textContent = report.valueHeader;
+      document.getElementById('tableTitle').textContent = report.title.replace('报表', '明细');
+      document.getElementById('tableToolbar').innerHTML = report.toolbar.map(text => `<span class="toolbar-tag">${text}</span>`).join('');
+
+      document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map(row => `
+        <tr class="h-12">
+          <td class="px-4 text-slate-700">${row.code}</td>
+          <td class="px-4 text-slate-700">${row.customer}</td>
+          <td class="px-4 text-slate-700">${row.warehouse}</td>
+          <td class="px-4"><span class="badge ${tagClass(row.tag)}">${row.tag}</span></td>
+          <td class="px-4 text-right text-slate-700">${row.value}</td>
+          <td class="px-4 text-slate-700">${row.time}</td>
+          <td class="px-4"><span class="badge ${statusClass(row.status)}">${row.status}</span></td>
+        </tr>
+      `).join('') : `
+        <tr>
+          <td colspan="7" class="px-4 py-16 text-center text-sm text-slate-400">暂无匹配数据，请调整查询条件后重试</td>
+        </tr>
+      `;
+
+      document.getElementById('totalCount').textContent = filteredRows.length;
+      document.getElementById('currentStart').textContent = filteredRows.length ? start + 1 : 0;
+      document.getElementById('currentEnd').textContent = filteredRows.length ? Math.min(start + state.pagination.pageSize, filteredRows.length) : 0;
+
+      renderPagination(filteredRows.length);
+    }
+
+    function renderAll() {
+      renderTabs();
+      renderSidebar();
+      renderHero();
+      renderFilters();
+      renderStats();
+      renderCharts();
+      renderInsights();
+      renderTable();
+      document.querySelectorAll('.quick-range').forEach(button => {
+        button.classList.toggle('active', Number(button.dataset.days) === state.filters.quickDays);
+      });
+    }
+
+    function setQuickRange(days) {
+      const endDate = new Date(ANCHOR_DATE);
+      const startDate = new Date(ANCHOR_DATE);
+      startDate.setDate(startDate.getDate() - days + 1);
+      state.filters.startDate = `${startDate.getFullYear()}-${pad(startDate.getMonth() + 1)}-${pad(startDate.getDate())}`;
+      state.filters.endDate = `${endDate.getFullYear()}-${pad(endDate.getMonth() + 1)}-${pad(endDate.getDate())}`;
+      state.filters.quickDays = days;
+      document.getElementById('startDate').value = state.filters.startDate;
+      document.getElementById('endDate').value = state.filters.endDate;
+      document.querySelectorAll('.quick-range').forEach(button => {
+        button.classList.toggle('active', Number(button.dataset.days) === days);
+      });
+    }
+
+    function resetFilters() {
+      state.filters = {
+        startDate: '2026-01-01',
+        endDate: '2026-03-18',
+        warehouse: '',
+        customer: '',
+        filterA: '',
+        filterB: '',
+        keyword: '',
+        quickDays: 90
+      };
+      state.pagination.currentPage = 1;
+      renderAll();
+    }
+
+    function switchReport(reportKey) {
+      if (!reportDefinitions[reportKey]) return;
+      state.currentReport = reportKey;
+      state.filters.customer = '';
+      state.filters.filterA = '';
+      state.filters.filterB = '';
+      state.filters.keyword = '';
+      state.pagination.currentPage = 1;
+      renderAll();
+      if (window.innerWidth < 768) {
+        document.getElementById('sidebar').classList.add('-translate-x-full');
+        document.getElementById('sidebarOverlay').classList.add('hidden');
+      }
+      showToast(`已切换到${reportDefinitions[reportKey].title}`);
+    }
+
+    function initEvents() {
+      document.addEventListener('click', event => {
+        const reportTrigger = event.target.closest('[data-report]');
+        if (reportTrigger) {
+          switchReport(reportTrigger.dataset.report);
+          return;
+        }
+
+        const pageTrigger = event.target.closest('[data-page]');
+        if (pageTrigger) {
+          state.pagination.currentPage = Number(pageTrigger.dataset.page);
+          renderTable();
+        }
+      });
+
+      document.getElementById('queryBtn').addEventListener('click', () => {
+        collectFilters();
+        if (state.filters.startDate && state.filters.endDate && state.filters.startDate > state.filters.endDate) {
+          showToast('开始日期不能晚于结束日期', 'error');
+          return;
+        }
+        state.pagination.currentPage = 1;
+        renderTable();
+        showToast('查询成功');
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        resetFilters();
+        showToast('已重置查询条件');
+      });
+
+      document.getElementById('exportBtn').addEventListener('click', () => {
+        const total = getFilteredRows().length;
+        if (total > 100000) {
+          showToast('数据量过大,请缩小查询范围', 'warning');
+          return;
+        }
+        showToast(`正在导出，共${total}条数据`, 'warning');
+      });
+
+      document.getElementById('favoriteBtn').addEventListener('click', () => {
+        showToast('已收藏当前报表视图');
+      });
+
+      document.getElementById('subscribeBtn').addEventListener('click', () => {
+        showToast('已订阅当前报表日报');
+      });
+
+      document.getElementById('prevBtn').addEventListener('click', () => {
+        if (state.pagination.currentPage > 1) {
+          state.pagination.currentPage -= 1;
+          renderTable();
+        }
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        const totalPages = Math.max(1, Math.ceil(getFilteredRows().length / state.pagination.pageSize));
+        if (state.pagination.currentPage < totalPages) {
+          state.pagination.currentPage += 1;
+          renderTable();
+        }
+      });
+
+      document.getElementById('pageSize').addEventListener('change', event => {
+        state.pagination.pageSize = Number(event.target.value);
+        state.pagination.currentPage = 1;
+        renderTable();
+      });
+
+      document.getElementById('keywordInput').addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          document.getElementById('queryBtn').click();
+        }
+      });
+
+      document.querySelectorAll('.quick-range').forEach(button => {
+        button.addEventListener('click', () => {
+          setQuickRange(Number(button.dataset.days));
+        });
+      });
+
+      document.getElementById('menuToggle').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('-translate-x-full');
+        document.getElementById('sidebarOverlay').classList.remove('hidden');
+      });
+
+      document.getElementById('sidebarOverlay').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.add('-translate-x-full');
+        document.getElementById('sidebarOverlay').classList.add('hidden');
+      });
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) {
+          document.getElementById('sidebar').classList.remove('-translate-x-full');
+          document.getElementById('sidebarOverlay').classList.add('hidden');
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+      initEvents();
+    });
+  </script>
+</body>
+</html>
