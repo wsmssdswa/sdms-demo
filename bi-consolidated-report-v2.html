@@ -1,0 +1,3236 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BI综合报表V2</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --page-bg: #eef3f8;
+      --panel-bg: #ffffff;
+      --panel-soft: #f7f9fc;
+      --line: #dbe4ef;
+      --line-deep: #c7d3e1;
+      --brand: #4d77ea;
+      --brand-deep: #2f5fdf;
+      --brand-light: #eaf1ff;
+      --sidebar: #203746;
+      --sidebar-deep: #1c3240;
+      --text-main: #23334d;
+      --text-sub: #627388;
+      --shadow: 0 2px 6px rgba(31, 55, 88, 0.06);
+      --shadow-panel: 0 8px 22px rgba(31, 55, 88, 0.08);
+      --success: #2eb67d;
+      --warning: #f59e0b;
+      --danger: #ff5a5f;
+      --violet: #7d67ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: #a5b2c2 transparent;
+    }
+
+    *::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    *::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+      background: #a5b2c2;
+      border-radius: 999px;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      min-height: 100%;
+      overflow: hidden;
+      font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+      background: var(--page-bg);
+      color: var(--text-main);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .app-shell {
+      min-width: 1360px;
+      height: 100vh;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .side-bar {
+      width: 82px;
+      height: 100vh;
+      background: linear-gradient(180deg, var(--sidebar) 0%, var(--sidebar) 72%, var(--sidebar-deep) 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      flex: none;
+    }
+
+    .logo-box {
+      width: 100%;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-item {
+      width: 100%;
+      padding: 16px 0 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.86);
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+      position: relative;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      background: rgba(90, 116, 239, 0.18);
+      color: #fff;
+    }
+
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 18px;
+      bottom: 18px;
+      width: 3px;
+      border-radius: 0 2px 2px 0;
+      background: #84a2ff;
+    }
+
+    .nav-item i {
+      font-size: 20px;
+      line-height: 1;
+      opacity: 0.95;
+    }
+
+    .nav-item span {
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 600;
+    }
+
+    .side-version {
+      margin-top: auto;
+      margin-bottom: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0.92;
+    }
+
+    .page-shell {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--page-bg);
+    }
+
+    .header-meta {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: #f5f6f8;
+      color: #526173;
+      font-size: 12px;
+    }
+
+    .header-meta i {
+      font-size: 13px;
+      color: #7d8ea3;
+    }
+
+    .header-tabs {
+      height: 40px;
+      display: flex;
+      align-items: flex-end;
+      gap: 1px;
+      padding: 0 12px;
+      background: #f4f6f8;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab-chip {
+      height: 31px;
+      min-width: 94px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-bottom: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #4b5d70;
+      background: #f3f5f7;
+      border-radius: 2px 2px 0 0;
+    }
+
+    .tab-chip.primary {
+      background: var(--brand-light);
+      color: var(--brand);
+      border-color: #cfe0ff;
+    }
+
+    .tab-chip i {
+      font-size: 13px;
+    }
+
+    .close-mark {
+      margin-left: 6px;
+      font-size: 12px;
+      color: #7ea1f2;
+    }
+
+    .content-wrap {
+      flex: 1;
+      min-height: 0;
+      padding: 10px 10px 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-card {
+      height: 100%;
+      min-height: 0;
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-card-head {
+      height: 56px;
+      padding: 0 18px 0 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: #fff;
+      position: relative;
+      z-index: 3;
+    }
+
+    .page-head-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .page-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #244b87;
+      line-height: 1;
+    }
+
+    .page-title-sub {
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--text-sub);
+      white-space: nowrap;
+    }
+
+    .head-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .icon-btn,
+    .btn {
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 3px;
+      border: 1px solid transparent;
+      background: #fff;
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .icon-btn {
+      width: 34px;
+      padding: 0;
+      border-color: var(--line-deep);
+    }
+
+    .icon-btn:hover,
+    .btn-default:hover,
+    .btn-secondary:hover,
+    .warehouse-selector:hover {
+      border-color: #90adff;
+      color: var(--brand);
+    }
+
+    .btn:active,
+    .icon-btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-deep);
+      border-color: var(--brand-deep);
+    }
+
+    .btn-default,
+    .btn-secondary {
+      background: #fff;
+      border-color: var(--line-deep);
+      color: #30445d;
+    }
+
+    .warehouse-selector {
+      min-width: 148px;
+      justify-content: space-between;
+      border-color: var(--line-deep);
+    }
+
+    .link-btn {
+      text-decoration: none;
+    }
+
+    .report-layout {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(22, 38, 56, 0.28);
+      z-index: 20;
+    }
+
+    .report-side-panel {
+      width: 248px;
+      height: 100%;
+      border-right: 1px solid var(--line);
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: sticky;
+      top: 0;
+      overflow: auto;
+      z-index: 21;
+      flex: none;
+    }
+
+    .directory-head {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .directory-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .report-menu-list {
+      flex: 1;
+      padding: 10px;
+      overflow: auto;
+    }
+
+    .menu-item {
+      width: 100%;
+      padding: 12px 12px 12px 10px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      background: transparent;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .menu-item + .menu-item {
+      margin-top: 8px;
+    }
+
+    .menu-item:hover {
+      background: #fff;
+      border-color: #dbe7ff;
+      box-shadow: var(--shadow);
+    }
+
+    .menu-item.active {
+      background: #fff;
+      border-color: #cfe0ff;
+      box-shadow: var(--shadow);
+    }
+
+    .menu-serial {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      background: #eef3f8;
+      color: #67809d;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex: none;
+    }
+
+    .menu-item.active .menu-serial {
+      background: var(--brand-light);
+      color: var(--brand);
+    }
+
+    .menu-text {
+      min-width: 0;
+      display: grid;
+      gap: 4px;
+    }
+
+    .menu-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+
+    .menu-note {
+      font-size: 11px;
+      color: #73849a;
+      line-height: 1.5;
+    }
+
+    .report-stage {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      padding: 12px;
+      background: var(--page-bg);
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--panel-bg);
+      box-shadow: var(--shadow);
+    }
+
+    .toolbar-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid #dbe7ff;
+      background: #f7fbff;
+      color: #4f6280;
+      font-size: 12px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .report-tab-panel,
+    .filter-panel,
+    .table-panel {
+      margin-top: 12px;
+    }
+
+    .section-head {
+      padding: 14px 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .section-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .scene-tabs {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      padding: 12px 16px 14px;
+      flex-wrap: wrap;
+    }
+
+    .scene-tab {
+      position: relative;
+      border: 0;
+      padding: 0 0 8px;
+      background: transparent;
+      color: #2c3f57;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .scene-tab.active {
+      color: var(--brand);
+      font-weight: 700;
+    }
+
+    .scene-tab.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--brand);
+    }
+
+    .filter-panel {
+      padding: 16px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .filter-item label,
+    .search-item label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .required {
+      color: var(--danger);
+      margin-left: 2px;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 34px;
+      padding: 0 12px;
+      line-height: 32px;
+      text-align: left;
+      border: 1px solid var(--line-deep);
+      border-radius: 2px;
+      background: #fff;
+      color: var(--text-main);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      appearance: none;
+    }
+
+    select.form-input,
+    .multi-select-trigger {
+      padding-right: 32px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.2 4.25 6 8.05l3.8-3.8' fill='none' stroke='%238fa0b3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 12px 12px;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #97b5ff;
+      box-shadow: 0 0 0 3px rgba(77, 119, 234, 0.12);
+    }
+
+    .date-range {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+    }
+
+    .divider {
+      text-align: center;
+      color: #8fa0b3;
+      font-size: 12px;
+    }
+
+    .filter-actions {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .multi-select-box {
+      position: relative;
+    }
+
+    .multi-select-trigger {
+      display: block;
+      cursor: pointer;
+    }
+
+    .multi-select-trigger span {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    .multi-select-dropdown {
+      position: absolute;
+      left: 0;
+      top: 38px;
+      width: 100%;
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: var(--shadow-panel);
+      z-index: 24;
+    }
+
+    .multi-select-head {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .multi-select-option-list {
+      max-height: 176px;
+      padding: 8px 12px;
+      overflow: auto;
+      display: grid;
+      gap: 8px;
+    }
+
+    .multi-select-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-main);
+    }
+
+    .quick-range-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .quick-range-label {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .quick-range {
+      height: 28px;
+      padding: 0 12px;
+      border: 1px solid #d8e1ec;
+      background: #fff;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #50647f;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .quick-range.active,
+    .quick-range:hover {
+      border-color: #90adff;
+      background: var(--brand-light);
+      color: var(--brand);
+    }
+
+    .stats-grid {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 3px;
+      background: #9db4ff;
+    }
+
+    .stat-card.tone-blue::before {
+      background: var(--brand);
+    }
+
+    .stat-card.tone-green::before {
+      background: var(--success);
+    }
+
+    .stat-card.tone-orange::before {
+      background: var(--warning);
+    }
+
+    .stat-card.tone-violet::before {
+      background: var(--violet);
+    }
+
+    .stat-card-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand);
+    }
+
+    .tone-green .stat-dot {
+      background: var(--success);
+    }
+
+    .tone-orange .stat-dot {
+      background: var(--warning);
+    }
+
+    .tone-violet .stat-dot {
+      background: var(--violet);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .stat-value {
+      margin-top: 14px;
+      font-size: 28px;
+      line-height: 1;
+      color: var(--text-main);
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .stat-delta {
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #4f6280;
+    }
+
+    .stat-hint {
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-sub);
+    }
+
+    .analysis-grid {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+      gap: 12px;
+    }
+
+    .trend-panel,
+    .analysis-side > .panel {
+      padding: 16px;
+    }
+
+    .trend-spotlight-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .trend-spotlight-card,
+    .mini-chart-shell {
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      padding: 12px;
+    }
+
+    .spotlight-label {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .spotlight-value {
+      margin-top: 12px;
+      font-size: 24px;
+      line-height: 1;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .spotlight-value.text-brand {
+      color: var(--brand);
+    }
+
+    .spotlight-value.text-success {
+      color: var(--success);
+    }
+
+    .spotlight-value.text-warning {
+      color: var(--warning);
+    }
+
+    .spotlight-value.text-violet {
+      color: var(--violet);
+    }
+
+    .spotlight-hint {
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-sub);
+    }
+
+    .trend-chart-grid {
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 12px;
+    }
+
+    .mini-chart-column {
+      display: grid;
+      gap: 12px;
+    }
+
+    .chart-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .chart-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .chart-sub {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .chart-box-lg,
+    .chart-box-sm,
+    .chart-box-side {
+      position: relative;
+      width: 100%;
+    }
+
+    .chart-box-lg {
+      height: 300px;
+    }
+
+    .chart-box-sm {
+      height: 140px;
+    }
+
+    .chart-box-side {
+      height: 244px;
+    }
+
+    .analysis-side {
+      display: grid;
+      gap: 12px;
+    }
+
+    .insight-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .insight-card {
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      padding: 12px;
+    }
+
+    .insight-index {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand);
+    }
+
+    .insight-text {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-main);
+    }
+
+    .table-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 520px;
+    }
+
+    .table-head {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .table-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    .table-search-box {
+      width: 260px;
+      position: relative;
+    }
+
+    .table-search-box i {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: #8fa0b3;
+      pointer-events: none;
+    }
+
+    .table-toolbar {
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      border-bottom: 1px solid #eef2f7;
+      background: #fbfcfe;
+    }
+
+    .table-wrap {
+      flex: 1;
+      overflow: auto;
+    }
+    .data-table {
+      width: 100%;
+      min-width: 980px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #edf2f7;
+      font-size: 12px;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .data-table th {
+      background: #f7f9fc;
+      color: #7788a3;
+      font-weight: 600;
+    }
+
+    .data-table td {
+      color: var(--text-main);
+      background: #fff;
+    }
+
+    .data-table tbody tr:hover td {
+      background: #f9fbff;
+    }
+
+    .cell-right {
+      text-align: right !important;
+    }
+
+    .empty-row td {
+      padding: 52px 0;
+      text-align: center !important;
+      color: #9aa8b8;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      line-height: 1;
+      border: 1px solid transparent;
+    }
+
+    .badge-blue {
+      background: #eef5ff;
+      border-color: #d7e5ff;
+      color: #3d68db;
+    }
+
+    .badge-green {
+      background: #edf9f3;
+      border-color: #d0efdd;
+      color: #1f9f65;
+    }
+
+    .badge-orange {
+      background: #fff7eb;
+      border-color: #ffe4ba;
+      color: #d48806;
+    }
+
+    .badge-red {
+      background: #fff1f2;
+      border-color: #ffd8dc;
+      color: #df4a51;
+    }
+
+    .table-footer {
+      padding: 14px 16px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      border-top: 1px solid #eef2f7;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #425670;
+    }
+
+    .pager {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .page-number-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .page-btn {
+      min-width: 30px;
+      height: 30px;
+      padding: 0 10px;
+      border-radius: 4px;
+      border: 1px solid var(--line-deep);
+      background: #fff;
+      color: #30445d;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .page-btn:hover {
+      border-color: #90adff;
+      color: var(--brand);
+    }
+
+    .page-btn.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .toast-stack {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 120;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      min-width: 240px;
+      max-width: 320px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      box-shadow: 0 12px 28px rgba(17, 30, 50, 0.22);
+      background: rgba(53, 95, 223, 0.96);
+      font-size: 13px;
+      line-height: 1.5;
+      animation: slideIn 0.24s ease;
+    }
+
+    .toast-error {
+      background: rgba(220, 72, 72, 0.96);
+    }
+
+    .toast-warning {
+      background: rgba(233, 135, 31, 0.96);
+    }
+
+    .ai-inline-panel {
+      margin-top: 12px;
+      overflow: hidden;
+    }
+
+    .ai-inline-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .ai-inline-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand);
+    }
+
+    .ai-inline-title {
+      margin-top: 8px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .ai-inline-desc {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-sub);
+    }
+
+    .ai-inline-scope {
+      margin-top: 10px;
+      max-width: 860px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-sub);
+    }
+
+    .ai-inline-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .ai-inline-body {
+      padding: 20px;
+      background: #f8fafc;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 130;
+    }
+
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 25, 38, 0.46);
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-dialog {
+      position: relative;
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-panel {
+      width: min(1180px, 100%);
+      max-height: calc(100vh - 48px);
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: var(--shadow-panel);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fbfdff 0%, #f5f9ff 100%);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .modal-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand);
+    }
+
+    .modal-title {
+      margin-top: 8px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .modal-scope {
+      margin-top: 10px;
+      max-width: 760px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-sub);
+    }
+
+    .modal-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ai-status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      padding: 0 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .ai-status-chip[data-tone="idle"] {
+      background: #f4f7fb;
+      border-color: #dfe7f2;
+      color: #5d7189;
+    }
+
+    .ai-status-chip[data-tone="loading"] {
+      background: #eef5ff;
+      border-color: #d7e5ff;
+      color: var(--brand);
+    }
+
+    .ai-status-chip[data-tone="ready"] {
+      background: #edf9f3;
+      border-color: #d0efdd;
+      color: #1f9f65;
+    }
+
+    .ai-status-chip[data-tone="warning"] {
+      background: #fff7eb;
+      border-color: #ffe4ba;
+      color: #d48806;
+    }
+
+    .ai-status-chip[data-tone="empty"] {
+      background: #fff1f2;
+      border-color: #ffd8dc;
+      color: #df4a51;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow: auto;
+      background: #f8fafc;
+    }
+
+    .ai-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) 340px;
+      gap: 14px;
+    }
+
+    .ai-main,
+    .ai-side {
+      display: grid;
+      gap: 14px;
+    }
+
+    .ai-card {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .ai-summary {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .ai-summary-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: #1f3d73;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex: none;
+    }
+
+    .ai-summary-text {
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-main);
+    }
+
+    .ai-snapshot-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .ai-snapshot {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 14px;
+    }
+
+    .ai-snapshot-label {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .ai-snapshot-value {
+      margin-top: 12px;
+      font-size: 24px;
+      line-height: 1;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    .ai-snapshot-hint {
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-sub);
+    }
+
+    .ai-visual-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .ai-visual-card {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .ai-visual-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .ai-visual-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .ai-visual-sub {
+      margin-top: 4px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-sub);
+    }
+
+    .ai-visual-badge {
+      min-height: 24px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: var(--brand-light);
+      color: var(--brand);
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      white-space: nowrap;
+      flex: none;
+    }
+
+    .ai-visual-sections {
+      display: grid;
+      gap: 14px;
+    }
+
+    .ai-visual-section + .ai-visual-section {
+      padding-top: 14px;
+      border-top: 1px dashed #e1e8f2;
+    }
+
+    .ai-visual-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #526173;
+    }
+
+    .ai-donut-layout {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: 128px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+    }
+
+    .ai-donut-shell {
+      width: 128px;
+      height: 128px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+
+    .ai-donut-ring {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+    }
+
+    .ai-donut-hole {
+      position: absolute;
+      inset: 18px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid #eef2f7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6px;
+    }
+
+    .ai-donut-center-label {
+      font-size: 11px;
+      color: var(--text-sub);
+      line-height: 1.4;
+    }
+
+    .ai-donut-center-value {
+      margin-top: 4px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    .ai-donut-center-sub {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #526173;
+      line-height: 1.5;
+      max-width: 64px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ai-donut-legend {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .ai-donut-legend-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .ai-donut-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex: none;
+    }
+
+    .ai-donut-name {
+      min-width: 0;
+      font-size: 12px;
+      color: var(--text-main);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .ai-donut-value {
+      font-size: 12px;
+      font-weight: 700;
+      color: #425670;
+      white-space: nowrap;
+    }
+
+    .ai-visual-list {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .ai-visual-item {
+      display: grid;
+      gap: 6px;
+    }
+
+    .ai-visual-item-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-main);
+    }
+
+    .ai-visual-item-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .ai-visual-item-value {
+      color: #41566f;
+      font-weight: 700;
+      white-space: nowrap;
+      flex: none;
+    }
+
+    .ai-visual-bar {
+      height: 8px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #edf2f8;
+      position: relative;
+    }
+
+    .ai-visual-fill {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #4d77ea 0%, #7d67ff 100%);
+      min-width: 8px;
+    }
+
+    .ai-visual-item-hint {
+      font-size: 11px;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+
+    .ai-visual-empty {
+      border: 1px dashed #d6deea;
+      background: #fbfcfe;
+      padding: 14px;
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--text-sub);
+      text-align: center;
+    }
+
+    .ai-section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .ai-section-index {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      background: var(--brand-light);
+      color: var(--brand);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex: none;
+    }
+
+    .ai-section-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .ai-section-sub {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .ai-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .ai-list-item {
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-main);
+    }
+
+    .evidence-card {
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      padding: 12px;
+    }
+
+    .evidence-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .evidence-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .evidence-meta {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-sub);
+      line-height: 1.7;
+    }
+
+    .evidence-tags {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .ai-placeholder {
+      border: 1px dashed #d6deea;
+      background: #fff;
+      padding: 24px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-sub);
+      text-align: center;
+    }
+
+    .skeleton-block {
+      height: 14px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #e8edf4 0%, #f4f6fa 50%, #e8edf4 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.1s linear infinite;
+    }
+
+    .skeleton-card {
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 16px;
+    }
+
+    .mobile-only {
+      display: none;
+    }
+
+    .rotate {
+      animation: rotate 1s linear infinite;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes shimmer {
+      from {
+        background-position: 200% 0;
+      }
+      to {
+        background-position: -200% 0;
+      }
+    }
+
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 1680px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1440px) {
+      .analysis-grid {
+        grid-template-columns: 1fr;
+      }
+      .trend-chart-grid {
+        grid-template-columns: 1fr;
+      }
+      .mini-chart-column {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .filter-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .app-shell {
+        min-width: 0;
+      }
+      .filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .ai-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .side-bar {
+        display: none;
+      }
+      .mobile-only {
+        display: inline-flex;
+      }
+      .header-meta,
+      .header-tabs {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      .content-wrap {
+        padding: 8px;
+      }
+      .page-card-head {
+        height: auto;
+        padding: 12px;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .page-title-sub {
+        white-space: normal;
+      }
+      .head-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .report-side-panel {
+        position: fixed;
+        top: 103px;
+        bottom: 0;
+        left: 0;
+        width: 280px;
+        box-shadow: var(--shadow-panel);
+      }
+      .\-translate-x-full {
+        transform: translateX(-100%) !important;
+      }
+      .report-stage {
+        padding: 10px;
+      }
+      .stats-grid,
+      .trend-spotlight-grid,
+      .mini-chart-column,
+      .filter-grid,
+      .ai-snapshot-grid,
+      .ai-visual-grid {
+        grid-template-columns: 1fr;
+      }
+      .ai-inline-head,
+      .ai-inline-actions {
+        align-items: stretch;
+      }
+      .ai-inline-body {
+        padding: 14px;
+      }
+      .table-search-box {
+        width: 100%;
+      }
+      .table-head-actions {
+        width: 100%;
+        margin-left: 0;
+      }
+      .modal-dialog {
+        padding: 10px;
+      }
+      .ai-donut-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-bar">
+      <div class="logo-box">SDMS</div>
+      <a href="./wms-workbench.html" class="nav-item"><i class="ri-dashboard-3-line"></i><span>工作台</span></a>
+      <div class="nav-item"><i class="ri-layout-grid-fill"></i><span>业务</span></div>
+      <div class="nav-item"><i class="ri-links-fill"></i><span>关系</span></div>
+      <div class="nav-item"><i class="ri-user-3-fill"></i><span>用户</span></div>
+      <a href="./bi-consolidated-report-v2.html" class="nav-item active"><i class="ri-bar-chart-grouped-fill"></i><span>报表</span></a>
+      <div class="nav-item"><i class="ri-settings-5-fill"></i><span>系统</span></div>
+      <div class="side-version">V2.0.0</div>
+    </aside>
+
+    <div class="page-shell">
+      <div class="header-meta">
+        <i class="ri-bar-chart-box-line"></i>
+        <span>数据统计</span>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>BI综合报表</span>
+      </div>
+
+      <div class="header-tabs">
+        <a href="./wms-workbench.html" class="tab-chip"><i class="ri-dashboard-3-line"></i><span>工作台</span></a>
+        <div class="tab-chip primary"><i class="ri-line-chart-line"></i><span>BI综合报表V2</span><span class="close-mark">×</span></div>
+      </div>
+
+      <main class="content-wrap">
+        <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
+        <section class="page-card">
+          <div class="page-card-head">
+            <div class="page-head-title">
+              <button id="menuToggle" type="button" class="icon-btn mobile-only" aria-label="打开报表目录"><i class="ri-menu-line"></i></button>
+              <div>
+                <div class="page-title">BI综合报表</div>
+                <div class="page-title-sub">统一报表目录、筛选面板、AI诊断与明细列表，适合仓内运营复盘和评审演示。</div>
+              </div>
+            </div>
+            <div class="head-actions">
+              <div id="warehouseSelector" style="position:relative;">
+                <button id="warehouseBtn" type="button" class="btn warehouse-selector"><span id="warehouseText">全部仓库</span><i class="ri-arrow-down-s-line"></i></button>
+                <div id="warehouseDropdown" class="panel hidden" style="position:absolute;right:0;top:40px;width:272px;z-index:22;box-shadow:var(--shadow-panel);">
+                  <div style="padding:12px;border-bottom:1px solid var(--line);"><label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text-main);"><input id="selectAllWarehouses" type="checkbox" checked><span>全部仓库</span></label></div>
+                  <div id="warehouseList" style="padding:8px 12px;display:grid;gap:8px;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text-main);"><input class="warehouse-checkbox" type="checkbox" value="深圳兴围仓" checked><span>深圳兴围仓</span></label>
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text-main);"><input class="warehouse-checkbox" type="checkbox" value="广州白云仓" checked><span>广州白云仓</span></label>
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text-main);"><input class="warehouse-checkbox" type="checkbox" value="香港葵涌仓" checked><span>香港葵涌仓</span></label>
+                  </div>
+                  <div style="padding:12px;border-top:1px solid var(--line);"><button id="applyWarehouseBtn" type="button" class="btn btn-primary" style="width:100%;">确定</button></div>
+                </div>
+              </div>
+              <button id="subscribeBtn" type="button" class="btn btn-default"><i class="ri-rss-line"></i><span>订阅日报</span></button>
+              <a href="./wms-workbench.html" class="btn btn-default link-btn"><i class="ri-arrow-left-line"></i><span>返回工作台</span></a>
+            </div>
+          </div>
+
+          <div class="report-layout">
+            <aside id="sidebar" class="report-side-panel -translate-x-full">
+              <div class="directory-head">
+                <div class="directory-title">报表目录</div>
+              </div>
+              <div id="reportMenu" class="report-menu-list"></div>
+            </aside>
+
+            <section class="report-stage">
+              <section class="panel filter-panel">
+                <div class="section-head" style="padding:0 0 14px;"><div class="section-title">查询条件</div><div class="section-sub">遵循WMS通用规则，支持Enter查询与重置后列表重载，仓库范围通过页头切换</div></div>
+                <div class="filter-grid">
+                  <div class="filter-item" style="grid-column:span 2;">
+                    <label>时间范围<span class="required">*</span></label>
+                    <div class="date-range"><input id="startDate" class="form-input" type="date" value="2026-01-01"><span class="divider">~</span><input id="endDate" class="form-input" type="date" value="2026-03-18"></div>
+                  </div>
+                  <div class="filter-item"><label>客户/货主</label><select id="customer" class="form-input"></select></div>
+                  <div class="filter-item">
+                    <label>业务类型</label>
+                    <div id="businessTypeSelector" class="multi-select-box">
+                      <button id="businessTypeBtn" type="button" class="form-input multi-select-trigger" aria-haspopup="listbox" aria-expanded="false"><span id="businessTypeText">全部业务类型</span></button>
+                      <div id="businessTypeDropdown" class="multi-select-dropdown hidden">
+                        <div class="multi-select-head"><label class="multi-select-option"><input id="selectAllBusinessTypes" type="checkbox" checked><span>全部业务类型</span></label></div>
+                        <div id="businessTypeList" class="multi-select-option-list"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="filter-item"><label id="filterALabel">主题维度</label><select id="filterA" class="form-input"></select></div>
+                  <div class="filter-item"><label id="filterBLabel">状态</label><select id="filterB" class="form-input"></select></div>
+                </div>
+                <div class="filter-actions">
+                  <div class="quick-range-group"><span class="quick-range-label">快捷时间:</span><button type="button" class="quick-range" data-days="7">近7天</button><button type="button" class="quick-range" data-days="30">近30天</button><button type="button" class="quick-range active" data-days="90">近3个月</button><button type="button" class="quick-range" data-days="180">近半年</button></div>
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><button id="resetBtn" type="button" class="btn btn-secondary">重置</button><button id="queryBtn" type="button" class="btn btn-primary">查询</button></div>
+                </div>
+              </section>
+              <section id="statCards" class="stats-grid"></section>
+
+              <section id="aiAnalysisSection" class="panel ai-inline-panel">
+                <div class="ai-inline-head">
+                  <div>
+                    <div class="ai-inline-eyebrow">AI智能分析</div>
+                    <div class="ai-inline-title">基于当前查询结果生成结论与行动建议</div>
+                    <div class="ai-inline-desc">原趋势分析、结构分析、运营提示已合并为统一诊断区，便于在同一视图内查看与收起。</div>
+                    <div id="aiScopeText" class="ai-inline-scope">等待读取当前查询结果</div>
+                  </div>
+                  <div class="ai-inline-actions">
+                    <span id="aiStatusBadge" class="ai-status-chip" data-tone="idle"><i class="ri-time-line"></i><span>待分析</span></span>
+                    <span id="aiGeneratedAt" class="toolbar-tag">分析口径:当前查询结果</span>
+                    <button id="aiAnalyzeBtn" type="button" class="btn btn-primary"><i class="ri-sparkling-2-line"></i><span id="aiAnalyzeBtnText">生成AI分析</span></button>
+                    <button id="toggleAiCollapseBtn" type="button" class="btn btn-secondary" aria-controls="aiInlineBody" aria-expanded="true" disabled><i class="ri-arrow-up-s-line"></i><span>折叠结果</span></button>
+                  </div>
+                </div>
+                <div id="aiInlineBody" class="ai-inline-body">
+                  <div id="aiAnalysisContent"></div>
+                </div>
+              </section>
+
+              <section class="panel table-panel">
+                <div class="table-head"><div><div class="section-title">明细数据</div><div id="tableTitle" class="chart-name" style="margin-top:8px;">--</div></div><div class="table-head-actions"><button id="exportBtn" type="button" class="btn btn-secondary"><i class="ri-download-2-line"></i><span>导出</span></button><div class="table-search-box"><input id="keywordInput" class="form-input" type="text" maxlength="50" placeholder="搜索编号/客户/仓库/业务类型"><i class="ri-search-line"></i></div></div></div>
+                <div id="tableToolbar" class="table-toolbar"></div>
+                <div class="table-wrap">
+                  <table id="detailTable" class="data-table">
+                    <thead id="tableHead">
+                      <tr><th>编号</th><th>客户/货主</th><th>仓库</th><th>主题标签</th><th class="cell-right">关键值</th><th>更新时间</th><th>状态</th></tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                  </table>
+                </div>
+                <div class="table-footer"><div>共<span id="totalCount">0</span>条记录，当前显示第<span id="currentStart">0</span>-<span id="currentEnd">0</span>条</div><div class="pager"><button id="prevBtn" type="button" class="btn btn-secondary" disabled>上一页</button><div id="pageNumbers" class="page-number-group"></div><button id="nextBtn" type="button" class="btn btn-secondary" disabled>下一页</button><select id="pageSize" class="form-input" style="width:110px;"><option value="20" selected>20条/页</option><option value="50">50条/页</option><option value="100">100条/页</option></select></div></div>
+              </section>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-stack"></div>
+
+  <script>
+    const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'inventory', 'sign-rate', 'complaint', 'compensation'];
+    const COMMON_WAREHOUSES = ['深圳兴围仓', '广州白云仓', '香港葵涌仓'];
+    const COMMON_CUSTOMERS = ['Anker跨境', 'SHEIN华南', 'Temu直发', 'Lazada华南', '菜鸟云配', '敏捷供应链'];
+    const BUSINESS_TYPE_OPTIONS = ['干线', '备货', '退件重派'];
+    const ORDER_SOURCE_OPTIONS = ['客户下单', '客服建单', 'API下单'];
+    const ORDER_PO_TYPES = ['B2B', 'B2C'];
+    const ORDER_COUNTRY_CURRENCY = { 美国: '$', 加拿大: '$', 英国: '£', 德国: '€', 法国: '€', 西班牙: '€', 意大利: '€', 日本: '¥' };
+    const ORDER_FIELD_DISPLAY_ORDER = ['orderNo', 'masterNo', 'splitCount', 'pieceCount', 'weight', 'volume', 'palletCount', 'warehouse', 'originPort', 'destinationPort', 'poType', 'codAmount', 'itemQty', 'carrier', 'originalCountry', 'currentCountry', 'ownerName', 'orderStatus', 'createdTime', 'orderSource'];
+    const ORDER_FIELD_SETS = {
+      干线: ['orderNo', 'masterNo', 'splitCount', 'pieceCount', 'weight', 'volume', 'palletCount', 'warehouse', 'originPort', 'destinationPort', 'ownerName', 'orderStatus', 'createdTime', 'orderSource'],
+      备货: ['orderNo', 'poType', 'codAmount', 'warehouse', 'itemQty', 'carrier', 'currentCountry', 'ownerName', 'orderStatus', 'createdTime', 'orderSource'],
+      退件重派: ['orderNo', 'codAmount', 'warehouse', 'itemQty', 'originalCountry', 'currentCountry', 'ownerName', 'orderStatus', 'orderSource']
+    };
+    const ORDER_ANALYSIS_CONFIG = {
+      干线: [{ label: '起运港占比', field: 'originPort' }, { label: '目的港占比', field: 'destinationPort' }],
+      备货: [{ label: 'PO Type占比', field: 'poType' }, { label: '现派国家占比', field: 'currentCountry' }],
+      退件重派: [{ label: '原派国占比', field: 'originalCountry' }, { label: '现派国家占比', field: 'currentCountry' }]
+    };
+    const ORDER_FIELD_DEFINITIONS = {
+      orderNo: { label: '订单号', getValue: row => row.orderNo },
+      masterNo: { label: '主单号', getValue: row => row.masterNo || '--' },
+      splitCount: { label: '分单数量', getValue: row => row.splitCount ?? '--', align: 'right' },
+      pieceCount: { label: '件数', getValue: row => row.pieceCount ?? '--', align: 'right' },
+      weight: { label: '重量', getValue: row => row.weightDisplay || '--', align: 'right' },
+      volume: { label: '体积', getValue: row => row.volumeDisplay || '--', align: 'right' },
+      palletCount: { label: '板数', getValue: row => row.palletCount ?? '--', align: 'right' },
+      warehouse: { label: '仓库', getValue: row => row.warehouse },
+      originPort: { label: '起运港', getValue: row => row.originPort || '--' },
+      destinationPort: { label: '目的港', getValue: row => row.destinationPort || '--' },
+      poType: { label: 'PO Type', getValue: row => row.poType || '--' },
+      codAmount: { label: 'COD金额', getValue: row => row.codAmountDisplay || '--', align: 'right' },
+      itemQty: { label: '商品数量', getValue: row => row.itemQty ?? '--', align: 'right' },
+      carrier: { label: '派送商', getValue: row => row.carrier || '--' },
+      originalCountry: { label: '原派国', getValue: row => row.originalCountry || '--' },
+      currentCountry: { label: '现派国', getValue: row => row.currentCountry || '--' },
+      ownerName: { label: '货主名称', getValue: row => row.ownerName },
+      orderStatus: { label: '订单状态', getValue: row => `<span class="badge ${statusClass(row.status)}">${row.status}</span>`, html: true },
+      createdTime: { label: '创建时间', getValue: row => row.time },
+      orderSource: { label: '订单来源', getValue: row => row.orderSource }
+    };
+    const ANCHOR_DATE = new Date('2026-03-18T00:00:00');
+
+    const charts = { trend: null, structure: null, warehouseMix: null, statusSignal: null };
+
+    const state = {
+      currentReport: 'order',
+      filters: {
+        startDate: '2026-01-01',
+        endDate: '2026-03-18',
+        customer: '',
+        businessTypes: [...BUSINESS_TYPE_OPTIONS],
+        filterA: '',
+        filterB: '',
+        keyword: '',
+        quickDays: 90,
+        selectedWarehouses: [...COMMON_WAREHOUSES]
+      },
+      pagination: {
+        currentPage: 1,
+        pageSize: 20
+      },
+      ai: {
+        status: 'idle',
+        message: '点击生成AI分析，基于当前筛选结果生成诊断结论与优化建议。',
+        generatedAt: '',
+        result: null,
+        requestId: 0,
+        collapsed: false
+      }
+    };
+
+    function pad(value) { return String(value).padStart(2, '0'); }
+    function pick(list, index) { return list[index % list.length]; }
+    function hexToRgba(hex, alpha) {
+      const normalized = hex.replace('#', '');
+      const bigint = parseInt(normalized, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    function formatDateTime(date, index) {
+      const draft = new Date(date);
+      draft.setHours(8 + (index % 9), (index * 7) % 60, 0, 0);
+      return `${draft.getFullYear()}-${pad(draft.getMonth() + 1)}-${pad(draft.getDate())} ${pad(draft.getHours())}:${pad(draft.getMinutes())}:00`;
+    }
+    function formatSystemTime(date = new Date()) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+    function formatNumber(value, digits = 0) {
+      return Number(value).toLocaleString('zh-CN', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    }
+    function formatMoney(value) {
+      return `¥${Number(value).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    function formatWeight(value) { return `${formatNumber(value, 1)}kg`; }
+    function formatVolume(value) { return `${formatNumber(value, 2)}m³`; }
+    function formatCodAmount(country, value) {
+      if (value === null || value === undefined || value === '') return '-';
+      return `${ORDER_COUNTRY_CURRENCY[country] || '$'}${formatNumber(value, 2)}`;
+    }
+    function formatPercent(value, digits = 1) { return `${Number(value).toFixed(digits)}%`; }
+    function formatRatio(value, digits = 1) { return `${(Number(value) * 100).toFixed(digits)}%`; }
+    function parseMetricValue(value) {
+      const normalized = String(value).replace(/,/g, '').replace(/[^\d.-]/g, '');
+      return normalized ? Number(normalized) : 0;
+    }
+    function stageToOrderStatus(stage) {
+      if (stage === '已完成') return '已完成';
+      if (stage === '待审核') return '待审核';
+      return '处理中';
+    }
+    function getActiveBusinessTypes(list = state.filters.businessTypes) {
+      const selected = Array.isArray(list) && list.length ? list : BUSINESS_TYPE_OPTIONS;
+      return selected.filter(item => BUSINESS_TYPE_OPTIONS.includes(item));
+    }
+    function getOrderVisibleFields(selectedTypes = getActiveBusinessTypes()) {
+      const normalizedTypes = getActiveBusinessTypes(selectedTypes);
+      if (normalizedTypes.length === 1) return [...ORDER_FIELD_SETS[normalizedTypes[0]]];
+      const sharedFields = ORDER_FIELD_DISPLAY_ORDER.filter(fieldKey => normalizedTypes.every(type => ORDER_FIELD_SETS[type].includes(fieldKey)));
+      return sharedFields.length ? sharedFields : [...ORDER_FIELD_SETS[normalizedTypes[0]]];
+    }
+    function formatMetricValue(value, report, options = {}) {
+      const { digits } = options;
+      if (report.rowsConfig.mode === 'currency') return formatMoney(value);
+      if (report.rowsConfig.mode === 'percent') return formatPercent(value, digits ?? 1);
+      const decimals = digits ?? (Number.isInteger(value) ? 0 : 1);
+      return `${Number(value).toLocaleString('zh-CN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}${report.rowsConfig.unit || ''}`;
+    }
+    function average(values) { return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0; }
+    function getTimeValue(text) { return new Date(text.replace(' ', 'T')).getTime(); }
+    function buildDistribution(rows, field) {
+      const counter = new Map();
+      rows.forEach(row => {
+        const key = row[field];
+        counter.set(key, (counter.get(key) || 0) + 1);
+      });
+      return Array.from(counter.entries()).map(([name, count]) => ({ name, count, share: count / rows.length })).sort((left, right) => right.count - left.count);
+    }
+    function getStatusBucket(status) {
+      if (['已签收', '已完成', '已闭环', '健康', '优秀', '已复核', '已发运', '已审核'].includes(status)) return 'success';
+      if (['预警', '待确认'].includes(status)) return 'risk';
+      return 'warning';
+    }
+    function getSelectedHeaderWarehouses() {
+      return Array.from(document.querySelectorAll('.warehouse-checkbox:checked')).map(item => item.value);
+    }
+    function syncHeaderWarehouseSelection(selectedWarehouses = COMMON_WAREHOUSES) {
+      const normalized = selectedWarehouses.length ? selectedWarehouses : COMMON_WAREHOUSES;
+      const selectedSet = new Set(normalized);
+      document.querySelectorAll('.warehouse-checkbox').forEach(checkbox => { checkbox.checked = selectedSet.has(checkbox.value); });
+      const selectAll = document.getElementById('selectAllWarehouses');
+      selectAll.checked = normalized.length === COMMON_WAREHOUSES.length;
+      selectAll.indeterminate = normalized.length > 0 && normalized.length < COMMON_WAREHOUSES.length;
+      document.getElementById('warehouseText').textContent = normalized.length === COMMON_WAREHOUSES.length ? '全部仓库' : normalized.length === 1 ? normalized[0] : `已选${normalized.length}个仓库`;
+    }
+    function getSelectedBusinessTypes() {
+      return Array.from(document.querySelectorAll('.business-type-checkbox:checked')).map(item => item.value);
+    }
+    function syncBusinessTypeSelection(selectedTypes = BUSINESS_TYPE_OPTIONS) {
+      const selectedSet = new Set(selectedTypes);
+      document.querySelectorAll('.business-type-checkbox').forEach(checkbox => { checkbox.checked = selectedSet.has(checkbox.value); });
+      const selectAll = document.getElementById('selectAllBusinessTypes');
+      selectAll.checked = selectedTypes.length === BUSINESS_TYPE_OPTIONS.length;
+      selectAll.indeterminate = selectedTypes.length > 0 && selectedTypes.length < BUSINESS_TYPE_OPTIONS.length;
+      document.getElementById('businessTypeText').textContent = !selectedTypes.length ? '请选择业务类型' : selectedTypes.length === BUSINESS_TYPE_OPTIONS.length ? '全部业务类型' : selectedTypes.length === 1 ? selectedTypes[0] : `已选${selectedTypes.length}个业务类型`;
+    }
+    function closeBusinessTypeDropdown() {
+      document.getElementById('businessTypeDropdown').classList.add('hidden');
+      document.getElementById('businessTypeBtn').setAttribute('aria-expanded', 'false');
+    }
+    function buildRows(config) {
+      return Array.from({ length: 26 }, (_, index) => {
+        const rowDate = new Date(ANCHOR_DATE);
+        rowDate.setDate(rowDate.getDate() - (index % 18));
+        let value = '';
+        if (config.mode === 'currency') value = formatMoney(config.base + index * config.step);
+        else if (config.mode === 'percent') value = `${(config.base + (index % 5) * config.step).toFixed(1)}%`;
+        else value = `${(config.base + index * config.step).toLocaleString('zh-CN')}${config.unit}`;
+        return {
+          code: `${config.prefix}-202603${pad((index % 28) + 1)}-${pad((index % 9) + 1)}`,
+          customer: pick(COMMON_CUSTOMERS, index),
+          warehouse: pick(COMMON_WAREHOUSES, index),
+          businessType: pick(config.businessTypes || BUSINESS_TYPE_OPTIONS, index),
+          tag: pick(config.tags, index),
+          value,
+          time: formatDateTime(rowDate, index),
+          status: pick(config.statuses, index)
+        };
+      });
+    }
+    function buildOrderRows() {
+      const rows = [];
+      const trunkStages = ['已完成', '执行中', '已审核', '待审核'];
+      const stockStages = ['已完成', '执行中', '已审核', '待审核'];
+      const redispatchStages = ['执行中', '待审核', '已审核', '已完成'];
+      const originPorts = ['深圳(SZX)', '广州(CAN)', '香港(HKG)'];
+      const destinationPorts = ['洛杉矶(LAX)', '纽约(JFK)', '伦敦(LHR)', '法兰克福(FRA)', '东京(NRT)'];
+      const stockCountries = ['美国', '英国', '德国', '加拿大', '日本'];
+      const redispatchCountries = ['英国', '德国', '美国', '法国', '加拿大', '日本'];
+      const carriers = ['DHL', 'UPS', 'FedEx', 'YunExpress'];
+
+      Array.from({ length: 15 }, (_, index) => {
+        const rowDate = new Date(ANCHOR_DATE);
+        rowDate.setDate(rowDate.getDate() - (index % 17));
+        const stage = pick(trunkStages, index);
+        const pieceCount = 42 + index * 4;
+        const weightValue = 520 + index * 36;
+        const volumeValue = 3.2 + (index % 5) * 0.42 + Math.floor(index / 5) * 0.12;
+        const palletCount = 2 + (index % 4);
+        const ownerName = pick(COMMON_CUSTOMERS, index);
+        const orderNo = `GL202603${pad(index + 1)}${pad((index % 6) + 1)}`;
+        const masterNo = `MAWB-88${pad((index % 9) + 1)}-${pad(index + 11)}`;
+        const businessType = '干线';
+        rows.push({
+          code: orderNo,
+          orderNo,
+          masterNo,
+          splitCount: 1 + (index % 5),
+          pieceCount,
+          weightValue,
+          weightDisplay: formatWeight(weightValue),
+          volumeValue,
+          volumeDisplay: formatVolume(volumeValue),
+          palletCount,
+          warehouse: pick(COMMON_WAREHOUSES, index),
+          originPort: pick(originPorts, index),
+          destinationPort: pick(destinationPorts, index + 1),
+          ownerName,
+          customer: ownerName,
+          businessType,
+          orderSource: pick(ORDER_SOURCE_OPTIONS, index),
+          tag: stage,
+          status: stageToOrderStatus(stage),
+          time: formatDateTime(rowDate, index),
+          value: formatWeight(weightValue),
+          evidenceTag: `主单:${masterNo}`,
+          evidenceValue: `重量:${formatWeight(weightValue)}`,
+          priorityValue: weightValue + pieceCount * 6 + palletCount * 35
+        });
+      });
+
+      Array.from({ length: 12 }, (_, index) => {
+        const rowDate = new Date(ANCHOR_DATE);
+        rowDate.setDate(rowDate.getDate() - ((index * 2) % 16));
+        const stage = pick(stockStages, index + 1);
+        const currentCountry = pick(stockCountries, index + 2);
+        const codAmount = index % 3 === 0 ? null : 68 + index * 18.6;
+        const itemQty = 10 + (index % 5) * 6 + Math.floor(index / 4) * 3;
+        const ownerName = pick(COMMON_CUSTOMERS, index + 2);
+        const poType = pick(ORDER_PO_TYPES, index);
+        const orderNo = `BH202603${pad(index + 1)}${pad((index % 5) + 2)}`;
+        const businessType = '备货';
+        const codAmountDisplay = formatCodAmount(currentCountry, codAmount);
+        rows.push({
+          code: orderNo,
+          orderNo,
+          poType,
+          codAmount,
+          codAmountDisplay,
+          warehouse: pick(COMMON_WAREHOUSES, index + 1),
+          itemQty,
+          carrier: pick(carriers, index),
+          currentCountry,
+          ownerName,
+          customer: ownerName,
+          businessType,
+          orderSource: pick(ORDER_SOURCE_OPTIONS, index + 1),
+          tag: stage,
+          status: stageToOrderStatus(stage),
+          time: formatDateTime(rowDate, index + 2),
+          value: codAmountDisplay === '-' ? `${itemQty}` : codAmountDisplay,
+          evidenceTag: `PO Type:${poType}`,
+          evidenceValue: codAmountDisplay === '-' ? `商品数量:${itemQty}` : `COD:${codAmountDisplay}`,
+          priorityValue: (codAmount || 0) * 2 + itemQty * 18 + (poType === 'B2C' ? 40 : 10)
+        });
+      });
+
+      Array.from({ length: 11 }, (_, index) => {
+        const rowDate = new Date(ANCHOR_DATE);
+        rowDate.setDate(rowDate.getDate() - ((index * 3) % 15));
+        const stage = pick(redispatchStages, index + 2);
+        const originalCountry = pick(redispatchCountries, index);
+        const currentCountry = pick(redispatchCountries, index + 2);
+        const codAmount = index % 4 === 1 ? null : 42 + index * 22.4;
+        const itemQty = 4 + (index % 4) * 5 + Math.floor(index / 3) * 2;
+        const ownerName = pick(COMMON_CUSTOMERS, index + 3);
+        const orderNo = `CP202603${pad(index + 1)}${pad((index % 4) + 3)}`;
+        const businessType = '退件重派';
+        const codAmountDisplay = formatCodAmount(currentCountry, codAmount);
+        rows.push({
+          code: orderNo,
+          orderNo,
+          codAmount,
+          codAmountDisplay,
+          warehouse: pick(COMMON_WAREHOUSES, index + 2),
+          itemQty,
+          originalCountry,
+          currentCountry,
+          ownerName,
+          customer: ownerName,
+          businessType,
+          orderSource: pick(ORDER_SOURCE_OPTIONS, index + 2),
+          tag: stage,
+          status: stageToOrderStatus(stage),
+          time: formatDateTime(rowDate, index + 4),
+          value: codAmountDisplay === '-' ? `${itemQty}` : codAmountDisplay,
+          evidenceTag: `改派:${originalCountry}->${currentCountry}`,
+          evidenceValue: codAmountDisplay === '-' ? `商品数量:${itemQty}` : `COD:${codAmountDisplay}`,
+          priorityValue: (codAmount || 0) * 2.4 + itemQty * 22 + (originalCountry !== currentCountry ? 80 : 0)
+        });
+      });
+
+      return rows.sort((left, right) => getTimeValue(right.time) - getTimeValue(left.time));
+    }
+    function createReport(config) {
+      return {
+        ...config,
+        hero: [
+          { label: '关注重点', value: config.focus },
+          { label: '统计口径', value: config.note },
+          { label: '责任团队', value: config.owner },
+          { label: '评审建议', value: config.review }
+        ],
+        rows: config.rows || buildRows(config.rowsConfig)
+      };
+    }
+
+    const reportDefinitions = {
+      order: createReport({
+        tabLabel: '订单', title: '订单统计报表', summary: '用于查看各业务类型下的订单规模、审核进度与异常订单分布，适合经营复盘时先看订单入口与履约准备情况。', scope: '数据范围:深圳兴围仓/广州白云仓/香港葵涌仓', sync: '最近同步:2026-03-18 23:46:08', focus: '重点关注订单规模与审核转化', note: '口径=已创建订单+审核回传', owner: '订单运营组', review: '适合放在目录首位做总览入口',
+        filterA: { label: '订单阶段', options: ['待审核', '已审核', '执行中', '已完成'] },
+        filterB: { label: '订单状态', options: ['已完成', '处理中', '待审核'] },
+        tagHeader: '订单阶段', valueHeader: '订单量',
+        stats: [
+          { label: '订单总量', value: '18,426', delta: '较上期+7.9%', tone: 'tone-blue', hint: '备货业务增长最明显' },
+          { label: '审核通过率', value: '96.1%', delta: '较上期+1.3%', tone: 'tone-green', hint: '干线业务最稳定' },
+          { label: '平均建单时长', value: '18分钟', delta: '较上期-4分钟', tone: 'tone-orange', hint: '自动回填效率提升' },
+          { label: '异常订单数', value: '57', delta: '较上期-6单', tone: 'tone-violet', hint: '退件重派仍需重点跟进' }
+        ],
+        trend: { title: '近18天订单量与审核完成趋势', type: 'line', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '订单量', data: [1320, 1386, 1402, 1468, 1496, 1542, 1588, 1634, 1602], color: '#4d77ea' }, { label: '审核完成量', data: [1268, 1325, 1344, 1410, 1441, 1488, 1532, 1582, 1556], color: '#2eb67d' }] },
+        structure: { title: '订单阶段占比', type: 'doughnut', labels: ['待审核', '已审核', '执行中', '已完成'], values: [12, 28, 34, 26] },
+        insights: ['备货业务订单量持续抬升，建议同步关注入仓和拣货资源准备。', '退件重派业务的异常订单占比更高，适合单独追踪审核驳回原因。', '广州白云仓的订单审核完成节奏更平稳，可作为流程对标样本。'],
+        toolbar: ['默认按创建时间倒序', '异常订单需人工复核', '当前口径:订单创建+审核回传'],
+        rowsConfig: { prefix: 'OD', tags: ['待审核', '已审核', '执行中', '已完成'], statuses: ['已完成', '处理中', '待审核'], unit: '单', base: 680, step: 22, businessTypes: BUSINESS_TYPE_OPTIONS },
+        rows: buildOrderRows()
+      }),
+      inbound: createReport({
+        tabLabel: '入仓', title: '入仓统计报表', summary: '聚焦送货登记、收货完成与异常入仓单，适合仓内晨会查看入仓波峰和收货稳定性。', scope: '数据范围:深圳兴围仓/广州白云仓/香港葵涌仓', sync: '最近同步:2026-03-18 23:38:12', focus: '重点关注收货及时率与异常入仓', note: '口径=已登记送货并进入收货链路', owner: '入仓运营组', review: '适合联动月台与收货班组复盘',
+        filterA: { label: '入仓节点', options: ['送货登记', '卸货完成', '收货中', '收货完成'] },
+        filterB: { label: '入仓状态', options: ['已完成', '处理中', '待收货'] },
+        tagHeader: '入仓节点', valueHeader: '入仓单量',
+        stats: [
+          { label: '入仓单量', value: '9,842', delta: '较上期+6.8%', tone: 'tone-blue', hint: '峰值集中在03-16白班' },
+          { label: '收货及时率', value: '96.4%', delta: '较上期+1.2%', tone: 'tone-green', hint: '干线业务恢复最明显' },
+          { label: '平均收货时长', value: '3.2小时', delta: '较上期-0.5小时', tone: 'tone-orange', hint: '退件重派链路仍偏长' },
+          { label: '异常入仓单', value: '28', delta: '较上期-4单', tone: 'tone-violet', hint: '集中在夜间波次' }
+        ],
+        trend: { title: '近18天入仓单量与完成收货趋势', type: 'line', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '入仓单量', data: [826, 854, 842, 879, 902, 936, 948, 996, 978], color: '#4d77ea' }, { label: '完成收货单量', data: [788, 814, 803, 838, 866, 901, 916, 958, 944], color: '#2eb67d' }] },
+        structure: { title: '入仓节点占比', type: 'doughnut', labels: ['送货登记', '卸货完成', '收货中', '收货完成'], values: [22, 26, 18, 34] },
+        insights: ['广州白云仓夜班收货节奏改善明显，适合作为轮班排班样本。', '退件重派业务的平均收货时长仍高于干线业务，建议增加专属月台。', '深圳兴围仓异常入仓单集中在卸货完成后等待收货阶段，适合继续下钻卡点。'],
+        toolbar: ['默认按创建时间倒序', '异常入仓单需人工跟进', '当前口径:送货登记+收货链路'],
+        rowsConfig: { prefix: 'IN', tags: ['送货登记', '卸货完成', '收货中', '收货完成'], statuses: ['已完成', '处理中', '待收货'], unit: '单', base: 420, step: 16, businessTypes: BUSINESS_TYPE_OPTIONS }
+      }),
+      putaway: createReport({
+        tabLabel: '上架', title: '上架统计报表', summary: '用于查看入库后上架任务密度、库区负载与平均完成时长，辅助入仓波峰安排。', scope: '数据范围:入仓任务池', sync: '最近同步:2026-03-18 22:56:32', focus: '重点关注库区负载与上架时长', note: '口径=已完成收货并生成上架任务', owner: '上架作业组', review: '适合查看AGV协同效果',
+        filterA: { label: '上架库区', options: ['A区', 'B区', 'C区', '暂存区'] }, filterB: { label: '上架状态', options: ['已完成', '处理中', '待上架'] }, tagHeader: '上架库区', valueHeader: '上架任务量',
+        stats: [
+          { label: '上架任务数', value: '1,236', delta: '较上期+6.5%', tone: 'tone-blue', hint: 'A区入仓波峰明显' },
+          { label: '平均完成时长', value: '2.6小时', delta: '较上期-0.4小时', tone: 'tone-green', hint: 'AGV协同效果提升' },
+          { label: '待上架件数', value: '318', delta: '较上期-9.1%', tone: 'tone-orange', hint: '暂存区库存回落' },
+          { label: '异常库位占比', value: '1.8%', delta: '较上期持平', tone: 'tone-violet', hint: '主要为库位禁用占比' }
+        ],
+        trend: { title: '近18天上架任务趋势', type: 'bar', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '上架任务数', data: [122, 136, 128, 145, 142, 151, 158, 162, 156], color: '#4d77ea' }] },
+        structure: { title: '库区任务占比', type: 'doughnut', labels: ['A区', 'B区', 'C区', '暂存区'], values: [39, 26, 22, 13] },
+        insights: ['备货业务在A区的上架任务增长最快，建议关注卡板补位与路径拥堵。', '退件重派业务在暂存区停留时间更长，适合增加专项上架波次。', '暂存区待上架持续下降，说明收货到上架衔接改善。'],
+        toolbar: ['默认按创建时间倒序', 'AGV任务与人工任务合并展示', '当前口径:收货完成后上架任务'],
+        rowsConfig: { prefix: 'PA', tags: ['A区', 'B区', 'C区', '暂存区'], statuses: ['已完成', '处理中', '待上架'], unit: '单', base: 42, step: 5, businessTypes: BUSINESS_TYPE_OPTIONS }
+      }),
+      picking: createReport({
+        tabLabel: '拣货', title: '拣货统计报表', summary: '聚焦波次拣货密度、拣货完成效率与异常拣货单，辅助安排人力和AGV协同。', scope: '数据范围:出库拣货任务池', sync: '最近同步:2026-03-18 23:09:44', focus: '重点关注波次波峰与超时拣货', note: '口径=已生成拣货任务单', owner: '出库拣货组', review: '适合联动波次和库区策略复盘',
+        filterA: { label: '拣货分区', options: ['A区整托', 'B区散货', 'C区高位', '出库缓冲区'] },
+        filterB: { label: '拣货状态', options: ['已完成', '拣货中', '待拣货'] },
+        tagHeader: '拣货分区', valueHeader: '拣货量',
+        stats: [
+          { label: '拣货任务数', value: '3,486', delta: '较上期+5.4%', tone: 'tone-blue', hint: '下午波次增长最快' },
+          { label: '准时拣货率', value: '95.7%', delta: '较上期+1.1%', tone: 'tone-green', hint: '干线任务完成更稳定' },
+          { label: '平均拣货时长', value: '1.9小时', delta: '较上期-0.3小时', tone: 'tone-orange', hint: '散货拣选改善明显' },
+          { label: '异常拣货单', value: '42', delta: '较上期-6单', tone: 'tone-violet', hint: '高位货架仍需关注' }
+        ],
+        trend: { title: '近18天拣货任务与完成数趋势', type: 'line', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '拣货任务数', data: [286, 298, 304, 318, 326, 344, 352, 368, 360], color: '#4d77ea' }, { label: '准时完成数', data: [268, 281, 288, 301, 309, 328, 336, 352, 344], color: '#2eb67d' }] },
+        structure: { title: '拣货分区占比', type: 'doughnut', labels: ['A区整托', 'B区散货', 'C区高位', '出库缓冲区'], values: [34, 29, 21, 16] },
+        insights: ['B区散货在备货业务下波动最大，适合增加波次切分规则。', '退件重派业务更集中在出库缓冲区，建议单独编排人力。', 'A区整托任务稳定增长，可联动AGV补充整托搬运能力。'],
+        toolbar: ['默认按创建时间倒序', '超时拣货任务默认高亮', '当前口径:拣货任务单'],
+        rowsConfig: { prefix: 'PK', tags: ['A区整托', 'B区散货', 'C区高位', '出库缓冲区'], statuses: ['已完成', '拣货中', '待拣货'], unit: '单', base: 76, step: 6, businessTypes: BUSINESS_TYPE_OPTIONS }
+      }),
+      outbound: createReport({
+        tabLabel: '出库', title: '出库统计报表', summary: '聚焦装车完成、发运准点与异常拦截，适合查看出库执行效率和发车波峰。', scope: '数据范围:深圳兴围仓/广州白云仓/香港葵涌仓', sync: '最近同步:2026-03-18 23:40:18', focus: '重点关注装车波峰与准点发运', note: '口径=已创建出库单并进入装车发运链路', owner: '出库调度组', review: '适合联动监装与运输调度复盘',
+        filterA: { label: '出库波次', options: ['上午波次', '下午波次', '夜间波次', '加急波次'] },
+        filterB: { label: '出库状态', options: ['已发运', '装车中', '待出库'] },
+        tagHeader: '出库波次', valueHeader: '出库单量',
+        stats: [
+          { label: '出库单量', value: '12,846', delta: '较上期+8.2%', tone: 'tone-blue', hint: '峰值出现在03-16' },
+          { label: '准点发运率', value: '97.8%', delta: '较上期+1.4%', tone: 'tone-green', hint: '已接近目标值98%' },
+          { label: '平均出库时长', value: '4.1小时', delta: '较上期-0.6小时', tone: 'tone-orange', hint: '夜班出库提速明显' },
+          { label: '异常拦截单', value: '36', delta: '较上期-5单', tone: 'tone-violet', hint: '集中在香港葵涌仓' }
+        ],
+        trend: { title: '近18天出库单量与准点发运趋势', type: 'line', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '出库单量', data: [986, 1032, 1016, 1098, 1124, 1182, 1214, 1280, 1236], color: '#4d77ea' }, { label: '准点发运单量', data: [932, 988, 972, 1055, 1089, 1136, 1178, 1228, 1192], color: '#2eb67d' }] },
+        structure: { title: '出库波次占比', type: 'doughnut', labels: ['上午波次', '下午波次', '夜间波次', '加急波次'], values: [31, 34, 23, 12] },
+        insights: ['下午波次仍是主要出库压力点，建议继续复核月台排班与装车节奏。', '干线业务准点率最稳定，可作为发运基线口径。', '香港葵涌仓异常拦截偏高，适合继续下钻安检复核场景。'],
+        toolbar: ['默认按创建时间倒序', '单次导出限制100000条', '当前口径:出库单+发运回传'],
+        rowsConfig: { prefix: 'OUT', tags: ['上午波次', '下午波次', '夜间波次', '加急波次'], statuses: ['已发运', '装车中', '待出库'], unit: '单', base: 620, step: 24, businessTypes: BUSINESS_TYPE_OPTIONS }
+      }),
+      inventory: createReport({
+        tabLabel: '库存', title: '库存报表', summary: '用于观察库存结构、库龄健康与高占用SKU，适合在周会中快速判断库容与呆滞风险。', scope: '数据范围:三仓即时库存', sync: '最近同步:2026-03-18 23:01:05', focus: '重点关注库龄健康与高占用SKU', note: '口径=可用库存+待复核库存', owner: '库存控制组', review: '适合查看库容与呆滞风险',
+        filterA: { label: '商品分类', options: ['电子产品', '服饰鞋包', '家居用品', '美妆个护'] }, filterB: { label: '库存健康度', options: ['健康', '临期关注', '待复核'] }, tagHeader: '商品分类', valueHeader: '库存量',
+        stats: [
+          { label: '库存总量', value: '245,860', delta: '较上期+4.8%', tone: 'tone-blue', hint: '电子类增长最快' },
+          { label: '库龄健康占比', value: '92.3%', delta: '较上期+1.1%', tone: 'tone-green', hint: '临期库存下降' },
+          { label: '高占用SKU', value: '58', delta: '较上期+6个', tone: 'tone-orange', hint: '重点看A区与高位货架' },
+          { label: '待复核库存', value: '1,236', delta: '较上期-13.5%', tone: 'tone-violet', hint: '差异盘点逐步清理' }
+        ],
+        trend: { title: '近18天库存量趋势', type: 'line', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '库存总量', data: [236800, 238420, 239580, 240260, 241900, 243120, 244580, 245100, 245860], color: '#4d77ea' }] },
+        structure: { title: '分类库存占比', type: 'doughnut', labels: ['电子产品', '服饰鞋包', '家居用品', '美妆个护'], values: [43, 24, 19, 14] },
+        insights: ['电子产品库存拉升明显，需要同步查看出货节奏。', '临期关注库存集中在广州白云仓，建议追加清理策略。', '待复核库存下降明显，差异闭环效率优于上月。'],
+        toolbar: ['默认按创建时间倒序', '空数据统一展示--', '口径:可用+待复核库存'],
+        rowsConfig: { prefix: 'SKU', tags: ['电子产品', '服饰鞋包', '家居用品', '美妆个护'], statuses: ['健康', '临期关注', '待复核'], unit: '件', base: 9860, step: 820 }
+      }),
+      'sign-rate': createReport({
+        tabLabel: '签收率', title: '客户签收率报表', summary: '用于跟踪签收率波动、仓库对比和重点客户表现，是服务质量复盘的核心视图。', scope: '数据范围:跨境尾程签收链路', sync: '最近同步:2026-03-18 22:48:46', focus: '重点关注仓库签收率差异', note: '口径=已发货订单且存在签收回传', owner: '服务质量组', review: '适合联动末端履约和客诉复盘',
+        filterA: { label: '服务线路', options: ['经济线', '标准线', '特快线'] }, filterB: { label: '表现分层', options: ['优秀', '关注', '预警'] }, tagHeader: '服务线路', valueHeader: '签收率',
+        stats: [
+          { label: '整体签收率', value: '96.8%', delta: '较上期+0.9%', tone: 'tone-blue', hint: '深圳兴围仓表现最佳' },
+          { label: '48小时签收率', value: '82.4%', delta: '较上期+1.6%', tone: 'tone-green', hint: '特快线恢复明显' },
+          { label: '低于95%客户数', value: '7', delta: '较上期-2家', tone: 'tone-orange', hint: '主要是代理转运客户' },
+          { label: '签收异常单', value: '214', delta: '较上期-11单', tone: 'tone-violet', hint: '末端回传更完整' }
+        ],
+        trend: { title: '近18天签收率趋势', type: 'line', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '签收率', data: [95.6, 96.1, 95.8, 96.6, 96.5, 97.0, 96.7, 96.9, 96.8], color: '#2eb67d' }], yRange: { min: 92, max: 100 } },
+        structure: { title: '仓库签收率对比', type: 'bar', labels: ['深圳兴围仓', '广州白云仓', '香港葵涌仓'], values: [97.4, 96.1, 96.8] },
+        insights: ['深圳兴围仓签收率稳定在97%以上，可作为流程对标样本。', '经济线仍是波动最大的线路，建议补齐承运商回传颗粒度。', '低签收客户已缩减到7家，专项治理策略正在起效。'],
+        toolbar: ['默认按创建时间倒序', '签收率低于95%默认高亮', '口径:发货订单签收回传'],
+        rowsConfig: { prefix: 'SR', tags: ['经济线', '标准线', '特快线'], statuses: ['优秀', '关注', '预警'], mode: 'percent', base: 95.2, step: 0.4 }
+      }),
+      complaint: createReport({
+        tabLabel: '客诉分析', title: '客诉分析报表', summary: '用于查看客诉量、问题类型与处理进度，帮助识别重复问题和高风险客户。', scope: '数据范围:客服工单系统', sync: '最近同步:2026-03-18 21:58:12', focus: '重点关注高风险客诉与响应时效', note: '口径=已登记且有效的客诉工单', owner: '客服质控组', review: '适合联动签收率与赔付视图查看',
+        filterA: { label: '客诉类型', options: ['配送延迟', '货物损坏', '服务态度', '数量差异'] }, filterB: { label: '处理状态', options: ['处理中', '已闭环', '待确认'] }, tagHeader: '客诉类型', valueHeader: '客诉量',
+        stats: [
+          { label: '客诉工单数', value: '142', delta: '较上期+6.0%', tone: 'tone-blue', hint: '配送延迟上升明显' },
+          { label: '24小时响应率', value: '94.6%', delta: '较上期+2.1%', tone: 'tone-green', hint: '客服响应提速' },
+          { label: '高风险工单', value: '16', delta: '较上期+3单', tone: 'tone-orange', hint: '需专项跟进' },
+          { label: '重复问题客户', value: '5', delta: '较上期持平', tone: 'tone-violet', hint: '集中在同一代理渠道' }
+        ],
+        trend: { title: '近18天客诉趋势', type: 'line', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '客诉量', data: [13, 12, 15, 14, 16, 15, 18, 20, 19], color: '#ff5a5f' }, { label: '已闭环工单', data: [9, 10, 12, 11, 13, 14, 15, 17, 16], color: '#4d77ea' }] },
+        structure: { title: '客诉类型占比', type: 'doughnut', labels: ['配送延迟', '货物损坏', '服务态度', '数量差异'], values: [36, 28, 21, 15] },
+        insights: ['配送延迟成为首位客诉类型，建议联动签收率报表一起查看。', '24小时响应率稳定提升，说明工单分派更合理。', '高风险工单多集中在同一代理渠道，可考虑加规则拦截。'],
+        toolbar: ['默认按创建时间倒序', '高风险工单需二次确认', '口径:有效客诉工单'],
+        rowsConfig: { prefix: 'CS', tags: ['配送延迟', '货物损坏', '服务态度', '数量差异'], statuses: ['处理中', '已闭环', '待确认'], unit: '单', base: 5, step: 2 }
+      }),
+      compensation: createReport({
+        tabLabel: '赔付分析', title: '赔付分析报表', summary: '用于查看赔付金额、类型分布与审批流转情况，支持在评审中快速识别高成本异常场景。', scope: '数据范围:赔付审批链路', sync: '最近同步:2026-03-18 22:11:09', focus: '重点关注高金额赔付与审批滞留', note: '口径=已提交赔付申请单', owner: '财务结算组', review: '适合联动客诉与装车视频复盘',
+        filterA: { label: '赔付类型', options: ['货物丢失', '货物损坏', '配送延迟', '服务补偿'] }, filterB: { label: '审批阶段', options: ['待审批', '审批中', '已完成'] }, tagHeader: '赔付类型', valueHeader: '赔付金额',
+        stats: [
+          { label: '赔付金额', value: '¥142,380.00', delta: '较上期+12.3%', tone: 'tone-blue', hint: '高金额单需专项复盘' },
+          { label: '已完成审批率', value: '88.6%', delta: '较上期+4.5%', tone: 'tone-green', hint: '财务审核更稳定' },
+          { label: '超3天未审批', value: '11', delta: '较上期-2单', tone: 'tone-orange', hint: '仍需压缩长尾审批' },
+          { label: '高金额案件', value: '6', delta: '较上期+1件', tone: 'tone-violet', hint: '集中在货损场景' }
+        ],
+        trend: { title: '近18天赔付金额趋势', type: 'bar', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '赔付金额', data: [11200, 10860, 12940, 11820, 14600, 13240, 15180, 16420, 16120], color: '#ff5a5f' }] },
+        structure: { title: '赔付类型占比', type: 'doughnut', labels: ['货物丢失', '货物损坏', '配送延迟', '服务补偿'], values: [32, 36, 18, 14] },
+        insights: ['货物损坏仍是赔付金额最高类型，建议联动装车视频复盘。', '超3天未审批单持续下降，审批链路效率提升。', '高金额案件集中在同一仓库，建议补充视频留存要求。'],
+        toolbar: ['默认按创建时间倒序', '金额保留2位小数', '口径:已提交赔付申请'],
+        rowsConfig: { prefix: 'PF', tags: ['货物丢失', '货物损坏', '配送延迟', '服务补偿'], statuses: ['待审批', '审批中', '已完成'], mode: 'currency', base: 1680, step: 320 }
+      })
+    };
+
+    function statusClass(value) {
+      if (['已签收', '已完成', '已闭环', '健康', '优秀', '已复核', '已发运', '已审核'].includes(value)) return 'badge-green';
+      if (['运输中', '处理中', '审批中', '拣货中'].includes(value)) return 'badge-blue';
+      if (['待装车', '待上架', '待复核', '待审批', '关注', '待收货', '待拣货', '待出库', '待审核'].includes(value)) return 'badge-orange';
+      if (['预警', '待确认'].includes(value)) return 'badge-red';
+      return 'badge-blue';
+    }
+    function tagClass(value) {
+      const styles = ['badge-blue', 'badge-green', 'badge-orange', 'badge-red'];
+      const score = Array.from(String(value)).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+      return styles[score % styles.length];
+    }
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 2400);
+    }
+    function renderReportMenu() {
+      document.getElementById('reportMenu').innerHTML = REPORT_ORDER.map((key, index) => {
+        const report = reportDefinitions[key];
+        return `<button type="button" class="menu-item ${state.currentReport === key ? 'active' : ''}" data-report="${key}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span class="menu-label">${report.tabLabel}</span><span class="menu-note">（${report.focus}）</span></span></button>`;
+      }).join('');
+    }
+    function renderFilters() {
+      const report = reportDefinitions[state.currentReport];
+      document.getElementById('filterALabel').textContent = report.filterA.label;
+      document.getElementById('filterBLabel').textContent = report.filterB.label;
+      document.getElementById('customer').innerHTML = `<option value="">全部客户/货主</option>${COMMON_CUSTOMERS.map(item => `<option value="${item}">${item}</option>`).join('')}`;
+      document.getElementById('businessTypeList').innerHTML = BUSINESS_TYPE_OPTIONS.map(item => `<label class="multi-select-option"><input class="business-type-checkbox" type="checkbox" value="${item}"><span>${item}</span></label>`).join('');
+      document.getElementById('filterA').innerHTML = `<option value="">全部${report.filterA.label}</option>${report.filterA.options.map(item => `<option value="${item}">${item}</option>`).join('')}`;
+      document.getElementById('filterB').innerHTML = `<option value="">全部${report.filterB.label}</option>${report.filterB.options.map(item => `<option value="${item}">${item}</option>`).join('')}`;
+      document.getElementById('startDate').value = state.filters.startDate;
+      document.getElementById('endDate').value = state.filters.endDate;
+      document.getElementById('customer').value = state.filters.customer;
+      document.getElementById('filterA').value = state.filters.filterA;
+      document.getElementById('filterB').value = state.filters.filterB;
+      document.getElementById('keywordInput').value = state.filters.keyword;
+      syncHeaderWarehouseSelection(state.filters.selectedWarehouses);
+      syncBusinessTypeSelection(state.filters.businessTypes);
+      closeBusinessTypeDropdown();
+      document.querySelectorAll('.quick-range').forEach(button => { button.classList.toggle('active', Number(button.dataset.days) === state.filters.quickDays); });
+    }
+    function renderStats() {
+      const report = reportDefinitions[state.currentReport];
+      document.getElementById('statCards').innerHTML = report.stats.map(item => `<div class="stat-card ${item.tone}"><div class="stat-card-head"><span class="stat-dot"></span><span class="stat-label">${item.label}</span></div><div class="stat-value">${item.value}</div><div class="stat-delta">${item.delta}</div><div class="stat-hint">${item.hint}</div></div>`).join('');
+    }
+    function buildTrendChart(report) {
+      const type = report.trend.type;
+      return {
+        type,
+        data: {
+          labels: report.trend.labels,
+          datasets: report.trend.datasets.map(dataset => ({
+            label: dataset.label,
+            data: dataset.data,
+            borderColor: dataset.color,
+            backgroundColor: type === 'line' ? hexToRgba(dataset.color, 0.12) : hexToRgba(dataset.color, 0.86),
+            tension: 0.35,
+            fill: type === 'line',
+            borderWidth: 2,
+            pointRadius: type === 'line' ? 3 : 0,
+            pointHoverRadius: type === 'line' ? 4 : 0,
+            borderRadius: type === 'bar' ? 10 : 0,
+            maxBarThickness: type === 'bar' ? 24 : undefined
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { usePointStyle: true, color: '#627388' } } },
+          scales: {
+            y: { beginAtZero: !report.trend.yRange, min: report.trend.yRange ? report.trend.yRange.min : undefined, max: report.trend.yRange ? report.trend.yRange.max : undefined, grid: { color: 'rgba(219, 228, 239, 0.8)' }, ticks: { color: '#627388' } },
+            x: { grid: { display: false }, ticks: { color: '#627388' } }
+          }
+        }
+      };
+    }
+    function buildStructureChart(report) {
+      const palette = ['#4d77ea', '#2eb67d', '#f59e0b', '#7d67ff'];
+      if (report.structure.type === 'bar') {
+        return {
+          type: 'bar',
+          data: { labels: report.structure.labels, datasets: [{ label: report.structure.title, data: report.structure.values, backgroundColor: report.structure.labels.map((_, index) => hexToRgba(palette[index % palette.length], 0.88)), borderRadius: 10, maxBarThickness: 34 }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 90, max: 100, grid: { color: 'rgba(219, 228, 239, 0.8)' }, ticks: { color: '#627388' } }, x: { grid: { display: false }, ticks: { color: '#627388' } } } }
+        };
+      }
+      return {
+        type: 'doughnut',
+        data: { labels: report.structure.labels, datasets: [{ data: report.structure.values, backgroundColor: report.structure.labels.map((_, index) => palette[index % palette.length]), borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { position: 'right', labels: { usePointStyle: true, color: '#627388', padding: 16 } } } }
+      };
+    }
+    function buildTrendSpotlights(report, rows) {
+      const primaryDataset = report.trend.datasets[0] || { data: [], label: report.valueHeader };
+      const values = primaryDataset.data || [];
+      const firstValue = values[0] ?? 0;
+      const lastValue = values[values.length - 1] ?? 0;
+      const peakValue = values.length ? Math.max(...values) : 0;
+      const peakIndex = values.indexOf(peakValue);
+      const peakLabel = peakIndex >= 0 ? report.trend.labels[peakIndex] : '--';
+      const changeRatio = firstValue ? (lastValue - firstValue) / firstValue : 0;
+      const directionText = changeRatio > 0.03 ? '持续上扬' : changeRatio < -0.03 ? '逐步回落' : '相对平稳';
+      const sampleRows = rows.length ? rows : report.rows;
+      const warehouseDistribution = buildDistribution(sampleRows, 'warehouse');
+      const dominantWarehouse = warehouseDistribution[0];
+      const followUpCount = sampleRows.filter(row => getStatusBucket(row.status) !== 'success').length;
+      const followRate = sampleRows.length ? followUpCount / sampleRows.length : 0;
+      return [
+        { label: '趋势斜率', value: formatRatio(Math.abs(changeRatio)), hint: `${primaryDataset.label}${changeRatio >= 0 ? '较期初抬升' : '较期初回落'}，当前节奏${directionText}`, toneClass: changeRatio >= 0 ? 'text-brand' : 'text-warning' },
+        { label: '峰值节点', value: peakLabel, hint: `${primaryDataset.label}峰值${formatMetricValue(peakValue, report, { digits: report.rowsConfig.mode === 'percent' ? 1 : 0 })}`, toneClass: 'text-success' },
+        { label: '样本集中仓', value: dominantWarehouse?.name || '--', hint: dominantWarehouse ? `占比${formatRatio(dominantWarehouse.share)}，待跟进占比${formatRatio(followRate)}` : '当前暂无仓库分布样本', toneClass: 'text-violet' }
+      ];
+    }
+    function buildWarehouseMixChart(rows) {
+      const sampleRows = rows.length ? rows : reportDefinitions[state.currentReport].rows;
+      const distribution = buildDistribution(sampleRows, 'warehouse').slice(0, 3);
+      return { type: 'bar', data: { labels: distribution.map(item => item.name), datasets: [{ data: distribution.map(item => item.count), backgroundColor: ['#4d77ea', '#2eb67d', '#7d67ff'], borderRadius: 999, barThickness: 14 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: context => `${context.raw}条样本` } } }, scales: { x: { beginAtZero: true, grid: { color: 'rgba(219, 228, 239, 0.8)' }, ticks: { color: '#627388', precision: 0 } }, y: { grid: { display: false }, ticks: { color: '#627388' } } } } };
+    }
+    function buildStatusSignalChart(rows) {
+      const sampleRows = rows.length ? rows : reportDefinitions[state.currentReport].rows;
+      const distribution = buildDistribution(sampleRows, 'status').slice(0, 4);
+      return { type: 'polarArea', data: { labels: distribution.map(item => item.name), datasets: [{ data: distribution.map(item => item.count), backgroundColor: ['rgba(77, 119, 234, 0.76)', 'rgba(46, 182, 125, 0.72)', 'rgba(245, 158, 11, 0.74)', 'rgba(255, 90, 95, 0.76)'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: context => `${context.label}:${context.raw}条` } } }, scales: { r: { grid: { color: 'rgba(219, 228, 239, 0.8)' }, angleLines: { color: 'rgba(219, 228, 239, 0.8)' }, ticks: { display: false }, pointLabels: { color: '#627388', font: { size: 11 } } } } } };
+    }
+    function renderCharts() {
+      const report = reportDefinitions[state.currentReport];
+      const filteredRows = getFilteredRows();
+      const useFallbackRows = !filteredRows.length;
+      document.getElementById('trendTitle').textContent = report.trend.title;
+      document.getElementById('structureTitle').textContent = report.structure.title;
+      document.getElementById('trendChartHint').textContent = useFallbackRows ? '当前筛选未命中样本，趋势区回退展示默认样本口径。' : `已读取${filteredRows.length}条样本，主图展示最近18天整体变化。`;
+      document.getElementById('trendSpotlightCards').innerHTML = buildTrendSpotlights(report, filteredRows).map(item => `<div class="trend-spotlight-card"><div class="spotlight-label">${item.label}</div><div class="spotlight-value ${item.toneClass}">${item.value}</div><div class="spotlight-hint">${item.hint}</div></div>`).join('');
+      if (charts.trend) charts.trend.destroy();
+      if (charts.structure) charts.structure.destroy();
+      if (charts.warehouseMix) charts.warehouseMix.destroy();
+      if (charts.statusSignal) charts.statusSignal.destroy();
+      charts.trend = new Chart(document.getElementById('trendChart').getContext('2d'), buildTrendChart(report));
+      charts.structure = new Chart(document.getElementById('structureChart').getContext('2d'), buildStructureChart(report));
+      charts.warehouseMix = new Chart(document.getElementById('warehouseMixChart').getContext('2d'), buildWarehouseMixChart(filteredRows));
+      charts.statusSignal = new Chart(document.getElementById('statusSignalChart').getContext('2d'), buildStatusSignalChart(filteredRows));
+    }
+    function renderInsights() {
+      const report = reportDefinitions[state.currentReport];
+      document.getElementById('insightList').innerHTML = report.insights.map((text, index) => `<div class="insight-card"><div class="insight-index">关注点${index + 1}</div><div class="insight-text">${text}</div></div>`).join('');
+    }
+    function collectFilters() {
+      state.filters.startDate = document.getElementById('startDate').value;
+      state.filters.endDate = document.getElementById('endDate').value;
+      state.filters.customer = document.getElementById('customer').value;
+      state.filters.filterA = document.getElementById('filterA').value;
+      state.filters.filterB = document.getElementById('filterB').value;
+      state.filters.keyword = document.getElementById('keywordInput').value.trim();
+      const selectedBusinessTypes = getSelectedBusinessTypes();
+      if (!selectedBusinessTypes.length) {
+        showToast('请至少选择1个业务类型', 'warning');
+        return false;
+      }
+      state.filters.businessTypes = [...selectedBusinessTypes];
+      const selectedWarehouses = getSelectedHeaderWarehouses();
+      if (!selectedWarehouses.length) {
+        showToast('请至少选择1个仓库', 'warning');
+        return false;
+      }
+      state.filters.selectedWarehouses = [...selectedWarehouses];
+      syncHeaderWarehouseSelection(state.filters.selectedWarehouses);
+      syncBusinessTypeSelection(state.filters.businessTypes);
+      return true;
+    }
+    function getFilteredRows() {
+      const report = reportDefinitions[state.currentReport];
+      const selectedWarehouses = state.filters.selectedWarehouses.length ? state.filters.selectedWarehouses : COMMON_WAREHOUSES;
+      const selectedBusinessTypes = state.filters.businessTypes.length ? state.filters.businessTypes : BUSINESS_TYPE_OPTIONS;
+      return report.rows.filter(row => {
+        const rowDate = row.time.slice(0, 10);
+        const matchDate = (!state.filters.startDate || rowDate >= state.filters.startDate) && (!state.filters.endDate || rowDate <= state.filters.endDate);
+        const matchWarehouse = selectedWarehouses.includes(row.warehouse);
+        const matchBusinessType = selectedBusinessTypes.includes(row.businessType);
+        const matchCustomer = !state.filters.customer || row.customer === state.filters.customer;
+        const matchTag = !state.filters.filterA || row.tag === state.filters.filterA;
+        const matchStatus = !state.filters.filterB || row.status === state.filters.filterB;
+        const keyword = state.filters.keyword.toLowerCase();
+        const matchKeyword = !keyword || Object.values(row).some(value => String(value).toLowerCase().includes(keyword));
+        return matchDate && matchWarehouse && matchBusinessType && matchCustomer && matchTag && matchStatus && matchKeyword;
+      });
+    }
+    function renderDefaultTableHeader() {
+      document.getElementById('tableHead').innerHTML = `<tr><th>编号</th><th>客户/货主</th><th>仓库</th><th>主题标签</th><th class="cell-right">关键值</th><th>更新时间</th><th>状态</th></tr>`;
+      document.getElementById('detailTable').style.minWidth = '980px';
+    }
+    function renderOrderTableHeader(fields) {
+      document.getElementById('tableHead').innerHTML = `<tr>${fields.map(fieldKey => {
+        const field = ORDER_FIELD_DEFINITIONS[fieldKey];
+        return `<th class="${field.align === 'right' ? 'cell-right' : ''}">${field.label}</th>`;
+      }).join('')}</tr>`;
+      document.getElementById('detailTable').style.minWidth = `${Math.max(980, fields.length * 128)}px`;
+    }
+    function renderOrderTable(pageRows, selectedBusinessTypes) {
+      const fields = getOrderVisibleFields(selectedBusinessTypes);
+      renderOrderTableHeader(fields);
+      document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map(row => `<tr>${fields.map(fieldKey => {
+        const field = ORDER_FIELD_DEFINITIONS[fieldKey];
+        const content = field.getValue(row);
+        return `<td class="${field.align === 'right' ? 'cell-right' : ''}">${field.html ? content : content ?? '--'}</td>`;
+      }).join('')}</tr>`).join('') : `<tr class="empty-row"><td colspan="${fields.length}">暂无匹配数据，请调整查询条件后重试</td></tr>`;
+    }
+    function renderGenericTable(pageRows) {
+      renderDefaultTableHeader();
+      document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map(row => `<tr><td>${row.code}</td><td>${row.customer}</td><td>${row.warehouse}</td><td><span class="badge ${tagClass(row.tag)}">${row.tag}</span></td><td class="cell-right">${row.value}</td><td>${row.time}</td><td><span class="badge ${statusClass(row.status)}">${row.status}</span></td></tr>`).join('') : `<tr class="empty-row"><td colspan="7">暂无匹配数据，请调整查询条件后重试</td></tr>`;
+    }
+    function renderPagination(total) {
+      const maxPage = Math.max(1, Math.ceil(total / state.pagination.pageSize));
+      if (state.pagination.currentPage > maxPage) state.pagination.currentPage = maxPage;
+      document.getElementById('prevBtn').disabled = state.pagination.currentPage === 1;
+      document.getElementById('nextBtn').disabled = state.pagination.currentPage === maxPage;
+      const pages = [];
+      if (maxPage <= 7) for (let page = 1; page <= maxPage; page += 1) pages.push(page);
+      else if (state.pagination.currentPage <= 4) pages.push(1, 2, 3, 4, 5, '...', maxPage);
+      else if (state.pagination.currentPage >= maxPage - 3) pages.push(1, '...', maxPage - 4, maxPage - 3, maxPage - 2, maxPage - 1, maxPage);
+      else pages.push(1, '...', state.pagination.currentPage - 1, state.pagination.currentPage, state.pagination.currentPage + 1, '...', maxPage);
+      document.getElementById('pageNumbers').innerHTML = pages.map(page => page === '...' ? `<span class="page-btn" style="cursor:default;">...</span>` : `<button type="button" class="page-btn ${page === state.pagination.currentPage ? 'active' : ''}" data-page="${page}">${page}</button>`).join('');
+    }
+    function renderTable() {
+      const report = reportDefinitions[state.currentReport];
+      const filteredRows = getFilteredRows();
+      const selectedWarehouses = state.filters.selectedWarehouses.length ? state.filters.selectedWarehouses : COMMON_WAREHOUSES;
+      const selectedBusinessTypes = getActiveBusinessTypes();
+      const maxPage = Math.max(1, Math.ceil(filteredRows.length / state.pagination.pageSize));
+      if (state.pagination.currentPage > maxPage) state.pagination.currentPage = maxPage;
+      const start = (state.pagination.currentPage - 1) * state.pagination.pageSize;
+      const pageRows = filteredRows.slice(start, start + state.pagination.pageSize);
+      document.getElementById('tableTitle').textContent = report.title.replace('报表', '明细');
+      document.getElementById('tableToolbar').innerHTML = [...report.toolbar, `当前仓库:${selectedWarehouses.length === COMMON_WAREHOUSES.length ? '全部仓库' : selectedWarehouses.join('、')}`, `业务类型:${selectedBusinessTypes.length === BUSINESS_TYPE_OPTIONS.length ? '全部业务类型' : selectedBusinessTypes.join('、')}`].map(text => `<span class="toolbar-tag">${text}</span>`).join('');
+      if (state.currentReport === 'order') renderOrderTable(pageRows, selectedBusinessTypes);
+      else renderGenericTable(pageRows);
+      document.getElementById('totalCount').textContent = filteredRows.length;
+      document.getElementById('currentStart').textContent = filteredRows.length ? start + 1 : 0;
+      document.getElementById('currentEnd').textContent = filteredRows.length ? Math.min(start + state.pagination.pageSize, filteredRows.length) : 0;
+      renderPagination(filteredRows.length);
+    }
+    function parseMetricValue(value) {
+      const normalized = String(value).replace(/,/g, '').replace(/[^\d.-]/g, '');
+      return normalized ? Number(normalized) : 0;
+    }
+    function buildAiMetrics(report, rows) {
+      const normalizedRows = rows.map(row => ({ ...row, numericValue: parseMetricValue(row.value), timeValue: getTimeValue(row.time) }));
+      const sortedRows = [...normalizedRows].sort((left, right) => left.timeValue - right.timeValue);
+      const warehouseDistribution = buildDistribution(normalizedRows, 'warehouse');
+      const tagDistribution = buildDistribution(normalizedRows, 'tag');
+      const statusDistribution = buildDistribution(normalizedRows, 'status');
+      const followRows = normalizedRows.filter(row => getStatusBucket(row.status) !== 'success');
+      const latestWindowSize = Math.max(2, Math.ceil(normalizedRows.length / 3));
+      const earlyAvg = average(sortedRows.slice(0, latestWindowSize).map(row => row.numericValue));
+      const recentAvg = average(sortedRows.slice(-latestWindowSize).map(row => row.numericValue));
+      const trendDelta = earlyAvg ? (recentAvg - earlyAvg) / earlyAvg : 0;
+      const peakRow = [...normalizedRows].sort((left, right) => right.numericValue - left.numericValue)[0] || null;
+      const focusRows = [...normalizedRows].sort((left, right) => {
+        const rightScore = getStatusBucket(right.status) === 'risk' ? 3 : getStatusBucket(right.status) === 'warning' ? 2 : 1;
+        const leftScore = getStatusBucket(left.status) === 'risk' ? 3 : getStatusBucket(left.status) === 'warning' ? 2 : 1;
+        return (rightScore - leftScore) || (right.numericValue - left.numericValue) || (left.timeValue - right.timeValue);
+      }).slice(0, 3);
+      return { totalRows: normalizedRows.length, totalValue: normalizedRows.reduce((sum, row) => sum + row.numericValue, 0), avgValue: average(normalizedRows.map(row => row.numericValue)), followUpRate: normalizedRows.length ? followRows.length / normalizedRows.length : 0, topWarehouse: warehouseDistribution[0] || null, topTag: tagDistribution[0] || null, topStatus: statusDistribution[0] || null, peakRow, focusRows, trendDelta, trendDirection: trendDelta > 0.03 ? 'up' : trendDelta < -0.03 ? 'down' : 'flat', latestTime: sortedRows[sortedRows.length - 1]?.time || '--', uniqueCustomers: new Set(normalizedRows.map(row => row.customer)).size, uniqueWarehouses: new Set(normalizedRows.map(row => row.warehouse)).size, warehouseDistribution, tagDistribution, statusDistribution };
+    }
+    function buildVisualItems(distribution, options = {}) {
+      const { limit = 5, unit = '单', includeCount = true, aggregateOthers = false } = options;
+      const baseItems = distribution.slice(0, limit).map((item, index) => ({
+        label: item.name,
+        value: formatRatio(item.share),
+        hint: includeCount ? `${item.count}${unit}` : '',
+        share: item.share,
+        color: ['#4d77ea', '#2eb67d', '#f59e0b', '#7d67ff', '#ff7b54'][index % 5]
+      }));
+      if (!aggregateOthers || distribution.length <= limit) return baseItems;
+      const others = distribution.slice(limit);
+      const othersCount = others.reduce((sum, item) => sum + item.count, 0);
+      const othersShare = others.reduce((sum, item) => sum + item.share, 0);
+      return [...baseItems, { label: '其他', value: formatRatio(othersShare), hint: includeCount ? `${othersCount}${unit}` : '', share: othersShare, color: '#c2ccd8' }];
+    }
+    function buildDonutGradient(items = []) {
+      if (!items.length) return '#edf2f8';
+      let start = 0;
+      return `conic-gradient(${items.map(item => {
+        const end = start + (item.share || 0) * 100;
+        const segment = `${item.color || '#4d77ea'} ${start.toFixed(2)}% ${end.toFixed(2)}%`;
+        start = end;
+        return segment;
+      }).join(', ')})`;
+    }
+    function renderAiDonutSection(section) {
+      if (!section.items || !section.items.length) return `<div class="ai-visual-empty">当前分布暂无可视化样本。</div>`;
+      const topItem = section.items[0];
+      return `<div class="ai-donut-layout"><div class="ai-donut-shell"><div class="ai-donut-ring" style="background:${buildDonutGradient(section.items)};"><div class="ai-donut-hole"><div class="ai-donut-center-label">${section.centerLabel || 'TOP1'}</div><div class="ai-donut-center-value">${topItem.value}</div><div class="ai-donut-center-sub">${topItem.label}</div></div></div></div><div class="ai-donut-legend">${section.items.map(item => `<div class="ai-donut-legend-item"><span class="ai-donut-dot" style="background:${item.color || '#4d77ea'};"></span><span class="ai-donut-name">${item.label}</span><span class="ai-donut-value">${item.value}</span></div>`).join('')}</div></div>`;
+    }
+    function renderAiVisualSection(section) {
+      return `<div class="ai-visual-section"><div class="ai-visual-section-title">${section.label}</div>${section.chartType === 'donut' ? renderAiDonutSection(section) : section.items && section.items.length ? `<div class="ai-visual-list">${section.items.map(item => `<div class="ai-visual-item"><div class="ai-visual-item-head"><span class="ai-visual-item-label">${item.label}</span><span class="ai-visual-item-value">${item.value}</span></div><div class="ai-visual-bar"><span class="ai-visual-fill" style="width:${Math.max(8, Math.min(100, (item.share || 0) * 100))}%;background:${item.color || '#4d77ea'};"></span></div>${item.hint ? `<div class="ai-visual-item-hint">${item.hint}</div>` : ''}</div>`).join('')}</div>` : `<div class="ai-visual-empty">当前分布暂无可视化样本。</div>`}</div>`;
+    }
+    function renderAiVisualBlocks(blocks = []) {
+      if (!blocks.length) return '';
+      return `<div class="ai-visual-grid">${blocks.map((block, index) => `<div class="ai-visual-card"><div class="ai-visual-head"><div><div class="ai-visual-title">${block.title}</div><div class="ai-visual-sub">${block.subtitle || ''}</div></div><span class="ai-visual-badge">图表${pad(index + 1)}</span></div><div class="ai-visual-sections">${(block.sections || []).map(section => renderAiVisualSection(section)).join('')}</div></div>`).join('')}</div>`;
+    }
+    function formatDistributionText(distribution, options = {}) {
+      const { limit = 3, includeCount = false } = options;
+      if (!distribution.length) return '暂无样本';
+      return distribution.slice(0, limit).map(item => includeCount ? `${item.name}${item.count}单(${formatRatio(item.share)})` : `${item.name}${formatRatio(item.share)}`).join('，');
+    }
+    function formatOwnerRanking(distribution) {
+      if (!distribution.length) return '暂无货主样本';
+      return distribution.slice(0, 3).map((item, index) => `TOP${index + 1}${item.name}${item.count}单(${formatRatio(item.share)})`).join('；');
+    }
+    function buildOrderBusinessHighlight(type, rows) {
+      if (!rows.length) return `${type}暂无命中样本`;
+      const summaries = (ORDER_ANALYSIS_CONFIG[type] || []).map(config => {
+        const topItem = buildDistribution(rows, config.field)[0];
+        return topItem ? `${config.label.replace('占比', '')}以${topItem.name}为主(${formatRatio(topItem.share)})` : `${config.label}暂无样本`;
+      });
+      return `${type}${summaries.join('，')}`;
+    }
+    function buildOrderBusinessSpecificSummary(type, rows) {
+      if (!rows.length) return `${type}暂无命中样本`;
+      const details = (ORDER_ANALYSIS_CONFIG[type] || []).map(config => `${config.label}:${formatDistributionText(buildDistribution(rows, config.field))}`);
+      return `${type}样本${rows.length}单，${details.join('；')}`;
+    }
+    function buildOrderBusinessSuggestion(type, rows) {
+      if (!rows.length) return `${type}当前没有命中样本，建议保持筛选范围后再复核专项结构。`;
+      const dimensions = ORDER_ANALYSIS_CONFIG[type] || [];
+      const topItems = dimensions.map(config => ({ ...config, top: buildDistribution(rows, config.field)[0] || null }));
+      if (type === '干线') {
+        const originTop = topItems[0]?.top;
+        const destinationTop = topItems[1]?.top;
+        if (destinationTop && destinationTop.share >= 0.4) return `干线订单目的港集中在${destinationTop.name}(${formatRatio(destinationTop.share)})，建议提前锁定对应航线舱位、清关和地面交接资源。`;
+        if (originTop && originTop.share >= 0.4) return `干线订单起运港主要来自${originTop.name}(${formatRatio(originTop.share)})，建议重点校验该起运港对应仓的装板与配载能力。`;
+        return '干线订单港口分布相对均衡，可按周复盘起运港和目的港组合变化，提前安排舱位与出库节奏。';
+      }
+      if (type === '备货') {
+        const poTypeTop = topItems[0]?.top;
+        const currentCountryTop = topItems[1]?.top;
+        if (poTypeTop?.name === 'B2C' && poTypeTop.share >= 0.55) return `备货订单以B2C为主(${formatRatio(poTypeTop.share)})，建议预留拆零拣选、末端面单和小包波次资源；同时关注${currentCountryTop?.name || '主要现派国家'}的派送承运能力。`;
+        if (poTypeTop?.name === 'B2B' && poTypeTop.share >= 0.55) return `备货订单以B2B为主(${formatRatio(poTypeTop.share)})，建议优先保障整批备货、卡板位和大货出库衔接；同步复核${currentCountryTop?.name || '主现派国家'}的线路配置。`;
+        if (currentCountryTop && currentCountryTop.share >= 0.35) return `备货订单现派国家集中在${currentCountryTop.name}(${formatRatio(currentCountryTop.share)})，建议同步校验该国家的派送商容量与COD币种展示配置。`;
+        return '备货订单结构较均衡，可继续按PO Type和现派国家拆分波次，避免末端派送资源短时拥堵。';
+      }
+      const originalCountryTop = topItems[0]?.top;
+      const currentCountryTop = topItems[1]?.top;
+      if (currentCountryTop && currentCountryTop.share >= 0.35) return `退件重派订单现派国家集中在${currentCountryTop.name}(${formatRatio(currentCountryTop.share)})，建议提前准备改派线路、异常件处理和客户通知模板。`;
+      if (originalCountryTop && originalCountryTop.share >= 0.35) return `退件重派订单原派国主要来自${originalCountryTop.name}(${formatRatio(originalCountryTop.share)})，建议专项复盘该国家的首次派送失败原因和改派规则。`;
+      return '退件重派订单国家分布较分散，可继续按原派国和现派国家建立失败原因看板，减少重复改派。';
+    }
+    function buildOrderEvidenceRows(rows) {
+      return [...rows].map(row => {
+        const riskScore = row.status === '待审核' ? 3 : row.status === '处理中' ? 2 : 1;
+        const evidenceScore = Number(row.priorityValue || 0);
+        return { ...row, riskScore, evidenceScore, timeValue: getTimeValue(row.time) };
+      }).sort((left, right) => (right.riskScore - left.riskScore) || (right.evidenceScore - left.evidenceScore) || (right.timeValue - left.timeValue)).slice(0, 3);
+    }
+    function buildOrderAiAnalysis(rows) {
+      const availableTypes = BUSINESS_TYPE_OPTIONS.filter(type => rows.some(row => row.businessType === type));
+      const businessDistribution = buildDistribution(rows, 'businessType');
+      const warehouseDistribution = buildDistribution(rows, 'warehouse');
+      const ownerDistribution = buildDistribution(rows, 'ownerName');
+      const sourceDistribution = buildDistribution(rows, 'orderSource');
+      const latestTime = [...rows].sort((left, right) => getTimeValue(right.time) - getTimeValue(left.time))[0]?.time || '--';
+      const topBusiness = businessDistribution[0] || null;
+      const topWarehouse = warehouseDistribution[0] || null;
+      const topOwner = ownerDistribution[0] || null;
+      const topSource = sourceDistribution[0] || null;
+      const specificHighlights = availableTypes.map(type => buildOrderBusinessHighlight(type, rows.filter(row => row.businessType === type))).join('；');
+      const businessSuggestion = topBusiness?.share >= 0.5 ? `${topBusiness.name}订单占比达到${formatRatio(topBusiness.share)}，建议把该业务作为容量评审主视角，优先安排对应仓内作业资源。` : '订单业务结构相对均衡，建议按业务维度持续观察波峰变化，避免资源配置过度偏向单一业务。';
+      const warehouseSuggestion = topWarehouse?.share >= 0.45 ? `${topWarehouse.name}承接订单占比达到${formatRatio(topWarehouse.share)}，建议重点复盘该仓收货、上架和出库链路，防止单仓拥堵放大整体波动。` : '仓库分布相对均衡，可继续维持当前分仓策略，并关注短期波峰是否重新集中。';
+      const sourceSuggestion = topSource?.name === '客服建单' && topSource.share >= 0.35 ? `客服建单占比达到${formatRatio(topSource.share)}，建议复核人工建单场景与字段回填质量，逐步提升自动建单占比。` : topSource?.name === 'API下单' && topSource.share >= 0.35 ? `API下单占比较高(${formatRatio(topSource.share)})，建议重点关注接口字段完整性和异常重试机制，避免脏数据进入执行链路。` : '订单来源分布较均衡，可继续保持客户下单、客服建单和API下单的协同节奏。';
+      const visualBlocks = [
+        {
+          title: '订单业务占比',
+          subtitle: '展示当前筛选结果下各业务结构占比',
+          sections: [{ label: '业务分布', chartType: 'donut', centerLabel: '主业务', items: buildVisualItems(businessDistribution, { limit: 3, aggregateOthers: true }) }]
+        },
+        {
+          title: '仓库与来源',
+          subtitle: '用于识别订单压力仓和主要建单入口',
+          sections: [
+            { label: '仓库占比', chartType: 'donut', centerLabel: '主仓', items: buildVisualItems(warehouseDistribution, { limit: 3, aggregateOthers: true }) },
+            { label: '订单来源统计', chartType: 'donut', centerLabel: '主来源', items: buildVisualItems(sourceDistribution, { limit: 3, aggregateOthers: true }) }
+          ]
+        },
+        {
+          title: '货主排名',
+          subtitle: '按订单量查看当前TOP货主结构',
+          sections: [{ label: '货主TOP5', items: buildVisualItems(ownerDistribution, { limit: 5 }) }]
+        },
+        ...availableTypes.map(type => {
+          const typeRows = rows.filter(row => row.businessType === type);
+          return {
+            title: `${type}专项结构`,
+            subtitle: '结合当前命中样本拆看专项分布',
+            sections: (ORDER_ANALYSIS_CONFIG[type] || []).map(config => ({
+              label: config.label,
+              chartType: 'donut',
+              centerLabel: 'TOP1',
+              items: buildVisualItems(buildDistribution(typeRows, config.field), { limit: 4, aggregateOthers: true })
+            }))
+          };
+        })
+      ];
+      return {
+        summary: `当前筛选命中${rows.length}条订单样本，覆盖${ownerDistribution.length}个货主、${warehouseDistribution.length}个仓库。订单业务占比以${topBusiness?.name || '--'}为主，占比${topBusiness ? formatRatio(topBusiness.share) : '--'}；${topWarehouse?.name || '--'}为主样本仓，占比${topWarehouse ? formatRatio(topWarehouse.share) : '--'}；货主TOP1为${topOwner?.name || '--'}，订单来源以${topSource?.name || '--'}为主。${specificHighlights ? `${specificHighlights}。` : ''}`,
+        snapshotCards: [
+          { label: '订单总量', value: `${formatNumber(rows.length)}单`, hint: `覆盖${ownerDistribution.length}个货主 / ${warehouseDistribution.length}个仓库` },
+          { label: '主业务占比', value: topBusiness ? `${topBusiness.name} ${formatRatio(topBusiness.share)}` : '--', hint: `订单业务占比:${formatDistributionText(businessDistribution)}` },
+          { label: '样本集中仓', value: topWarehouse?.name || '--', hint: topWarehouse ? `占比${formatRatio(topWarehouse.share)}` : '暂无仓库分布' },
+          { label: 'TOP货主', value: topOwner?.name || '--', hint: topOwner ? `${topOwner.count}单，占比${formatRatio(topOwner.share)}` : '暂无货主样本' }
+        ],
+        visualBlocks,
+        findings: [
+          `订单业务占比:${formatDistributionText(businessDistribution)}。`,
+          `仓库占比:${formatDistributionText(warehouseDistribution)}。`,
+          `货主排名:${formatOwnerRanking(ownerDistribution)}。`,
+          `订单来源统计:${formatDistributionText(sourceDistribution)}。`,
+          ...availableTypes.map(type => `${buildOrderBusinessSpecificSummary(type, rows.filter(row => row.businessType === type))}。`)
+        ],
+        suggestions: [
+          businessSuggestion,
+          warehouseSuggestion,
+          sourceSuggestion,
+          ...availableTypes.map(type => buildOrderBusinessSuggestion(type, rows.filter(row => row.businessType === type)))
+        ],
+        evidenceRows: buildOrderEvidenceRows(rows),
+        basis: [
+          `最新样本更新时间:${latestTime}`,
+          `订单业务占比:${formatDistributionText(businessDistribution)}`,
+          `仓库占比:${formatDistributionText(warehouseDistribution)}`,
+          `货主TOP3:${formatOwnerRanking(ownerDistribution)}`,
+          `订单来源统计:${formatDistributionText(sourceDistribution)}`,
+          ...availableTypes.map(type => buildOrderBusinessSpecificSummary(type, rows.filter(row => row.businessType === type)))
+        ]
+      };
+    }
+    function buildAiAnalysis(report, rows) {
+      if (state.currentReport === 'order') return buildOrderAiAnalysis(rows);
+      const metrics = buildAiMetrics(report, rows);
+      const topWarehouse = metrics.topWarehouse?.name || '当前仓库';
+      const topWarehouseShare = metrics.topWarehouse ? formatRatio(metrics.topWarehouse.share) : '--';
+      const topTag = metrics.topTag?.name || `当前${report.tagHeader}`;
+      const topTagShare = metrics.topTag ? formatRatio(metrics.topTag.share) : '--';
+      const followRateText = formatRatio(metrics.followUpRate);
+      const trendText = metrics.trendDirection === 'up' ? `${report.valueHeader}近一段时间持续抬升` : metrics.trendDirection === 'down' ? `${report.valueHeader}近一段时间有所回落` : `${report.valueHeader}整体维持相对平稳`;
+      const visualBlocks = [
+        {
+          title: `${report.tagHeader}结构`,
+          subtitle: '用分布图快速定位当前最集中的业务维度',
+          sections: [{ label: `${report.tagHeader}占比`, chartType: 'donut', centerLabel: 'TOP1', items: buildVisualItems(metrics.tagDistribution, { limit: 4, unit: report.rowsConfig.unit || '条', aggregateOthers: true }) }]
+        },
+        {
+          title: '仓库与状态',
+          subtitle: '同时观察分仓样本量和闭环状态分布',
+          sections: [
+            { label: '仓库占比', chartType: 'donut', centerLabel: '主仓', items: buildVisualItems(metrics.warehouseDistribution, { limit: 3, aggregateOthers: true }) },
+            { label: '状态分布', chartType: 'donut', centerLabel: '主状态', items: buildVisualItems(metrics.statusDistribution, { limit: 4, unit: '条', aggregateOthers: true }) }
+          ]
+        }
+      ];
+      return {
+        summary: `当前筛选命中${metrics.totalRows}条样本，覆盖${metrics.uniqueCustomers}个客户、${metrics.uniqueWarehouses}个仓库。${topWarehouse}是当前主样本仓，占比${topWarehouseShare}；${topTag}是核心${report.tagHeader}，占比${topTagShare}。当前待跟进样本占比${followRateText}，${trendText}。`,
+        snapshotCards: [
+          { label: `累计${report.valueHeader}`, value: formatMetricValue(metrics.totalValue, report, { digits: report.rowsConfig.mode === 'currency' ? 2 : report.rowsConfig.mode === 'percent' ? 1 : 0 }), hint: `单条均值${formatMetricValue(metrics.avgValue, report, { digits: report.rowsConfig.mode === 'percent' ? 1 : 1 })}` },
+          { label: '待跟进占比', value: followRateText, hint: metrics.topStatus ? `当前主状态:${metrics.topStatus.name}` : '当前暂无状态分布' },
+          { label: '样本集中仓', value: topWarehouse, hint: metrics.topWarehouse ? `占比${topWarehouseShare}` : '暂无仓库分布' },
+          { label: `核心${report.tagHeader}`, value: topTag, hint: metrics.topTag ? `占比${topTagShare}` : '暂无维度分布' }
+        ],
+        visualBlocks,
+        findings: [
+          `${topWarehouse}为主样本仓，建议优先作为复盘与资源排班观察点。`,
+          `${topTag}是当前最集中的${report.tagHeader}维度，可继续下钻责任归因。`,
+          metrics.followUpRate >= 0.4 ? '当前待跟进样本占比偏高，说明闭环节奏仍有压缩空间。' : '当前待跟进样本占比可控，可继续观察是否出现短期反弹。'
+        ],
+        suggestions: [
+          `围绕${topWarehouse}建立专项跟进面板，优先看高频异常和长尾未闭环样本。`,
+          `针对${topTag}补充更细粒度维度拆分，便于在评审中快速定位问题来源。`,
+          metrics.peakRow ? `优先复核高值样本${metrics.peakRow.code}，避免单笔异常放大整体波动。` : '维持当前监控节奏，按日观察样本波动。'
+        ],
+        evidenceRows: metrics.focusRows,
+        basis: [
+          `最新样本更新时间:${metrics.latestTime}`,
+          `趋势判断:${trendText}`,
+          metrics.peakRow ? `峰值样本:${metrics.peakRow.code}/${metrics.peakRow.value}` : '当前未识别到峰值样本',
+          '本次分析基于当前查询条件与表格样本生成，适合用于评审演示。'
+        ]
+      };
+    }
+    function resetAiAnalysis(status = 'idle', message = '点击生成AI分析，基于当前筛选结果生成诊断结论与优化建议。') {
+      state.ai.requestId += 1;
+      state.ai.status = status;
+      state.ai.message = message;
+      state.ai.generatedAt = '';
+      state.ai.result = null;
+      state.ai.collapsed = false;
+    }
+    function buildAiScopeText(total) {
+      const report = reportDefinitions[state.currentReport];
+      const selectedWarehouses = state.filters.selectedWarehouses.length ? state.filters.selectedWarehouses : COMMON_WAREHOUSES;
+      const selectedBusinessTypes = state.filters.businessTypes.length ? state.filters.businessTypes : BUSINESS_TYPE_OPTIONS;
+      const warehouseText = selectedWarehouses.length === COMMON_WAREHOUSES.length ? '全部仓库' : selectedWarehouses.join('、');
+      const customerText = state.filters.customer || '全部客户/货主';
+      const businessTypeText = selectedBusinessTypes.length === BUSINESS_TYPE_OPTIONS.length ? '全部业务类型' : selectedBusinessTypes.join('、');
+      const filterAText = state.filters.filterA || `全部${report.filterA.label}`;
+      const filterBText = state.filters.filterB || `全部${report.filterB.label}`;
+      const keywordText = state.filters.keyword ? `，关键词“${state.filters.keyword}”` : '';
+      return `当前范围:${state.filters.startDate}至${state.filters.endDate}，${warehouseText}，${customerText}，${businessTypeText}，${filterAText}，${filterBText}${keywordText}，共读取${total}条样本。`;
+    }
+    function renderAiAnalysis() {
+      const rows = getFilteredRows();
+      const button = document.getElementById('aiAnalyzeBtn');
+      const buttonText = document.getElementById('aiAnalyzeBtnText');
+      const scope = document.getElementById('aiScopeText');
+      const badge = document.getElementById('aiStatusBadge');
+      const generatedAt = document.getElementById('aiGeneratedAt');
+      const content = document.getElementById('aiAnalysisContent');
+      const body = document.getElementById('aiInlineBody');
+      const collapseBtn = document.getElementById('toggleAiCollapseBtn');
+      scope.textContent = buildAiScopeText(rows.length);
+      button.disabled = state.ai.status === 'loading';
+      buttonText.textContent = state.ai.status === 'loading' ? '分析中...' : state.ai.status === 'ready' ? '重新分析' : state.ai.status === 'stale' ? '更新分析' : state.ai.status === 'empty' ? '重新分析' : '生成AI分析';
+      const statusConfig = { idle: { tone: 'idle', icon: 'ri-time-line', label: '待分析' }, loading: { tone: 'loading', icon: 'ri-loader-4-line', label: '分析中' }, ready: { tone: 'ready', icon: 'ri-checkbox-circle-line', label: '已生成' }, stale: { tone: 'warning', icon: 'ri-refresh-line', label: '待刷新' }, empty: { tone: 'empty', icon: 'ri-alert-line', label: '无数据' } }[state.ai.status];
+      badge.dataset.tone = statusConfig.tone;
+      badge.innerHTML = `<i class="${statusConfig.icon} ${state.ai.status === 'loading' ? 'rotate' : ''}"></i><span>${statusConfig.label}</span>`;
+      generatedAt.textContent = state.ai.generatedAt ? `生成时间:${state.ai.generatedAt}` : '分析口径:当前查询结果';
+      const canCollapse = state.ai.status === 'ready' && state.ai.result;
+      collapseBtn.disabled = !canCollapse;
+      collapseBtn.setAttribute('aria-expanded', canCollapse ? String(!state.ai.collapsed) : 'false');
+      collapseBtn.innerHTML = `<i class="${canCollapse && state.ai.collapsed ? 'ri-arrow-down-s-line' : 'ri-arrow-up-s-line'}"></i><span>${canCollapse ? (state.ai.collapsed ? '展开结果' : '折叠结果') : '折叠结果'}</span>`;
+      body.classList.toggle('hidden', canCollapse && state.ai.collapsed);
+      if (state.ai.status === 'loading') {
+        content.innerHTML = `<div class="ai-grid"><div class="ai-main"><div class="skeleton-card"><div class="skeleton-block" style="width:120px;"></div><div class="skeleton-block" style="margin-top:16px;width:100%;"></div><div class="skeleton-block" style="margin-top:10px;width:92%;"></div><div class="skeleton-block" style="margin-top:10px;width:86%;"></div></div><div class="ai-snapshot-grid">${Array.from({ length: 4 }).map(() => `<div class="skeleton-card"><div class="skeleton-block" style="width:70px;"></div><div class="skeleton-block" style="margin-top:16px;width:100px;height:28px;"></div><div class="skeleton-block" style="margin-top:12px;width:120px;"></div></div>`).join('')}</div></div><div class="ai-side"><div class="skeleton-card"><div class="skeleton-block" style="width:90px;"></div><div class="skeleton-block" style="margin-top:16px;width:100%;height:56px;"></div><div class="skeleton-block" style="margin-top:12px;width:100%;height:56px;"></div><div class="skeleton-block" style="margin-top:12px;width:100%;height:56px;"></div></div></div></div>`;
+        return;
+      }
+      if (state.ai.status === 'ready' && state.ai.result) {
+        const result = state.ai.result;
+        content.innerHTML = `<div class="ai-grid"><div class="ai-main"><div class="ai-card"><div class="ai-summary"><div class="ai-summary-icon"><i class="ri-robot-2-line"></i></div><div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span class="toolbar-tag">AI结论</span><span class="toolbar-tag">当前报表:${reportDefinitions[state.currentReport].title}</span></div><div class="ai-summary-text">${result.summary}</div></div></div></div><div class="ai-snapshot-grid">${result.snapshotCards.map(card => `<div class="ai-snapshot"><div class="ai-snapshot-label">${card.label}</div><div class="ai-snapshot-value">${card.value}</div><div class="ai-snapshot-hint">${card.hint}</div></div>`).join('')}</div>${renderAiVisualBlocks(result.visualBlocks)}<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;"><div class="ai-card"><div class="ai-section-title"><span class="ai-section-index">01</span><div><div class="ai-section-label">核心判断</div><div class="ai-section-sub">面向评审的重点信号提炼</div></div></div><div class="ai-list">${result.findings.map(item => `<div class="ai-list-item">${item}</div>`).join('')}</div></div><div class="ai-card"><div class="ai-section-title"><span class="ai-section-index">02</span><div><div class="ai-section-label">建议动作</div><div class="ai-section-sub">适合继续拆解为专项跟进项</div></div></div><div class="ai-list">${result.suggestions.map(item => `<div class="ai-list-item">${item}</div>`).join('')}</div></div></div></div><div class="ai-side"><div class="ai-card"><div class="section-title">优先关注样本</div><div class="section-sub" style="margin-top:6px;">按风险和关键值排序</div><div class="ai-list" style="margin-top:14px;">${result.evidenceRows.length ? result.evidenceRows.map(row => `<div class="evidence-card"><div class="evidence-head"><div class="evidence-title">${row.code}</div><span class="badge ${statusClass(row.status)}">${row.status}</span></div><div class="evidence-meta">${row.evidenceMeta || `${row.customer} / ${row.warehouse}`}</div><div class="evidence-tags"><span class="toolbar-tag">业务:${row.businessType}</span><span class="toolbar-tag">${row.evidenceTag || row.tag}</span><span class="toolbar-tag">${row.evidenceValue || `关键值:${row.value}`}</span><span class="toolbar-tag">更新时间:${row.time}</span></div></div>`).join('') : `<div class="ai-placeholder">当前筛选结果没有可展示的重点样本。</div>`}</div></div><div class="ai-card"><div class="section-title">分析依据</div><div class="section-sub" style="margin-top:6px;">便于现场说明分析口径</div><div class="ai-list" style="margin-top:14px;">${result.basis.map(item => `<div class="ai-list-item">${item}</div>`).join('')}</div></div></div></div>`;
+        return;
+      }
+      content.innerHTML = `<div class="ai-placeholder">${state.ai.message}</div>`;
+    }
+    function renderAll() { renderReportMenu(); renderFilters(); renderStats(); renderTable(); renderAiAnalysis(); }
+    function setQuickRange(days) {
+      const endDate = new Date(ANCHOR_DATE);
+      const startDate = new Date(ANCHOR_DATE);
+      startDate.setDate(startDate.getDate() - days + 1);
+      state.filters.startDate = `${startDate.getFullYear()}-${pad(startDate.getMonth() + 1)}-${pad(startDate.getDate())}`;
+      state.filters.endDate = `${endDate.getFullYear()}-${pad(endDate.getMonth() + 1)}-${pad(endDate.getDate())}`;
+      state.filters.quickDays = days;
+      document.getElementById('startDate').value = state.filters.startDate;
+      document.getElementById('endDate').value = state.filters.endDate;
+      document.querySelectorAll('.quick-range').forEach(button => { button.classList.toggle('active', Number(button.dataset.days) === days); });
+    }
+    function resetFilters() {
+      state.filters = { startDate: '2026-01-01', endDate: '2026-03-18', customer: '', businessTypes: [...BUSINESS_TYPE_OPTIONS], filterA: '', filterB: '', keyword: '', quickDays: 90, selectedWarehouses: [...COMMON_WAREHOUSES] };
+      state.pagination.currentPage = 1;
+      resetAiAnalysis('idle', '已恢复默认查询条件，点击生成AI分析可输出新的诊断结论。');
+      renderAll();
+    }
+    function switchReport(reportKey) {
+      if (!reportDefinitions[reportKey]) return;
+      state.currentReport = reportKey;
+      state.filters.customer = '';
+      state.filters.filterA = '';
+      state.filters.filterB = '';
+      state.filters.keyword = '';
+      state.pagination.currentPage = 1;
+      resetAiAnalysis('idle', `已切换到${reportDefinitions[reportKey].title}，请重新生成AI分析。`);
+      renderAll();
+      if (window.innerWidth < 768) {
+        document.getElementById('sidebar').classList.add('-translate-x-full');
+        document.getElementById('sidebarOverlay').classList.add('hidden');
+      }
+      showToast(`已切换到${reportDefinitions[reportKey].title}`);
+    }
+    function applyFiltersAndRenderTable() {
+      if (!collectFilters()) return false;
+      if (state.filters.startDate && state.filters.endDate && state.filters.startDate > state.filters.endDate) {
+        showToast('开始日期不能晚于结束日期', 'error');
+        return false;
+      }
+      state.pagination.currentPage = 1;
+      renderTable();
+      return true;
+    }
+    function triggerAiAnalysis() {
+      if (!applyFiltersAndRenderTable()) return;
+      const rows = getFilteredRows();
+      if (!rows.length) {
+        resetAiAnalysis('empty', '没有命中明细数据，AI无法输出有效结论。');
+        state.ai.generatedAt = formatSystemTime();
+        renderAiAnalysis();
+        showToast('暂无可分析数据', 'warning');
+        return;
+      }
+      state.ai.requestId += 1;
+      const requestId = state.ai.requestId;
+      state.ai.status = 'loading';
+      state.ai.generatedAt = '';
+      state.ai.result = null;
+      state.ai.message = 'AI正在读取当前筛选结果，请稍候。';
+      state.ai.collapsed = false;
+      renderAiAnalysis();
+      window.setTimeout(() => {
+        if (requestId !== state.ai.requestId) return;
+        state.ai.result = buildAiAnalysis(reportDefinitions[state.currentReport], rows);
+        state.ai.status = 'ready';
+        state.ai.generatedAt = formatSystemTime();
+        state.ai.collapsed = false;
+        renderAiAnalysis();
+        showToast('AI分析已生成');
+      }, 800);
+    }
+    function initEvents() {
+      document.addEventListener('click', event => {
+        const reportTrigger = event.target.closest('[data-report]');
+        if (reportTrigger) { switchReport(reportTrigger.dataset.report); return; }
+        const pageTrigger = event.target.closest('[data-page]');
+        if (pageTrigger) {
+          const page = Number(pageTrigger.dataset.page);
+          if (!Number.isNaN(page)) { state.pagination.currentPage = page; renderTable(); }
+        }
+      });
+      document.getElementById('queryBtn').addEventListener('click', () => {
+        if (!applyFiltersAndRenderTable()) return;
+        resetAiAnalysis('stale', '查询结果已更新，请点击更新分析获取最新结论。');
+        renderAiAnalysis();
+        showToast('查询成功');
+      });
+      document.getElementById('resetBtn').addEventListener('click', () => { resetFilters(); showToast('已重置查询条件'); });
+      document.getElementById('exportBtn').addEventListener('click', () => {
+        const total = getFilteredRows().length;
+        if (total > 100000) { showToast('数据量过大,请缩小查询范围', 'warning'); return; }
+        showToast(`正在导出，共${total}条数据`, 'warning');
+      });
+      document.getElementById('subscribeBtn').addEventListener('click', () => { showToast('已订阅当前报表日报'); });
+      document.getElementById('aiAnalyzeBtn').addEventListener('click', triggerAiAnalysis);
+      document.getElementById('toggleAiCollapseBtn').addEventListener('click', () => {
+        if (!(state.ai.status === 'ready' && state.ai.result)) return;
+        state.ai.collapsed = !state.ai.collapsed;
+        renderAiAnalysis();
+      });
+      document.getElementById('prevBtn').addEventListener('click', () => { if (state.pagination.currentPage > 1) { state.pagination.currentPage -= 1; renderTable(); } });
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        const totalPages = Math.max(1, Math.ceil(getFilteredRows().length / state.pagination.pageSize));
+        if (state.pagination.currentPage < totalPages) { state.pagination.currentPage += 1; renderTable(); }
+      });
+      document.getElementById('pageSize').addEventListener('change', event => { state.pagination.pageSize = Number(event.target.value); state.pagination.currentPage = 1; renderTable(); });
+      document.getElementById('keywordInput').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); document.getElementById('queryBtn').click(); } });
+      document.querySelectorAll('.quick-range').forEach(button => { button.addEventListener('click', () => setQuickRange(Number(button.dataset.days))); });
+      document.getElementById('businessTypeBtn').addEventListener('click', event => {
+        event.stopPropagation();
+        document.getElementById('businessTypeDropdown').classList.toggle('hidden');
+        document.getElementById('businessTypeBtn').setAttribute('aria-expanded', String(!document.getElementById('businessTypeDropdown').classList.contains('hidden')));
+      });
+      document.getElementById('selectAllBusinessTypes').addEventListener('change', event => {
+        const checked = event.target.checked;
+        document.querySelectorAll('.business-type-checkbox').forEach(checkbox => { checkbox.checked = checked; });
+        syncBusinessTypeSelection(checked ? [...BUSINESS_TYPE_OPTIONS] : []);
+      });
+      document.addEventListener('change', event => {
+        if (event.target.classList.contains('business-type-checkbox')) {
+          syncBusinessTypeSelection(getSelectedBusinessTypes());
+        }
+      });
+      document.getElementById('warehouseBtn').addEventListener('click', event => { event.stopPropagation(); document.getElementById('warehouseDropdown').classList.toggle('hidden'); });
+      document.getElementById('selectAllWarehouses').addEventListener('change', event => { const checked = event.target.checked; document.querySelectorAll('.warehouse-checkbox').forEach(checkbox => { checkbox.checked = checked; }); });
+      document.querySelectorAll('.warehouse-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const selectedWarehouses = getSelectedHeaderWarehouses();
+          const selectAll = document.getElementById('selectAllWarehouses');
+          selectAll.checked = selectedWarehouses.length === COMMON_WAREHOUSES.length;
+          selectAll.indeterminate = selectedWarehouses.length > 0 && selectedWarehouses.length < COMMON_WAREHOUSES.length;
+        });
+      });
+      document.getElementById('applyWarehouseBtn').addEventListener('click', () => {
+        const selectedWarehouses = getSelectedHeaderWarehouses();
+        if (!selectedWarehouses.length) { showToast('请至少选择1个仓库', 'warning'); return; }
+        state.filters.selectedWarehouses = [...selectedWarehouses];
+        syncHeaderWarehouseSelection(selectedWarehouses);
+        document.getElementById('warehouseDropdown').classList.add('hidden');
+        state.pagination.currentPage = 1;
+        resetAiAnalysis('stale', '仓库范围已更新，请点击更新分析获取最新结论。');
+        renderTable();
+        renderAiAnalysis();
+        showToast(selectedWarehouses.length === 1 ? `已切换到${selectedWarehouses[0]}` : `已切换${selectedWarehouses.length}个仓库范围`);
+      });
+      document.getElementById('menuToggle').addEventListener('click', () => { document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.remove('hidden'); });
+      document.getElementById('sidebarOverlay').addEventListener('click', () => { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('sidebarOverlay').classList.add('hidden'); });
+      document.addEventListener('click', event => {
+        if (!document.getElementById('warehouseSelector').contains(event.target)) document.getElementById('warehouseDropdown').classList.add('hidden');
+        if (!document.getElementById('businessTypeSelector').contains(event.target)) closeBusinessTypeDropdown();
+      });
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          closeBusinessTypeDropdown();
+          if (window.innerWidth < 768) { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('sidebarOverlay').classList.add('hidden'); }
+        }
+      });
+      window.addEventListener('resize', () => { if (window.innerWidth >= 768) { document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.add('hidden'); } });
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      Chart.defaults.font.family = '"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif';
+      Chart.defaults.color = '#627388';
+      if (window.innerWidth >= 768) document.getElementById('sidebar').classList.remove('-translate-x-full');
+      renderAll();
+      initEvents();
+    });
+  </script>
+</body>
+</html>
+

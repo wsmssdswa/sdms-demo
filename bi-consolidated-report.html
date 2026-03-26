@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BI综合报表-千仓SDMS</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
   <script>
     tailwind.config = {
@@ -16,7 +20,45 @@
             success: '#10b981',
             warning: '#f59e0b',
             danger: '#ef4444',
-            violet: '#4f46e5'
+            violet: '#4f46e5',
+            surface: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              700: '#cbd5e1',
+              800: '#f1f5f9',
+              850: '#f8fafc',
+              900: '#ffffff',
+              950: '#ffffff'
+            },
+            accent: {
+              cyan: '#0891b2',
+              cyanLight: '#06b6d4',
+              amber: '#d97706',
+              amberLight: '#f59e0b',
+              emerald: '#059669',
+              emeraldLight: '#10b981',
+              rose: '#e11d48',
+              roseLight: '#f43f5e',
+              violet: '#7c3aed',
+              violetLight: '#8b5cf6'
+            },
+            stat: {
+              blue: '#2563eb',
+              blueLight: '#3b82f6',
+              green: '#16a34a',
+              greenLight: '#22c55e',
+              purple: '#9333ea',
+              purpleLight: '#a855f7',
+              yellow: '#ca8a04',
+              yellowLight: '#eab308',
+              red: '#dc2626',
+              redLight: '#ef4444'
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
           },
           boxShadow: {
             soft: '0 12px 32px rgba(15, 23, 42, 0.08)',
@@ -27,6 +69,29 @@
     };
   </script>
   <style>
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+    }
+
+    *::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    *::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 999px;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
     html {
       height: 100%;
     }
@@ -35,12 +100,21 @@
       margin: 0;
       min-height: 100%;
       overflow: hidden;
-      font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
       color: #0f172a;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%);
+      background-attachment: fixed;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
       background:
-        radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(79, 70, 229, 0.10), transparent 22%),
-        linear-gradient(180deg, #f4f8fd 0%, #edf3fb 48%, #e8eef8 100%);
+        radial-gradient(ellipse at 20% 20%, rgba(6, 182, 212, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(245, 158, 11, 0.03) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     .app-layout {
@@ -63,16 +137,6 @@
       }
     }
 
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: rgba(100, 116, 139, 0.36);
-      border-radius: 999px;
-    }
-
     .shell-card {
       background: rgba(255, 255, 255, 0.94);
       border: 1px solid rgba(219, 228, 240, 0.92);
@@ -80,9 +144,52 @@
       backdrop-filter: blur(10px);
     }
 
-    .topbar {
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(16px);
+    .glass-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.08),
+        0 2px 4px -2px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 1);
+    }
+
+    .nav-item {
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .nav-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: linear-gradient(180deg, #06b6d4, #22d3ee);
+      border-radius: 0 2px 2px 0;
+      transition: height 0.3s ease;
+    }
+
+    .nav-item:hover::before,
+    .nav-item.active::before {
+      height: 60%;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, transparent 100%);
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #0891b2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .glow-dot {
+      box-shadow: 0 0 8px currentColor;
     }
 
     .panel-hero {
@@ -296,6 +403,35 @@
       color: #64748b;
     }
 
+    .trend-spotlight-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      border: 1px solid rgba(226, 232, 240, 0.92);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
+      padding: 16px 18px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .trend-spotlight-card::after {
+      content: '';
+      position: absolute;
+      right: -18px;
+      top: -20px;
+      width: 90px;
+      height: 90px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.12), transparent 72%);
+      pointer-events: none;
+    }
+
+    .mini-chart-shell {
+      border-radius: 24px;
+      border: 1px solid rgba(226, 232, 240, 0.92);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.94) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+    }
+
     .toast {
       position: fixed;
       top: 84px;
@@ -320,6 +456,139 @@
       background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     }
 
+    .btn-ai {
+      color: #0f172a;
+      border: 1px solid rgba(8, 145, 178, 0.18);
+      background: linear-gradient(135deg, rgba(236, 254, 255, 0.98) 0%, rgba(224, 231, 255, 0.94) 100%);
+      box-shadow: 0 14px 30px rgba(8, 145, 178, 0.12);
+    }
+
+    .btn-ai:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 34px rgba(8, 145, 178, 0.16);
+    }
+
+    .btn-ai:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+      transform: none;
+      box-shadow: 0 10px 22px rgba(8, 145, 178, 0.08);
+    }
+
+    .ai-floating-btn {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 90;
+      border-radius: 999px;
+      padding: 0 18px;
+      backdrop-filter: blur(12px);
+      box-shadow:
+        0 18px 34px rgba(8, 145, 178, 0.18),
+        0 0 0 1px rgba(255, 255, 255, 0.72);
+    }
+
+    .ai-floating-btn::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 999px;
+      border: 1px solid rgba(6, 182, 212, 0.20);
+      opacity: 0.8;
+      animation: ai-pulse 2.2s ease-out infinite;
+      pointer-events: none;
+    }
+
+    .ai-floating-btn:disabled::after {
+      display: none;
+    }
+
+    @keyframes ai-pulse {
+      0% {
+        transform: scale(0.96);
+        opacity: 0.75;
+      }
+      70% {
+        transform: scale(1.06);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1.08);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .ai-floating-btn {
+        right: 16px;
+        bottom: 18px;
+        width: 56px;
+        height: 56px;
+        padding: 0;
+        justify-content: center;
+      }
+    }
+
+    .ai-panel {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top right, rgba(6, 182, 212, 0.14), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(79, 70, 229, 0.10), transparent 30%),
+        linear-gradient(135deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
+    }
+
+    .ai-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border: 1px solid rgba(186, 230, 253, 0.72);
+      border-radius: 28px;
+      pointer-events: none;
+    }
+
+    .ai-status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      border: 1px solid transparent;
+    }
+
+    .ai-status-chip[data-tone="idle"] {
+      color: #0f172a;
+      border-color: rgba(148, 163, 184, 0.24);
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .ai-status-chip[data-tone="loading"] {
+      color: #155e75;
+      border-color: rgba(6, 182, 212, 0.18);
+      background: rgba(236, 254, 255, 0.9);
+    }
+
+    .ai-status-chip[data-tone="ready"] {
+      color: #065f46;
+      border-color: rgba(16, 185, 129, 0.18);
+      background: rgba(236, 253, 245, 0.92);
+    }
+
+    .ai-status-chip[data-tone="warning"] {
+      color: #92400e;
+      border-color: rgba(245, 158, 11, 0.18);
+      background: rgba(255, 251, 235, 0.94);
+    }
+
+    .ai-status-chip[data-tone="empty"] {
+      color: #991b1b;
+      border-color: rgba(239, 68, 68, 0.18);
+      background: rgba(254, 242, 242, 0.94);
+    }
+
     @keyframes toast-in {
       from {
         transform: translateY(-8px) translateX(24px);
@@ -332,100 +601,138 @@
     }
   </style>
 </head>
-<body class="h-screen">
-  <header class="topbar fixed inset-x-0 top-0 z-40 border-b border-white/60">
-    <div class="flex h-16 items-center justify-between px-4 md:px-6">
-      <div class="flex items-center gap-3">
-        <button id="menuToggle" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-soft md:hidden">
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 7h16M4 12h16M4 17h16"></path>
-          </svg>
-        </button>
-        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-violet text-white shadow-soft">
-          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 18.5v-13Zm3 1.75a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5H7Zm0 4a.75.75 0 0 0 0 1.5h6.5a.75.75 0 0 0 0-1.5H7Zm0 4a.75.75 0 0 0 0 1.5h10a.75.75 0 0 0 0-1.5H7Z"></path>
-          </svg>
-        </div>
-        <div>
-          <div class="text-base font-semibold text-ink">千仓SDMS</div>
-          <div class="text-xs text-slate-500">BI综合报表中心</div>
-        </div>
-      </div>
-      <div class="flex items-center gap-3">
-        <div class="hidden rounded-full border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500 shadow-soft lg:flex lg:items-center lg:gap-2">
-          <span class="inline-flex h-2 w-2 rounded-full bg-success"></span>
-          数据同步正常
-        </div>
-        <div class="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-2 py-1.5 shadow-soft">
-          <div class="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">赵</div>
-          <div class="pr-2">
-            <div class="text-sm font-medium text-slate-700">赵敏</div>
-            <div class="text-[11px] text-slate-400">BI运营</div>
+<body class="font-sans text-slate-800 min-h-screen relative">
+  <div class="flex h-screen overflow-hidden relative z-10">
+    <div id="sidebarOverlay" class="fixed inset-0 z-20 hidden bg-slate-950/30 md:hidden"></div>
+
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 flex w-64 -translate-x-full flex-col glass-card transition-transform duration-300 md:static md:translate-x-0">
+      <div class="p-5 border-b border-slate-200">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-cyan to-accent-cyanLight flex items-center justify-center shadow-lg">
+            <i class="ri-store-3-line text-xl text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-gradient">WMS Pro</h1>
+            <p class="text-xs text-slate-500">智能仓储管理</p>
           </div>
         </div>
       </div>
-    </div>
-  </header>
 
-  <div class="app-layout flex pt-16">
-    <div id="sidebarOverlay" class="fixed inset-0 z-20 hidden bg-slate-950/30 md:hidden"></div>
-
-    <aside id="sidebar" class="shell-card fixed inset-y-16 left-0 z-30 w-72 -translate-x-full overflow-y-auto rounded-none border-l-0 border-t-0 border-b-0 transition-transform duration-300 md:static md:h-full md:shrink-0 md:translate-x-0 md:border-y-0 md:border-r">
-      <div class="border-b border-slate-200/80 px-5 py-5">
-        <div class="text-sm font-semibold text-slate-800">报表导航</div>
-        <div class="mt-1 text-xs leading-5 text-slate-500">参考报表管理页的分组方式，统一整合出入库、库存和服务质量视图。</div>
+      <div class="flex-1 overflow-y-auto py-4">
+        <nav class="space-y-1 px-3">
+          <a href="./wms-workbench.html" class="nav-item flex items-center px-4 py-3 rounded-lg text-slate-600/70 hover:text-slate-800 hover:bg-slate-50">
+            <i class="ri-dashboard-3-line text-xl mr-3"></i>
+            <span>工作台</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-slate-600/70 hover:text-slate-800 hover:bg-slate-50">
+            <i class="ri-file-list-3-line text-xl mr-3"></i>
+            <span>订单管理</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-slate-600/70 hover:text-slate-800 hover:bg-slate-50">
+            <i class="ri-truck-line text-xl mr-3"></i>
+            <span>出库管理</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-slate-600/70 hover:text-slate-800 hover:bg-slate-50">
+            <i class="ri-inbox-archive-line text-xl mr-3"></i>
+            <span>入库管理</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-slate-600/70 hover:text-slate-800 hover:bg-slate-50">
+            <i class="ri-stack-line text-xl mr-3"></i>
+            <span>库存管理</span>
+          </a>
+          <a href="./bi-consolidated-report.html" class="nav-item active flex items-center px-4 py-3 rounded-lg text-accent-cyanLight font-medium">
+            <i class="ri-bar-chart-box-line text-xl mr-3"></i>
+            <span>报表中心</span>
+          </a>
+          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-slate-600/70 hover:text-slate-800 hover:bg-slate-50">
+            <i class="ri-settings-4-line text-xl mr-3"></i>
+            <span>系统设置</span>
+          </a>
+        </nav>
       </div>
-      <div class="px-4 py-4">
-        <div class="mb-6">
-          <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">出库报表</div>
-          <nav class="space-y-1">
-            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="shipment"><span class="menu-icon">出</span><span>备货订单出货报表</span></button>
-            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="reassign"><span class="menu-icon">重</span><span>重派订单报表</span></button>
-          </nav>
-        </div>
-        <div class="mb-6">
-          <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">入库报表</div>
-          <nav class="space-y-1">
-            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="putaway"><span class="menu-icon">上</span><span>上架量报表</span></button>
-            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="return"><span class="menu-icon">退</span><span>退件入仓报表</span></button>
-          </nav>
-        </div>
-        <div class="mb-6">
-          <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">库存报表</div>
-          <nav class="space-y-1">
-            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="inventory"><span class="menu-icon">库</span><span>库存报表</span></button>
-          </nav>
-        </div>
-        <div>
-          <div class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">服务质量报表</div>
-          <nav class="space-y-1">
-            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="sign-rate"><span class="menu-icon">签</span><span>客户签收率报表</span></button>
-            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="complaint"><span class="menu-icon">诉</span><span>客诉分析报表</span></button>
-            <button class="menu-item flex w-full items-center gap-3 rounded-l-2xl px-3 py-2.5 text-left text-sm" data-report="compensation"><span class="menu-icon">赔</span><span>赔付分析报表</span></button>
-          </nav>
+
+      <div class="p-4 border-t border-slate-200">
+        <div class="flex items-center p-2 rounded-xl bg-white/50">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-violet to-accent-violetLight flex items-center justify-center text-white font-semibold shadow-lg">
+            李
+          </div>
+          <div class="ml-3 flex-1 min-w-0">
+            <p class="text-sm font-semibold text-slate-800 truncate">李明</p>
+            <p class="text-xs text-slate-600/60">仓库经理</p>
+          </div>
+          <button class="p-2 text-slate-600/50 hover:text-accent-rose hover:bg-slate-100 rounded-lg transition-colors">
+            <i class="ri-logout-box-r-line text-lg"></i>
+          </button>
         </div>
       </div>
     </aside>
 
-    <main class="report-main flex-1 px-4 py-5 md:px-6 md:py-6 lg:px-8">
-      <section class="panel-hero shell-card mb-4 rounded-[28px] border-0 p-5 md:p-7">
-        <div class="relative z-10 flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-          <div class="max-w-4xl">
-            <div class="mb-3 flex flex-wrap items-center gap-2">
-              <span class="rounded-full bg-white/16 px-3 py-1.5 text-xs text-white/90">BI综合报表中心</span>
-              <span id="heroCurrentReport" class="rounded-full bg-white/16 px-3 py-1.5 text-xs text-white/90">备货订单出货报表</span>
+    <main class="report-main flex-1">
+      <header class="glass-card sticky top-0 z-20 py-4 px-4 md:px-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-4">
+            <button id="menuToggle" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 md:hidden">
+              <i class="ri-menu-line text-xl"></i>
+            </button>
+            <div>
+              <h2 class="text-xl font-bold text-slate-800">报表中心</h2>
+              <p class="text-xs text-slate-600/50 mt-0.5">统一查看仓储经营报表与趋势分析</p>
             </div>
-            <h1 class="text-2xl font-semibold tracking-wide md:text-3xl">统一查看仓配核心指标、趋势波动与风险提醒</h1>
-            <p id="heroDescription" class="mt-3 max-w-3xl text-sm leading-7 text-white/80 md:text-base"></p>
+            <span class="px-3 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 border border-accent-cyan/20 rounded-full">
+              BI报表视图
+            </span>
+            <div class="relative" id="warehouseSelector">
+              <button id="warehouseBtn" class="flex items-center px-4 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-surface-700 border border-slate-200 rounded-xl transition-all">
+                <i class="ri-building-2-line mr-2 text-accent-cyan"></i>
+                <span id="warehouseText">全部仓库</span>
+                <i class="ri-arrow-down-s-line ml-2 text-slate-600/50"></i>
+              </button>
+              <div id="warehouseDropdown" class="hidden absolute left-0 mt-2 w-72 glass-card rounded-xl shadow-2xl z-50 overflow-hidden">
+                <div class="p-3 border-b border-slate-200">
+                  <label class="flex items-center cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors">
+                    <input type="checkbox" id="selectAllWarehouses" class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0" checked>
+                    <span class="ml-3 text-sm font-medium text-slate-800">全部仓库</span>
+                  </label>
+                </div>
+                <div class="max-h-60 overflow-y-auto p-2" id="warehouseList">
+                  <label class="flex items-center cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors">
+                    <input type="checkbox" class="warehouse-checkbox w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0" value="深圳兴围仓" checked>
+                    <span class="ml-3 text-sm text-slate-600">深圳兴围仓</span>
+                  </label>
+                  <label class="flex items-center cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors">
+                    <input type="checkbox" class="warehouse-checkbox w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0" value="广州白云仓" checked>
+                    <span class="ml-3 text-sm text-slate-600">广州白云仓</span>
+                  </label>
+                  <label class="flex items-center cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors">
+                    <input type="checkbox" class="warehouse-checkbox w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0" value="香港葵涌仓" checked>
+                    <span class="ml-3 text-sm text-slate-600">香港葵涌仓</span>
+                  </label>
+                </div>
+                <div class="p-3 border-t border-slate-200">
+                  <button id="applyWarehouseBtn" class="w-full px-4 py-2.5 text-sm font-medium text-white btn-primary rounded-xl">
+                    确定
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <button id="favoriteBtn" class="btn-secondary h-11 px-4 text-white/90" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.14);">收藏视图</button>
-            <button id="subscribeBtn" class="btn-secondary h-11 px-4 text-white/90" style="background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.14);">订阅日报</button>
+          <div class="flex items-center space-x-3">
+            <button class="relative p-2.5 text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all">
+              <i class="ri-notification-3-line text-xl"></i>
+              <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-accent-rose rounded-full glow-dot"></span>
+            </button>
+            <button id="subscribeBtn" class="btn-secondary h-10 px-4">
+              <i class="ri-rss-line text-base text-accent-cyan"></i>
+              <span>订阅日报</span>
+            </button>
+            <a href="./wms-workbench.html" class="px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center transition-all">
+              <i class="ri-dashboard-3-line mr-2 text-accent-cyan"></i> 返回工作台
+            </a>
           </div>
         </div>
-        <div id="heroMeta" class="relative z-10 mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4"></div>
-      </section>
+      </header>
 
+      <div class="px-4 py-5 md:px-6 md:py-6 lg:px-8">
       <section class="shell-card mb-4 rounded-[28px] p-4 md:p-5">
         <div class="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
@@ -507,8 +814,46 @@
             </div>
             <span class="toolbar-tag">统计维度:按日</span>
           </div>
-          <div class="h-[320px]">
-            <canvas id="trendChart"></canvas>
+          <div id="trendSpotlightCards" class="mb-4 grid gap-3 md:grid-cols-3"></div>
+          <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
+            <div class="mini-chart-shell p-4">
+              <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div class="text-sm font-semibold text-slate-900">主趋势视图</div>
+                  <div id="trendChartHint" class="mt-1 text-xs text-slate-500"></div>
+                </div>
+                <span class="toolbar-tag">趋势主图</span>
+              </div>
+              <div class="h-[300px]">
+                <canvas id="trendChart"></canvas>
+              </div>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+              <div class="mini-chart-shell p-4">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <div class="text-sm font-semibold text-slate-900">仓库波次密度</div>
+                    <div class="mt-1 text-xs text-slate-500">当前筛选样本分布</div>
+                  </div>
+                  <span class="toolbar-tag">横向对比</span>
+                </div>
+                <div class="h-[140px]">
+                  <canvas id="warehouseMixChart"></canvas>
+                </div>
+              </div>
+              <div class="mini-chart-shell p-4">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <div class="text-sm font-semibold text-slate-900">状态信号面</div>
+                    <div class="mt-1 text-xs text-slate-500">闭环与风险占比</div>
+                  </div>
+                  <span class="toolbar-tag">Polar</span>
+                </div>
+                <div class="h-[140px]">
+                  <canvas id="statusSignalChart"></canvas>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="space-y-4">
@@ -581,17 +926,55 @@
           </div>
         </div>
       </section>
+      </div>
     </main>
   </div>
 
   <div id="toastContainer"></div>
+  <button id="aiAnalyzeBtn" class="btn-secondary btn-ai ai-floating-btn h-14">
+    <i class="ri-sparkling-2-line text-lg"></i>
+    <span id="aiAnalyzeBtnText" class="hidden md:inline">AI分析</span>
+  </button>
+  <div id="aiAnalysisModal" class="fixed inset-0 hidden" style="z-index:130;" role="dialog" aria-modal="true" aria-labelledby="aiModalTitle">
+    <div id="aiModalBackdrop" class="absolute inset-0 bg-slate-950/55 backdrop-blur-sm"></div>
+    <div class="relative flex min-h-full items-center justify-center p-4 md:p-6">
+      <div class="shell-card ai-panel relative w-full max-w-[1180px] overflow-hidden rounded-[32px]">
+        <div class="relative z-10 border-b border-slate-200/80 px-5 py-5 md:px-6 md:py-6">
+          <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div class="max-w-3xl">
+              <div class="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-700/70">AI智能分析</div>
+              <div class="mt-2 flex flex-wrap items-center gap-3">
+                <h3 id="aiModalTitle" class="text-xl font-semibold text-slate-950">基于当前查询结果生成结论与行动建议</h3>
+                <span class="rounded-full border border-cyan-200/70 bg-white/70 px-3 py-1 text-xs font-medium text-cyan-700">弹窗详情</span>
+              </div>
+              <p id="aiScopeText" class="mt-3 text-sm leading-6 text-slate-600"></p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="aiStatusBadge" class="ai-status-chip" data-tone="idle">
+                <i class="ri-time-line text-sm"></i>
+                <span>待分析</span>
+              </span>
+              <span id="aiGeneratedAt" class="toolbar-tag">等待读取当前查询结果</span>
+              <button id="refreshAiModalBtn" class="btn-secondary h-10 px-4">重新分析</button>
+              <button id="closeAiModalBtn" class="btn-secondary h-10 w-10 px-0" aria-label="关闭AI分析弹窗">
+                <i class="ri-close-line text-lg"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="relative z-10 max-h-[calc(100vh-220px)] overflow-y-auto px-5 py-5 md:px-6 md:py-6">
+          <div id="aiAnalysisContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     const REPORT_ORDER = ['shipment', 'reassign', 'putaway', 'return', 'inventory', 'sign-rate', 'complaint', 'compensation'];
     const COMMON_WAREHOUSES = ['深圳兴围仓', '广州白云仓', '香港葵涌仓'];
     const COMMON_CUSTOMERS = ['Anker跨境', 'SHEIN华南', 'Temu直发', 'Lazada华南', '菜鸟云配', '敏捷供应链'];
     const ANCHOR_DATE = new Date('2026-03-18T00:00:00');
-    const charts = { trend: null, structure: null };
+    const charts = { trend: null, structure: null, warehouseMix: null, statusSignal: null };
 
     const state = {
       currentReport: 'shipment',
@@ -603,15 +986,51 @@
         filterA: '',
         filterB: '',
         keyword: '',
-        quickDays: 90
+        quickDays: 90,
+        selectedWarehouses: [...COMMON_WAREHOUSES]
       },
       pagination: {
         currentPage: 1,
         pageSize: 20
+      },
+      ai: {
+        status: 'idle',
+        message: '点击AI分析，基于当前筛选结果生成诊断结论与优化建议。',
+        generatedAt: '',
+        result: null,
+        requestId: 0
       }
     };
 
     const reportDefinitions = {};
+
+    function getSelectedHeaderWarehouses() {
+      return Array.from(document.querySelectorAll('.warehouse-checkbox:checked')).map(item => item.value);
+    }
+
+    function syncHeaderWarehouseSelection(selectedWarehouses = COMMON_WAREHOUSES) {
+      const normalized = selectedWarehouses.length ? selectedWarehouses : COMMON_WAREHOUSES;
+      const selectedSet = new Set(normalized);
+
+      document.querySelectorAll('.warehouse-checkbox').forEach(checkbox => {
+        checkbox.checked = selectedSet.has(checkbox.value);
+      });
+
+      const selectAll = document.getElementById('selectAllWarehouses');
+      if (selectAll) {
+        selectAll.checked = normalized.length === COMMON_WAREHOUSES.length;
+        selectAll.indeterminate = normalized.length > 0 && normalized.length < COMMON_WAREHOUSES.length;
+      }
+
+      const warehouseText = document.getElementById('warehouseText');
+      if (warehouseText) {
+        warehouseText.textContent = normalized.length === COMMON_WAREHOUSES.length
+          ? '全部仓库'
+          : normalized.length === 1
+            ? normalized[0]
+            : `已选${normalized.length}个仓库`;
+      }
+    }
 
     function pad(value) {
       return String(value).padStart(2, '0');
@@ -638,6 +1057,637 @@
 
     function formatMoney(value) {
       return `¥${Number(value).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function formatSystemTime(date = new Date()) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+
+    function formatPercent(value, digits = 1) {
+      return `${Number(value).toFixed(digits)}%`;
+    }
+
+    function formatRatio(value, digits = 1) {
+      return `${(Number(value) * 100).toFixed(digits)}%`;
+    }
+
+    function parseMetricValue(value) {
+      const normalized = String(value).replace(/,/g, '').replace(/[^\d.-]/g, '');
+      return normalized ? Number(normalized) : 0;
+    }
+
+    function formatMetricValue(value, report, options = {}) {
+      const { digits } = options;
+      if (report.rowsConfig.mode === 'currency') {
+        return formatMoney(value);
+      }
+
+      if (report.rowsConfig.mode === 'percent') {
+        return formatPercent(value, digits ?? 1);
+      }
+
+      const decimals = digits ?? (Number.isInteger(value) ? 0 : 1);
+      return `${Number(value).toLocaleString('zh-CN', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      })}${report.rowsConfig.unit || ''}`;
+    }
+
+    function average(values) {
+      return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+    }
+
+    function getTimeValue(text) {
+      return new Date(text.replace(' ', 'T')).getTime();
+    }
+
+    function buildDistribution(rows, field) {
+      const counter = new Map();
+      rows.forEach(row => {
+        const key = row[field];
+        counter.set(key, (counter.get(key) || 0) + 1);
+      });
+
+      return Array.from(counter.entries())
+        .map(([name, count]) => ({ name, count, share: count / rows.length }))
+        .sort((left, right) => right.count - left.count);
+    }
+
+    function getStatusBucket(status) {
+      if (['已签收', '已完成', '已闭环', '健康', '优秀', '已复核'].includes(status)) return 'success';
+      if (['预警', '待确认'].includes(status)) return 'risk';
+      return 'warning';
+    }
+
+    function getStatusScore(status) {
+      const bucket = getStatusBucket(status);
+      if (bucket === 'risk') return 3;
+      if (bucket === 'warning') return 2;
+      return 1;
+    }
+
+    function getAttentionLevel(metrics) {
+      if (metrics.riskRate >= 0.15 || metrics.followUpRate >= 0.52) {
+        return { label: '高优先级', toneClass: 'bg-amber-50 text-amber-700 border border-amber-200/80' };
+      }
+
+      if (metrics.riskRate >= 0.08 || metrics.followUpRate >= 0.28) {
+        return { label: '中优先级', toneClass: 'bg-sky-50 text-sky-700 border border-sky-200/80' };
+      }
+
+      return { label: '常规跟进', toneClass: 'bg-emerald-50 text-emerald-700 border border-emerald-200/80' };
+    }
+
+    function getConfidenceLabel(sampleCount) {
+      if (sampleCount >= 18) return '高';
+      if (sampleCount >= 10) return '中';
+      return '基础';
+    }
+
+    function getTrendNarrative(reportKey, report, metrics) {
+      if (metrics.trendDirection === 'flat') {
+        return '近段样本均值整体平稳，可继续沿用当前节奏观察波动。';
+      }
+
+      const actionWord = metrics.trendDirection === 'up' ? '上升' : '回落';
+      const deltaText = formatRatio(Math.abs(metrics.trendDelta));
+
+      if (['shipment', 'putaway'].includes(reportKey)) {
+        return `近段${report.valueHeader}均值较前段${actionWord}${deltaText}，需同步检查资源排班是否跟得上任务波峰。`;
+      }
+
+      if (['reassign', 'return', 'complaint', 'compensation'].includes(reportKey)) {
+        return `近段${report.valueHeader}均值较前段${actionWord}${deltaText}，${metrics.trendDirection === 'up' ? '异常链路有放大迹象。' : '问题规模正在回落。'}`;
+      }
+
+      if (reportKey === 'sign-rate') {
+        return `近段平均${report.valueHeader}较前段${metrics.trendDirection === 'up' ? '提升' : '回落'}${deltaText}，${metrics.trendDirection === 'up' ? '服务质量在恢复。' : '需关注末端履约波动。'}`;
+      }
+
+      return `近段样本均值较前段${actionWord}${deltaText}，建议结合仓库与客户维度继续下钻。`;
+    }
+
+    function buildAiMetrics(report, rows) {
+      const normalizedRows = rows.map(row => ({
+        ...row,
+        numericValue: parseMetricValue(row.value),
+        timeValue: getTimeValue(row.time)
+      }));
+      const sortedByTime = [...normalizedRows].sort((left, right) => left.timeValue - right.timeValue);
+      const warehouseDistribution = buildDistribution(normalizedRows, 'warehouse');
+      const tagDistribution = buildDistribution(normalizedRows, 'tag');
+      const statusDistribution = buildDistribution(normalizedRows, 'status');
+      const followUpRows = normalizedRows.filter(row => getStatusBucket(row.status) !== 'success');
+      const riskRows = normalizedRows.filter(row => getStatusBucket(row.status) === 'risk');
+      const recentWindowSize = Math.max(2, Math.ceil(normalizedRows.length / 3));
+      const earlierAverage = average(sortedByTime.slice(0, recentWindowSize).map(row => row.numericValue));
+      const recentAverage = average(sortedByTime.slice(-recentWindowSize).map(row => row.numericValue));
+      const trendDelta = earlierAverage ? (recentAverage - earlierAverage) / earlierAverage : 0;
+      const highestValueRow = [...normalizedRows].sort((left, right) => right.numericValue - left.numericValue)[0] || null;
+      const evidenceRows = [...normalizedRows]
+        .sort((left, right) => (getStatusScore(right.status) - getStatusScore(left.status)) || (right.numericValue - left.numericValue) || (left.timeValue - right.timeValue))
+        .slice(0, 3);
+
+      return {
+        totalRows: normalizedRows.length,
+        totalValue: normalizedRows.reduce((sum, row) => sum + row.numericValue, 0),
+        avgValue: average(normalizedRows.map(row => row.numericValue)),
+        followUpCount: followUpRows.length,
+        followUpRate: normalizedRows.length ? followUpRows.length / normalizedRows.length : 0,
+        riskCount: riskRows.length,
+        riskRate: normalizedRows.length ? riskRows.length / normalizedRows.length : 0,
+        warehouseDistribution,
+        tagDistribution,
+        statusDistribution,
+        topWarehouse: warehouseDistribution[0] || null,
+        topTag: tagDistribution[0] || null,
+        topStatus: statusDistribution[0] || null,
+        topFollowUpStatus: statusDistribution.find(item => getStatusBucket(item.name) !== 'success') || null,
+        highestValueRow,
+        latestTime: sortedByTime[sortedByTime.length - 1]?.time || '--',
+        oldestTime: sortedByTime[0]?.time || '--',
+        oldestFollowUpRow: [...followUpRows].sort((left, right) => left.timeValue - right.timeValue)[0] || null,
+        uniqueCustomers: new Set(normalizedRows.map(row => row.customer)).size,
+        uniqueWarehouses: new Set(normalizedRows.map(row => row.warehouse)).size,
+        evidenceRows,
+        trendDelta,
+        trendDirection: trendDelta > 0.03 ? 'up' : trendDelta < -0.03 ? 'down' : 'flat'
+      };
+    }
+
+    function buildAiNarrative(reportKey, report, metrics) {
+      const topWarehouse = metrics.topWarehouse?.name || '当前仓库';
+      const topWarehouseShare = metrics.topWarehouse ? formatRatio(metrics.topWarehouse.share) : '--';
+      const topTag = metrics.topTag?.name || `当前${report.tagHeader}`;
+      const topTagShare = metrics.topTag ? formatRatio(metrics.topTag.share) : '--';
+      const followUpRate = formatRatio(metrics.followUpRate);
+      const totalValueText = formatMetricValue(metrics.totalValue, report, { digits: report.rowsConfig.mode === 'currency' ? 2 : 0 });
+      const avgValueText = formatMetricValue(metrics.avgValue, report, { digits: report.rowsConfig.mode === 'percent' ? 1 : 1 });
+      const trendNarrative = getTrendNarrative(reportKey, report, metrics);
+
+      switch (reportKey) {
+        case 'shipment':
+          return {
+            summary: `当前筛选结果显示，${topWarehouse}承接了${topWarehouseShare}的出库样本，${followUpRate}的单据仍处于待跟进状态，出库压力主要集中在${topTag}渠道。`,
+            findings: [
+              `${topWarehouse}是当前样本主阵地，适合优先核查月台占用、装车窗口与班次弹性。`,
+              `${topTag}占比达到${topTagShare}，说明本轮波峰的渠道结构较为集中。`,
+              trendNarrative
+            ],
+            suggestions: [
+              `针对${topWarehouse}补做小时级出库波峰容量测算，提前锁定高峰班次与装车人力。`,
+              `把${topTag}纳入预警看板，当待跟进占比超过35%时自动提示运营复核。`,
+              metrics.oldestFollowUpRow
+                ? `优先跟进${metrics.oldestFollowUpRow.code}等长时间未闭环单据，避免跨班次积压。`
+                : '维持当前出库节奏，继续按日观察准点率与波峰变化。'
+            ]
+          };
+        case 'reassign':
+          return {
+            summary: `重派样本主要由${topTag}触发，占比${topTagShare}，且${followUpRate}的工单仍未闭环，说明前置校验与末端协同仍有优化空间。`,
+            findings: [
+              `${topWarehouse}聚集了最多重派样本，适合与当地承运商同步排查波次异常。`,
+              `${topTag}已成为当前主导原因，建议结合客户画像继续拆分来源。`,
+              trendNarrative
+            ],
+            suggestions: [
+              topTag === '地址错误'
+                ? '优先加强下单地址校验与黑名单地址拦截，减少重复重派。'
+                : `围绕${topTag}建立专项复盘模板，明确仓内、客服与承运商责任边界。`,
+              `对${topWarehouse}增加48小时未闭环工单提醒，缩短重派处理长尾。`,
+              metrics.oldestFollowUpRow
+                ? `把${metrics.oldestFollowUpRow.code}纳入今日优先清理清单，先消化最早滞留任务。`
+                : '当前闭环节奏较稳，可继续保持每日复盘频次。'
+            ]
+          };
+        case 'putaway':
+          return {
+            summary: `上架任务当前主要集中在${topTag}，${topWarehouse}样本占比${topWarehouseShare}，待处理任务占比${followUpRate}，需要重点关注库区负载与AGV节拍。`,
+            findings: [
+              `${topTag}承担了当前最多上架任务，说明该库区是本轮作业峰值中心。`,
+              `${topWarehouse}任务密度最高，建议同步查看卡板补位与过磅排队情况。`,
+              trendNarrative
+            ],
+            suggestions: [
+              `优先为${topTag}增加临时缓冲位和补货校验，避免任务堆积在单一区域。`,
+              `对${topWarehouse}追加AGV路径巡检，降低高峰时段空跑与等待损耗。`,
+              metrics.oldestFollowUpRow
+                ? `先清理${metrics.oldestFollowUpRow.code}等滞留上架任务，缩短收货到上架的断点。`
+                : '继续保持收货到上架的衔接节奏，并按班次观察异常库位。'
+            ]
+          };
+        case 'return':
+          return {
+            summary: `退件样本主要来自${topTag}场景，占比${topTagShare}，待复核与处理中合计${followUpRate}，当前瓶颈仍集中在退件复核链路。`,
+            findings: [
+              `${topWarehouse}退件样本占比最高，适合作为复核效率专项优化的优先仓。`,
+              `${topTag}是当前首位退件来源，说明前置履约或交付体验仍有明显影响。`,
+              trendNarrative
+            ],
+            suggestions: [
+              topTag === '包装破损'
+                ? '建议联动运输与装车环节复盘包材标准，减少高频破损退件。'
+                : `围绕${topTag}补充标准化复核话术和异常标签，提升闭环效率。`,
+              `对${topWarehouse}设置退件复核时限看板，优先处理超时样本。`,
+              metrics.oldestFollowUpRow
+                ? `优先跟进${metrics.oldestFollowUpRow.code}，防止退件长时间停留在待复核池。`
+                : '维持当前退件处理节奏，并持续对高频原因做周度复盘。'
+            ]
+          };
+        case 'inventory':
+          return {
+            summary: `库存样本以${topTag}为主，占比${topTagShare}，当前累计${report.valueHeader}约${totalValueText}，待跟进库存占比${followUpRate}，需优先关注高占用SKU与复核库存。`,
+            findings: [
+              `${topWarehouse}聚集了最多库存样本，适合优先核查库容与高位货架占用情况。`,
+              `${topTag}是当前库存主类目，说明该品类对库位压力影响最大。`,
+              trendNarrative
+            ],
+            suggestions: [
+              `对${topTag}建立库龄预警与去化节奏看板，避免占用持续扩张。`,
+              `优先清理${topWarehouse}中的待复核与临期关注库存，缩短差异闭环时间。`,
+              metrics.highestValueRow
+                ? `针对高值样本${metrics.highestValueRow.code}追加盘点与动销复核，降低单SKU占用风险。`
+                : '当前样本较均衡，可继续按周复盘库存结构。'
+            ]
+          };
+        case 'sign-rate':
+          return {
+            summary: `当前筛选范围平均签收率为${avgValueText}，${topWarehouse}承接了${topWarehouseShare}的样本量，关注与预警客户合计占比${followUpRate}，仍需压缩低签收线路波动。`,
+            findings: [
+              `${topWarehouse}是当前样本覆盖最广的仓库，适合作为签收率稳定性对标对象。`,
+              `${topTag}是当前主力服务线路，占比${topTagShare}，该线路对整体签收率影响最大。`,
+              trendNarrative
+            ],
+            suggestions: [
+              `围绕${topTag}继续下钻承运商与国家线路，补齐低签收样本的责任归因。`,
+              `针对${topWarehouse}建立48小时签收率波动提醒，提前暴露末端履约问题。`,
+              metrics.oldestFollowUpRow
+                ? `优先跟进${metrics.oldestFollowUpRow.code}等低表现样本，缩短客户感知问题暴露时间。`
+                : '当前签收表现相对稳定，可继续维持专项客户治理策略。'
+            ]
+          };
+        case 'complaint':
+          return {
+            summary: `客诉样本当前主要集中在${topTag}，占比${topTagShare}，待跟进工单占比${followUpRate}，说明问题更偏向重复出现而非偶发事件。`,
+            findings: [
+              `${topWarehouse}是客诉样本最集中的仓库，建议优先复核该仓的服务链路。`,
+              `${topTag}已成为主要客诉来源，应继续拆分到节点责任与客户群体。`,
+              trendNarrative
+            ],
+            suggestions: [
+              topTag === '配送延迟'
+                ? '建议联动签收率与承运商时效报表同步复盘，优先压降延迟类客诉。'
+                : `针对${topTag}建立标准话术与责任回传机制，减少重复投诉。`,
+              `对${topWarehouse}的高风险工单追加24小时跟进提醒，避免工单挂起。`,
+              metrics.oldestFollowUpRow
+                ? `优先推动${metrics.oldestFollowUpRow.code}完成闭环，降低重复触达风险。`
+                : '当前待处理工单相对可控，可维持日清日结节奏。'
+            ]
+          };
+        case 'compensation':
+          return {
+            summary: `赔付样本中${topTag}占比最高，累计金额约${totalValueText}，待审批与审批中样本占比${followUpRate}，当前成本风险仍需前置拦截。`,
+            findings: [
+              `${topWarehouse}承接了最多赔付样本，适合优先排查高金额异常的前置成因。`,
+              `${topTag}是当前首位赔付类型，占比${topTagShare}，对整体赔付成本影响最大。`,
+              trendNarrative
+            ],
+            suggestions: [
+              topTag === '货物损坏'
+                ? '建议联动装车视频、包材规范与监装记录，优先压降货损型赔付。'
+                : `围绕${topTag}补充审批前置校验项，减少重复赔付申请。`,
+              `为${topWarehouse}建立超时审批提醒与高金额案件复盘机制。`,
+              metrics.highestValueRow
+                ? `优先复核高金额样本${metrics.highestValueRow.code}，避免长尾案件继续抬升成本。`
+                : '当前赔付金额分布相对平稳，可维持现有审批节奏。'
+            ]
+          };
+        default:
+          return {
+            summary: `当前样本主要集中在${topWarehouse}与${topTag}维度，待跟进占比为${followUpRate}，建议继续结合仓库、客户与状态维度下钻分析。`,
+            findings: [
+              `${topWarehouse}是当前样本量最高的仓库，占比${topWarehouseShare}。`,
+              `${topTag}是当前最主要的业务标签，占比${topTagShare}。`,
+              trendNarrative
+            ],
+            suggestions: [
+              '优先聚焦样本集中的仓库与业务标签，建立更细颗粒度的预警规则。',
+              '把未闭环样本纳入日清单，缩短异常在系统中的停留时间。',
+              '继续按周复盘趋势变化，验证优化动作是否生效。'
+            ]
+          };
+      }
+    }
+
+    function generateAiAnalysis(reportKey, report, rows) {
+      const metrics = buildAiMetrics(report, rows);
+      const narrative = buildAiNarrative(reportKey, report, metrics);
+
+      return {
+        summary: narrative.summary,
+        findings: narrative.findings,
+        suggestions: narrative.suggestions,
+        attentionLevel: getAttentionLevel(metrics),
+        confidence: getConfidenceLabel(metrics.totalRows),
+        snapshotCards: [
+          report.rowsConfig.mode === 'percent'
+            ? {
+              label: `平均${report.valueHeader}`,
+              value: formatMetricValue(metrics.avgValue, report, { digits: 1 }),
+              hint: metrics.highestValueRow ? `样本峰值:${metrics.highestValueRow.value}` : '暂无峰值样本'
+            }
+            : {
+              label: `累计${report.valueHeader}`,
+              value: formatMetricValue(metrics.totalValue, report, { digits: report.rowsConfig.mode === 'currency' ? 2 : 0 }),
+              hint: `单条均值:${formatMetricValue(metrics.avgValue, report, { digits: 1 })}`
+            },
+          {
+            label: '待跟进占比',
+            value: formatRatio(metrics.followUpRate),
+            hint: metrics.topFollowUpStatus ? `${metrics.topFollowUpStatus.count}条处于${metrics.topFollowUpStatus.name}` : '当前无滞留样本'
+          },
+          {
+            label: '样本集中仓',
+            value: metrics.topWarehouse?.name || '--',
+            hint: metrics.topWarehouse ? `占比${formatRatio(metrics.topWarehouse.share)}` : '暂无仓库分布'
+          },
+          {
+            label: `核心${report.tagHeader}`,
+            value: metrics.topTag?.name || '--',
+            hint: metrics.topTag ? `占比${formatRatio(metrics.topTag.share)}` : '暂无维度分布'
+          }
+        ],
+        evidenceRows: metrics.evidenceRows,
+        basis: [
+          `本次命中${metrics.totalRows}条明细，覆盖${metrics.uniqueCustomers}个客户、${metrics.uniqueWarehouses}个仓库。`,
+          `最近更新时间:${metrics.latestTime}。`,
+          metrics.highestValueRow ? `高值样本:${metrics.highestValueRow.code} / ${metrics.highestValueRow.value}。` : '暂无高值样本。',
+          metrics.oldestFollowUpRow ? `最早待跟进样本:${metrics.oldestFollowUpRow.code} / ${metrics.oldestFollowUpRow.status} / ${metrics.oldestFollowUpRow.time}。` : '当前筛选范围内没有长时间未闭环样本。'
+        ]
+      };
+    }
+
+    function resetAiAnalysis(status = 'idle', message = '点击AI分析，基于当前筛选结果生成诊断结论与优化建议。') {
+      state.ai.requestId += 1;
+      state.ai.status = status;
+      state.ai.message = message;
+      state.ai.generatedAt = '';
+      state.ai.result = null;
+    }
+
+    function buildAiScopeText(total) {
+      const report = reportDefinitions[state.currentReport];
+      const selectedWarehouses = state.filters.selectedWarehouses?.length ? state.filters.selectedWarehouses : COMMON_WAREHOUSES;
+      const warehouseText = selectedWarehouses.length === COMMON_WAREHOUSES.length ? '全部仓库' : selectedWarehouses.join('、');
+      const customerText = state.filters.customer || '全部客户/货主';
+      const filterAText = state.filters.filterA || `全部${report.filterA.label}`;
+      const filterBText = state.filters.filterB || `全部${report.filterB.label}`;
+      const keywordText = state.filters.keyword ? `，关键词“${state.filters.keyword}”` : '';
+      return `当前范围:${state.filters.startDate}至${state.filters.endDate}，${warehouseText}，${customerText}，${filterAText}，${filterBText}${keywordText}，共读取${total}条明细数据。`;
+    }
+
+    function openAiModal() {
+      const modal = document.getElementById('aiAnalysisModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      document.getElementById('closeAiModalBtn')?.focus();
+    }
+
+    function closeAiModal() {
+      document.getElementById('aiAnalysisModal')?.classList.add('hidden');
+    }
+
+    function renderAiAnalysis() {
+      const currentRows = getFilteredRows();
+      const button = document.getElementById('aiAnalyzeBtn');
+      const buttonText = document.getElementById('aiAnalyzeBtnText');
+      const scope = document.getElementById('aiScopeText');
+      const badge = document.getElementById('aiStatusBadge');
+      const generatedAt = document.getElementById('aiGeneratedAt');
+      const content = document.getElementById('aiAnalysisContent');
+
+      scope.textContent = buildAiScopeText(currentRows.length);
+      button.disabled = state.ai.status === 'loading';
+      buttonText.textContent = state.ai.status === 'loading'
+        ? '分析中...'
+        : state.ai.status === 'ready'
+          ? '查看分析'
+          : state.ai.status === 'stale'
+            ? '更新分析'
+            : 'AI分析';
+
+      const statusConfig = {
+        idle: { tone: 'idle', icon: 'ri-time-line', label: '待分析' },
+        loading: { tone: 'loading', icon: 'ri-loader-4-line', label: '分析中' },
+        ready: { tone: 'ready', icon: 'ri-checkbox-circle-line', label: '已生成' },
+        stale: { tone: 'warning', icon: 'ri-refresh-line', label: '待刷新' },
+        empty: { tone: 'empty', icon: 'ri-alert-line', label: '无数据' }
+      }[state.ai.status];
+
+      badge.dataset.tone = statusConfig.tone;
+      badge.innerHTML = `
+        <i class="${statusConfig.icon} text-sm ${state.ai.status === 'loading' ? 'animate-spin' : ''}"></i>
+        <span>${statusConfig.label}</span>
+      `;
+
+      generatedAt.textContent = state.ai.generatedAt ? `生成时间:${state.ai.generatedAt}` : '分析口径:当前查询结果';
+
+      if (state.ai.status === 'loading') {
+        content.innerHTML = `
+          <div class="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_340px]">
+            <div class="space-y-4">
+              <div class="rounded-[24px] border border-cyan-100/80 bg-white/86 p-5">
+                <div class="animate-pulse space-y-3">
+                  <div class="h-4 w-24 rounded-full bg-cyan-100"></div>
+                  <div class="h-4 w-11/12 rounded-full bg-slate-200"></div>
+                  <div class="h-4 w-10/12 rounded-full bg-slate-200"></div>
+                  <div class="h-4 w-9/12 rounded-full bg-slate-200"></div>
+                </div>
+              </div>
+              <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                ${Array.from({ length: 4 }, () => `
+                  <div class="rounded-[20px] border border-white/80 bg-white/74 p-4 animate-pulse">
+                    <div class="h-3 w-20 rounded-full bg-slate-200"></div>
+                    <div class="mt-4 h-8 w-24 rounded-full bg-slate-200"></div>
+                    <div class="mt-3 h-3 w-28 rounded-full bg-slate-200"></div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            <div class="rounded-[24px] border border-white/80 bg-white/74 p-5 animate-pulse">
+              <div class="h-4 w-24 rounded-full bg-slate-200"></div>
+              <div class="mt-4 space-y-3">
+                <div class="h-16 rounded-2xl bg-slate-200"></div>
+                <div class="h-16 rounded-2xl bg-slate-200"></div>
+                <div class="h-16 rounded-2xl bg-slate-200"></div>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.ai.status === 'ready' && state.ai.result) {
+        const result = state.ai.result;
+        content.innerHTML = `
+          <div class="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_340px]">
+            <div class="space-y-4">
+              <div class="rounded-[24px] border border-cyan-100/80 bg-white/88 p-5 shadow-sm">
+                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div class="flex gap-4">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-950 text-white shadow-lg">
+                      <i class="ri-robot-2-line text-xl"></i>
+                    </div>
+                    <div>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="toolbar-tag">AI结论</span>
+                        <span class="rounded-full px-3 py-1 text-xs font-semibold ${result.attentionLevel.toneClass}">${result.attentionLevel.label}</span>
+                        <span class="toolbar-tag">置信度:${result.confidence}</span>
+                      </div>
+                      <p class="mt-3 text-sm leading-7 text-slate-600">${result.summary}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                ${result.snapshotCards.map(card => `
+                  <div class="rounded-[20px] border border-white/80 bg-white/80 p-4 shadow-sm">
+                    <div class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">${card.label}</div>
+                    <div class="mt-4 text-2xl font-semibold text-slate-950">${card.value}</div>
+                    <div class="mt-2 text-xs leading-5 text-slate-500">${card.hint}</div>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div class="grid gap-4 lg:grid-cols-2">
+                <div class="rounded-[24px] border border-white/80 bg-white/82 p-5 shadow-sm">
+                  <div class="mb-4 flex items-center gap-3">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-950 text-xs font-semibold text-white">01</span>
+                    <div>
+                      <div class="text-sm font-semibold text-slate-900">核心判断</div>
+                      <div class="text-xs text-slate-500">AI提炼当前筛选范围内的重点信号</div>
+                    </div>
+                  </div>
+                  <div class="space-y-3">
+                    ${result.findings.map(item => `
+                      <div class="rounded-2xl border border-slate-200/90 bg-slate-50/90 p-4 text-sm leading-6 text-slate-600">${item}</div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <div class="rounded-[24px] border border-white/80 bg-white/82 p-5 shadow-sm">
+                  <div class="mb-4 flex items-center gap-3">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-600 text-xs font-semibold text-white">02</span>
+                    <div>
+                      <div class="text-sm font-semibold text-slate-900">建议动作</div>
+                      <div class="text-xs text-slate-500">建议优先作为运营评审和专项复盘输入</div>
+                    </div>
+                  </div>
+                  <div class="space-y-3">
+                    ${result.suggestions.map(item => `
+                      <div class="rounded-2xl border border-cyan-100/90 bg-cyan-50/70 p-4 text-sm leading-6 text-slate-600">${item}</div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="rounded-[24px] border border-white/80 bg-white/82 p-5 shadow-sm">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <div class="text-sm font-semibold text-slate-900">优先关注样本</div>
+                    <div class="text-xs text-slate-500">按状态风险和关键值排序</div>
+                  </div>
+                  <span class="toolbar-tag">Top3</span>
+                </div>
+                <div class="space-y-3">
+                  ${result.evidenceRows.length ? result.evidenceRows.map(row => `
+                    <div class="rounded-2xl border border-slate-200/90 bg-slate-50/90 p-4">
+                      <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="text-sm font-semibold text-slate-900">${row.code}</div>
+                        <span class="badge ${statusClass(row.status)}">${row.status}</span>
+                      </div>
+                      <div class="mt-3 text-sm text-slate-600">${row.customer} · ${row.warehouse}</div>
+                      <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                        <span class="toolbar-tag">${row.tag}</span>
+                        <span class="toolbar-tag">关键值:${row.value}</span>
+                        <span class="toolbar-tag">更新时间:${row.time}</span>
+                      </div>
+                    </div>
+                  `).join('') : `
+                    <div class="rounded-2xl border border-slate-200/90 bg-slate-50/90 p-4 text-sm text-slate-500">当前筛选结果没有可展示的重点样本。</div>
+                  `}
+                </div>
+              </div>
+
+              <div class="rounded-[24px] border border-white/80 bg-white/82 p-5 shadow-sm">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <div class="text-sm font-semibold text-slate-900">分析依据</div>
+                    <div class="text-xs text-slate-500">便于评审时快速说明口径</div>
+                  </div>
+                  <span class="toolbar-tag">数据快照</span>
+                </div>
+                <div class="space-y-3">
+                  ${result.basis.map(item => `
+                    <div class="rounded-2xl border border-slate-200/90 bg-slate-50/90 p-4 text-sm leading-6 text-slate-600">${item}</div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (state.ai.status === 'empty') {
+        content.innerHTML = `
+          <div class="rounded-[24px] border border-red-100/80 bg-white/82 p-6 shadow-sm">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div class="flex gap-4">
+                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+                  <i class="ri-folder-warning-line text-xl"></i>
+                </div>
+                <div>
+                  <div class="text-base font-semibold text-slate-900">当前筛选结果没有可分析数据</div>
+                  <div class="mt-2 text-sm leading-6 text-slate-600">${state.ai.message}</div>
+                </div>
+              </div>
+              <span class="toolbar-tag">建议调整时间范围/仓库/状态后重试</span>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const accentTone = state.ai.status === 'stale' ? 'border-amber-100/80 bg-amber-50/70 text-amber-800' : 'border-slate-200/90 bg-white/82 text-slate-700';
+      const accentIcon = state.ai.status === 'stale' ? 'ri-refresh-line' : 'ri-sparkling-2-line';
+      const accentHint = state.ai.status === 'stale'
+        ? '当前表格结果已更新，建议重新生成AI结论。'
+        : '当前仍是原始报表视图，适合点击按钮生成一份评审级分析摘要。';
+
+      content.innerHTML = `
+        <div class="rounded-[24px] border ${accentTone} p-6 shadow-sm">
+          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div class="flex gap-4">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-950 text-white">
+                <i class="${accentIcon} text-xl"></i>
+              </div>
+              <div>
+                <div class="text-base font-semibold text-slate-900">${state.ai.status === 'stale' ? 'AI分析结果待刷新' : 'AI分析尚未生成'}</div>
+                <div class="mt-2 text-sm leading-6 text-slate-600">${state.ai.message}</div>
+                <div class="mt-2 text-xs text-slate-500">${accentHint}</div>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="toolbar-tag">样本量:${currentRows.length}条</span>
+              <span class="toolbar-tag">当前视图:${reportDefinitions[state.currentReport].title}</span>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function buildRows(config) {
@@ -1117,18 +2167,6 @@
       });
     }
 
-    function renderHero() {
-      const report = reportDefinitions[state.currentReport];
-      document.getElementById('heroCurrentReport').textContent = report.title;
-      document.getElementById('heroDescription').textContent = report.summary;
-      document.getElementById('heroMeta').innerHTML = report.hero.map(text => `
-        <div class="rounded-[18px] border border-white/12 bg-white/8 p-4 backdrop-blur-md">
-          <div class="text-xs text-white/70">视图摘要</div>
-          <div class="mt-2 text-sm leading-6 text-white">${text}</div>
-        </div>
-      `).join('');
-    }
-
     function renderFilters() {
       const report = reportDefinitions[state.currentReport];
       document.getElementById('reportTitle').textContent = report.title;
@@ -1147,6 +2185,7 @@
       document.getElementById('filterA').value = state.filters.filterA;
       document.getElementById('filterB').value = state.filters.filterB;
       document.getElementById('keywordInput').value = state.filters.keyword;
+      syncHeaderWarehouseSelection(state.filters.selectedWarehouses);
     }
 
     function renderStats() {
@@ -1275,16 +2314,150 @@
       };
     }
 
+    function buildTrendSpotlights(report, rows) {
+      const primaryDataset = report.trend.datasets[0] || { data: [], label: report.valueHeader };
+      const values = primaryDataset.data || [];
+      const firstValue = values[0] ?? 0;
+      const lastValue = values[values.length - 1] ?? 0;
+      const peakValue = values.length ? Math.max(...values) : 0;
+      const peakIndex = values.indexOf(peakValue);
+      const peakLabel = peakIndex >= 0 ? report.trend.labels[peakIndex] : '--';
+      const changeRatio = firstValue ? (lastValue - firstValue) / firstValue : 0;
+      const directionText = changeRatio > 0.03 ? '持续上扬' : changeRatio < -0.03 ? '逐步回落' : '相对平稳';
+      const sampleRows = rows.length ? rows : report.rows;
+      const warehouseDistribution = buildDistribution(sampleRows, 'warehouse');
+      const dominantWarehouse = warehouseDistribution[0];
+      const followUpCount = sampleRows.filter(row => getStatusBucket(row.status) !== 'success').length;
+      const followRate = sampleRows.length ? followUpCount / sampleRows.length : 0;
+
+      return [
+        {
+          label: '趋势斜率',
+          value: formatRatio(Math.abs(changeRatio)),
+          hint: `${primaryDataset.label}${changeRatio >= 0 ? '较期初抬升' : '较期初回落'}，当前节奏${directionText}`,
+          tone: changeRatio >= 0 ? 'text-brand' : 'text-amber-600'
+        },
+        {
+          label: '峰值节点',
+          value: peakLabel,
+          hint: `${primaryDataset.label}峰值${formatMetricValue(peakValue, report, { digits: report.rowsConfig.mode === 'percent' ? 1 : 0 })}`,
+          tone: 'text-slate-900'
+        },
+        {
+          label: '样本集中仓',
+          value: dominantWarehouse?.name || '--',
+          hint: dominantWarehouse ? `占比${formatRatio(dominantWarehouse.share)}，待跟进占比${formatRatio(followRate)}` : '当前暂无仓库分布样本',
+          tone: 'text-cyan-700'
+        }
+      ];
+    }
+
+    function buildWarehouseMixChart(rows) {
+      const sampleRows = rows.length ? rows : reportDefinitions[state.currentReport].rows;
+      const distribution = buildDistribution(sampleRows, 'warehouse').slice(0, 3);
+      return {
+        type: 'bar',
+        data: {
+          labels: distribution.map(item => item.name),
+          datasets: [{
+            data: distribution.map(item => item.count),
+            backgroundColor: ['#2563eb', '#06b6d4', '#7c3aed'],
+            borderRadius: 999,
+            barThickness: 14
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => `${context.raw}条样本`
+              }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              grid: { color: 'rgba(226, 232, 240, 0.65)' },
+              ticks: { color: '#94a3b8', precision: 0 }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#475569' }
+            }
+          }
+        }
+      };
+    }
+
+    function buildStatusSignalChart(rows) {
+      const sampleRows = rows.length ? rows : reportDefinitions[state.currentReport].rows;
+      const distribution = buildDistribution(sampleRows, 'status').slice(0, 4);
+      return {
+        type: 'polarArea',
+        data: {
+          labels: distribution.map(item => item.name),
+          datasets: [{
+            data: distribution.map(item => item.count),
+            backgroundColor: ['rgba(37, 99, 235, 0.72)', 'rgba(16, 185, 129, 0.68)', 'rgba(245, 158, 11, 0.70)', 'rgba(239, 68, 68, 0.72)'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => `${context.label}:${context.raw}条`
+              }
+            }
+          },
+          scales: {
+            r: {
+              grid: { color: 'rgba(226, 232, 240, 0.70)' },
+              angleLines: { color: 'rgba(226, 232, 240, 0.70)' },
+              ticks: { display: false },
+              pointLabels: {
+                color: '#64748b',
+                font: { size: 11 }
+              }
+            }
+          }
+        }
+      };
+    }
+
     function renderCharts() {
       const report = reportDefinitions[state.currentReport];
+      const filteredRows = getFilteredRows();
+      const useFallbackRows = !filteredRows.length;
       document.getElementById('trendTitle').textContent = report.trend.title;
       document.getElementById('structureTitle').textContent = report.structure.title;
+      document.getElementById('trendChartHint').textContent = useFallbackRows
+        ? '当前筛选未命中样本，趋势区回退展示默认样本口径。'
+        : `已读取${filteredRows.length}条样本，主图展示最近18天整体变化。`;
+      document.getElementById('trendSpotlightCards').innerHTML = buildTrendSpotlights(report, filteredRows).map(item => `
+        <div class="trend-spotlight-card">
+          <div class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">${item.label}</div>
+          <div class="mt-4 text-2xl font-semibold ${item.tone}">${item.value}</div>
+          <div class="mt-2 text-xs leading-5 text-slate-500">${item.hint}</div>
+        </div>
+      `).join('');
 
       if (charts.trend) charts.trend.destroy();
       if (charts.structure) charts.structure.destroy();
+      if (charts.warehouseMix) charts.warehouseMix.destroy();
+      if (charts.statusSignal) charts.statusSignal.destroy();
 
       charts.trend = new Chart(document.getElementById('trendChart').getContext('2d'), buildTrendChart(report));
       charts.structure = new Chart(document.getElementById('structureChart').getContext('2d'), buildStructureChart(report));
+      charts.warehouseMix = new Chart(document.getElementById('warehouseMixChart').getContext('2d'), buildWarehouseMixChart(filteredRows));
+      charts.statusSignal = new Chart(document.getElementById('statusSignalChart').getContext('2d'), buildStatusSignalChart(filteredRows));
     }
 
     function renderInsights() {
@@ -1305,14 +2478,20 @@
       state.filters.filterA = document.getElementById('filterA').value;
       state.filters.filterB = document.getElementById('filterB').value;
       state.filters.keyword = document.getElementById('keywordInput').value.trim();
+      const selectedWarehouses = getSelectedHeaderWarehouses();
+      state.filters.selectedWarehouses = state.filters.warehouse
+        ? [state.filters.warehouse]
+        : (selectedWarehouses.length ? selectedWarehouses : [...COMMON_WAREHOUSES]);
+      syncHeaderWarehouseSelection(state.filters.selectedWarehouses);
     }
 
     function getFilteredRows() {
       const report = reportDefinitions[state.currentReport];
+      const selectedWarehouses = state.filters.selectedWarehouses?.length ? state.filters.selectedWarehouses : COMMON_WAREHOUSES;
       return report.rows.filter(row => {
         const rowDate = row.time.slice(0, 10);
         const matchDate = (!state.filters.startDate || rowDate >= state.filters.startDate) && (!state.filters.endDate || rowDate <= state.filters.endDate);
-        const matchWarehouse = !state.filters.warehouse || row.warehouse === state.filters.warehouse;
+        const matchWarehouse = selectedWarehouses.includes(row.warehouse);
         const matchCustomer = !state.filters.customer || row.customer === state.filters.customer;
         const matchTag = !state.filters.filterA || row.tag === state.filters.filterA;
         const matchStatus = !state.filters.filterB || row.status === state.filters.filterB;
@@ -1386,12 +2565,12 @@
     function renderAll() {
       renderTabs();
       renderSidebar();
-      renderHero();
       renderFilters();
       renderStats();
       renderCharts();
       renderInsights();
       renderTable();
+      renderAiAnalysis();
       document.querySelectorAll('.quick-range').forEach(button => {
         button.classList.toggle('active', Number(button.dataset.days) === state.filters.quickDays);
       });
@@ -1420,9 +2599,11 @@
         filterA: '',
         filterB: '',
         keyword: '',
-        quickDays: 90
+        quickDays: 90,
+        selectedWarehouses: [...COMMON_WAREHOUSES]
       };
       state.pagination.currentPage = 1;
+      resetAiAnalysis('idle', '已恢复默认查询条件，点击AI分析可生成新的诊断结论。');
       renderAll();
     }
 
@@ -1434,12 +2615,57 @@
       state.filters.filterB = '';
       state.filters.keyword = '';
       state.pagination.currentPage = 1;
+      resetAiAnalysis('idle', `已切换到${reportDefinitions[reportKey].title}，请重新生成AI分析。`);
       renderAll();
       if (window.innerWidth < 768) {
         document.getElementById('sidebar').classList.add('-translate-x-full');
         document.getElementById('sidebarOverlay').classList.add('hidden');
       }
       showToast(`已切换到${reportDefinitions[reportKey].title}`);
+    }
+
+    function applyFiltersAndRenderTable() {
+      collectFilters();
+      if (state.filters.startDate && state.filters.endDate && state.filters.startDate > state.filters.endDate) {
+        showToast('开始日期不能晚于结束日期', 'error');
+        return false;
+      }
+
+      state.pagination.currentPage = 1;
+      renderCharts();
+      renderTable();
+      return true;
+    }
+
+    function triggerAiAnalysis() {
+      if (!applyFiltersAndRenderTable()) return;
+      openAiModal();
+
+      const rows = getFilteredRows();
+      if (!rows.length) {
+        resetAiAnalysis('empty', '没有命中明细数据，AI无法输出有效结论。');
+        state.ai.generatedAt = formatSystemTime();
+        renderAiAnalysis();
+        showToast('暂无可分析数据', 'warning');
+        return;
+      }
+
+      state.ai.requestId += 1;
+      const requestId = state.ai.requestId;
+      state.ai.status = 'loading';
+      state.ai.generatedAt = '';
+      state.ai.result = null;
+      state.ai.message = 'AI正在读取当前筛选结果，请稍候。';
+      renderAiAnalysis();
+
+      window.setTimeout(() => {
+        if (requestId !== state.ai.requestId) return;
+        state.ai.result = generateAiAnalysis(state.currentReport, reportDefinitions[state.currentReport], rows);
+        state.ai.status = 'ready';
+        state.ai.generatedAt = formatSystemTime();
+        renderAiAnalysis();
+        showToast('AI分析已生成');
+      }, 900);
     }
 
     function initEvents() {
@@ -1458,13 +2684,9 @@
       });
 
       document.getElementById('queryBtn').addEventListener('click', () => {
-        collectFilters();
-        if (state.filters.startDate && state.filters.endDate && state.filters.startDate > state.filters.endDate) {
-          showToast('开始日期不能晚于结束日期', 'error');
-          return;
-        }
-        state.pagination.currentPage = 1;
-        renderTable();
+        if (!applyFiltersAndRenderTable()) return;
+        resetAiAnalysis('stale', '查询结果已更新，请重新执行AI分析获取最新结论。');
+        renderAiAnalysis();
         showToast('查询成功');
       });
 
@@ -1482,8 +2704,25 @@
         showToast(`正在导出，共${total}条数据`, 'warning');
       });
 
-      document.getElementById('favoriteBtn').addEventListener('click', () => {
-        showToast('已收藏当前报表视图');
+      document.getElementById('aiAnalyzeBtn').addEventListener('click', () => {
+        if (state.ai.status === 'ready' && state.ai.result) {
+          openAiModal();
+          renderAiAnalysis();
+          return;
+        }
+        triggerAiAnalysis();
+      });
+
+      document.getElementById('refreshAiModalBtn').addEventListener('click', () => {
+        triggerAiAnalysis();
+      });
+
+      document.getElementById('closeAiModalBtn').addEventListener('click', () => {
+        closeAiModal();
+      });
+
+      document.getElementById('aiModalBackdrop').addEventListener('click', () => {
+        closeAiModal();
       });
 
       document.getElementById('subscribeBtn').addEventListener('click', () => {
@@ -1524,6 +2763,42 @@
         });
       });
 
+      document.getElementById('warehouseBtn').addEventListener('click', event => {
+        event.stopPropagation();
+        document.getElementById('warehouseDropdown').classList.toggle('hidden');
+      });
+
+      document.getElementById('selectAllWarehouses').addEventListener('change', event => {
+        const checked = event.target.checked;
+        document.querySelectorAll('.warehouse-checkbox').forEach(checkbox => {
+          checkbox.checked = checked;
+        });
+      });
+
+      document.querySelectorAll('.warehouse-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          const selectedWarehouses = getSelectedHeaderWarehouses();
+          const selectAll = document.getElementById('selectAllWarehouses');
+          selectAll.checked = selectedWarehouses.length === COMMON_WAREHOUSES.length;
+          selectAll.indeterminate = selectedWarehouses.length > 0 && selectedWarehouses.length < COMMON_WAREHOUSES.length;
+        });
+      });
+
+      document.getElementById('applyWarehouseBtn').addEventListener('click', () => {
+        const selectedWarehouses = getSelectedHeaderWarehouses();
+        if (!selectedWarehouses.length) {
+          showToast('请至少选择1个仓库', 'warning');
+          return;
+        }
+
+        state.filters.selectedWarehouses = [...selectedWarehouses];
+        state.filters.warehouse = selectedWarehouses.length === 1 ? selectedWarehouses[0] : '';
+        document.getElementById('warehouse').value = state.filters.warehouse;
+        syncHeaderWarehouseSelection(selectedWarehouses);
+        document.getElementById('warehouseDropdown').classList.add('hidden');
+        showToast(selectedWarehouses.length === 1 ? `已切换到${selectedWarehouses[0]}` : `已切换${selectedWarehouses.length}个仓库范围`, 'success');
+      });
+
       document.getElementById('menuToggle').addEventListener('click', () => {
         document.getElementById('sidebar').classList.remove('-translate-x-full');
         document.getElementById('sidebarOverlay').classList.remove('hidden');
@@ -1538,6 +2813,18 @@
         if (window.innerWidth >= 768) {
           document.getElementById('sidebar').classList.remove('-translate-x-full');
           document.getElementById('sidebarOverlay').classList.add('hidden');
+        }
+      });
+
+      document.addEventListener('click', event => {
+        if (!document.getElementById('warehouseSelector').contains(event.target)) {
+          document.getElementById('warehouseDropdown').classList.add('hidden');
+        }
+      });
+
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !document.getElementById('aiAnalysisModal').classList.contains('hidden')) {
+          closeAiModal();
         }
       });
     }

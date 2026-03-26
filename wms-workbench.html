@@ -104,12 +104,10 @@
     *::-webkit-scrollbar-thumb:hover {
       background: #64748b;
     }
-
     body {
       background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%);
       background-attachment: fixed;
     }
-
     body::before {
       content: '';
       position: fixed;
@@ -124,7 +122,6 @@
       pointer-events: none;
       z-index: 0;
     }
-
     .glass-card {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.98) 100%);
       backdrop-filter: blur(20px);
@@ -134,18 +131,15 @@
         0 2px 4px -2px rgba(0, 0, 0, 0.04),
         inset 0 1px 0 0 rgba(255, 255, 255, 1);
     }
-
     .glass-card-light {
       background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.95) 100%);
       backdrop-filter: blur(16px);
       border: 1px solid rgba(226, 232, 240, 0.8);
     }
-
     .stat-card {
       position: relative;
       overflow: hidden;
     }
-
     .stat-card::before {
       content: '';
       position: absolute;
@@ -156,7 +150,6 @@
       background: linear-gradient(90deg, var(--accent-color), var(--accent-color-light));
       opacity: 0.8;
     }
-
     .stat-card::after {
       content: '';
       position: absolute;
@@ -168,12 +161,10 @@
       opacity: 0.15;
       transform: translate(30%, -30%);
     }
-
     .nav-item {
       position: relative;
       transition: all 0.3s ease;
     }
-
     .nav-item::before {
       content: '';
       position: absolute;
@@ -186,243 +177,194 @@
       border-radius: 0 2px 2px 0;
       transition: height 0.3s ease;
     }
-
     .nav-item:hover::before,
     .nav-item.active::before {
       height: 60%;
     }
-
     .nav-item.active {
       background: linear-gradient(90deg, rgba(6, 182, 212, 0.1) 0%, transparent 100%);
     }
-
     .drag-handle {
       cursor: move;
     }
-
     .sortable-ghost {
       opacity: 0.4;
       background: rgba(6, 182, 212, 0.1);
     }
-
     .sortable-drag {
       opacity: 1;
     }
-
     .modal-overlay {
       background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(4px);
     }
-
     .component-item {
       transition: all 0.3s ease;
     }
-
     .component-item:hover {
       transform: translateX(4px);
       border-color: rgba(6, 182, 212, 0.5);
     }
-
     .width-btn {
       color: #475569;
       background: rgba(241, 245, 249, 0.8);
     }
-
     .width-btn.active {
       background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
       color: white !important;
       border-color: transparent !important;
     }
-
     .width-btn:not(.active):hover {
       background: rgba(226, 232, 240, 0.9);
       color: #334155;
     }
-
     .glow-dot {
       box-shadow: 0 0 8px currentColor;
     }
-
     .task-item {
       transition: all 0.3s ease;
     }
-
     .task-item:hover {
       transform: translateX(4px);
     }
-
     .alert-item {
       border-left: 3px solid;
       transition: all 0.3s ease;
     }
-
     .alert-item:hover {
       transform: translateX(4px);
     }
-
     .flow-node {
       background: rgba(241, 245, 249, 0.8);
       border-color: rgba(226, 232, 240, 0.8);
       transition: all 0.3s ease;
     }
-
     .flow-node:hover {
       transform: scale(1.05);
     }
-
     .flow-time {
       transition: all 0.2s ease;
     }
-
     .flow-time:not(.abnormal) {
       background: rgba(241, 245, 249, 0.8);
     }
-
     .flow-time:hover {
       transform: scale(1.1);
     }
-
     .flow-time.abnormal {
       animation: pulse 2s infinite;
     }
-
     @keyframes shimmer {
       0% { background-position: -200% 0; }
       100% { background-position: 200% 0; }
     }
-
     .shimmer {
       background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
       background-size: 200% 100%;
       animation: shimmer 2s infinite;
     }
-
     .text-gradient {
       background: linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #0891b2 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-
     .btn-primary {
       background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
       box-shadow: 0 4px 14px -3px rgba(6, 182, 212, 0.4);
       transition: all 0.3s ease;
     }
-
     .btn-primary:hover {
       box-shadow: 0 6px 20px -3px rgba(6, 182, 212, 0.5);
       transform: translateY(-1px);
     }
-
     .input-light {
       background: rgba(248, 250, 252, 0.8);
       border: 1px solid rgba(226, 232, 240, 0.8);
       transition: all 0.3s ease;
     }
-
     .input-light:focus {
       border-color: #06b6d4;
       box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
     }
-
     .table-row {
       transition: all 0.2s ease;
     }
-
     .table-row:hover {
       background: rgba(6, 182, 212, 0.08);
     }
-
     .shortcut-btn {
       transition: all 0.3s ease;
     }
-
     .shortcut-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
     }
-
     .shortcut-option-card {
       transition: all 0.25s ease;
     }
-
     .shortcut-option-card:hover {
       transform: translateY(-2px);
       border-color: rgba(6, 182, 212, 0.3);
     }
-
     .shortcut-option-card.selected {
       border-color: rgba(14, 165, 233, 0.35);
       background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%);
       box-shadow: 0 14px 30px -18px rgba(14, 165, 233, 0.35);
     }
-
     .shortcut-empty-state {
       min-height: 180px;
       height: 100%;
     }
-
     #dashboardGrid {
       align-items: stretch;
     }
-
     .dashboard-module {
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
-
     .dashboard-module .module-content {
       flex: 1;
       min-height: 0;
     }
-
     .dashboard-module .module-fill {
       display: flex;
       flex-direction: column;
       min-height: 0;
       height: 100%;
     }
-
     .dashboard-module .module-scroll {
       min-height: 0;
       overflow-y: auto;
       overflow-x: hidden;
       padding-right: 4px;
     }
-
     .dashboard-module .module-chart {
       min-height: 0;
       height: 100%;
     }
-
     .dashboard-module .module-chart canvas {
       width: 100% !important;
       height: 100% !important;
     }
-
     .dashboard-module .module-table {
       flex: 1;
       min-height: 0;
       overflow: auto;
     }
-
     @media (min-width: 768px) {
       .dashboard-module {
         height: 420px;
         min-height: 420px;
       }
     }
-
     .notification-item {
       transition: all 0.3s ease;
     }
-
     .notification-item:hover {
       background: rgba(241, 245, 249, 0.8);
     }
-
     .module-header {
       display: flex;
       flex-wrap: wrap;
@@ -430,7 +372,6 @@
       justify-content: space-between;
       gap: 12px;
     }
-
     .module-header-title {
       display: flex;
       align-items: center;
@@ -438,7 +379,6 @@
       flex-shrink: 0;
       min-width: 0;
     }
-
     .module-header-filter {
       display: flex;
       justify-content: flex-end;
@@ -446,7 +386,6 @@
       min-width: 0;
       margin-left: auto;
     }
-
     .module-date-trigger {
       display: inline-flex;
       align-items: center;
@@ -461,35 +400,29 @@
       color: #334155;
       transition: all 0.25s ease;
     }
-
     .module-date-trigger:hover {
       border-color: rgba(6, 182, 212, 0.45);
       box-shadow: 0 10px 24px -18px rgba(6, 182, 212, 0.55);
     }
-
     .module-date-trigger:focus-visible {
       outline: none;
       border-color: #06b6d4;
       box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
     }
-
     .module-date-label {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-
     .module-date-popover {
       width: min(344px, calc(100vw - 3rem));
     }
-
     .module-preset-group {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 14px;
     }
-
     .module-preset-btn {
       padding: 6px 12px;
       border-radius: 9999px;
@@ -501,27 +434,23 @@
       line-height: 1;
       transition: all 0.2s ease;
     }
-
     .module-preset-btn:hover {
       color: #0f172a;
       border-color: rgba(6, 182, 212, 0.35);
       background: rgba(236, 254, 255, 0.8);
     }
-
     .module-preset-btn.active {
       color: #ffffff;
       border-color: transparent;
       background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
       box-shadow: 0 8px 18px -12px rgba(6, 182, 212, 0.9);
     }
-
     .report-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 14px;
       width: 100%;
     }
-
     .report-card {
       position: relative;
       overflow: hidden;
@@ -534,7 +463,6 @@
       cursor: pointer;
       transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
     }
-
     .report-card::before {
       content: '';
       position: absolute;
@@ -542,7 +470,6 @@
       background: linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0%, transparent 36%);
       pointer-events: none;
     }
-
     .report-card::after {
       content: '';
       position: absolute;
@@ -554,13 +481,11 @@
       clip-path: polygon(42% 0, 100% 0, 100% 100%, 0 100%);
       pointer-events: none;
     }
-
     .report-card:hover {
       transform: translateY(-2px);
       border-color: rgba(79, 70, 229, 0.22);
       box-shadow: 0 16px 28px -24px rgba(79, 70, 229, 0.72);
     }
-
     .report-card:focus-visible {
       outline: none;
       border-color: rgba(79, 70, 229, 0.35);
@@ -568,11 +493,9 @@
         0 0 0 3px rgba(99, 102, 241, 0.18),
         0 16px 28px -24px rgba(79, 70, 229, 0.72);
     }
-
     .report-card:hover .report-icon {
       transform: translateY(-1px);
     }
-
     .report-icon {
       position: relative;
       width: 42px;
@@ -585,37 +508,30 @@
       justify-content: center;
       transition: transform 0.28s ease;
     }
-
     .report-bars {
       display: flex;
       align-items: flex-end;
       gap: 3px;
       height: 24px;
     }
-
     .report-bars span {
       width: 4px;
       border-radius: 9999px 9999px 2px 2px;
       background: linear-gradient(180deg, #5b8bff 0%, #3f72ea 100%);
       box-shadow: 0 4px 10px -6px rgba(63, 114, 234, 0.9);
     }
-
     .report-bars span:nth-child(1) {
       height: 10px;
     }
-
     .report-bars span:nth-child(2) {
       height: 18px;
     }
-
     .report-bars span:nth-child(3) {
       height: 24px;
     }
-
     .report-bars span:nth-child(4) {
       height: 14px;
     }
-
     .report-badge {
       position: absolute;
       top: 0;
@@ -655,7 +571,7 @@
       <!-- 导航菜单 -->
       <div class="flex-1 overflow-y-auto py-4">
         <nav class="space-y-1 px-3">
-          <a href="#" class="nav-item active flex items-center px-4 py-3 rounded-lg text-accent-cyanLight font-medium">
+          <a href="./wms-workbench.html" class="nav-item active flex items-center px-4 py-3 rounded-lg text-accent-cyanLight font-medium">
             <i class="ri-dashboard-3-line text-xl mr-3"></i>
             <span>工作台</span>
           </a>
@@ -675,7 +591,7 @@
             <i class="ri-stack-line text-xl mr-3"></i>
             <span>库存管理</span>
           </a>
-          <a href="#" class="nav-item flex items-center px-4 py-3 rounded-lg text-slate-600/70 hover:text-slate-800 hover:bg-slate-50">
+          <a href="./bi-consolidated-report.html" class="nav-item flex items-center px-4 py-3 rounded-lg text-slate-600/70 hover:text-slate-800 hover:bg-slate-50">
             <i class="ri-bar-chart-box-line text-xl mr-3"></i>
             <span>报表中心</span>
           </a>
@@ -823,7 +739,6 @@
               </div>
             </div>
           </div>
-
           <!-- 出库重量 -->
           <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="outboundWeight" style="--accent-color: #0ea5e9; --accent-color-light: #38bdf8; animation-delay: 0.175s;">
             <div class="flex items-start justify-between relative z-10">
@@ -841,7 +756,6 @@
               </div>
             </div>
           </div>
-
           <!-- 出库件数 -->
           <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="outboundPieces" style="--accent-color: #06b6d4; --accent-color-light: #22d3ee; animation-delay: 0.18s;">
             <div class="flex items-start justify-between relative z-10">
@@ -859,7 +773,6 @@
               </div>
             </div>
           </div>
-
           <!-- 入库重量 -->
           <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="inboundWeight" style="--accent-color: #14b8a6; --accent-color-light: #2dd4bf; animation-delay: 0.19s;">
             <div class="flex items-start justify-between relative z-10">
@@ -877,7 +790,6 @@
               </div>
             </div>
           </div>
-
           <!-- 入库件数 -->
           <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="inboundPieces" style="--accent-color: #10b981; --accent-color-light: #34d399; animation-delay: 0.195s;">
             <div class="flex items-start justify-between relative z-10">
@@ -895,7 +807,6 @@
               </div>
             </div>
           </div>
-
           <!-- 当前库存 -->
           <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="inventory" style="--accent-color: #a855f7; --accent-color-light: #c084fc; animation-delay: 0.2s;">
             <div class="flex items-start justify-between relative z-10">
@@ -912,7 +823,6 @@
               </div>
             </div>
           </div>
-
           <!-- 客诉率 -->
           <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="complaintRate" style="--accent-color: #eab308; --accent-color-light: #facc15; animation-delay: 0.25s;">
             <div class="flex items-start justify-between relative z-10">
@@ -930,7 +840,6 @@
               </div>
             </div>
           </div>
-
           <!-- 签收率 -->
           <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="signRate" style="--accent-color: #22c55e; --accent-color-light: #4ade80; animation-delay: 0.3s;">
             <div class="flex items-start justify-between relative z-10">
@@ -948,7 +857,6 @@
               </div>
             </div>
           </div>
-
           <!-- 重派率 -->
           <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="redispatchRate" style="--accent-color: #ef4444; --accent-color-light: #f87171; animation-delay: 0.35s;">
             <div class="flex items-start justify-between relative z-10">
@@ -966,7 +874,6 @@
               </div>
             </div>
           </div>
-
           <!-- 无主单量 -->
           <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="orphanOrders" style="--accent-color: #f97316; --accent-color-light: #fb923c; animation-delay: 0.375s;">
             <div class="flex items-start justify-between relative z-10">
@@ -1273,7 +1180,6 @@
               <canvas id="inventoryChart"></canvas>
             </div>
           </div>
-
           <!-- 经营报表组件 -->
           <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="operatingReport" style="animation-delay: 0.63s;">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-5 drag-handle">
@@ -1288,7 +1194,7 @@
                   <span class="glow-dot w-2 h-2 rounded-full bg-accent-cyan mr-2"></span>
                   月度自动推送
                 </span>
-                <button type="button" class="text-sm text-accent-cyan hover:text-accent-cyanLight transition-colors">查看全部</button>
+                <a href="./bi-consolidated-report.html" class="text-sm text-accent-cyan hover:text-accent-cyanLight transition-colors">查看全部</a>
               </div>
             </div>
             <div class="module-content module-scroll">
@@ -1310,7 +1216,6 @@
                     </div>
                   </div>
                 </button>
-
                 <button type="button" class="report-card text-left p-4">
                   <div class="relative z-[1] flex items-center gap-3.5">
                     <div class="report-icon" aria-hidden="true">
@@ -1327,7 +1232,6 @@
                     </div>
                   </div>
                 </button>
-
                 <button type="button" class="report-card text-left p-4">
                   <div class="relative z-[1] flex items-center gap-3.5">
                     <div class="report-icon" aria-hidden="true">
@@ -1344,7 +1248,6 @@
                     </div>
                   </div>
                 </button>
-
                 <button type="button" class="report-card text-left p-4">
                   <div class="relative z-[1] flex items-center gap-3.5">
                     <div class="report-icon" aria-hidden="true">
@@ -1361,7 +1264,6 @@
                     </div>
                   </div>
                 </button>
-
                 <button type="button" class="report-card text-left p-4">
                   <div class="relative z-[1] flex items-center gap-3.5">
                     <div class="report-icon" aria-hidden="true">
@@ -1378,7 +1280,6 @@
                     </div>
                   </div>
                 </button>
-
                 <button type="button" class="report-card text-left p-4">
                   <div class="relative z-[1] flex items-center gap-3.5">
                     <div class="report-icon" aria-hidden="true">
@@ -1541,6 +1442,18 @@
             <div class="flex space-x-2 mb-4">
               <button id="tabBeihuo" onclick="switchTimelinessTab('beihuo')" class="px-4 py-2 text-sm font-medium text-white btn-primary rounded-lg">备货</button>
               <button id="tabGanxian" onclick="switchTimelinessTab('ganxian')" class="px-4 py-2 text-sm font-medium text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">干线</button>
+            </div>
+            <div class="glass-card-light rounded-xl px-4 py-3 mb-4 border border-accent-amber/10">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p class="text-xs text-slate-600/50 mb-1">总时效</p>
+                  <p id="timelinessTotalTime" class="text-2xl font-bold text-accent-amber font-mono">--</p>
+                </div>
+                <div class="sm:text-right">
+                  <p id="timelinessSummaryMeta" class="text-sm font-medium text-slate-700">--</p>
+                  <p class="text-xs text-slate-600/50 mt-1">统计口径：各节点时效之和</p>
+                </div>
+              </div>
             </div>
             <div class="flex-1 min-h-0 overflow-hidden">
               <div id="timelinessFlow" class="flex flex-col items-center justify-center h-full gap-3 px-2">
@@ -1713,7 +1626,6 @@
               <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="1">1列</button>
             </div>
           </div>
-
           <!-- 经营报表组件配置 -->
           <div class="component-item glass-card-light rounded-xl p-4 border border-slate-200" data-config="operatingReport">
             <div class="flex items-center justify-between mb-3">
@@ -1817,7 +1729,6 @@
           <i class="ri-close-line text-2xl"></i>
         </button>
       </div>
-
       <div class="p-6 max-h-[70vh] overflow-y-auto">
         <div class="mb-4 rounded-2xl border border-accent-cyan/20 bg-accent-cyan/5 flex items-start gap-3 p-4">
           <div class="w-10 h-10 rounded-xl bg-accent-cyan/15 flex items-center justify-center flex-shrink-0">
@@ -1828,7 +1739,6 @@
             <p class="text-xs text-slate-600/50 mt-1">当工作台布局将快捷操作设置为2列宽度时，该模块自动按每行4个按钮展示。</p>
           </div>
         </div>
-
         <div id="shortcutConfigList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label class="shortcut-option-card glass-card-light rounded-2xl p-4 border border-slate-200 flex items-start justify-between gap-4 cursor-pointer" data-shortcut-option="createInbound">
             <div class="flex items-start gap-3">
@@ -1842,7 +1752,6 @@
             </div>
             <input type="checkbox" data-shortcut-config="createInbound" checked class="mt-1 w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
           </label>
-
           <label class="shortcut-option-card glass-card-light rounded-2xl p-4 border border-slate-200 flex items-start justify-between gap-4 cursor-pointer" data-shortcut-option="createOutbound">
             <div class="flex items-start gap-3">
               <div class="w-11 h-11 rounded-2xl bg-stat-green/15 border border-stat-green/20 flex items-center justify-center flex-shrink-0">
@@ -1855,7 +1764,6 @@
             </div>
             <input type="checkbox" data-shortcut-config="createOutbound" checked class="mt-1 w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
           </label>
-
           <label class="shortcut-option-card glass-card-light rounded-2xl p-4 border border-slate-200 flex items-start justify-between gap-4 cursor-pointer" data-shortcut-option="inventorySearch">
             <div class="flex items-start gap-3">
               <div class="w-11 h-11 rounded-2xl bg-stat-purple/15 border border-stat-purple/20 flex items-center justify-center flex-shrink-0">
@@ -1868,7 +1776,6 @@
             </div>
             <input type="checkbox" data-shortcut-config="inventorySearch" checked class="mt-1 w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
           </label>
-
           <label class="shortcut-option-card glass-card-light rounded-2xl p-4 border border-slate-200 flex items-start justify-between gap-4 cursor-pointer" data-shortcut-option="scanTask">
             <div class="flex items-start gap-3">
               <div class="w-11 h-11 rounded-2xl bg-stat-yellow/15 border border-stat-yellow/20 flex items-center justify-center flex-shrink-0">
@@ -1881,7 +1788,6 @@
             </div>
             <input type="checkbox" data-shortcut-config="scanTask" checked class="mt-1 w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
           </label>
-
           <label class="shortcut-option-card glass-card-light rounded-2xl p-4 border border-slate-200 flex items-start justify-between gap-4 cursor-pointer" data-shortcut-option="printLabel">
             <div class="flex items-start gap-3">
               <div class="w-11 h-11 rounded-2xl bg-accent-cyan/15 border border-accent-cyan/20 flex items-center justify-center flex-shrink-0">
@@ -1894,7 +1800,6 @@
             </div>
             <input type="checkbox" data-shortcut-config="printLabel" checked class="mt-1 w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
           </label>
-
           <label class="shortcut-option-card glass-card-light rounded-2xl p-4 border border-slate-200 flex items-start justify-between gap-4 cursor-pointer" data-shortcut-option="exceptionHandle">
             <div class="flex items-start gap-3">
               <div class="w-11 h-11 rounded-2xl bg-accent-rose/15 border border-accent-rose/20 flex items-center justify-center flex-shrink-0">
@@ -1909,7 +1814,6 @@
           </label>
         </div>
       </div>
-
       <div class="p-6 border-t border-slate-200 flex items-center justify-between gap-3">
         <button id="resetShortcutConfigBtn" type="button" class="px-4 py-2.5 text-sm font-medium text-slate-600/80 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors">恢复默认</button>
         <div class="flex items-center gap-3">
@@ -1919,7 +1823,6 @@
       </div>
     </div>
   </div>
-
   <!-- KPI配置弹窗 -->
   <div id="kpiConfigModal" class="fixed inset-0 z-50 hidden">
     <div class="modal-overlay absolute inset-0" onclick="closeKpiConfigModal()"></div>
@@ -1933,14 +1836,12 @@
           <i class="ri-close-line text-2xl"></i>
         </button>
       </div>
-
       <div class="p-6 max-h-[70vh] overflow-y-auto">
         <!-- 提示信息 -->
         <div class="mb-4 flex items-center gap-2 text-xs text-slate-600/50">
           <i class="ri-information-line"></i>
           <span>拖拽调整顺序，勾选控制显示，最多可选 10 个指标</span>
         </div>
-
         <!-- KPI配置列表 -->
         <div id="kpiConfigList" class="space-y-2">
           <!-- 今日出库量 -->
@@ -1958,7 +1859,6 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
           </div>
-
           <!-- 今日入库量 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="inboundQty">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -1974,7 +1874,6 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
           </div>
-
           <!-- 出库重量 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="outboundWeight">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -1990,7 +1889,6 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
           </div>
-
           <!-- 出库件数 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="outboundPieces">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -2006,7 +1904,6 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
           </div>
-
           <!-- 入库重量 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="inboundWeight">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -2022,7 +1919,6 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
           </div>
-
           <!-- 入库件数 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="inboundPieces">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -2038,7 +1934,6 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
           </div>
-
           <!-- 当前库存 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="inventory">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -2054,7 +1949,6 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-amber bg-accent-amber/10 rounded-md">快照</span>
           </div>
-
           <!-- 客诉率 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="complaintRate">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -2070,7 +1964,6 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-amber bg-accent-amber/10 rounded-md">按月</span>
           </div>
-
           <!-- 签收率 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="signRate">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -2086,7 +1979,6 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-amber bg-accent-amber/10 rounded-md">按月</span>
           </div>
-
           <!-- 重派率 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="redispatchRate">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -2102,7 +1994,6 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-amber bg-accent-amber/10 rounded-md">按月</span>
           </div>
-
           <!-- 无主单量 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="orphanOrders">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -2120,7 +2011,6 @@
           </div>
         </div>
       </div>
-
       <div class="p-6 border-t border-slate-200 flex items-center justify-between gap-3">
         <button id="resetKpiConfigBtn" type="button" class="px-4 py-2.5 text-sm font-medium text-slate-600/80 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors">恢复默认</button>
         <div class="flex items-center gap-3">
@@ -2130,7 +2020,6 @@
       </div>
     </div>
   </div>
-
   <!-- 时效详情弹窗 -->
   <div id="timelinessDetailModal" class="fixed inset-0 z-50 hidden">
     <div class="modal-overlay absolute inset-0" onclick="closeTimelinessDetail()"></div>
@@ -2241,7 +2130,6 @@
     let efficiencySortState = null;
     let currentSortColumn = '总量';
     let currentTimelinessTab = 'beihuo';
-
     const defaultShortcutConfig = {
       createInbound: true,
       createOutbound: true,
@@ -2250,12 +2138,9 @@
       printLabel: true,
       exceptionHandle: true
     };
-
     let currentShortcutConfig = { ...defaultShortcutConfig };
-
     // KPI配置相关 - 最大可选10个指标
     const KPI_MAX_SELECTION = 10;
-
     const defaultKpiConfig = {
       items: [
         { key: 'outboundQty', show: true },
@@ -2271,9 +2156,7 @@
         { key: 'orphanOrders', show: false }
       ]
     };
-
     let currentKpiConfig = JSON.parse(JSON.stringify(defaultKpiConfig));
-
     function moveComponentBefore(order, movingKey, beforeKey) {
       const nextOrder = [...order];
       const movingIndex = nextOrder.indexOf(movingKey);
@@ -2283,7 +2166,6 @@
       nextOrder.splice(nextOrder.indexOf(beforeKey), 0, movingKey);
       return nextOrder;
     }
-
     function normalizeComponentOrder(order = []) {
       const normalized = order.filter(component => DEFAULT_COMPONENT_ORDER.includes(component));
       DEFAULT_COMPONENT_ORDER.forEach(component => {
@@ -2293,19 +2175,16 @@
       });
       return normalized;
     }
-
     function applyDashboardComponentOrder(order = DEFAULT_COMPONENT_ORDER) {
       const normalizedOrder = normalizeComponentOrder(order);
       const grid = document.getElementById('dashboardGrid');
       const layoutConfigList = document.getElementById('layoutConfigList');
-
       if (grid) {
         normalizedOrder.forEach(componentName => {
           const component = grid.querySelector(`[data-component="${componentName}"]`);
           if (component) grid.appendChild(component);
         });
       }
-
       if (layoutConfigList) {
         normalizedOrder.forEach(componentName => {
           const configItem = layoutConfigList.querySelector(`[data-config="${componentName}"]`);
@@ -2313,13 +2192,11 @@
         });
       }
     }
-
     function normalizeKpiConfigItems(items = [], shouldUseLatestDefaultVisibility = false) {
       const savedMap = new Map(items.map(item => [item.key, item]));
       return defaultKpiConfig.items.map(defaultItem => {
         const savedItem = savedMap.get(defaultItem.key);
         if (!savedItem) return { ...defaultItem };
-
         return {
           key: defaultItem.key,
           show: shouldUseLatestDefaultVisibility && DEFAULT_HIDDEN_KPI_KEYS.includes(defaultItem.key)
@@ -2330,7 +2207,6 @@
         };
       });
     }
-
     function syncShortcutGridLayout() {
       const shortcutGrid = document.getElementById('shortcutGrid');
       if (!shortcutGrid) return;
@@ -2338,7 +2214,6 @@
       shortcutGrid.classList.remove('md:grid-cols-2', 'md:grid-cols-4');
       shortcutGrid.classList.add(shortcutWidth === 2 ? 'md:grid-cols-4' : 'md:grid-cols-2');
     }
-
     function applyShortcutConfig() {
       let visibleCount = 0;
       document.querySelectorAll('[data-shortcut-item]').forEach(item => {
@@ -2347,22 +2222,18 @@
         item.classList.toggle('hidden', !shouldShow);
         if (shouldShow) visibleCount += 1;
       });
-
       const shortcutGrid = document.getElementById('shortcutGrid');
       const shortcutEmptyState = document.getElementById('shortcutEmptyState');
       if (shortcutGrid) shortcutGrid.classList.toggle('hidden', visibleCount === 0);
       if (shortcutEmptyState) shortcutEmptyState.classList.toggle('hidden', visibleCount !== 0);
-
       syncShortcutGridLayout();
     }
-
     function updateShortcutOptionStates() {
       document.querySelectorAll('[data-shortcut-option]').forEach(option => {
         const checkbox = option.querySelector('[data-shortcut-config]');
         option.classList.toggle('selected', !!checkbox?.checked);
       });
     }
-
     function syncShortcutConfigModal() {
       document.querySelectorAll('[data-shortcut-config]').forEach(checkbox => {
         const shortcutKey = checkbox.dataset.shortcutConfig;
@@ -2370,7 +2241,6 @@
       });
       updateShortcutOptionStates();
     }
-
     function collectShortcutConfigFromModal() {
       const nextConfig = { ...defaultShortcutConfig };
       document.querySelectorAll('[data-shortcut-config]').forEach(checkbox => {
@@ -2378,38 +2248,31 @@
       });
       return nextConfig;
     }
-
     function saveShortcutConfigToStorage() {
       localStorage.setItem('wmsWorkbenchShortcutConfig', JSON.stringify(currentShortcutConfig));
     }
-
     function loadShortcutConfigFromStorage() {
       const savedShortcutConfig = localStorage.getItem('wmsWorkbenchShortcutConfig');
       if (!savedShortcutConfig) return;
-
       try {
         currentShortcutConfig = { ...defaultShortcutConfig, ...JSON.parse(savedShortcutConfig) };
       } catch (error) {
         console.error('加载快捷按钮配置失败:', error);
       }
     }
-
     function openShortcutConfigModal() {
       syncShortcutConfigModal();
       document.getElementById('shortcutConfigModal').classList.remove('hidden');
     }
-
     function closeShortcutConfigModal() {
       document.getElementById('shortcutConfigModal').classList.add('hidden');
     }
-
     function resetShortcutConfigModal() {
       document.querySelectorAll('[data-shortcut-config]').forEach(checkbox => {
         checkbox.checked = defaultShortcutConfig[checkbox.dataset.shortcutConfig] !== false;
       });
       updateShortcutOptionStates();
     }
-
     function applyShortcutConfigSelection() {
       currentShortcutConfig = collectShortcutConfigFromModal();
       applyShortcutConfig();
@@ -2417,7 +2280,6 @@
       closeShortcutConfigModal();
       alert('快捷按钮配置已更新！');
     }
-
     function formatTime(seconds) {
       if (seconds >= 3600) {
         const hours = Math.floor(seconds / 3600);
@@ -2430,7 +2292,6 @@
         return `${minutes}m${secs}s`;
       }
     }
-
     const MODULE_TIME_FILTER_KEYS = ['trend', 'efficiency', 'timeliness'];
     const MODULE_RANGE_PRESET_MAP = {
       '7': 7,
@@ -2438,18 +2299,15 @@
       '180': 180,
       '365': 365
     };
-
     let workbenchTimeFilters = {
       trend: createPresetDateRange('7'),
       efficiency: createPresetDateRange('7'),
       timeliness: createPresetDateRange('7')
     };
     let trendChart = null;
-
     function padDateNumber(value) {
       return String(value).padStart(2, '0');
     }
-
     function parseDateValue(value) {
       if (!value) return null;
       const parts = value.split('-').map(Number);
@@ -2458,19 +2316,16 @@
       date.setHours(0, 0, 0, 0);
       return date;
     }
-
     function formatDateValue(date) {
       const normalizedDate = new Date(date);
       normalizedDate.setHours(0, 0, 0, 0);
       return `${normalizedDate.getFullYear()}-${padDateNumber(normalizedDate.getMonth() + 1)}-${padDateNumber(normalizedDate.getDate())}`;
     }
-
     function getTodayDate() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       return today;
     }
-
     function createPresetDateRange(preset) {
       const days = MODULE_RANGE_PRESET_MAP[preset] || 7;
       const endDate = getTodayDate();
@@ -2482,14 +2337,12 @@
         endDate: formatDateValue(endDate)
       };
     }
-
     function calculateDateRangeDays(startValue, endValue) {
       const startDate = parseDateValue(startValue);
       const endDate = parseDateValue(endValue);
       if (!startDate || !endDate || endDate < startDate) return 0;
       return Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
     }
-
     function formatTrendAxisLabel(date, totalDays) {
       if (totalDays <= 31) {
         return `${padDateNumber(date.getMonth() + 1)}/${padDateNumber(date.getDate())}`;
@@ -2499,12 +2352,10 @@
       }
       return `${String(date.getFullYear()).slice(-2)}/${padDateNumber(date.getMonth() + 1)}`;
     }
-
     function getModuleRangeDays(moduleKey) {
       const dateFilter = workbenchTimeFilters[moduleKey];
       return calculateDateRangeDays(dateFilter.startDate, dateFilter.endDate) || 7;
     }
-
     function syncModuleDateInputs(moduleKey) {
       const dateFilter = workbenchTimeFilters[moduleKey];
       const startInput = document.getElementById(`${moduleKey}StartDate`);
@@ -2512,7 +2363,6 @@
       if (startInput) startInput.value = dateFilter.startDate;
       if (endInput) endInput.value = dateFilter.endDate;
     }
-
     function renderModuleDateFilter(moduleKey) {
       const dateFilter = workbenchTimeFilters[moduleKey];
       const label = document.getElementById(`${moduleKey}DateLabel`);
@@ -2522,13 +2372,11 @@
       });
       syncModuleDateInputs(moduleKey);
     }
-
     function closeModuleDatePopover(moduleKey) {
       const popover = document.getElementById(`${moduleKey}DatePopover`);
       if (popover) popover.classList.add('hidden');
       renderModuleDateFilter(moduleKey);
     }
-
     function closeAllModuleDatePopovers(exceptModuleKey = null) {
       MODULE_TIME_FILTER_KEYS.forEach(moduleKey => {
         if (moduleKey !== exceptModuleKey) {
@@ -2536,38 +2384,32 @@
         }
       });
     }
-
     function openModuleDatePopover(moduleKey) {
       closeAllModuleDatePopovers(moduleKey);
       syncModuleDateInputs(moduleKey);
       const popover = document.getElementById(`${moduleKey}DatePopover`);
       if (popover) popover.classList.remove('hidden');
     }
-
     function updateModuleDateFilterByPreset(moduleKey, presetValue) {
       if (presetValue === 'custom') {
         openModuleDatePopover(moduleKey);
         return;
       }
-
       workbenchTimeFilters[moduleKey] = createPresetDateRange(presetValue);
       renderModuleDateFilter(moduleKey);
       closeModuleDatePopover(moduleKey);
       applyWorkbenchTimeFilter(moduleKey);
     }
-
     function applyCustomModuleDateFilter(moduleKey) {
       const startInput = document.getElementById(`${moduleKey}StartDate`);
       const endInput = document.getElementById(`${moduleKey}EndDate`);
       const startValue = startInput?.value;
       const endValue = endInput?.value;
       const rangeDays = calculateDateRangeDays(startValue, endValue);
-
       if (!rangeDays || rangeDays > 365) {
         alert('请选择有效的日期范围（1-365天）');
         return;
       }
-
       workbenchTimeFilters[moduleKey] = {
         preset: 'custom',
         startDate: startValue,
@@ -2577,7 +2419,6 @@
       closeModuleDatePopover(moduleKey);
       applyWorkbenchTimeFilter(moduleKey);
     }
-
     function bindWorkbenchTimeFilterEvents() {
       document.querySelectorAll('[data-module-date-trigger]').forEach(button => {
         button.addEventListener('click', function() {
@@ -2591,19 +2432,16 @@
           }
         });
       });
-
       document.querySelectorAll('[data-module-range-preset]').forEach(button => {
         button.addEventListener('click', function() {
           updateModuleDateFilterByPreset(this.dataset.moduleRangePreset, this.dataset.presetValue);
         });
       });
-
       document.querySelectorAll('[data-module-date-apply]').forEach(button => {
         button.addEventListener('click', function() {
           applyCustomModuleDateFilter(this.dataset.moduleDateApply);
         });
       });
-
       document.querySelectorAll('[data-module-date-cancel]').forEach(button => {
         button.addEventListener('click', function() {
           const moduleKey = this.dataset.moduleDateCancel;
@@ -2611,20 +2449,17 @@
           closeModuleDatePopover(moduleKey);
         });
       });
-
       document.addEventListener('click', function(event) {
         if (!event.target.closest('[data-module-filter]')) {
           closeAllModuleDatePopovers();
         }
       });
-
       document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
           closeAllModuleDatePopovers();
         }
       });
     }
-
     function buildTrendSeries() {
       const dateFilter = workbenchTimeFilters.trend;
       const totalDays = calculateDateRangeDays(dateFilter.startDate, dateFilter.endDate) || 7;
@@ -2635,7 +2470,6 @@
       const labels = [];
       const outboundData = [];
       const inboundData = [];
-
       for (let index = 0; index < pointCount; index += 1) {
         let currentDate = new Date(startDate);
         if (index === pointCount - 1) {
@@ -2643,21 +2477,16 @@
         } else {
           currentDate.setDate(startDate.getDate() + step * index);
         }
-
         labels.push(formatTrendAxisLabel(currentDate, totalDays));
-
         const trendFactor = 1 + Math.sin((index + 1) * 0.9) * 0.09;
         const rangeFactor = totalDays <= 30 ? 1 : totalDays <= 180 ? 1.07 : 1.14;
         const outboundValue = Math.round((920 + totalDays * 2.2 + index * 24) * trendFactor * rangeFactor);
         const inboundValue = Math.round((680 + totalDays * 1.6 + index * 18) * (1 + Math.cos((index + 1) * 0.7) * 0.08) * (rangeFactor - 0.03));
-
         outboundData.push(outboundValue);
         inboundData.push(inboundValue);
       }
-
       return { labels, outboundData, inboundData };
     }
-
     function initTrendChart() {
       const trendCtx = document.getElementById('trendChart').getContext('2d');
       trendChart = new Chart(trendCtx, {
@@ -2697,7 +2526,6 @@
         }
       });
     }
-
     function refreshTrendChart() {
       if (!trendChart) return;
       const { labels, outboundData, inboundData } = buildTrendSeries();
@@ -2706,7 +2534,6 @@
       trendChart.data.datasets[1].data = inboundData;
       trendChart.update();
     }
-
     function refreshEfficiencyModule() {
       const days = getModuleRangeDays('efficiency');
       efficiencyData = generateEfficiencyData(days);
@@ -2716,7 +2543,6 @@
       resetSortIcons();
       renderEfficiencyTable();
     }
-
     function getTimelinessFlowData() {
       const baseData = currentTimelinessTab === 'beihuo' ? beihuoData : ganxianData;
       const days = getModuleRangeDays('timeliness');
@@ -2729,7 +2555,21 @@
         };
       });
     }
-
+    function renderTimelinessSummary(timelinessData) {
+      const totalTimeElement = document.getElementById('timelinessTotalTime');
+      const summaryMetaElement = document.getElementById('timelinessSummaryMeta');
+      if (!totalTimeElement || !summaryMetaElement) return;
+      if (!timelinessData.length) {
+        totalTimeElement.textContent = '--';
+        summaryMetaElement.textContent = '暂无节点数据';
+        return;
+      }
+      const totalTime = timelinessData.reduce((sum, item) => sum + item.time, 0);
+      const abnormalCount = timelinessData.filter(item => item.abnormal).length;
+      const flowLabel = currentTimelinessTab === 'beihuo' ? '备货流程' : '干线流程';
+      totalTimeElement.textContent = formatTime(totalTime);
+      summaryMetaElement.textContent = `${flowLabel}·${timelinessData.length}个节点·${abnormalCount}个异常节点`;
+    }
     function applyWorkbenchTimeFilter(moduleKey) {
       if (moduleKey === 'trend') {
         refreshTrendChart();
@@ -2743,7 +2583,6 @@
         initTimelinessFlow();
       }
     }
-
     function initWorkbenchTimeFilters() {
       bindWorkbenchTimeFilterEvents();
       MODULE_TIME_FILTER_KEYS.forEach(moduleKey => {
@@ -2792,6 +2631,7 @@
       const flowContainer = document.getElementById('timelinessFlow');
       if (!flowContainer) return;
       flowContainer.innerHTML = '';
+      renderTimelinessSummary(timelinessData);
       
       const timelinessComponent = document.querySelector('[data-component="timeliness"]');
       const isWide = timelinessComponent && timelinessComponent.classList.contains('md:col-span-2');
@@ -3014,11 +2854,9 @@
       }
       
       const ctx = document.getElementById('timelinessDetailChart').getContext('2d');
-
       if (timelinessDetailChart) {
         timelinessDetailChart.destroy();
       }
-
       const textColor = '#475569';
       const gridColor = 'rgba(148, 163, 184, 0.3)';
       const showAverage = document.getElementById('showAverageLine').checked;
@@ -3243,19 +3081,15 @@
       });
       currentSortColumn = '总量';
     }
-
     // ==================== KPI配置功能 ====================
-
     function openKpiConfigModal() {
       syncKpiConfigModal();
       document.getElementById('kpiConfigModal').classList.remove('hidden');
       initKpiConfigSortable();
     }
-
     function closeKpiConfigModal() {
       document.getElementById('kpiConfigModal').classList.add('hidden');
     }
-
     function syncKpiConfigModal() {
       // 同步checkbox状态和排序
       const configList = document.getElementById('kpiConfigList');
@@ -3268,10 +3102,8 @@
           configList.appendChild(configItem);
         }
       });
-
       updateKpiCheckboxStates();
     }
-
     function updateKpiCheckboxStates() {
       const checkedCount = (currentKpiConfig.items || []).filter(item => item.show).length;
       document.querySelectorAll('[data-kpi-checkbox]').forEach(checkbox => {
@@ -3286,7 +3118,6 @@
         }
       });
     }
-
     function initKpiConfigSortable() {
       const configList = document.getElementById('kpiConfigList');
       if (window.kpiConfigSortable) {
@@ -3300,7 +3131,6 @@
         onEnd: syncKpiConfigOrder
       });
     }
-
     function syncKpiConfigOrder() {
       const configList = document.getElementById('kpiConfigList');
       const newOrder = [];
@@ -3313,7 +3143,6 @@
       });
       currentKpiConfig.items = newOrder;
     }
-
     function applyKpiConfig() {
       // 收集配置
       const configList = document.getElementById('kpiConfigList');
@@ -3326,30 +3155,25 @@
           show: checkbox ? checkbox.checked : true
         });
       });
-
       // 检查数量限制
       const showCount = newConfig.filter(c => c.show).length;
       if (showCount > KPI_MAX_SELECTION) {
         alert(`最多只能显示 ${KPI_MAX_SELECTION} 个指标，当前已选 ${showCount} 个`);
         return;
       }
-
       currentKpiConfig.items = newConfig;
       renderKpiGrid();
       saveKpiConfigToStorage();
       closeKpiConfigModal();
     }
-
     function renderKpiGrid() {
       const kpiGrid = document.getElementById('kpiGrid');
       if (!kpiGrid) return;
       const visibleItems = (currentKpiConfig.items || []).filter(c => c.show);
-
       // 隐藏所有卡片
       kpiGrid.querySelectorAll('[data-kpi]').forEach(card => {
         card.classList.add('hidden');
       });
-
       // 按顺序显示已选中的卡片，并限制最大数量
       visibleItems.slice(0, KPI_MAX_SELECTION).forEach((config, index) => {
         const card = kpiGrid.querySelector(`[data-kpi="${config.key}"]`);
@@ -3359,15 +3183,12 @@
           card.style.animationDelay = `${0.1 + index * 0.05}s`;
         }
       });
-
       // 动态调整grid列数
       updateKpiGridColumns(visibleItems.length);
     }
-
     function updateKpiGridColumns(count) {
       const kpiGrid = document.getElementById('kpiGrid');
       kpiGrid.classList.remove('xl:grid-cols-6', 'xl:grid-cols-5', 'xl:grid-cols-4', 'xl:grid-cols-3', 'xl:grid-cols-2', 'xl:grid-cols-1');
-
       if (count <= 2) {
         kpiGrid.classList.add('xl:grid-cols-2');
       } else if (count <= 3) {
@@ -3380,14 +3201,12 @@
         kpiGrid.classList.add('xl:grid-cols-6');
       }
     }
-
     function saveKpiConfigToStorage() {
       localStorage.setItem('wmsKpiConfig', JSON.stringify({
         version: KPI_STORAGE_VERSION,
         config: currentKpiConfig.items
       }));
     }
-
     function loadKpiConfigFromStorage() {
       const savedConfig = localStorage.getItem('wmsKpiConfig');
       if (savedConfig) {
@@ -3395,7 +3214,6 @@
           const data = JSON.parse(savedConfig);
           let savedItems = null;
           let shouldMigrateDefaultVisibility = false;
-
           if (Array.isArray(data?.config)) {
             savedItems = data.config;
             shouldMigrateDefaultVisibility = !data.version || data.version < KPI_STORAGE_VERSION;
@@ -3406,7 +3224,6 @@
             savedItems = data;
             shouldMigrateDefaultVisibility = true;
           }
-
           if (savedItems) {
             currentKpiConfig.items = normalizeKpiConfigItems(savedItems, shouldMigrateDefaultVisibility);
             if (shouldMigrateDefaultVisibility) {
@@ -3418,7 +3235,6 @@
         }
       }
     }
-
     function resetKpiConfig() {
       if (confirm('确定要恢复默认KPI配置吗？')) {
         currentKpiConfig = JSON.parse(JSON.stringify(defaultKpiConfig));
@@ -3426,9 +3242,7 @@
         applyKpiConfig();
       }
     }
-
     // 已移除initKpiMaxControls函数，最大显示数量固定为10
-
     function initKpiCheckboxListeners() {
       document.querySelectorAll('[data-kpi-checkbox]').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
@@ -3441,25 +3255,20 @@
         });
       });
     }
-
     // ==================== End KPI配置功能 ====================
-
     document.addEventListener('DOMContentLoaded', function() {
       Chart.register(ChartDataLabels);
       loadLayoutFromStorage();
       loadShortcutConfigFromStorage();
       applyShortcutConfig();
-
       // KPI配置初始化
       loadKpiConfigFromStorage();
       renderKpiGrid();
-
       // KPI配置按钮事件
       document.getElementById('kpiConfigBtn').addEventListener('click', openKpiConfigModal);
       document.getElementById('applyKpiConfigBtn').addEventListener('click', applyKpiConfig);
       document.getElementById('resetKpiConfigBtn').addEventListener('click', resetKpiConfig);
       initKpiCheckboxListeners();
-
       initTrendChart();
       
       const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
@@ -3499,7 +3308,6 @@
       new Sortable(layoutConfigList, { animation: 150, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', handle: '.drag-handle-config', onEnd: syncConfigOrderToGrid });
       
       document.getElementById('layoutBtn').addEventListener('click', openLayoutModal);
-
       // KPI配置初始化
       loadKpiConfigFromStorage();
       renderKpiGrid();
@@ -3507,7 +3315,6 @@
       document.getElementById('applyKpiConfigBtn').addEventListener('click', applyKpiConfig);
       document.getElementById('resetKpiConfigBtn').addEventListener('click', resetKpiConfig);
       initKpiCheckboxListeners();
-
       const shortcutConfigBtn = document.getElementById('shortcutConfigBtn');
       ['mousedown', 'touchstart'].forEach(eventName => {
         shortcutConfigBtn.addEventListener(eventName, event => {
@@ -3524,7 +3331,6 @@
       document.querySelectorAll('[data-shortcut-config]').forEach(checkbox => {
         checkbox.addEventListener('change', updateShortcutOptionStates);
       });
-
       document.querySelectorAll('.width-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           const componentItem = this.closest('.component-item');
@@ -3566,14 +3372,12 @@
         document.getElementById('warehouseText').textContent = checked.length === 6 ? '全部仓库' : `已选 ${checked.length} 个`;
         document.getElementById('warehouseDropdown').classList.add('hidden');
       });
-
       document.addEventListener('click', function(e) {
         if (!document.getElementById('warehouseSelector').contains(e.target)) {
           document.getElementById('warehouseDropdown').classList.add('hidden');
         }
       });
     });
-
     function openLayoutModal() {
       document.getElementById('layoutModal').classList.remove('hidden');
       syncGridOrderToConfig();
@@ -3647,7 +3451,6 @@
         applyDashboardComponentOrder(DEFAULT_COMPONENT_ORDER);
         return;
       }
-
       if (savedLayout) {
         try {
           const layoutData = JSON.parse(savedLayout);
@@ -3670,7 +3473,6 @@
             componentOrder = moveComponentBefore(componentOrder, 'operatingReport', 'inventory');
           }
           applyDashboardComponentOrder(componentOrder);
-
           if (!layoutData.version || layoutData.version < LAYOUT_STORAGE_VERSION) {
             saveLayoutToStorage();
           }
