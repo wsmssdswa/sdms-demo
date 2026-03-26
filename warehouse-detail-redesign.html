@@ -1,0 +1,823 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仓库详情页-截图风格优化版</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --panel: #fff;
+      --soft: #fafbfd;
+      --text: #1f2d3d;
+      --sub: #606266;
+      --muted: #909399;
+      --border: #ebeef5;
+      --strong: #dcdfe6;
+      --primary: #409eff;
+      --primary-soft: #ecf5ff;
+      --success: #67c23a;
+      --success-soft: #f0f9eb;
+      --warn: #e6a23c;
+      --warn-soft: #fdf6ec;
+      --danger: #f56c6c;
+      --danger-soft: #fef0f0;
+      --shadow: 0 2px 12px rgba(0,0,0,.05);
+      --radius: 8px;
+      --font: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text); }
+    button, input, textarea, select { font: inherit; }
+    button { border: 0; background: none; cursor: pointer; }
+    button[disabled] { opacity: .55; cursor: not-allowed; }
+    img { display: block; max-width: 100%; }
+    .page { max-width: 1440px; margin: 0 auto; padding: 16px; }
+    .surface { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .topbar, .section-header, .toolbar, .modal-header, .modal-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .topbar { padding: 18px 20px; margin-bottom: 12px; }
+    .crumb, .meta, .helper, .muted { font-size: 13px; color: var(--muted); }
+    .crumb { margin-bottom: 6px; }
+    .title { margin: 0; font-size: 22px; font-weight: 600; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 32px; padding: 0 14px; border-radius: 4px; border: 1px solid transparent; font-size: 14px; font-weight: 500; white-space: nowrap; }
+    .btn-primary { color: #fff; background: var(--primary); }
+    .btn-default { color: var(--sub); background: #fff; border-color: var(--strong); }
+    .btn-text { padding: 0; min-height: auto; color: var(--primary); }
+    .summary { padding: 18px 20px; margin-bottom: 12px; }
+    .summary-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+    .summary-name { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .summary-name h2 { margin: 0; font-size: 24px; }
+    .summary-code { margin-top: 8px; font-size: 13px; color: var(--muted); }
+    .summary-line { margin-top: 8px; font-size: 14px; color: var(--sub); line-height: 1.8; }
+    .summary-side { min-width: 280px; max-width: 360px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: var(--soft); }
+    .summary-side__title { font-size: 13px; color: var(--muted); }
+    .summary-side__value { margin-top: 10px; font-size: 16px; font-weight: 600; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; word-break: break-all; }
+    .badge { display: inline-flex; align-items: center; justify-content: center; min-height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+    .b-primary { color: #1677ff; background: var(--primary-soft); }
+    .b-success { color: var(--success); background: var(--success-soft); }
+    .b-warn { color: var(--warn); background: var(--warn-soft); }
+    .b-danger { color: var(--danger); background: var(--danger-soft); }
+    .b-muted { color: var(--sub); background: #f4f4f5; }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-top: 16px; }
+    .stat { padding: 14px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--soft); }
+    .stat-label { font-size: 12px; color: var(--muted); }
+    .stat-value { margin-top: 8px; font-size: 24px; font-weight: 600; }
+    .stat-desc { margin-top: 6px; font-size: 12px; color: var(--sub); }
+    .tabs-wrap { margin-bottom: 12px; overflow: hidden; }
+    .tabs { display: flex; gap: 6px; padding: 0 14px; overflow-x: auto; white-space: nowrap; }
+    .tab { position: relative; padding: 14px 12px 12px; font-size: 14px; color: var(--sub); }
+    .tab.active { color: #1677ff; font-weight: 600; }
+    .tab.active::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; background: var(--primary); border-radius: 999px; }
+    .section { margin-bottom: 12px; overflow: hidden; scroll-margin-top: 16px; }
+    .section-header { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+    .section-title { margin: 0; font-size: 16px; font-weight: 600; display: inline-flex; gap: 10px; align-items: center; }
+    .section-title::before { content: ""; width: 3px; height: 16px; background: var(--primary); border-radius: 999px; }
+    .section-body { padding: 16px 20px 20px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+    .grid2, .asset-grid, .form-grid, .switch-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+    .stack { margin-top: 12px; }
+    .box { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: #fff; }
+    .box-head { padding: 12px 14px; border-bottom: 1px solid var(--border); background: #fafafa; font-size: 14px; font-weight: 600; }
+    .box-body { padding: 12px 14px; }
+    .info-list { display: grid; gap: 12px; }
+    .info-label { font-size: 12px; color: var(--muted); }
+    .info-value { margin-top: 6px; font-size: 14px; line-height: 1.7; word-break: break-word; }
+    .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+    .placeholder { padding: 12px 14px; border: 1px dashed var(--strong); border-radius: 6px; background: #fafafa; font-size: 13px; color: var(--sub); line-height: 1.8; }
+    .mini { display: flex; align-items: center; gap: 16px; }
+    .mini img { width: 96px; height: 96px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+    .time-card { padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+    .time-card + .time-card { margin-top: 10px; }
+    .time-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .time-value { margin-top: 8px; font-size: 13px; color: var(--sub); }
+    .asset-head { padding: 12px 14px; border-bottom: 1px solid var(--border); background: #fafafa; }
+    .asset-title { font-size: 14px; font-weight: 600; }
+    .asset-desc { margin-top: 4px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .asset-image, .upload-image { width: 100%; object-fit: cover; }
+    .logo { aspect-ratio: 4 / 3; }
+    .map { aspect-ratio: 16 / 9; }
+    .empty { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .empty-head { display: grid; grid-template-columns: 80px 1.3fr 1.2fr 1.2fr 120px 160px 120px; background: #fafafa; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--sub); }
+    .empty-head span { padding: 12px 14px; border-right: 1px solid var(--border); }
+    .empty-head span:last-child { border-right: 0; }
+    .empty-body { padding: 48px 20px; text-align: center; }
+    .empty-icon { width: 72px; height: 72px; margin: 0 auto; border-radius: 50%; background: #f4f4f5; display: grid; place-items: center; color: #c0c4cc; font-size: 30px; }
+    .empty-title { margin-top: 16px; font-size: 16px; font-weight: 600; }
+    .empty-desc { margin-top: 8px; font-size: 13px; color: var(--muted); line-height: 1.8; }
+    .empty-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+    .search { position: relative; width: 280px; max-width: 100%; }
+    .search input { width: 100%; height: 32px; padding: 0 34px 0 12px; border: 1px solid var(--strong); border-radius: 4px; background: #fff; outline: none; }
+    .search span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); pointer-events: none; }
+    .table-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: auto; background: #fff; }
+    table { width: 100%; min-width: 980px; border-collapse: collapse; }
+    thead { background: #fafafa; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; font-size: 13px; vertical-align: top; }
+    th { color: var(--sub); font-weight: 500; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .nowrap { white-space: nowrap; }
+    .modal-layer { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .modal-mask { position: absolute; inset: 0; background: rgba(0,0,0,.35); }
+    .modal { position: relative; width: min(980px, calc(100vw - 40px)); max-height: calc(100vh - 40px); background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,.18); }
+    .modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .modal-title { margin: 0; font-size: 18px; font-weight: 500; }
+    .modal-close { color: var(--muted); font-size: 18px; }
+    .modal-body { max-height: calc(100vh - 160px); overflow: auto; padding: 18px 20px 20px; }
+    .modal-footer { justify-content: flex-end; padding: 14px 20px; border-top: 1px solid var(--border); }
+    .modal-note { margin-bottom: 14px; padding: 10px 12px; border-radius: 6px; background: #f8fbff; border: 1px solid #d9ecff; color: #5f6c7b; font-size: 13px; line-height: 1.7; }
+    .form-section { margin-bottom: 16px; padding: 14px 16px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--soft); }
+    .form-section:last-child { margin-bottom: 0; }
+    .form-title { margin: 0; font-size: 14px; font-weight: 600; }
+    .form-grid { margin-top: 14px; gap: 16px 18px; }
+    .form-item { min-width: 0; }
+    .span-2 { grid-column: 1 / -1; }
+    .label { display: block; margin-bottom: 6px; font-size: 13px; }
+    .required::before { content: "*"; margin-right: 4px; color: var(--danger); }
+    .field, .select, .textarea { width: 100%; border: 1px solid var(--strong); border-radius: 4px; background: #fff; color: var(--text); outline: none; }
+    .field, .select { height: 32px; padding: 0 10px; }
+    .textarea { min-height: 96px; padding: 8px 10px; resize: vertical; }
+    .field[readonly], .field[disabled], .select[disabled], .textarea[disabled] { background: #f5f7fa; color: var(--muted); }
+    .error { border-color: #fab6b6 !important; box-shadow: 0 0 0 2px rgba(245,108,108,.12); }
+    .error-text { margin-top: 6px; font-size: 12px; color: var(--danger); }
+    .checks { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip { position: relative; }
+    .chip input { position: absolute; opacity: 0; pointer-events: none; }
+    .chip span { display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border: 1px solid var(--strong); border-radius: 4px; background: #fff; color: var(--sub); font-size: 13px; }
+    .chip input:checked + span { color: #1677ff; border-color: #b3d8ff; background: var(--primary-soft); }
+    .switch-grid { margin-top: 14px; }
+    .switch-line { display: flex; justify-content: space-between; gap: 14px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
+    .switch-main { min-width: 0; }
+    .switch-label { font-size: 13px; }
+    .switch-desc { margin-top: 4px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .switch { position: relative; width: 44px; height: 22px; flex: 0 0 auto; }
+    .switch input { position: absolute; inset: 0; opacity: 0; }
+    .track { position: absolute; inset: 0; border-radius: 999px; background: #dcdfe6; }
+    .thumb { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .18s ease; }
+    .switch input:checked + .track { background: var(--primary); }
+    .switch input:checked + .track + .thumb { transform: translateX(22px); }
+    .schedule-list { display: grid; gap: 12px; margin-top: 14px; }
+    .schedule-row { display: grid; grid-template-columns: 1fr 1.3fr 120px; gap: 12px; align-items: end; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+    .upload-input { display: none; }
+    .upload-body { padding: 12px 14px; border-top: 1px solid var(--border); }
+    .toast { position: fixed; top: 20px; right: 20px; z-index: 120; padding: 10px 14px; border-radius: 6px; color: #fff; background: rgba(31,45,61,.94); box-shadow: 0 8px 24px rgba(0,0,0,.18); font-size: 13px; }
+    @media (max-width: 1200px) {
+      .stats, .grid3, .grid2, .asset-grid, .form-grid, .switch-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .empty-head { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    }
+    @media (max-width: 900px) {
+      .summary-head, .section-header, .topbar, .toolbar, .modal-header, .modal-footer { flex-direction: column; align-items: flex-start; }
+      .stats, .grid3, .grid2, .asset-grid, .form-grid, .switch-grid, .schedule-row { grid-template-columns: 1fr; }
+      .modal { width: calc(100vw - 24px); }
+      .section-body, .section-header, .summary, .topbar, .modal-header, .modal-body, .modal-footer { padding-left: 14px; padding-right: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="modal-root"></div>
+  <div id="toast-root"></div>
+
+  <script type="module">
+    const app = document.getElementById("app");
+    const modalRoot = document.getElementById("modal-root");
+    const toastRoot = document.getElementById("toast-root");
+
+    const makeImage = (title, sub, w = 640, h = 360) => {
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+          <rect width="100%" height="100%" rx="20" fill="#f8fbff"/>
+          <rect x="18" y="18" width="${w - 36}" height="${h - 36}" rx="18" fill="#ffffff" stroke="#d9e8ff"/>
+          <rect x="36" y="${Math.max(40, h / 2 - 34)}" width="${Math.min(220, w - 72)}" height="18" rx="9" fill="#1677ff" opacity=".18"/>
+          <text x="36" y="${Math.max(74, h / 2 - 6)}" font-size="26" font-weight="700" fill="#111827" font-family="Segoe UI,Microsoft YaHei,Arial">${title}</text>
+          <text x="36" y="${Math.max(106, h / 2 + 22)}" font-size="16" fill="#6b7280" font-family="Segoe UI,Microsoft YaHei,Arial">${sub}</text>
+        </svg>`;
+      return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+    };
+
+    const OPTIONS = {
+      types: ["自营仓", "第三方仓"],
+      categories: ["电商平台仓", "海外仓", "前置仓"],
+      businessTypes: ["大货", "备货", "退件"],
+      scopes: ["海运", "陆运", "空运", "铁运"],
+      orderSources: ["FBA订单", "干线订单", "B2B订单"],
+      requiredFields: ["卡板型号", "货物重量", "货物尺寸"],
+      templates: ["SDMS_PALLET002", "SDMS_PALLET003", "干线标准模板A", "干线标准模板B", "未配置"],
+      orgs: [
+        "深圳市世纪众云科技有限公司武汉分公司",
+        "后置保障部",
+        "柏威科技物流部",
+        "跨境电商运营部",
+        "宝安储运部",
+        "深圳市柏世空港科技物流有限公司"
+      ]
+    };
+
+    const state = {
+      activeTab: "basic",
+      modal: null,
+      drafts: {},
+      errors: {},
+      secretVisible: false,
+      keyword: "",
+      toastTimer: null,
+      warehouse: {
+        name: "深圳兴围仓",
+        code: "BSI-SZXW-1",
+        nameZh: "深圳兴围仓",
+        nameEn: "XingweiPrepositionWarehouse",
+        type: "自营仓",
+        category: "前置仓",
+        status: true,
+        secret: "KW-SZXW-8F3L-20P6",
+        company: "深圳市柏威国际科技物流有限公司空运分公司",
+        orgs: [...OPTIONS.orgs],
+        businessTypes: ["大货"],
+        businessScopes: ["海运", "空运"],
+        country: "中国/CHINA/CN",
+        province: "广东省",
+        city: "深圳市",
+        postalCode: "518000",
+        palletPrefix: "SZX",
+        digit3Code: "SZX",
+        address: "深圳市宝安区福永街道宝安大道6042号(运联网柏威国际智慧物流园)",
+        adminName: "陈志雷",
+        adminPhone: "13602632901",
+        adminEmail: "whouse1.szx@bestservices.com.cn",
+        creator: "Q.梁莉",
+        createTime: "2024-12-04 17:39:09",
+        useService: false,
+        senderEnabled: false,
+        unmountEnabled: false,
+        unmountNumber: true,
+        unmountPhoto: false,
+        remark: "",
+        locationCount: 249,
+        stockAmount: 0,
+        usedStock: 0,
+        miniProgram: makeImage("仓库小程序", "现场扫码查看仓库页", 320, 320),
+        entry: {
+          mobile: "13602632901",
+          address: "深圳市宝安区福永街道宝安大道6042号(运联网柏威国际智慧物流园)",
+          schedules: [
+            { label: "周一至周六", time: "09:00-12:00 / 14:00-22:00" },
+            { label: "周日", time: "09:00-12:00 / 14:00-18:00" }
+          ],
+          notes: "送货时请携带送货入仓单，提前30分钟预约月台，异常件需单独标识后交接。",
+          logoPreview: makeImage("仓库LOGO", "用于入仓单头部展示", 640, 480),
+          mapPreview: makeImage("地图预览", "用于说明入仓路线和仓库定位", 640, 360)
+        },
+        channels: [],
+        bulk: {
+          enabled: true,
+          is3d: false,
+          isAgv: true,
+          isSupervision: true,
+          isSeal: true,
+          sealPrefix: "",
+          isWeightVerify: true,
+          validDays: "1",
+          isBranchVerification: true,
+          orderSources: ["FBA订单", "干线订单"],
+          requiredFields: ["卡板型号", "货物重量", "货物尺寸"],
+          fbaTemplate: "SDMS_PALLET002",
+          finalTemplate: "未配置",
+          volumeCoefficient: "0.0000",
+          sizeThreshold: "0.0000",
+          isFbaDeliveryMethod: false,
+          remark: ""
+        },
+        users: [
+          { cnName: "Ivan.杨镱", enName: "Ivan", companyName: "深圳市世纪众云科技有限公司", phone: "17665275700", type: "内部", email: "product29.szx@bestservices.com.cn", position: "仓库管理员" },
+          { cnName: "Q.梁莉", enName: "Q", companyName: "深圳市世纪众云科技有限公司", phone: "13510181201", type: "内部", email: "qiu@gotofreight.com", position: "产品负责人" },
+          { cnName: "Musk.陈昌华", enName: "Musk", companyName: "深圳市世纪众云科技有限公司", phone: "17683865929", type: "内部", email: "product13.szx@bestservices.com.cn", position: "运营经理" },
+          { cnName: "Alan.吴平", enName: "Alan", companyName: "深圳市世纪众云科技有限公司", phone: "15680035128", type: "内部", email: "alan.wu@bestservices.com.cn", position: "数据协同" }
+        ]
+      }
+    };
+
+    const TABS = [
+      ["basic", "基础信息"],
+      ["entry", "入仓单配置"],
+      ["channel", "渠道商配置"],
+      ["bulk", "大货仓配置"],
+      ["users", "使用人员"]
+    ];
+
+    const escapeHtml = (value) => String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+    const clone = (obj) => JSON.parse(JSON.stringify(obj));
+    const getByPath = (obj, path) => path.split(".").reduce((acc, key) => acc?.[/^\d+$/.test(key) ? Number(key) : key], obj);
+    const setByPath = (obj, path, value) => {
+      const keys = path.split(".");
+      let cur = obj;
+      keys.forEach((key, idx) => {
+        const k = /^\d+$/.test(key) ? Number(key) : key;
+        if (idx === keys.length - 1) {
+          cur[k] = value;
+        } else {
+          const next = keys[idx + 1];
+          cur[k] ??= /^\d+$/.test(next) ? [] : {};
+          cur = cur[k];
+        }
+      });
+    };
+
+    const badge = (text, type = "muted") => `<span class="badge b-${type}">${escapeHtml(text)}</span>`;
+    const pills = (list, type = "muted") => list?.length ? `<div class="pills">${list.map((x) => badge(x, type)).join("")}</div>` : `<span class="muted">--</span>`;
+    const info = (label, value, raw = false) => `<div><div class="info-label">${escapeHtml(label)}</div><div class="info-value">${raw ? value : escapeHtml(value || "--")}</div></div>`;
+    const maskSecret = (secret) => state.secretVisible ? secret : secret.replace(/.(?=.{4})/g, "*");
+    const health = () => {
+      const w = state.warehouse;
+      const checks = [w.name, w.company, w.address, w.adminName, w.adminPhone, w.entry.mobile, w.entry.schedules.length, w.bulk.orderSources.length, w.bulk.requiredFields.length, w.users.length];
+      return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+    };
+    const activeRules = () => {
+      const w = state.warehouse;
+      return [w.status, w.senderEnabled, w.useService, w.bulk.enabled, w.bulk.isAgv, w.bulk.isSupervision, w.bulk.isWeightVerify, w.bulk.isBranchVerification, w.bulk.isSeal].filter(Boolean).length;
+    };
+    const filteredUsers = () => {
+      const keyword = state.keyword.trim().toLowerCase();
+      if (!keyword) return state.warehouse.users;
+      return state.warehouse.users.filter((u) => [u.cnName, u.enName, u.companyName, u.phone, u.email, u.position].some((x) => String(x).toLowerCase().includes(keyword)));
+    };
+
+    const buildDraft = (type) => {
+      const w = state.warehouse;
+      if (type === "basic") return clone({
+        name: w.name, code: w.code, nameZh: w.nameZh, nameEn: w.nameEn, type: w.type, category: w.category,
+        status: w.status, secret: w.secret, company: w.company, orgs: w.orgs, businessTypes: w.businessTypes,
+        businessScopes: w.businessScopes, country: w.country, province: w.province, city: w.city,
+        postalCode: w.postalCode, palletPrefix: w.palletPrefix, digit3Code: w.digit3Code, address: w.address,
+        adminName: w.adminName, adminPhone: w.adminPhone, adminEmail: w.adminEmail, useService: w.useService,
+        senderEnabled: w.senderEnabled, unmountEnabled: w.unmountEnabled, unmountNumber: w.unmountNumber,
+        unmountPhoto: w.unmountPhoto, remark: w.remark, creator: w.creator, createTime: w.createTime
+      });
+      if (type === "entry") return clone(w.entry);
+      if (type === "bulk") return clone(w.bulk);
+      return {};
+    };
+
+    const draft = (type = state.modal) => {
+      if (!type) return null;
+      state.drafts[type] ??= buildDraft(type);
+      return state.drafts[type];
+    };
+
+    const clearError = (path) => { if (state.errors[path]) delete state.errors[path]; };
+    const fieldClass = (path, base = "field") => `${base}${state.errors[path] ? " error" : ""}`;
+    const errorText = (path) => state.errors[path] ? `<div class="error-text">${escapeHtml(state.errors[path])}</div>` : "";
+    const optionsHtml = (items, selected) => items.map((item) => `<option value="${escapeHtml(item)}" ${item === selected ? "selected" : ""}>${escapeHtml(item)}</option>`).join("");
+    const checkboxGroup = ({ label, path, options, values, required = false }) => `
+      <div class="form-item span-2">
+        <label class="label ${required ? "required" : ""}">${escapeHtml(label)}</label>
+        <div class="checks">
+          ${options.map((option) => `
+            <label class="chip">
+              <input type="checkbox" data-group-path="${path}" data-group-value="${escapeHtml(option)}" ${values.includes(option) ? "checked" : ""}>
+              <span>${escapeHtml(option)}</span>
+            </label>
+          `).join("")}
+        </div>
+        ${errorText(path)}
+      </div>`;
+
+    const switchLine = (label, path, checked, desc = "") => `
+      <label class="switch-line">
+        <span class="switch-main">
+          <span class="switch-label">${escapeHtml(label)}</span>
+          ${desc ? `<div class="switch-desc">${escapeHtml(desc)}</div>` : ""}
+        </span>
+        <span class="switch">
+          <input type="checkbox" data-draft-path="${path}" data-control="switch" ${checked ? "checked" : ""}>
+          <span class="track"></span>
+          <span class="thumb"></span>
+        </span>
+      </label>`;
+
+    function renderSummary() {
+      const w = state.warehouse;
+      const remaining = Math.max(w.locationCount - w.usedStock, 0);
+      return `
+        <section class="surface summary">
+          <div class="summary-head">
+            <div>
+              <div class="summary-name">
+                <h2>${escapeHtml(w.name)}</h2>
+                ${badge(w.status ? "启用中" : "已停用", w.status ? "success" : "danger")}
+                ${badge(w.type, "primary")}
+                ${badge(w.category, "muted")}
+              </div>
+              <div class="summary-code">仓库编码：${escapeHtml(w.code)}</div>
+              <div class="summary-line">所属公司：${escapeHtml(w.company)}</div>
+              <div class="summary-line">仓库地址：${escapeHtml(w.address)}</div>
+            </div>
+            <div class="summary-side">
+              <div class="summary-side__title">仓库密钥</div>
+              <div class="summary-side__value">
+                <span>${escapeHtml(maskSecret(w.secret))}</span>
+                <button type="button" class="btn btn-text" data-action="toggle-secret">${state.secretVisible ? "隐藏" : "查看"}</button>
+              </div>
+              <div class="helper">用于仓库端接入和系统识别，演示版只展示页面效果。</div>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="stat-label">库位总数</div><div class="stat-value">${w.locationCount}</div><div class="stat-desc">可用库位${remaining}个</div></div>
+            <div class="stat"><div class="stat-label">当前库存</div><div class="stat-value">${w.stockAmount}</div><div class="stat-desc">已用库位${w.usedStock}个</div></div>
+            <div class="stat"><div class="stat-label">配置健康度</div><div class="stat-value">${health()}%</div><div class="stat-desc">基础信息、规则、人员已覆盖</div></div>
+            <div class="stat"><div class="stat-label">已启用规则</div><div class="stat-value">${activeRules()}</div><div class="stat-desc">当前生效的仓库配置项</div></div>
+          </div>
+        </section>`;
+    }
+
+    const renderTabs = () => `
+      <div class="surface tabs-wrap">
+        <div class="tabs">
+          ${TABS.map(([key, label]) => `<button type="button" class="tab ${state.activeTab === key ? "active" : ""}" data-tab="${key}">${escapeHtml(label)}</button>`).join("")}
+        </div>
+      </div>`;
+
+    function renderBasic() {
+      const w = state.warehouse;
+      return `
+        <section class="surface section" id="section-basic">
+          <div class="section-header">
+            <div><h3 class="section-title">基础信息</h3><div class="meta">收敛字段层级，按仓库属性、组织归属、地址联系和服务策略分区展示。</div></div>
+            <button type="button" class="btn btn-primary" data-modal-open="basic">修改仓库信息</button>
+          </div>
+          <div class="section-body">
+            <div class="grid3">
+              <div class="box"><div class="box-head">仓库属性</div><div class="box-body info-list">
+                ${info("中文名称", w.nameZh)}${info("英文名称", w.nameEn)}${info("仓库编码", w.code)}${info("仓库类型", w.type)}${info("仓库分类", w.category)}${info("仓库状态", badge(w.status ? "启用中" : "已停用", w.status ? "success" : "danger"), true)}
+              </div></div>
+              <div class="box"><div class="box-head">组织归属</div><div class="box-body info-list">
+                ${info("所属公司", w.company)}${info("归属机构", pills(w.orgs), true)}${info("业务类型", pills(w.businessTypes, "primary"), true)}${info("业务范围", pills(w.businessScopes), true)}
+              </div></div>
+              <div class="box"><div class="box-head">地址信息</div><div class="box-body info-list">
+                ${info("国家/地区", w.country)}${info("省/市", `${w.province} / ${w.city}`)}${info("邮编", w.postalCode)}${info("卡板前缀", w.palletPrefix)}${info("三字码", w.digit3Code)}${info("详细地址", w.address)}
+              </div></div>
+            </div>
+            <div class="grid2 stack">
+              <div class="box"><div class="box-head">联系人与创建信息</div><div class="box-body info-list">
+                ${info("管理员", w.adminName)}${info("联系电话", w.adminPhone)}${info("联系邮箱", w.adminEmail)}${info("创建人", w.creator)}${info("创建时间", w.createTime)}
+              </div></div>
+              <div class="box"><div class="box-head">服务策略</div><div class="box-body info-list">
+                ${info("是否启用服务商模式", badge(w.useService ? "是" : "否", w.useService ? "success" : "muted"), true)}
+                ${info("发货人功能", badge(w.senderEnabled ? "已开启" : "未开启", w.senderEnabled ? "success" : "muted"), true)}
+                ${info("卸货配置", badge(w.unmountEnabled ? "已开启" : "未开启", w.unmountEnabled ? "success" : "muted"), true)}
+                ${info("卸货数量核验", badge(w.unmountNumber ? "已开启" : "未开启", w.unmountNumber ? "success" : "muted"), true)}
+                ${info("卸货拍照", badge(w.unmountPhoto ? "已开启" : "未开启", w.unmountPhoto ? "success" : "muted"), true)}
+                ${info("备注", w.remark || "--")}
+              </div></div>
+            </div>
+            <div class="box stack"><div class="box-head">仓库小程序</div><div class="box-body"><div class="mini"><img src="${w.miniProgram}" alt="仓库小程序码"><div class="placeholder">小程序码用于仓库现场快速打开页面演示。<br>当前版本保持与你截图接近的后台信息密度，不再做花哨展示。</div></div></div></div>
+          </div>
+        </section>`;
+    }
+
+    function renderEntry() {
+      const e = state.warehouse.entry;
+      return `
+        <section class="surface section" id="section-entry">
+          <div class="section-header">
+            <div><h3 class="section-title">入仓单配置</h3><div class="meta">把联系方式、作业时间和图片素材拆开展示，减少一屏信息堆叠。</div></div>
+            <button type="button" class="btn btn-primary" data-modal-open="entry">修改入仓单配置</button>
+          </div>
+          <div class="section-body">
+            <div class="grid2">
+              <div class="box"><div class="box-head">联系与地址</div><div class="box-body info-list">${info("联系电话", e.mobile)}${info("入仓地址", e.address)}</div></div>
+              <div class="box"><div class="box-head">作业时间</div><div class="box-body">${e.schedules.map((item) => `<div class="time-card"><div class="time-top"><strong>${escapeHtml(item.label)}</strong>${badge("可预约", "success")}</div><div class="time-value">${escapeHtml(item.time)}</div></div>`).join("")}</div></div>
+            </div>
+            <div class="box stack"><div class="box-head">入仓说明</div><div class="box-body"><div class="placeholder">${escapeHtml(e.notes)}</div></div></div>
+            <div class="asset-grid stack">
+              <div class="box"><div class="asset-head"><div class="asset-title">LOGO预览</div><div class="asset-desc">用于入仓单头部展示，维持后台页面的轻视觉风格。</div></div><img class="asset-image logo" src="${e.logoPreview}" alt="LOGO预览"></div>
+              <div class="box"><div class="asset-head"><div class="asset-title">地图预览</div><div class="asset-desc">用于说明入仓路线和仓库定位，避免将地址文字堆满页面。</div></div><img class="asset-image map" src="${e.mapPreview}" alt="地图预览"></div>
+            </div>
+          </div>
+        </section>`;
+    }
+
+    function renderChannel() {
+      const count = state.warehouse.channels.length;
+      return `
+        <section class="surface section" id="section-channel">
+          <div class="section-header">
+            <div><h3 class="section-title">渠道商配置</h3><div class="meta">保留标准后台空态，方便后续继续往里补渠道商数据和操作入口。</div></div>
+            <button type="button" class="btn btn-default" data-action="stub" data-message="演示版暂未新增渠道商，当前只优化页面结构与样式。">新增渠道商</button>
+          </div>
+          <div class="section-body">
+            <div class="toolbar"><div class="meta">当前共${count}个渠道商配置</div></div>
+            <div class="empty"><div class="empty-head"><span>序号</span><span>渠道商名称</span><span>渠道商编码</span><span>对接仓库</span><span>状态</span><span>更新时间</span><span>操作</span></div>
+              <div class="empty-body"><div class="empty-icon">⌁</div><div class="empty-title">暂无渠道商配置</div><div class="empty-desc">这一块保留成标准空态，避免页面中出现无意义占位字段和重复卡片。</div><div class="empty-actions"><button type="button" class="btn btn-primary" data-action="stub" data-message="演示版暂未新增渠道商，当前只优化页面结构与样式。">去创建</button></div></div>
+            </div>
+          </div>
+        </section>`;
+    }
+    function renderBulk() {
+      const b = state.warehouse.bulk;
+      const featureTags = [];
+      const verifyTags = [];
+      if (b.enabled) featureTags.push("大货仓启用");
+      if (b.isAgv) featureTags.push("AGV自动上架");
+      if (b.is3d) featureTags.push("3D测量");
+      if (b.isSupervision) featureTags.push("监装校验");
+      if (b.isSeal) featureTags.push("封签校验");
+      if (b.isWeightVerify) verifyTags.push("重量复核");
+      if (b.isBranchVerification) verifyTags.push("分单核验");
+      if (b.isFbaDeliveryMethod) verifyTags.push("FBA尾程校验");
+      return `
+        <section class="surface section" id="section-bulk">
+          <div class="section-header">
+            <div><h3 class="section-title">大货仓配置</h3><div class="meta">把开关能力、参数模板和校验规则分块展示，比原来一长串字段更容易扫描。</div></div>
+            <button type="button" class="btn btn-primary" data-modal-open="bulk">修改大货仓配置</button>
+          </div>
+          <div class="section-body">
+            <div class="grid2">
+              <div class="box"><div class="box-head">自动化能力</div><div class="box-body info-list">${info("能力开关", pills(featureTags, "success"), true)}${info("订单来源", pills(b.orderSources, "primary"), true)}${info("必填字段", pills(b.requiredFields), true)}</div></div>
+              <div class="box"><div class="box-head">参数与模板</div><div class="box-body info-list">${info("有效天数", `${b.validDays}天`)}${info("体积系数", b.volumeCoefficient)}${info("尺寸阈值", b.sizeThreshold)}${info("封签前缀", b.sealPrefix || "--")}${info("FBA模板", b.fbaTemplate)}${info("尾程模板", b.finalTemplate)}</div></div>
+            </div>
+            <div class="grid2 stack">
+              <div class="box"><div class="box-head">校验规则</div><div class="box-body info-list">${info("规则集合", pills(verifyTags.length ? verifyTags : ["暂无额外校验"], verifyTags.length ? "warn" : "muted"), true)}</div></div>
+              <div class="box"><div class="box-head">备注说明</div><div class="box-body"><div class="placeholder">${escapeHtml(b.remark || "当前未配置额外说明。")}</div></div></div>
+            </div>
+          </div>
+        </section>`;
+    }
+
+    function renderUsers() {
+      const users = filteredUsers();
+      const total = state.warehouse.users.length;
+      return `
+        <section class="surface section" id="section-users">
+          <div class="section-header">
+            <div><h3 class="section-title">使用人员</h3><div class="meta">保留B端后台常用的搜索+表格结构，列表密度更稳，更贴近截图里的信息组织方式。</div></div>
+            <button type="button" class="btn btn-default" data-action="stub" data-message="演示版暂未接入用户权限编辑，当前只保留详情列表展示。">权限管理</button>
+          </div>
+          <div class="section-body">
+            <div class="toolbar"><div class="meta">共${total}人，当前展示${users.length}人</div><label class="search"><input type="text" value="${escapeHtml(state.keyword)}" data-user-search placeholder="搜索姓名/手机号/邮箱"><span>搜索</span></label></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th class="nowrap">序号</th><th>中文名</th><th>英文名</th><th>所属公司</th><th>岗位</th><th>联系方式</th><th class="nowrap">用户类型</th></tr></thead>
+                <tbody>
+                  ${users.length ? users.map((u, i) => `<tr><td class="nowrap">${i + 1}</td><td>${escapeHtml(u.cnName)}</td><td>${escapeHtml(u.enName)}</td><td>${escapeHtml(u.companyName)}</td><td>${escapeHtml(u.position)}</td><td>${escapeHtml(u.phone)}<br><span class="muted">${escapeHtml(u.email)}</span></td><td class="nowrap">${badge(u.type, "primary")}</td></tr>`).join("") : `<tr><td colspan="7" class="muted">未匹配到人员数据</td></tr>`}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>`;
+    }
+
+    function renderBasicModal() {
+      const d = draft("basic");
+      return `
+        <form data-modal-form="basic"><div class="modal-body">
+          <div class="modal-note">这一版弹窗按照常规后台表单节奏重排，不再堆叠太多说明文案。仓库编码与创建信息保留只读。</div>
+          <section class="form-section"><h4 class="form-title">基础属性</h4><div class="form-grid">
+            <div class="form-item"><label class="label required">仓库名称</label><input class="${fieldClass("name")}" data-draft-path="name" value="${escapeHtml(d.name)}" maxlength="50">${errorText("name")}</div>
+            <div class="form-item"><label class="label required">仓库编码</label><input class="field" value="${escapeHtml(d.code)}" readonly></div>
+            <div class="form-item"><label class="label required">中文名称</label><input class="${fieldClass("nameZh")}" data-draft-path="nameZh" value="${escapeHtml(d.nameZh)}" maxlength="50">${errorText("nameZh")}</div>
+            <div class="form-item"><label class="label">英文名称</label><input class="${fieldClass("nameEn")}" data-draft-path="nameEn" value="${escapeHtml(d.nameEn)}" maxlength="50"></div>
+            <div class="form-item"><label class="label required">仓库类型</label><select class="${fieldClass("type", "select")}" data-draft-path="type">${optionsHtml(OPTIONS.types, d.type)}</select>${errorText("type")}</div>
+            <div class="form-item"><label class="label required">仓库分类</label><select class="${fieldClass("category", "select")}" data-draft-path="category">${optionsHtml(OPTIONS.categories, d.category)}</select>${errorText("category")}</div>
+            <div class="form-item span-2"><label class="label required">仓库密钥</label><input class="${fieldClass("secret")}" data-draft-path="secret" value="${escapeHtml(d.secret)}" maxlength="50">${errorText("secret")}</div>
+          </div></section>
+          <section class="form-section"><h4 class="form-title">组织与地址</h4><div class="form-grid">
+            <div class="form-item span-2"><label class="label required">所属公司</label><input class="${fieldClass("company")}" data-draft-path="company" value="${escapeHtml(d.company)}" maxlength="50">${errorText("company")}</div>
+            ${checkboxGroup({ label: "归属机构", path: "orgs", options: OPTIONS.orgs, values: d.orgs, required: true })}
+            ${checkboxGroup({ label: "业务类型", path: "businessTypes", options: OPTIONS.businessTypes, values: d.businessTypes, required: true })}
+            ${checkboxGroup({ label: "业务范围", path: "businessScopes", options: OPTIONS.scopes, values: d.businessScopes, required: true })}
+            <div class="form-item"><label class="label required">国家/地区</label><input class="${fieldClass("country")}" data-draft-path="country" value="${escapeHtml(d.country)}" maxlength="50">${errorText("country")}</div>
+            <div class="form-item"><label class="label required">省份</label><input class="${fieldClass("province")}" data-draft-path="province" value="${escapeHtml(d.province)}" maxlength="50">${errorText("province")}</div>
+            <div class="form-item"><label class="label required">城市</label><input class="${fieldClass("city")}" data-draft-path="city" value="${escapeHtml(d.city)}" maxlength="50">${errorText("city")}</div>
+            <div class="form-item"><label class="label">邮编</label><input class="${fieldClass("postalCode")}" data-draft-path="postalCode" value="${escapeHtml(d.postalCode)}" maxlength="20"></div>
+            <div class="form-item"><label class="label">卡板前缀</label><input class="${fieldClass("palletPrefix")}" data-draft-path="palletPrefix" value="${escapeHtml(d.palletPrefix)}" maxlength="20"></div>
+            <div class="form-item"><label class="label">三字码</label><input class="${fieldClass("digit3Code")}" data-draft-path="digit3Code" value="${escapeHtml(d.digit3Code)}" maxlength="20"></div>
+            <div class="form-item span-2"><label class="label required">详细地址</label><textarea class="${fieldClass("address", "textarea")}" data-draft-path="address" maxlength="255">${escapeHtml(d.address)}</textarea>${errorText("address")}</div>
+          </div></section>
+          <section class="form-section"><h4 class="form-title">联系人与策略开关</h4><div class="form-grid">
+            <div class="form-item"><label class="label required">管理员</label><input class="${fieldClass("adminName")}" data-draft-path="adminName" value="${escapeHtml(d.adminName)}" maxlength="50">${errorText("adminName")}</div>
+            <div class="form-item"><label class="label required">联系电话</label><input class="${fieldClass("adminPhone")}" data-draft-path="adminPhone" value="${escapeHtml(d.adminPhone)}" maxlength="20">${errorText("adminPhone")}</div>
+            <div class="form-item span-2"><label class="label">联系邮箱</label><input class="${fieldClass("adminEmail")}" data-draft-path="adminEmail" value="${escapeHtml(d.adminEmail)}" maxlength="50">${errorText("adminEmail")}</div>
+            <div class="form-item"><label class="label">创建人</label><input class="field" value="${escapeHtml(d.creator)}" readonly></div>
+            <div class="form-item"><label class="label">创建时间</label><input class="field" value="${escapeHtml(d.createTime)}" readonly></div>
+            <div class="form-item span-2"><label class="label">备注</label><textarea class="${fieldClass("remark", "textarea")}" data-draft-path="remark" maxlength="255">${escapeHtml(d.remark)}</textarea></div>
+          </div><div class="switch-grid">
+            ${switchLine("仓库状态", "status", d.status, "关闭后详情仍可查看，但演示中不处理真实权限。")} ${switchLine("启用服务商模式", "useService", d.useService)} ${switchLine("发货人功能", "senderEnabled", d.senderEnabled)} ${switchLine("卸货配置", "unmountEnabled", d.unmountEnabled)} ${switchLine("卸货数量核验", "unmountNumber", d.unmountNumber)} ${switchLine("卸货拍照", "unmountPhoto", d.unmountPhoto)}
+          </div></section>
+        </div><div class="modal-footer"><button type="button" class="btn btn-default" data-modal-close>取消</button><button type="submit" class="btn btn-primary">保存</button></div></form>`;
+    }
+    function renderEntryModal() {
+      const d = draft("entry");
+      return `
+        <form data-modal-form="entry"><div class="modal-body">
+          <div class="modal-note">这里保留最关键的可见信息：联系电话、入仓地址、作业时间和两张图片素材，适合评审时直接看页面效果。</div>
+          <section class="form-section"><h4 class="form-title">联系与地址</h4><div class="form-grid">
+            <div class="form-item"><label class="label required">联系电话</label><input class="${fieldClass("mobile")}" data-draft-path="mobile" value="${escapeHtml(d.mobile)}" maxlength="20">${errorText("mobile")}</div>
+            <div class="form-item span-2"><label class="label required">入仓地址</label><textarea class="${fieldClass("address", "textarea")}" data-draft-path="address" maxlength="255">${escapeHtml(d.address)}</textarea>${errorText("address")}</div>
+          </div></section>
+          <section class="form-section"><h4 class="form-title">作业时间</h4><div class="schedule-list">${d.schedules.map((item, i) => `<div class="schedule-row"><div class="form-item"><label class="label required">时间段名称</label><input class="${fieldClass(`schedules.${i}.label`)}" data-draft-path="schedules.${i}.label" value="${escapeHtml(item.label)}" maxlength="20">${errorText(`schedules.${i}.label`)}</div><div class="form-item"><label class="label required">作业时间</label><input class="${fieldClass(`schedules.${i}.time`)}" data-draft-path="schedules.${i}.time" value="${escapeHtml(item.time)}" maxlength="50">${errorText(`schedules.${i}.time`)}</div><div class="form-item"><label class="label">&nbsp;</label><button type="button" class="btn btn-default" data-action="remove-schedule" data-index="${i}" ${d.schedules.length === 1 ? "disabled" : ""}>删除时段</button></div></div>`).join("")}</div><div class="stack"><button type="button" class="btn btn-default" data-action="add-schedule">新增时段</button></div></section>
+          <section class="form-section"><h4 class="form-title">说明与素材</h4><div class="form-grid"><div class="form-item span-2"><label class="label">入仓说明</label><textarea class="${fieldClass("notes", "textarea")}" data-draft-path="notes" maxlength="255">${escapeHtml(d.notes)}</textarea></div></div>
+            <div class="asset-grid stack">
+              <div class="box"><img class="upload-image logo" src="${d.logoPreview}" alt="LOGO预览"><div class="upload-body"><div class="asset-title">LOGO图片</div><div class="asset-desc">建议使用横向品牌图，页面展示更贴近后台截图的头部效果。</div><div class="stack"><button type="button" class="btn btn-default" data-action="trigger-upload" data-upload-input="entry-logo-upload">重新上传</button></div><input id="entry-logo-upload" class="upload-input" type="file" accept="image/*" data-upload-path="logoPreview"></div></div>
+              <div class="box"><img class="upload-image map" src="${d.mapPreview}" alt="地图预览"><div class="upload-body"><div class="asset-title">地图图片</div><div class="asset-desc">建议使用16:9图片，避免在详情页中占用过高空间。</div><div class="stack"><button type="button" class="btn btn-default" data-action="trigger-upload" data-upload-input="entry-map-upload">重新上传</button></div><input id="entry-map-upload" class="upload-input" type="file" accept="image/*" data-upload-path="mapPreview"></div></div>
+            </div>
+          </section>
+        </div><div class="modal-footer"><button type="button" class="btn btn-default" data-modal-close>取消</button><button type="submit" class="btn btn-primary">保存</button></div></form>`;
+    }
+
+    function renderBulkModal() {
+      const d = draft("bulk");
+      return `
+        <form data-modal-form="bulk"><div class="modal-body">
+          <div class="modal-note">这一版弹窗重点保留后台最常见的两层信息结构：开关能力和参数配置，避免像原页面那样把所有规则平铺在一起。</div>
+          <section class="form-section"><h4 class="form-title">功能开关</h4><div class="switch-grid">${switchLine("启用大货仓", "enabled", d.enabled)}${switchLine("启用AGV", "isAgv", d.isAgv)}${switchLine("启用3D测量", "is3d", d.is3d)}${switchLine("启用监装", "isSupervision", d.isSupervision)}${switchLine("启用封签校验", "isSeal", d.isSeal)}${switchLine("启用重量复核", "isWeightVerify", d.isWeightVerify)}${switchLine("启用分单核验", "isBranchVerification", d.isBranchVerification)}${switchLine("启用FBA尾程校验", "isFbaDeliveryMethod", d.isFbaDeliveryMethod)}</div></section>
+          <section class="form-section"><h4 class="form-title">参数配置</h4><div class="form-grid">
+            <div class="form-item"><label class="label required">有效天数</label><input class="${fieldClass("validDays")}" data-draft-path="validDays" value="${escapeHtml(d.validDays)}" maxlength="10">${errorText("validDays")}</div>
+            <div class="form-item"><label class="label">封签前缀</label><input class="${fieldClass("sealPrefix")}" data-draft-path="sealPrefix" value="${escapeHtml(d.sealPrefix)}" maxlength="20" ${d.isSeal ? "" : "disabled"}>${errorText("sealPrefix")}</div>
+            <div class="form-item"><label class="label">体积系数</label><input class="${fieldClass("volumeCoefficient")}" data-draft-path="volumeCoefficient" value="${escapeHtml(d.volumeCoefficient)}" maxlength="20">${errorText("volumeCoefficient")}</div>
+            <div class="form-item"><label class="label">尺寸阈值</label><input class="${fieldClass("sizeThreshold")}" data-draft-path="sizeThreshold" value="${escapeHtml(d.sizeThreshold)}" maxlength="20">${errorText("sizeThreshold")}</div>
+            <div class="form-item"><label class="label">FBA模板</label><select class="${fieldClass("fbaTemplate", "select")}" data-draft-path="fbaTemplate">${optionsHtml(OPTIONS.templates, d.fbaTemplate)}</select></div>
+            <div class="form-item"><label class="label">尾程模板</label><select class="${fieldClass("finalTemplate", "select")}" data-draft-path="finalTemplate">${optionsHtml(OPTIONS.templates, d.finalTemplate)}</select></div>
+            ${checkboxGroup({ label: "订单来源", path: "orderSources", options: OPTIONS.orderSources, values: d.orderSources, required: true })}
+            ${checkboxGroup({ label: "必填字段", path: "requiredFields", options: OPTIONS.requiredFields, values: d.requiredFields, required: true })}
+            <div class="form-item span-2"><label class="label">备注说明</label><textarea class="${fieldClass("remark", "textarea")}" data-draft-path="remark" maxlength="255">${escapeHtml(d.remark)}</textarea></div>
+          </div></section>
+        </div><div class="modal-footer"><button type="button" class="btn btn-default" data-modal-close>取消</button><button type="submit" class="btn btn-primary">保存</button></div></form>`;
+    }
+
+    function renderModal() {
+      if (!state.modal) { modalRoot.innerHTML = ""; document.body.style.overflow = ""; return; }
+      const titles = { basic: "修改仓库信息", entry: "修改入仓单配置", bulk: "修改大货仓配置" };
+      const body = { basic: renderBasicModal(), entry: renderEntryModal(), bulk: renderBulkModal() }[state.modal];
+      modalRoot.innerHTML = `<div class="modal-layer"><div class="modal-mask" data-modal-close></div><div class="modal" role="dialog" aria-modal="true" aria-label="${escapeHtml(titles[state.modal])}"><div class="modal-header"><h3 class="modal-title">${escapeHtml(titles[state.modal])}</h3><button type="button" class="modal-close" data-modal-close aria-label="关闭">×</button></div>${body}</div></div>`;
+      document.body.style.overflow = "hidden";
+    }
+
+    const openModal = (type) => { state.modal = type; state.errors = {}; state.drafts[type] = buildDraft(type); renderModal(); requestAnimationFrame(() => modalRoot.querySelector("input:not([type='hidden']):not([disabled]),select:not([disabled]),textarea:not([disabled]),button:not([disabled])")?.focus()); };
+    const closeModal = (renderWhole = false) => { if (!state.modal) return; delete state.drafts[state.modal]; state.modal = null; state.errors = {}; renderWhole ? renderPage() : renderModal(); };
+
+    function validate() {
+      const d = draft();
+      const e = {};
+      if (state.modal === "basic") {
+        if (!d.name.trim()) e.name = "请输入仓库名称";
+        if (!d.nameZh.trim()) e.nameZh = "请输入中文名称";
+        if (!d.type) e.type = "请选择仓库类型";
+        if (!d.category) e.category = "请选择仓库分类";
+        if (!d.secret.trim()) e.secret = "请输入仓库密钥";
+        if (!d.company.trim()) e.company = "请输入所属公司";
+        if (!d.orgs.length) e.orgs = "请至少选择一个归属机构";
+        if (!d.businessTypes.length) e.businessTypes = "请至少选择一个业务类型";
+        if (!d.businessScopes.length) e.businessScopes = "请至少选择一个业务范围";
+        if (!d.country.trim()) e.country = "请输入国家/地区";
+        if (!d.province.trim()) e.province = "请输入省份";
+        if (!d.city.trim()) e.city = "请输入城市";
+        if (!d.address.trim()) e.address = "请输入详细地址";
+        if (!d.adminName.trim()) e.adminName = "请输入管理员姓名";
+        if (!/^[0-9-]{6,20}$/.test(d.adminPhone.trim())) e.adminPhone = "请输入正确的联系电话";
+        if (d.adminEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.adminEmail.trim())) e.adminEmail = "请输入正确的邮箱";
+      }
+      if (state.modal === "entry") {
+        if (!/^[0-9-]{6,20}$/.test(d.mobile.trim())) e.mobile = "请输入正确的联系电话";
+        if (!d.address.trim()) e.address = "请输入入仓地址";
+        d.schedules.forEach((item, i) => {
+          if (!item.label.trim()) e[`schedules.${i}.label`] = "请输入时间段名称";
+          if (!item.time.trim()) e[`schedules.${i}.time`] = "请输入作业时间";
+        });
+      }
+      if (state.modal === "bulk") {
+        if (!/^\d+$/.test(String(d.validDays).trim())) e.validDays = "请输入有效的天数";
+        if (d.isSeal && !d.sealPrefix.trim()) e.sealPrefix = "启用封签校验时需填写封签前缀";
+        if (!/^\d+(\.\d+)?$/.test(String(d.volumeCoefficient).trim())) e.volumeCoefficient = "请输入有效的体积系数";
+        if (!/^\d+(\.\d+)?$/.test(String(d.sizeThreshold).trim())) e.sizeThreshold = "请输入有效的尺寸阈值";
+        if (!d.orderSources.length) e.orderSources = "请至少选择一个订单来源";
+        if (!d.requiredFields.length) e.requiredFields = "请至少选择一个必填字段";
+      }
+      state.errors = e;
+      if (Object.keys(e).length) { renderModal(); return false; }
+      return true;
+    }
+
+    function save() {
+      if (!validate()) return;
+      const d = clone(draft());
+      const current = state.modal;
+      if (current === "basic") Object.assign(state.warehouse, d);
+      if (current === "entry") state.warehouse.entry = d;
+      if (current === "bulk") state.warehouse.bulk = d;
+      const msg = { basic: "仓库信息已更新", entry: "入仓单配置已更新", bulk: "大货仓配置已更新" }[current];
+      closeModal(true);
+      showToast(msg);
+    }
+
+    function showToast(message) {
+      clearTimeout(state.toastTimer);
+      toastRoot.innerHTML = `<div class="toast">${escapeHtml(message)}</div>`;
+      state.toastTimer = setTimeout(() => { toastRoot.innerHTML = ""; }, 2400);
+    }
+
+    function renderPage() {
+      app.innerHTML = `
+        <div class="page">
+          <header class="surface topbar"><div><div class="crumb">仓库管理 / 仓库详情</div><h1 class="title">仓库详情</h1><div class="meta">当前页面按截图中的B端后台风格重新整理，优先保证信息分区清楚、弹窗直观、打开即稳定。</div></div><div class="actions"><button type="button" class="btn btn-default" data-action="stub" data-message="演示版暂未接入列表跳转，当前只优化详情页与弹窗样式。">返回列表</button><button type="button" class="btn btn-default" data-action="stub" data-message="演示版暂未接入操作日志，当前只保留样式与交互展示。">操作日志</button></div></header>
+          ${renderSummary()}${renderTabs()}${renderBasic()}${renderEntry()}${renderChannel()}${renderBulk()}${renderUsers()}
+        </div>`;
+      renderModal();
+    }
+
+    document.addEventListener("click", (event) => {
+      const tab = event.target.closest("[data-tab]");
+      if (tab) { state.activeTab = tab.dataset.tab; renderPage(); document.getElementById(`section-${state.activeTab}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+      const open = event.target.closest("[data-modal-open]");
+      if (open) { openModal(open.dataset.modalOpen); return; }
+      const close = event.target.closest("[data-modal-close]");
+      if (close) { closeModal(); return; }
+      const toggle = event.target.closest("[data-action='toggle-secret']");
+      if (toggle) { state.secretVisible = !state.secretVisible; renderPage(); return; }
+      const stub = event.target.closest("[data-action='stub']");
+      if (stub) { showToast(stub.dataset.message || "演示操作"); return; }
+      const upload = event.target.closest("[data-action='trigger-upload']");
+      if (upload) { document.getElementById(upload.dataset.uploadInput)?.click(); return; }
+      const addSchedule = event.target.closest("[data-action='add-schedule']");
+      if (addSchedule) { draft().schedules.push({ label: "新增时段", time: "09:00-18:00" }); renderModal(); return; }
+      const removeSchedule = event.target.closest("[data-action='remove-schedule']");
+      if (removeSchedule) {
+        const list = draft().schedules;
+        if (list.length === 1) { showToast("至少保留一个作业时段"); return; }
+        list.splice(Number(removeSchedule.dataset.index), 1);
+        renderModal();
+      }
+    });
+
+    document.addEventListener("input", (event) => {
+      const search = event.target.closest("[data-user-search]");
+      if (search) { state.keyword = search.value; renderPage(); return; }
+      if (!state.modal) return;
+      const path = event.target.dataset.draftPath;
+      if (!path) return;
+      setByPath(draft(), path, event.target.value);
+      clearError(path);
+    });
+
+    document.addEventListener("change", (event) => {
+      if (!state.modal) return;
+      const d = draft();
+      if (event.target.matches("select[data-draft-path]")) {
+        const path = event.target.dataset.draftPath;
+        setByPath(d, path, event.target.value);
+        clearError(path);
+        return;
+      }
+      if (event.target.matches("input[type='checkbox'][data-control='switch']")) {
+        const path = event.target.dataset.draftPath;
+        setByPath(d, path, event.target.checked);
+        clearError(path);
+        renderModal();
+        return;
+      }
+      if (event.target.matches("input[type='checkbox'][data-group-path]")) {
+        const path = event.target.dataset.groupPath;
+        const value = event.target.dataset.groupValue;
+        const values = [...getByPath(d, path)];
+        if (event.target.checked) {
+          if (!values.includes(value)) values.push(value);
+        } else {
+          setByPath(d, path, values.filter((item) => item !== value));
+          clearError(path);
+          renderModal();
+          return;
+        }
+        setByPath(d, path, values);
+        clearError(path);
+        renderModal();
+        return;
+      }
+      if (event.target.matches("input[type='file'][data-upload-path]")) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const path = event.target.dataset.uploadPath;
+        const reader = new FileReader();
+        reader.onload = () => { setByPath(d, path, reader.result); clearError(path); renderModal(); };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.addEventListener("submit", (event) => {
+      const form = event.target.closest("[data-modal-form]");
+      if (!form) return;
+      event.preventDefault();
+      save();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && state.modal) closeModal();
+    });
+
+    renderPage();
+  </script>
+</body>
+</html>

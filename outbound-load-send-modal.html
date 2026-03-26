@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>出库配载发送弹窗-千仓SDMS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#1677ff',
+              600: '#155eef',
+              700: '#1147b7'
+            },
+            slate: {
+              25: '#f8fafc',
+              950: '#0f172a'
+            }
+          },
+          boxShadow: {
+            panel: '0 18px 55px rgba(15, 23, 42, 0.18)',
+            float: '0 12px 32px rgba(30, 41, 59, 0.14)'
+          },
+          fontFamily: {
+            sans: ['PingFang SC', 'Microsoft YaHei', 'Segoe UI', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style type="text/tailwindcss">
+    @layer base {
+      body {
+        @apply bg-slate-100 text-slate-800;
+      }
+    }
+
+    @layer components {
+      .page-shell {
+        background:
+          radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 26%),
+          radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.12), transparent 22%),
+          linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+      }
+
+      .grid-noise {
+        background-image:
+          linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+        background-size: 24px 24px;
+      }
+
+      .glass-card {
+        @apply rounded-2xl border border-white/70 bg-white/80 shadow-float backdrop-blur-sm;
+      }
+
+      .chip {
+        @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+      }
+
+      .btn-primary {
+        @apply inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:bg-slate-300;
+      }
+
+      .btn-secondary {
+        @apply inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300;
+      }
+
+      .icon-btn {
+        @apply inline-flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-slate-500 transition hover:border-slate-200 hover:bg-white hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/30;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans">
+  <div class="page-shell grid-noise min-h-screen overflow-hidden">
+    <header class="border-b border-white/70 bg-white/70 backdrop-blur-sm">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div>
+          <p class="text-xs font-medium uppercase tracking-[0.28em] text-slate-400">SDMS / 出库管理</p>
+          <div class="mt-1 flex items-center gap-3">
+            <h1 class="text-2xl font-semibold text-slate-900">配载出库</h1>
+            <span id="send-status-chip" class="chip bg-amber-100 text-amber-700">待发送</span>
+          </div>
+        </div>
+        <button id="reopen-modal-btn" type="button" class="btn-primary">发送司机配载信息</button>
+      </div>
+    </header>
+
+    <main class="mx-auto flex max-w-7xl gap-6 px-6 py-6">
+      <section class="flex-1 space-y-5">
+        <div class="glass-card p-5">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p class="text-sm text-slate-500">当前配载批次</p>
+              <div class="mt-2 flex flex-wrap items-center gap-3">
+                <span class="rounded-xl bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white">LB123456</span>
+                <span class="text-sm text-slate-500">仓库：华东空运中心一仓</span>
+                <span class="text-sm text-slate-500">车牌：沪A·6M528</span>
+                <span class="text-sm text-slate-500">司机：张师傅 / 138****2048</span>
+              </div>
+            </div>
+            <div class="rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3 text-right">
+              <p class="text-xs text-brand-600">发送渠道</p>
+              <p class="mt-1 text-sm font-semibold text-brand-700">短信通知</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card overflow-hidden">
+          <div class="flex items-center justify-between border-b border-slate-200/80 px-5 py-4">
+            <div>
+              <h2 class="text-base font-semibold text-slate-900">待发货站清单</h2>
+              <p class="mt-1 text-sm text-slate-500">已选3票货站任务，发送后司机将收到统一配载短信。</p>
+            </div>
+            <div class="chip bg-emerald-50 text-emerald-700">总件数85件</div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-sm">
+              <thead class="bg-slate-50 text-slate-500">
+                <tr>
+                  <th class="px-5 py-3 font-medium">运单号</th>
+                  <th class="px-5 py-3 font-medium">目的货站</th>
+                  <th class="px-5 py-3 font-medium">件数</th>
+                  <th class="px-5 py-3 font-medium">航班类型</th>
+                  <th class="px-5 py-3 font-medium">截仓时间</th>
+                  <th class="px-5 py-3 font-medium">状态</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 bg-white">
+                <tr>
+                  <td class="px-5 py-4 font-medium text-slate-900">999-12345678</td>
+                  <td class="px-5 py-4">深跨货站</td>
+                  <td class="px-5 py-4">45</td>
+                  <td class="px-5 py-4">直飞</td>
+                  <td class="px-5 py-4 text-slate-500">2026-03-20 20:30:00</td>
+                  <td class="px-5 py-4"><span class="chip bg-sky-50 text-sky-700">待通知</span></td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-medium text-slate-900">999-32164528</td>
+                  <td class="px-5 py-4">国际货站T1</td>
+                  <td class="px-5 py-4">25</td>
+                  <td class="px-5 py-4">普货</td>
+                  <td class="px-5 py-4 text-slate-500">2026-03-20 21:10:00</td>
+                  <td class="px-5 py-4"><span class="chip bg-sky-50 text-sky-700">待通知</span></td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-medium text-slate-900">999-32183123</td>
+                  <td class="px-5 py-4">国际货站T3</td>
+                  <td class="px-5 py-4">15</td>
+                  <td class="px-5 py-4">普货</td>
+                  <td class="px-5 py-4 text-slate-500">2026-03-20 21:40:00</td>
+                  <td class="px-5 py-4"><span class="chip bg-sky-50 text-sky-700">待通知</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <aside class="w-full max-w-sm space-y-5">
+        <div class="glass-card p-5">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-sm font-semibold text-slate-900">司机联络信息</p>
+              <p class="mt-1 text-sm text-slate-500">确认司机手机号正确后再执行发送。</p>
+            </div>
+            <div class="rounded-xl bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">自动校验</div>
+          </div>
+          <div class="mt-4 space-y-3 text-sm">
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <p class="text-slate-500">司机姓名</p>
+              <p class="mt-1 font-semibold text-slate-900">张师傅</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <p class="text-slate-500">司机手机号</p>
+              <p class="mt-1 font-semibold text-slate-900">138 0000 2048</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <p class="text-slate-500">最近发送记录</p>
+              <p id="last-send-text" class="mt-1 font-semibold text-slate-900">--</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-5">
+          <div class="flex items-center gap-3">
+            <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+              <svg viewBox="0 0 24 24" fill="none" class="h-6 w-6" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.75 8.75A3.75 3.75 0 0 1 8.5 5h7A3.75 3.75 0 0 1 19.25 8.75v6.5A3.75 3.75 0 0 1 15.5 19h-7a3.75 3.75 0 0 1-3.75-3.75z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 9.5h8M8 13h5"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-900">发送规则提示</p>
+              <p class="mt-1 text-sm text-slate-500">发送成功后记录操作日志，并同步更新配载通知状态。</p>
+            </div>
+          </div>
+          <div class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-600">
+            1.同一配载批次支持一次性发送多票货站信息。<br>
+            2.复制内容用于人工补发，不替代系统正式发送记录。<br>
+            3.确认发送后按钮进入加载态，防止重复触发。
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <div id="modal-root" class="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
+    <div id="modal-overlay" class="absolute inset-0 bg-slate-950/28 backdrop-blur-[3px]"></div>
+    <div id="send-modal" role="dialog" aria-modal="true" aria-labelledby="send-modal-title" class="relative z-10 w-full max-w-[560px] rounded-2xl bg-white shadow-panel">
+      <div class="h-1.5 rounded-t-2xl bg-gradient-to-r from-brand-500 via-sky-500 to-cyan-400"></div>
+      <div class="px-6 pb-5 pt-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="chip bg-brand-50 text-brand-700">出库发送</span>
+              <span class="chip bg-slate-100 text-slate-600">短信预览</span>
+            </div>
+            <h2 id="send-modal-title" class="mt-3 text-xl font-semibold text-slate-900">【LB123456】配载发送</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-600">确认将以下配载信息发送给司机吗？发送后司机将收到本次配载的汇总短信。</p>
+          </div>
+          <button id="close-modal-btn" type="button" class="icon-btn shrink-0" aria-label="关闭弹窗">
+            <svg viewBox="0 0 24 24" fill="none" class="h-5 w-5" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="mt-5 rounded-2xl bg-slate-50 p-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">发送内容</p>
+              <p class="mt-3 rounded-xl bg-white px-3 py-2 text-sm font-medium text-brand-700 shadow-sm">[运连网]司机您好，请查看您的配载信息：</p>
+            </div>
+            <button id="copy-message-btn" type="button" class="icon-btn mt-6 shrink-0" aria-label="复制配载信息">
+              <svg viewBox="0 0 24 24" fill="none" class="h-5 w-5" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 9.75A2.25 2.25 0 0 1 11.25 7.5h6A2.25 2.25 0 0 1 19.5 9.75v8.5a2.25 2.25 0 0 1-2.25 2.25h-6A2.25 2.25 0 0 1 9 18.25z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 16.5A2.25 2.25 0 0 1 4.5 14.25v-8.5A2.25 2.25 0 0 1 6.75 3.5h6A2.25 2.25 0 0 1 15 5.75"/>
+              </svg>
+            </button>
+          </div>
+
+          <div id="message-list" class="mt-4 space-y-2.5 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
+            <div class="rounded-xl bg-slate-50 px-3 py-2 font-medium text-slate-800">[999-12345678-深跨货站-45件-直飞]</div>
+            <div class="rounded-xl bg-slate-50 px-3 py-2 font-medium text-slate-800">[999-32164528-国际货站T1-25件]</div>
+            <div class="rounded-xl bg-slate-50 px-3 py-2 font-medium text-slate-800">[999-32183123-国际货站T3-15件]</div>
+          </div>
+
+          <div class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-slate-200 bg-white px-3 py-2 text-xs text-slate-500">
+            <span>预计短信长度：83字符</span>
+            <span>发送对象：张师傅 / 138****2048</span>
+          </div>
+        </div>
+
+        <div class="mt-5 flex items-center justify-between gap-4">
+          <p class="text-xs leading-5 text-slate-500">确认发送后将记录操作日志：发送人、手机号、发送时间。</p>
+          <div class="flex items-center gap-3">
+            <button id="cancel-btn" type="button" class="btn-secondary">取消</button>
+            <button id="confirm-send-btn" type="button" class="btn-primary min-w-[108px]">确认发送</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="pointer-events-none fixed right-6 top-6 z-[60] hidden rounded-xl bg-slate-900 px-4 py-3 text-sm font-medium text-white shadow-float"></div>
+
+  <script type="module">
+    const state = {
+      showModal: true,
+      sending: false,
+      lastSendTime: ''
+    };
+
+    const elements = {
+      modalRoot: document.getElementById('modal-root'),
+      modal: document.getElementById('send-modal'),
+      overlay: document.getElementById('modal-overlay'),
+      closeButton: document.getElementById('close-modal-btn'),
+      cancelButton: document.getElementById('cancel-btn'),
+      confirmButton: document.getElementById('confirm-send-btn'),
+      reopenButton: document.getElementById('reopen-modal-btn'),
+      copyButton: document.getElementById('copy-message-btn'),
+      messageList: document.getElementById('message-list'),
+      toast: document.getElementById('toast'),
+      sendStatusChip: document.getElementById('send-status-chip'),
+      lastSendText: document.getElementById('last-send-text')
+    };
+
+    function getMessageText() {
+      const lines = ['[运连网]司机您好，请查看您的配载信息：'];
+      elements.messageList.querySelectorAll('div').forEach((item) => {
+        lines.push(item.textContent.trim());
+      });
+      return lines.join('\n');
+    }
+
+    function showToast(message) {
+      elements.toast.textContent = message;
+      elements.toast.classList.remove('hidden');
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => {
+        elements.toast.classList.add('hidden');
+      }, 3000);
+    }
+
+    function render() {
+      elements.modalRoot.classList.toggle('hidden', !state.showModal);
+      elements.confirmButton.disabled = state.sending;
+      elements.confirmButton.textContent = state.sending ? '发送中...' : '确认发送';
+      elements.sendStatusChip.textContent = state.lastSendTime ? '已发送' : '待发送';
+      elements.sendStatusChip.className = state.lastSendTime
+        ? 'chip bg-emerald-100 text-emerald-700'
+        : 'chip bg-amber-100 text-amber-700';
+      elements.lastSendText.textContent = state.lastSendTime || '--';
+    }
+
+    function openModal() {
+      state.showModal = true;
+      render();
+      window.requestAnimationFrame(() => {
+        elements.closeButton.focus();
+      });
+    }
+
+    function closeModal() {
+      if (state.sending) return;
+      state.showModal = false;
+      render();
+      elements.reopenButton.focus();
+    }
+
+    async function copyMessage() {
+      const text = getMessageText();
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const input = document.createElement('textarea');
+          input.value = text;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+        }
+        showToast('配载信息已复制，可用于人工补发。');
+      } catch (error) {
+        showToast('复制失败，请稍后重试。');
+      }
+    }
+
+    function formatCurrentTime() {
+      const now = new Date();
+      const pad = (value) => String(value).padStart(2, '0');
+      return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    }
+
+    function getFocusableElements() {
+      return Array.from(
+        elements.modal.querySelectorAll('button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      );
+    }
+
+    async function confirmSend() {
+      if (state.sending) return;
+      state.sending = true;
+      render();
+
+      window.setTimeout(() => {
+        state.sending = false;
+        state.lastSendTime = formatCurrentTime();
+        state.showModal = false;
+        render();
+        showToast('配载信息已发送给司机张师傅。');
+      }, 1200);
+    }
+
+    elements.overlay.addEventListener('click', closeModal);
+    elements.closeButton.addEventListener('click', closeModal);
+    elements.cancelButton.addEventListener('click', closeModal);
+    elements.reopenButton.addEventListener('click', openModal);
+    elements.copyButton.addEventListener('click', copyMessage);
+    elements.confirmButton.addEventListener('click', confirmSend);
+
+    document.addEventListener('keydown', (event) => {
+      if (!state.showModal) return;
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeModal();
+      }
+
+      if (event.key === 'Enter' && !state.sending) {
+        const target = event.target;
+        const isButton = target instanceof HTMLElement && target.tagName === 'BUTTON';
+        if (!isButton || target === elements.confirmButton) {
+          event.preventDefault();
+          confirmSend();
+        }
+      }
+
+      if (event.key === 'Tab') {
+        const focusable = getFocusableElements();
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    render();
+    window.requestAnimationFrame(() => {
+      elements.closeButton.focus();
+    });
+  </script>
+</body>
+</html>
