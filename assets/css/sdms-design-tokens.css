@@ -1,0 +1,20 @@
+:root {
+  --page-bg: #eef3f8;
+  --panel-bg: #ffffff;
+  --panel-soft: #f7f9fc;
+  --line: #dbe4ef;
+  --line-deep: #c7d3e1;
+  --brand: #4d77ea;
+  --brand-deep: #2f5fdf;
+  --brand-light: #eaf1ff;
+  --sidebar: #203746;
+  --sidebar-deep: #1c3240;
+  --text-main: #23334d;
+  --text-sub: #627388;
+  --success: #2eb67d;
+  --warning: #f59e0b;
+  --danger: #ff5a5f;
+  --violet: #7d67ff;
+  --shadow: 0 2px 6px rgba(31, 55, 88, 0.06);
+  --shadow-panel: 0 8px 22px rgba(31, 55, 88, 0.08);
+}

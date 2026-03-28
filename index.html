@@ -3,43 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>千仓SDMS - 原型演示</title>
+    <title>千仓SDMS-原型演示</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="max-w-6xl mx-auto py-12 px-4">
-        <!-- Header -->
         <div class="text-center mb-12">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">千仓SDMS 原型演示</h1>
-            <p class="text-gray-600">供应链数据管理系统 - 前端原型页面索引</p>
-            <a href="custom-report-studio.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-orange-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h10m-10 5h16"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 4v16m-3-3l3 3 3-3"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">自定义报表工坊</h3>
-                        <p class="mt-1 text-sm text-gray-500">支持目录管理、SQL定义、字段映射、查询条件设计、预览与导出的自定义报表单页原型</p>
-                        <span class="inline-block mt-3 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">报表中心</span>
-                    </div>
-                </div>
-            </a>
-
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">千仓SDMS原型演示</h1>
+            <p class="text-gray-600">供应链数据管理系统-前端原型页面索引</p>
         </div>
 
-        <!-- Page Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            <!-- WMS 工作台 -->
-            <a href="wms-workbench.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-blue-400">
+            <a href="wms-workbench-v2.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-blue-400">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,14 +27,28 @@
                         </svg>
                     </div>
                     <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">WMS 工作台</h3>
-                        <p class="mt-1 text-sm text-gray-500">仓库管理系统主工作台，包含KPI指标、待办事项、快捷入口</p>
+                        <h3 class="text-lg font-semibold text-gray-900">WMS工作台V2</h3>
+                        <p class="mt-1 text-sm text-gray-500">仓库管理系统主工作台，包含KPI指标、待办事项、快捷入口和模块化布局。</p>
                         <span class="inline-block mt-3 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">工作台</span>
                     </div>
                 </div>
             </a>
 
-            <!-- 操作费配置 -->
+            <a href="bi-consolidated-report-v2.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-orange-400">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19h16M7 16V8m5 8V5m5 11v-6"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900">BI综合报表V2</h3>
+                        <p class="mt-1 text-sm text-gray-500">统一报表目录、筛选区、AI分析和明细表格的一体化报表页面。</p>
+                        <span class="inline-block mt-3 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">报表中心</span>
+                    </div>
+                </div>
+            </a>
+
             <a href="operation-fee-config.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-green-400">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -64,14 +58,13 @@
                         </svg>
                     </div>
                     <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">操作费配置</h3>
-                        <p class="mt-1 text-sm text-gray-500">操作费规则配置与管理，支持多种计费方式配置</p>
+                        <h3 class="text-lg font-semibold text-gray-900">操作费管理</h3>
+                        <p class="mt-1 text-sm text-gray-500">操作费规则配置与列表管理，支持筛选、分页、启停和删除。</p>
                         <span class="inline-block mt-3 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">财务管理</span>
                     </div>
                 </div>
             </a>
 
-            <!-- 操作费新增 -->
             <a href="operation-fee-create.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-green-400">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -80,14 +73,13 @@
                         </svg>
                     </div>
                     <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">操作费新增</h3>
-                        <p class="mt-1 text-sm text-gray-500">新增操作费规则，配置计费方式与适用范围</p>
+                        <h3 class="text-lg font-semibold text-gray-900">新增/编辑操作费</h3>
+                        <p class="mt-1 text-sm text-gray-500">操作费规则新增与编辑页面，支持规则配置、试算和规则弹窗编辑。</p>
                         <span class="inline-block mt-3 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">财务管理</span>
                     </div>
                 </div>
             </a>
 
-            <!-- 异常详情PC端 -->
             <a href="abnormal-detail-pc.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-orange-400">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -96,14 +88,13 @@
                         </svg>
                     </div>
                     <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">异常详情（PC端）</h3>
-                        <p class="mt-1 text-sm text-gray-500">仓库作业异常详情查看与处理，PC端操作界面</p>
+                        <h3 class="text-lg font-semibold text-gray-900">异常详情(PC端)</h3>
+                        <p class="mt-1 text-sm text-gray-500">仓库作业异常详情查看与处理，适用于PC端异常分析和跟进。</p>
                         <span class="inline-block mt-3 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">异常管理</span>
                     </div>
                 </div>
             </a>
 
-            <!-- 司机签收确认 -->
             <a href="driver-receipt-confirm.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-purple-400">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -113,13 +104,27 @@
                     </div>
                     <div class="ml-4 flex-1">
                         <h3 class="text-lg font-semibold text-gray-900">司机签收确认</h3>
-                        <p class="mt-1 text-sm text-gray-500">司机端签收确认页面，用于送货完成后的电子签收</p>
+                        <p class="mt-1 text-sm text-gray-500">司机端签收确认页面，用于送货完成后的电子签收。</p>
                         <span class="inline-block mt-3 text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">移动端</span>
                     </div>
                 </div>
             </a>
 
-            <!-- 签收回单 -->
+            <a href="outbound-load-send-modal.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-amber-400">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-8 4h6m-9 6h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900">发车派送弹窗</h3>
+                        <p class="mt-1 text-sm text-gray-500">出库发车派送弹窗原型，用于装车完成后的发车与派送确认。</p>
+                        <span class="inline-block mt-3 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">出库管理</span>
+                    </div>
+                </div>
+            </a>
+
             <a href="receipt-signature.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-indigo-400">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
@@ -129,15 +134,13 @@
                     </div>
                     <div class="ml-4 flex-1">
                         <h3 class="text-lg font-semibold text-gray-900">签收回单</h3>
-                        <p class="mt-1 text-sm text-gray-500">签收回单查看与管理，支持手写签名展示</p>
+                        <p class="mt-1 text-sm text-gray-500">签收回单查看与管理，支持签名结果展示和回单信息浏览。</p>
                         <span class="inline-block mt-3 text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded">回单管理</span>
                     </div>
                 </div>
             </a>
-
         </div>
 
-        <!-- Footer -->
         <div class="mt-12 text-center text-sm text-gray-500">
             <p>运连网科技有限公司 · 千仓SDMS供应链数据管理系统</p>
         </div>
