@@ -51,7 +51,7 @@
       inboundType: '请选择入库类型',
       currency: '请选择币种',
       measureUnit: '请选择计量单位',
-      chargeUnit: '请选择计费单位',
+      chargeUnit: '请选择默认计费单位',
       chargeNode: '请选择计费节点'
     };
 
@@ -809,7 +809,6 @@
         const targetTag = event.target.tagName.toLowerCase();
         if (targetTag !== 'textarea' && targetTag !== 'button') {
           event.preventDefault();
-          saveForm();
         }
       }
     });
