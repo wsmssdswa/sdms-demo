@@ -6,6 +6,7 @@
   <title>发送签收单 - WMS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/prd-viewer.css">
   <script>
     tailwind.config = {
       theme: {
@@ -104,6 +105,9 @@
         <h1 class="text-lg font-semibold text-gray-800">收货管理</h1>
       </div>
       <div class="flex items-center space-x-3">
+        <button id="pagePrdBtn" type="button" class="px-3 py-1.5 text-xs font-medium text-primary bg-blue-50 border border-blue-200 rounded-full">
+          查看PRD
+        </button>
         <button class="text-gray-500">
           <i class="fa fa-search"></i>
         </button>
@@ -117,10 +121,10 @@
   <!-- 主内容区 -->
   <main class="flex-1 p-4">
     <!-- 订单信息卡片 -->
-    <div class="bg-white rounded-lg shadow-card p-4 mb-4">
+    <div id="orderInfoCard" class="bg-white rounded-lg shadow-card p-4 mb-4">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-md font-semibold text-gray-800">订单信息</h2>
-        <span class="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">待签收确认</span>
+        <span id="receiptStatusBadge" class="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">待签收确认</span>
       </div>
       <div class="space-y-2">
         <div class="flex justify-between">
@@ -147,7 +151,7 @@
     </div>
 
     <!-- 操作按钮 -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
+    <div id="pageFooterActions" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
       <button id="openSignatureBtn" class="w-full px-4 py-3 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md flex items-center justify-center">
         <i class="fa fa-paper-plane mr-2"></i> 发送签收单
       </button>
@@ -157,7 +161,7 @@
   <!-- 签收单弹窗 -->
   <div id="signatureModal" class="fixed inset-0 z-50 hidden">
     <div class="modal-overlay absolute inset-0" onclick="closeSignatureModal()"></div>
-    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl shadow-2xl max-h-[90vh] overflow-y-auto drawer-slide-up">
+    <div id="signaturePanel" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl shadow-2xl max-h-[90vh] overflow-y-auto drawer-slide-up">
       <!-- 弹窗头部 -->
       <div class="p-4 border-b border-gray-200 flex items-center justify-between">
         <button onclick="closeSignatureModal()" class="text-gray-500 hover:text-gray-700">
@@ -198,19 +202,19 @@
 
         <!-- 收货件数和板数 -->
         <div class="grid grid-cols-2 gap-4">
-          <div>
+          <div id="receivedQtyField">
             <label class="block text-sm font-medium text-gray-700 mb-2">收货件数 <span class="text-danger">*</span></label>
             <input type="number" id="receivedQty" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary" placeholder="请输入收货件数" min="0">
             <p id="receivedQtyError" class="mt-1 text-xs text-danger hidden">请输入有效收货件数</p>
           </div>
-          <div>
+          <div id="receivedPalletsField">
             <label class="block text-sm font-medium text-gray-700 mb-2">收货板数</label>
             <input type="number" id="receivedPallets" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary" placeholder="请输入收货板数" min="0">
           </div>
         </div>
 
         <!-- 包装异常 -->
-        <div>
+        <div id="packagingAbnormalField">
           <div class="flex items-center justify-between mb-3">
             <label class="block text-sm font-medium text-gray-700">包装异常</label>
             <label class="relative inline-flex items-center cursor-pointer">
@@ -332,7 +336,7 @@
   <!-- 成功提示弹窗 -->
   <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
     <div class="modal-overlay absolute inset-0"></div>
-    <div class="bg-white rounded-lg shadow-2xl p-6 max-w-sm z-10">
+    <div id="successDialog" class="bg-white rounded-lg shadow-2xl p-6 max-w-sm z-10">
       <div class="flex flex-col items-center">
         <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-green-600 mb-4">
           <i class="fa fa-check-circle text-3xl"></i>
@@ -345,6 +349,31 @@
       </div>
     </div>
   </div>
+
+  <aside class="page-prd-viewer" id="pagePrdViewer" aria-hidden="true">
+    <div class="page-prd-head">
+      <div class="page-prd-head-main">
+        <span class="page-prd-badge">PRD</span>
+        <div class="page-prd-head-copy">
+          <div class="page-prd-head-kicker">页面需求文档</div>
+          <div class="page-prd-head-title" id="pagePrdTitle">发送签收单页面PRD</div>
+        </div>
+      </div>
+      <button class="page-prd-close" id="pagePrdClose" type="button" aria-label="关闭PRD阅读器">×</button>
+    </div>
+    <div class="page-prd-toolbar">
+      <div class="page-prd-toolbar-row">
+        <input class="page-prd-search" id="pagePrdSearch" type="text" placeholder="搜索章节/控件名称">
+        <button class="page-prd-tool-btn" id="pagePrdLocateBtn" type="button">控件定位模式</button>
+      </div>
+      <div class="page-prd-toolbar-tip">查看控件说明时，可打开定位模式后点击页面控件，或直接按Alt+点击控件跳转到文档对应位置。</div>
+      <div class="page-prd-current" id="pagePrdCurrent">当前未定位到具体控件</div>
+    </div>
+    <div class="page-prd-body">
+      <aside class="page-prd-toc" id="pagePrdToc"></aside>
+      <div class="page-prd-content" id="pagePrdContent"></div>
+    </div>
+  </aside>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -562,5 +591,9 @@
       });
     });
   </script>
+  <script>window.PRD_VIEWER_PAGE_KEY = "receipt-signature";</script>
+  <script src="./assets/prd-data/receipt-signature.prd-content.js"></script>
+  <script src="./assets/prd-data/receipt-signature.prd-map.js"></script>
+  <script src="./assets/js/prd-viewer-core.js"></script>
 </body>
 </html>

@@ -1,0 +1,90 @@
+{
+  "pageKey": "receipt-signature",
+  "pageTitle": "发送签收单页面PRD",
+  "bindings": [
+    {
+      "selector": "#orderInfoCard",
+      "label": "订单信息区域",
+      "level": "section",
+      "targetId": "section-order-info",
+      "headingText": "11.3【订单信息】{区域}"
+    },
+    {
+      "selector": "#openSignatureBtn",
+      "label": "发送签收单按钮",
+      "level": "control",
+      "targetId": "action-open-signature",
+      "headingText": "【发送签收单】{按钮}"
+    },
+    {
+      "selector": "#signaturePanel",
+      "label": "发送签收单弹框",
+      "level": "section",
+      "targetId": "dialog-signature-send",
+      "headingText": "11.5【发送签收单】{弹框}"
+    },
+    {
+      "selector": "#receivedQtyField",
+      "label": "收货件数",
+      "level": "control",
+      "targetId": "field-received-qty",
+      "headingText": ""
+    },
+    {
+      "selector": "#receivedPalletsField",
+      "label": "收货板数",
+      "level": "control",
+      "targetId": "field-received-pallets",
+      "headingText": ""
+    },
+    {
+      "selector": "#packagingAbnormalField",
+      "label": "包装异常区域",
+      "level": "section",
+      "targetId": "section-packaging-abnormal",
+      "headingText": "11.5.3【包装异常】{区域}"
+    },
+    {
+      "selector": "#packagingAbnormal",
+      "label": "包装异常开关",
+      "level": "control",
+      "targetId": "field-packaging-abnormal",
+      "headingText": ""
+    },
+    {
+      "selector": "#warehouseTabsContainer",
+      "label": "入仓号页签",
+      "level": "control",
+      "targetId": "field-inbound-tabs",
+      "headingText": ""
+    },
+    {
+      "selector": "#abnormalRemarkSection",
+      "label": "异常备注",
+      "level": "control",
+      "targetId": "field-abnormal-remark",
+      "headingText": ""
+    },
+    {
+      "selector": "#photoUploadSection",
+      "label": "现场拍照上传",
+      "level": "control",
+      "targetId": "field-photo-upload",
+      "headingText": ""
+    },
+    {
+      "selector": "#confirmSendBtn",
+      "label": "确认发送按钮",
+      "level": "control",
+      "targetId": "action-confirm-send",
+      "headingText": ""
+    },
+    {
+      "selector": "#successDialog",
+      "label": "发送成功弹框",
+      "level": "section",
+      "targetId": "dialog-send-success",
+      "headingText": "11.6【发送成功】{确认弹框}"
+    }
+  ]
+}

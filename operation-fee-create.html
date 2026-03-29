@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
   <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
   <link rel="stylesheet" href="./assets/css/operation-fee-create.css">
+  <link rel="stylesheet" href="./assets/css/prd-viewer.css">
 </head>
 <body>
   <div class="app-shell">
@@ -36,6 +37,7 @@
           <div class="page-card-head">
             <div class="page-title" id="pageTitleLabel">新增操作费</div>
             <div class="page-actions">
+              <button class="btn btn-outline btn-prd" id="pagePrdBtn" type="button">查看PRD</button>
               <button class="btn btn-outline" id="simulateBtn" type="button">费用试算</button>
               <button class="btn btn-primary" id="saveBtn" type="button">保存</button>
             </div>
@@ -139,14 +141,16 @@
                   </div>
 
                   <div class="field-group" data-field="chargeUnit">
-                    <div class="field-label"><span class="required-star">*</span><span>计费单位</span></div>
+                    <div class="field-label"><span class="required-star">*</span><span>默认计费单位</span></div>
                     <div class="select-wrap">
                       <select class="field-select" id="chargeUnit" name="chargeUnit">
-                        <option value="">请选择计费单位</option>
-                        <option value="CBM" selected>CBM</option>
-                        <option value="kg">kg</option>
-                        <option value="托">托</option>
+                        <option value="">请选择默认计费单位</option>
                         <option value="柜">柜</option>
+                        <option value="箱" selected>箱</option>
+                        <option value="托">托</option>
+                        <option value="kg">kg</option>
+                        <option value="SKU">SKU</option>
+                        <option value="CBM" disabled>CBM(暂未开放)</option>
                       </select>
                       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="m7 10 5 5 5-5z"></path>
@@ -289,8 +293,39 @@
       </div>
     </div>
   </div>
+  <aside class="page-prd-viewer" id="pagePrdViewer" aria-hidden="true">
+    <div class="page-prd-head">
+      <div class="page-prd-head-main">
+        <span class="page-prd-badge">PRD</span>
+        <div class="page-prd-head-copy">
+          <div class="page-prd-head-kicker">页面需求文档</div>
+          <div class="page-prd-head-title" id="pagePrdTitle">新增/编辑操作费页面PRD</div>
+        </div>
+      </div>
+      <button class="page-prd-close" id="pagePrdClose" type="button" aria-label="关闭PRD阅读器">×</button>
+    </div>
+    <div class="page-prd-toolbar">
+      <div class="page-prd-toolbar-row">
+        <input class="page-prd-search" id="pagePrdSearch" type="text" placeholder="搜索章节/控件名称">
+        <button class="page-prd-tool-btn" id="pagePrdLocateBtn" type="button">控件定位模式</button>
+      </div>
+      <div class="page-prd-toolbar-tip">查看控件说明时，可打开定位模式后点击页面控件，或直接按`Alt+点击控件`跳转到文档对应位置。</div>
+      <div class="page-prd-current" id="pagePrdCurrent">当前未定位到具体控件</div>
+    </div>
+    <div class="page-prd-body">
+      <aside class="page-prd-toc" id="pagePrdToc"></aside>
+      <div class="page-prd-content" id="pagePrdContent"></div>
+    </div>
+  </aside>
 
   <script src="./assets/js/sdms-sidebar.js"></script>
   <script src="./assets/js/operation-fee-create.js"></script>
+  <script>window.PRD_VIEWER_PAGE_KEY = "operation-fee-create";</script>
+  <script src="./assets/prd-data/operation-fee-create.prd-content.js"></script>
+  <script src="./assets/prd-data/operation-fee-create.prd-map.js"></script>
+  <script src="./assets/js/prd-viewer-core.js"></script>
 </body>
 </html>
+
+
+
