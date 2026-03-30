@@ -176,6 +176,32 @@ select {
   border-bottom: 1px solid var(--line);
 }
 
+.header-tabs.header-tabs-composed {
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.header-tabs-main {
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.header-tabs-main::-webkit-scrollbar {
+  display: none;
+}
+
+.header-tabs-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding-bottom: 3px;
+}
+
 .tab-chip {
   height: 31px;
   min-width: 94px;
@@ -336,8 +362,109 @@ select {
   text-decoration: none;
 }
 
+.sdms-top-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sdms-tool-btn,
+.sdms-tool-user {
+  position: relative;
+  height: 26px;
+  border: 1px solid #d7e0eb;
+  border-radius: 999px;
+  background: #fbfcfe;
+  color: #5d6d81;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: none;
+}
+
+.sdms-tool-btn {
+  width: 26px;
+  padding: 0;
+}
+
+.sdms-tool-btn i,
+.sdms-tool-user i {
+  font-size: 13px;
+}
+
+.sdms-tool-btn:hover,
+.sdms-tool-user:hover {
+  border-color: #90adff;
+  color: var(--brand);
+  background: #f5f9ff;
+}
+
+.sdms-tool-badge {
+  position: absolute;
+  top: -5px;
+  right: -6px;
+  min-width: 20px;
+  height: 14px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  border: 1px solid #f4f6f8;
+  box-shadow: 0 2px 6px rgba(255, 90, 95, 0.18);
+}
+
+.sdms-tool-user {
+  padding: 0 8px 0 4px;
+}
+
+.sdms-tool-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4d77ea 0%, #7d67ff 100%);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.sdms-tool-user-name {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-main);
+}
+
+.sdms-tool-user .ri-arrow-down-s-line {
+  font-size: 12px;
+  color: #7d8ea3;
+}
+
 @media (max-width: 1440px) {
   .page-title-sub {
     white-space: normal;
+  }
+
+  .sdms-top-tools {
+    gap: 6px;
+  }
+
+  .sdms-tool-user-name {
+    display: none;
+  }
+
+  .header-tabs.header-tabs-composed {
+    gap: 8px;
   }
 }

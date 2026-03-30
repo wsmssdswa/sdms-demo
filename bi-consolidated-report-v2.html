@@ -15,10 +15,7 @@
     <aside class="side-bar" data-sdms-sidebar data-sidebar-key="report"></aside>
 
     <div class="page-shell">
-      <div class="header-tabs">
-        <a href="./wms-workbench-v2.html" class="tab-chip"><i class="ri-dashboard-3-line"></i><span>工作台V2</span></a>
-        <div class="tab-chip primary"><i class="ri-line-chart-line"></i><span>BI综合报表V2</span><span class="close-mark">×</span></div>
-      </div>
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="overview" data-tab-key="report" data-include-tools="true" data-user-name="张三"></div>
 
       <main class="content-wrap">
         <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
@@ -162,9 +159,52 @@
                 </div>
               </div>
 
+              <div id="columnConfigModal" class="modal hidden" aria-hidden="true">
+                <div id="columnConfigBackdrop" class="modal-backdrop"></div>
+                <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="columnConfigTitle">
+                  <div class="modal-panel column-config-panel">
+                    <div class="modal-head column-config-head">
+                      <div>
+                        <div id="columnConfigTitle" class="modal-title">列表设置</div>
+                        <div id="columnConfigScope" class="modal-scope">当前报表可配置字段显隐与显示顺序。</div>
+                      </div>
+                      <div class="modal-actions">
+                        <button id="closeColumnConfigBtn" type="button" class="btn btn-secondary"><i class="ri-close-line"></i><span>关闭</span></button>
+                      </div>
+                    </div>
+                    <div class="modal-body column-config-body">
+                      <section class="column-config-section">
+                        <div class="column-config-section-head">
+                          <div class="column-config-section-title" id="columnConfigFieldCount">系统字段(0/0)</div>
+                          <button id="columnConfigSelectAllBtn" type="button" class="column-config-link">全选</button>
+                        </div>
+                        <div id="columnConfigFieldList" class="column-config-field-grid"></div>
+                      </section>
+                      <section class="column-config-section column-config-selected">
+                        <div class="column-config-section-head">
+                          <div>
+                            <div id="columnConfigPinCount" class="column-config-section-title">最多可固定7列</div>
+                            <div id="columnConfigPinnedHint" class="column-config-section-sub">已固定0列</div>
+                          </div>
+                          <button id="clearPinnedFieldsBtn" type="button" class="column-config-link">清空</button>
+                        </div>
+                        <div class="column-order-head"><span class="column-order-head-label">已选字段</span><span>删除</span><span>置顶</span><span>固定</span></div>
+                        <div id="columnConfigSelectedList" class="column-order-list"></div>
+                      </section>
+                    </div>
+                    <div class="column-config-foot">
+                      <button id="resetColumnConfigBtn" type="button" class="btn btn-secondary">恢复默认</button>
+                      <div class="modal-actions">
+                        <button id="cancelColumnConfigBtn" type="button" class="btn btn-secondary">取消</button>
+                        <button id="saveColumnConfigBtn" type="button" class="btn btn-primary">保存</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <section class="panel table-panel">
-                <div class="table-head"><div><div class="section-title">明细数据</div><div id="tableTitle" class="chart-name" style="margin-top:8px;">--</div></div><div class="table-head-actions"><button id="exportBtn" type="button" class="btn btn-secondary"><i class="ri-download-2-line"></i><span>导出</span></button><div class="table-search-box"><input id="keywordInput" class="form-input" type="text" maxlength="50" placeholder="搜索编号/客户/仓库/业务类型"><i class="ri-search-line"></i></div></div></div>
-                <div id="tableToolbar" class="table-toolbar"></div>
+                <div class="table-head"><div class="table-head-main"><div id="tableTitle" class="section-title">--</div><div id="tableToolbar" class="table-toolbar table-toolbar-inline"></div></div><div class="table-head-actions"><button id="columnConfigBtn" type="button" class="btn btn-secondary"><i class="ri-settings-3-line"></i><span>字段配置</span></button><button id="exportBtn" type="button" class="btn btn-secondary"><i class="ri-download-2-line"></i><span>导出</span></button></div></div>
                 <div class="table-wrap">
                   <table id="detailTable" class="data-table">
                     <thead id="tableHead">
@@ -184,6 +224,7 @@
 
   <div id="toastContainer" class="toast-stack"></div>
 
+  <script src="./assets/js/sdms-header-tabs.js"></script>
   <script src="./assets/js/sdms-sidebar.js"></script>
   <script src="./assets/js/bi-consolidated-report-v2.js"></script>
 </body>
