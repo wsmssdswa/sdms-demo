@@ -38,25 +38,42 @@
     ].join('');
   }
 
+  function buildPrdEntry(container) {
+    const buttonText = container.dataset.prdEntryText || '查看PRD';
+    return [
+      '<button type="button" class="sdms-prd-entry" id="pagePrdBtn" aria-label="' + buttonText + '" title="' + buttonText + '">',
+      '<i class="ri-file-text-line"></i>',
+      '<span>' + buttonText + '</span>',
+      '</button>'
+    ].join('');
+  }
+
   function getAvatarText(name) {
     const value = String(name || '').trim();
     return value ? value.charAt(0) : '张';
   }
 
-  function buildTools(container) {
+  function buildTools(container, includePrdEntry) {
     const userName = container.dataset.userName || '张三';
-    return [
-      '<div class="header-tabs-actions">',
-      '<div class="sdms-top-tools">',
-      buildToolButton('ri-refresh-line', '刷新'),
-      buildToolButton('ri-fullscreen-line', '全屏'),
-      buildToolButton('ri-notification-3-line', '消息通知', '99+'),
-      buildToolButton('ri-translate-2', '语言切换'),
+    const toolItems = [];
+    if (includePrdEntry) {
+      toolItems.push(buildPrdEntry(container));
+    }
+    toolItems.push(buildToolButton('ri-refresh-line', '刷新'));
+    toolItems.push(buildToolButton('ri-fullscreen-line', '全屏'));
+    toolItems.push(buildToolButton('ri-notification-3-line', '消息通知', '99+'));
+    toolItems.push(buildToolButton('ri-translate-2', '语言切换'));
+    toolItems.push([
       '<button type="button" class="sdms-tool-user" aria-label="当前用户 ' + userName + '" title="' + userName + '">',
       '<span class="sdms-tool-avatar">' + getAvatarText(userName) + '</span>',
       '<span class="sdms-tool-user-name">' + userName + '</span>',
       '<i class="ri-arrow-down-s-line"></i>',
-      '</button>',
+      '</button>'
+    ].join(''));
+    return [
+      '<div class="header-tabs-actions">',
+      '<div class="sdms-top-tools">',
+      toolItems.join(''),
       '</div>',
       '</div>'
     ].join('');
@@ -98,6 +115,7 @@
     const activeKey = container.dataset.tabKey || '';
     const tabKeys = getTabKeys(container);
     const includeTools = container.dataset.includeTools === 'true';
+    const includePrdEntry = container.dataset.includePrdEntry === 'true';
     const tabsHtml = tabKeys.map(function (key) {
       const item = TAB_ITEMS[key];
       if (!item) return '';
@@ -109,7 +127,7 @@
       '<div class="header-tabs-main">',
       tabsHtml,
       '</div>',
-      includeTools ? buildTools(container) : ''
+      (includeTools || includePrdEntry) ? buildTools(container, includePrdEntry) : ''
     ].join('');
   }
 

@@ -1,19 +1,19 @@
     let selectedWarehouses = ['WH001', 'WH002', 'WH003', 'WH004', 'WH005', 'WH006'];
-    const LAYOUT_STORAGE_VERSION = 2;
-    const KPI_STORAGE_VERSION = 2;
-    const DEFAULT_COMPONENT_ORDER = ['todo', 'alert', 'trend', 'shortcut', 'operatingReport', 'inventory', 'efficiency', 'timeliness', 'message'];
-    const DEFAULT_HIDDEN_KPI_KEYS = ['outboundWeight', 'outboundPieces', 'inboundWeight', 'inboundPieces', 'orphanOrders'];
+    const LAYOUT_STORAGE_VERSION = 3;
+    const KPI_STORAGE_VERSION = 8;
+    const DEFAULT_COMPONENT_ORDER = ['trend', 'timeliness', 'efficiency', 'shortcut', 'operatingReport', 'inventory', 'alert', 'todo', 'message'];
+    const DEFAULT_HIDDEN_KPI_KEYS = ['outboundQty', 'outboundWeight', 'outboundPieces', 'inboundWeight', 'inboundPieces', 'inventory', 'orphanOrders'];
     
     const defaultLayout = {
-      todo: { show: true, width: 2 },
+      todo: { show: true, width: 1 },
       alert: { show: true, width: 1 },
-      trend: { show: true, width: 2 },
+      trend: { show: true, width: 1 },
       shortcut: { show: true, width: 1 },
       inventory: { show: true, width: 1 },
       operatingReport: { show: true, width: 2 },
       efficiency: { show: true, width: 2 },
-      timeliness: { show: true, width: 1 },
-      message: { show: true, width: 2 }
+      timeliness: { show: true, width: 2 },
+      message: { show: true, width: 1 }
     };
     
     let currentLayout = JSON.parse(JSON.stringify(defaultLayout));
@@ -35,13 +35,17 @@
     const KPI_MAX_SELECTION = 10;
     const defaultKpiConfig = {
       items: [
-        { key: 'outboundQty', show: true },
         { key: 'inboundQty', show: true },
+        { key: 'returnInventory', show: true },
+        { key: 'orderQty', show: true },
+        { key: 'exceptionOrder', show: true },
+        { key: 'signoutQty', show: true },
+        { key: 'outboundQty', show: false },
         { key: 'outboundWeight', show: false },
         { key: 'outboundPieces', show: false },
         { key: 'inboundWeight', show: false },
         { key: 'inboundPieces', show: false },
-        { key: 'inventory', show: true },
+        { key: 'inventory', show: false },
         { key: 'complaintRate', show: true },
         { key: 'signRate', show: true },
         { key: 'redispatchRate', show: true },
@@ -1062,6 +1066,7 @@
       const kpiGrid = document.getElementById('kpiGrid');
       if (!kpiGrid) return;
       const visibleItems = (currentKpiConfig.items || []).filter(c => c.show);
+      const hasCompositeCards = visibleItems.some(item => ['inboundQty', 'returnInventory', 'orderQty', 'signoutQty'].includes(item.key));
       const orderedCards = [];
       // 隐藏所有卡片
       kpiGrid.querySelectorAll('[data-kpi]').forEach(card => {
@@ -1080,17 +1085,19 @@
         kpiGrid.appendChild(card);
       });
       // 动态调整grid列数
-      updateKpiGridColumns(visibleItems.length);
+      updateKpiGridColumns(visibleItems.length, hasCompositeCards);
     }
-    function updateKpiGridColumns(count) {
+    function updateKpiGridColumns(count, hasCompositeCards = false) {
       const kpiGrid = document.getElementById('kpiGrid');
-      kpiGrid.classList.remove('xl:grid-cols-6', 'xl:grid-cols-5', 'xl:grid-cols-4', 'xl:grid-cols-3', 'xl:grid-cols-2', 'xl:grid-cols-1');
+      kpiGrid.classList.remove('xl:grid-cols-9', 'xl:grid-cols-8', 'xl:grid-cols-6', 'xl:grid-cols-5', 'xl:grid-cols-4', 'xl:grid-cols-3', 'xl:grid-cols-2', 'xl:grid-cols-1');
       if (count <= 2) {
         kpiGrid.classList.add('xl:grid-cols-2');
       } else if (count <= 3) {
         kpiGrid.classList.add('xl:grid-cols-3');
       } else if (count <= 4) {
         kpiGrid.classList.add('xl:grid-cols-4');
+      } else if (hasCompositeCards) {
+        kpiGrid.classList.add('xl:grid-cols-9');
       } else if (count <= 6) {
         kpiGrid.classList.add('xl:grid-cols-6');
       } else {
@@ -1350,7 +1357,19 @@
       if (savedLayout) {
         try {
           const layoutData = JSON.parse(savedLayout);
-          if (layoutData.config) currentLayout = { ...defaultLayout, ...layoutData.config };
+          const shouldMigrateLayout = !layoutData.version || layoutData.version < LAYOUT_STORAGE_VERSION;
+          if (shouldMigrateLayout) {
+            currentLayout = Object.keys(defaultLayout).reduce((result, componentName) => {
+              const savedConfig = layoutData.config?.[componentName];
+              result[componentName] = {
+                show: typeof savedConfig?.show === 'boolean' ? savedConfig.show : defaultLayout[componentName].show,
+                width: defaultLayout[componentName].width
+              };
+              return result;
+            }, {});
+          } else if (layoutData.config) {
+            currentLayout = { ...defaultLayout, ...layoutData.config };
+          }
           const grid = document.getElementById('dashboardGrid');
           Object.keys(currentLayout).forEach(componentName => {
             const component = grid.querySelector(`[data-component="${componentName}"]`);
@@ -1361,15 +1380,12 @@
               component.classList.add('col-span-1', config.width === 2 ? 'md:col-span-2' : 'md:col-span-1');
             }
           });
-          const savedOrder = Array.isArray(layoutData.components)
+          const savedOrder = Array.isArray(layoutData.components) && !shouldMigrateLayout
             ? layoutData.components.map(item => item.component)
             : DEFAULT_COMPONENT_ORDER;
-          let componentOrder = normalizeComponentOrder(savedOrder);
-          if (!layoutData.version || layoutData.version < LAYOUT_STORAGE_VERSION) {
-            componentOrder = moveComponentBefore(componentOrder, 'operatingReport', 'inventory');
-          }
+          const componentOrder = normalizeComponentOrder(savedOrder);
           applyDashboardComponentOrder(componentOrder);
-          if (!layoutData.version || layoutData.version < LAYOUT_STORAGE_VERSION) {
+          if (shouldMigrateLayout) {
             saveLayoutToStorage();
           }
           syncShortcutGridLayout();

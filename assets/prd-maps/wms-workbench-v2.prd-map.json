@@ -1,0 +1,111 @@
+{
+  "pageKey": "wms-workbench-v2",
+  "pageTitle": "WMS\u5de5\u4f5c\u53f0V2\u9875\u9762PRD",
+  "bindings": [
+    {
+      "selector": "#warehouseSelector",
+      "label": "\u4ed3\u5e93\u9009\u62e9\u5668",
+      "level": "control",
+      "targetId": "",
+      "headingText": "9.1.4\u3010\u9875\u9762\u5934\u90e8\u3011\u533a\u57df"
+    },
+    {
+      "selector": "#kpiGrid",
+      "label": "\u5168\u5c40KPI\u533a\u57df",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.5\u3010\u5168\u5c40KPI\u533a\u57df\u3011\u533a\u57df"
+    },
+    {
+      "selector": "[data-component='todo']",
+      "label": "\u5f85\u529e\u4efb\u52a1",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.6\u3010\u5f85\u529e\u4efb\u52a1\u3011\u7ec4\u4ef6"
+    },
+    {
+      "selector": "[data-component='alert']",
+      "label": "\u5f02\u5e38\u9884\u8b66",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.7\u3010\u5f02\u5e38\u9884\u8b66\u3011\u7ec4\u4ef6"
+    },
+    {
+      "selector": "[data-component='trend']",
+      "label": "\u51fa\u5165\u5e93\u8d8b\u52bf",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.8\u3010\u51fa\u5165\u5e93\u8d8b\u52bf\u3011\u7ec4\u4ef6"
+    },
+    {
+      "selector": "[data-component='shortcut']",
+      "label": "\u5feb\u6377\u64cd\u4f5c",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.9\u3010\u5feb\u6377\u64cd\u4f5c\u3011\u7ec4\u4ef6"
+    },
+    {
+      "selector": "[data-component='inventory']",
+      "label": "\u5e93\u5b58\u5206\u5e03",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.10\u3010\u5e93\u5b58\u5206\u5e03\u3011\u7ec4\u4ef6"
+    },
+    {
+      "selector": "[data-component='operatingReport']",
+      "label": "\u7ecf\u8425\u62a5\u8868",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.11\u3010\u7ecf\u8425\u62a5\u8868\u3011\u7ec4\u4ef6"
+    },
+    {
+      "selector": "[data-component='efficiency']",
+      "label": "\u4eba\u6548\u7edf\u8ba1",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.12\u3010\u4eba\u6548\u7edf\u8ba1\u3011\u7ec4\u4ef6"
+    },
+    {
+      "selector": "[data-component='timeliness']",
+      "label": "\u65f6\u6548\u7edf\u8ba1",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.13\u3010\u65f6\u6548\u7edf\u8ba1\u3011\u7ec4\u4ef6"
+    },
+    {
+      "selector": "[data-component='message']",
+      "label": "\u6d88\u606f\u901a\u77e5",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.14\u3010\u6d88\u606f\u901a\u77e5\u3011\u7ec4\u4ef6"
+    },
+    {
+      "selector": "#layoutModal",
+      "label": "\u5e03\u5c40\u914d\u7f6e\u62bd\u5c49",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.15\u3010\u5e03\u5c40\u914d\u7f6e\u3011\u62bd\u5c49"
+    },
+    {
+      "selector": "#shortcutConfigModal",
+      "label": "\u5feb\u6377\u64cd\u4f5c\u914d\u7f6e\u5f39\u7a97",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.16\u3010\u5feb\u6377\u64cd\u4f5c\u914d\u7f6e\u3011\u5f39\u7a97"
+    },
+    {
+      "selector": "#kpiConfigModal",
+      "label": "\u6838\u5fc3\u6307\u6807\u914d\u7f6e\u5f39\u7a97",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.17\u3010\u6838\u5fc3\u6307\u6807\u914d\u7f6e\u3011\u5f39\u7a97"
+    },
+    {
+      "selector": "#timelinessDetailModal",
+      "label": "\u65f6\u6548\u7edf\u8ba1\u8be6\u60c5\u5f39\u7a97",
+      "level": "section",
+      "targetId": "",
+      "headingText": "9.1.18\u3010\u65f6\u6548\u7edf\u8ba1\u8be6\u60c5\u3011\u5f39\u7a97"
+    }
+  ]
+}

@@ -369,6 +369,7 @@ select {
   flex-wrap: wrap;
 }
 
+.sdms-prd-entry,
 .sdms-tool-btn,
 .sdms-tool-user {
   position: relative;
@@ -386,16 +387,28 @@ select {
   box-shadow: none;
 }
 
+.sdms-prd-entry {
+  padding: 0 10px;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand);
+  background: #f5f9ff;
+  border-color: #cfe0ff;
+}
+
 .sdms-tool-btn {
   width: 26px;
   padding: 0;
 }
 
+.sdms-prd-entry i,
 .sdms-tool-btn i,
 .sdms-tool-user i {
   font-size: 13px;
 }
 
+.sdms-prd-entry:hover,
 .sdms-tool-btn:hover,
 .sdms-tool-user:hover {
   border-color: #90adff;

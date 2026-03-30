@@ -33,7 +33,8 @@
     open: false,
     locateMode: false,
     activeRef: '',
-    toc: []
+    toc: [],
+    dockSide: 'right'
   };
 
   if (pagePrdTitle && mapPayload && mapPayload.pageTitle) {
@@ -273,6 +274,13 @@
     pagePrdCurrent.textContent = text || '当前未定位到具体控件';
   }
 
+  function setViewerDockSide(side) {
+    const nextSide = side === 'left' ? 'left' : 'right';
+    state.dockSide = nextSide;
+    pagePrdViewer.classList.toggle('dock-left', nextSide === 'left');
+    pagePrdViewer.classList.toggle('dock-right', nextSide === 'right');
+  }
+
   function openViewer() {
     state.open = true;
     pagePrdViewer.classList.add('open');
@@ -312,6 +320,33 @@
     }, 2200);
   }
 
+  function getViewerDockSideForNode(node) {
+    if (!node) return 'right';
+    if (window.innerWidth <= 1280) return 'right';
+    const rect = node.getBoundingClientRect();
+    const nodeMidX = rect.left + (rect.width / 2);
+    return nodeMidX >= (window.innerWidth / 2) ? 'left' : 'right';
+  }
+
+  function scrollControlNodeIntoView(node) {
+    if (!node) return;
+    node.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'nearest'
+    });
+  }
+
+  function focusControlNode(node) {
+    if (!node) return;
+    setViewerDockSide(getViewerDockSideForNode(node));
+    if (!state.open) openViewer();
+    window.requestAnimationFrame(() => {
+      scrollControlNodeIntoView(node);
+      highlightControlNode(node);
+    });
+  }
+
   function escapeSelector(value) {
     if (window.CSS && typeof window.CSS.escape === 'function') {
       return window.CSS.escape(value);
@@ -336,16 +371,15 @@
 
   function jumpToBinding(binding, node) {
     if (!binding) return;
+    focusControlNode(node);
     if (binding.targetId) {
       jumpToRef(binding.targetId, binding.label);
-      highlightControlNode(node);
       return;
     }
     if (binding.headingText) {
       const tocMatch = state.toc.find((item) => item.title === binding.headingText);
       if (tocMatch) {
         jumpToRef(tocMatch.id, binding.label);
-        highlightControlNode(node);
       }
     }
   }
@@ -403,6 +437,7 @@
   const parsed = parseMarkdown(markdownSource);
   state.toc = parsed.toc;
   pagePrdContent.innerHTML = parsed.html;
+  setViewerDockSide('right');
   renderToc('');
   bindControls();
 
@@ -426,6 +461,7 @@
       closeViewer();
       return;
     }
+    setViewerDockSide('right');
     openViewer();
   });
 
@@ -455,7 +491,12 @@
 
   document.addEventListener('click', (event) => {
     if (event.target.closest('#pagePrdViewer')) return;
+    if (event.target.closest('#pagePrdBtn')) return;
     const shouldLocate = event.altKey || state.locateMode;
+    if (state.open && !shouldLocate) {
+      closeViewer();
+      return;
+    }
     if (!shouldLocate) return;
     const resolved = resolveBindingFromTarget(event.target);
     if (!resolved) return;
