@@ -1,4 +1,6 @@
 const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'timeliness', 'inventory', 'sign-rate', 'complaint', 'compensation'];
+    const MAX_PINNED_COLUMNS = 7;
+    const STARRED_REPORTS = new Set(['order', 'timeliness', 'inventory']);
     const COMMON_WAREHOUSES = ['深圳兴围仓', '广州白云仓', '香港葵涌仓'];
     const COMMON_CUSTOMERS = ['Anker跨境', 'SHEIN华南', 'Temu直发', 'Lazada华南', '菜鸟云配', '敏捷供应链'];
     const BUSINESS_TYPE_OPTIONS = ['干线', '备货', '退件重派'];
@@ -40,27 +42,43 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       退件重派: [{ label: '原派国占比', field: 'originalCountry' }, { label: '现派国家占比', field: 'currentCountry' }]
     };
     const ORDER_FIELD_DEFINITIONS = {
-      orderNo: { label: '订单号', getValue: row => row.orderNo },
-      masterNo: { label: '主单号', getValue: row => row.masterNo || '--' },
-      splitCount: { label: '分单数量', getValue: row => row.splitCount ?? '--', align: 'right' },
-      pieceCount: { label: '件数', getValue: row => row.pieceCount ?? '--', align: 'right' },
-      weight: { label: '重量', getValue: row => row.weightDisplay || '--', align: 'right' },
-      volume: { label: '体积', getValue: row => row.volumeDisplay || '--', align: 'right' },
-      palletCount: { label: '板数', getValue: row => row.palletCount ?? '--', align: 'right' },
-      warehouse: { label: '仓库', getValue: row => row.warehouse },
-      originPort: { label: '起运港', getValue: row => row.originPort || '--' },
-      destinationPort: { label: '目的港', getValue: row => row.destinationPort || '--' },
-      poType: { label: 'PO Type', getValue: row => row.poType || '--' },
-      codAmount: { label: 'COD金额', getValue: row => row.codAmountDisplay || '--', align: 'right' },
-      itemQty: { label: '商品数量', getValue: row => row.itemQty ?? '--', align: 'right' },
-      carrier: { label: '派送商', getValue: row => row.carrier || '--' },
-      originalCountry: { label: '原派国', getValue: row => row.originalCountry || '--' },
-      currentCountry: { label: '现派国', getValue: row => row.currentCountry || '--' },
-      ownerName: { label: '货主名称', getValue: row => row.ownerName },
-      orderStatus: { label: '订单状态', getValue: row => `<span class="badge ${statusClass(row.status)}">${row.status}</span>`, html: true },
-      createdTime: { label: '创建时间', getValue: row => row.time },
-      orderSource: { label: '订单来源', getValue: row => row.orderSource }
+      orderNo: { label: '订单号', getValue: row => row.orderNo, width: 156 },
+      masterNo: { label: '主单号', getValue: row => row.masterNo || '--', width: 164 },
+      splitCount: { label: '分单数量', getValue: row => row.splitCount ?? '--', align: 'right', width: 110 },
+      pieceCount: { label: '件数', getValue: row => row.pieceCount ?? '--', align: 'right', width: 96 },
+      weight: { label: '重量', getValue: row => row.weightDisplay || '--', align: 'right', width: 108 },
+      volume: { label: '体积', getValue: row => row.volumeDisplay || '--', align: 'right', width: 108 },
+      palletCount: { label: '板数', getValue: row => row.palletCount ?? '--', align: 'right', width: 96 },
+      warehouse: { label: '仓库', getValue: row => row.warehouse, width: 140 },
+      originPort: { label: '起运港', getValue: row => row.originPort || '--', width: 132 },
+      destinationPort: { label: '目的港', getValue: row => row.destinationPort || '--', width: 132 },
+      poType: { label: 'PO Type', getValue: row => row.poType || '--', width: 110 },
+      codAmount: { label: 'COD金额', getValue: row => row.codAmountDisplay || '--', align: 'right', width: 124 },
+      itemQty: { label: '商品数量', getValue: row => row.itemQty ?? '--', align: 'right', width: 118 },
+      carrier: { label: '派送商', getValue: row => row.carrier || '--', width: 124 },
+      originalCountry: { label: '原派国', getValue: row => row.originalCountry || '--', width: 110 },
+      currentCountry: { label: '现派国', getValue: row => row.currentCountry || '--', width: 110 },
+      ownerName: { label: '货主名称', getValue: row => row.ownerName, width: 152 },
+      orderStatus: { label: '订单状态', getValue: row => `<span class="badge ${statusClass(row.status)}">${row.status}</span>`, html: true, width: 112 },
+      createdTime: { label: '创建时间', getValue: row => row.time, width: 168 },
+      orderSource: { label: '订单来源', getValue: row => row.orderSource, width: 118 }
     };
+    const GENERIC_TABLE_FIELD_ORDER = ['code', 'customer', 'warehouse', 'tag', 'value', 'time', 'status'];
+    const GENERIC_TABLE_FIELD_DEFINITIONS = {
+      code: { label: '编号', getValue: row => row.code || '--', width: 132 },
+      customer: { label: '客户/货主', getValue: row => row.customer || '--', width: 156 },
+      warehouse: { label: '仓库', getValue: row => row.warehouse || '--', width: 140 },
+      tag: { label: report => report.tagHeader || '主题标签', getValue: row => `<span class="badge ${tagClass(row.tag)}">${row.tag}</span>`, html: true, width: 126 },
+      value: { label: report => report.valueHeader || '关键值', getValue: row => row.value || '--', align: 'right', width: 140 },
+      time: { label: '更新时间', getValue: row => row.time || '--', width: 168 },
+      status: { label: '状态', getValue: row => `<span class="badge ${statusClass(row.status)}">${row.status}</span>`, html: true, width: 112 }
+    };
+    const TIMELINESS_TABLE_BASE_FIELDS = [
+      { key: 'date', label: '统计日期', width: 132 },
+      { key: 'orderCount', label: '当日订单数', align: 'right', width: 116 },
+      { key: 'avgTotalDuration', label: '平均全链路时效', align: 'right', width: 156 },
+      { key: 'bottleneckNode', label: '当日主卡点', width: 140 }
+    ];
     const ANCHOR_DATE = new Date('2026-03-18T00:00:00');
 
     const charts = { trend: null, structure: null, warehouseMix: null, statusSignal: null };
@@ -90,6 +108,14 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         requestId: 0,
         reportCollapsed: false,
         evidenceModalOpen: false
+      },
+      columnConfig: {
+        modalOpen: false,
+        draftFields: [],
+        profileKey: '',
+        savedProfiles: {},
+        draggingKey: '',
+        dragOverKey: ''
       },
       timeliness: {
         detailOpen: false,
@@ -668,6 +694,241 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     function getCurrentTimelinessBusinessType(selectedTypes = state.filters.businessTypes) {
       return getActiveBusinessTypes(selectedTypes, 'timeliness')[0] || TIMELINESS_BUSINESS_TYPE_OPTIONS[0];
     }
+    function getGenericTableFields(report = reportDefinitions[state.currentReport]) {
+      return GENERIC_TABLE_FIELD_ORDER.map(key => {
+        const field = GENERIC_TABLE_FIELD_DEFINITIONS[key];
+        return {
+          key,
+          label: typeof field.label === 'function' ? field.label(report) : field.label,
+          align: field.align || '',
+          html: Boolean(field.html),
+          width: field.width || 132
+        };
+      });
+    }
+    function getTimelinessTableFields(selectedBusinessTypes = getActiveBusinessTypes()) {
+      const businessType = getCurrentTimelinessBusinessType(selectedBusinessTypes);
+      const nodeFields = (TIMELINESS_NODE_CONFIG[businessType] || []).map(node => ({
+        key: `node:${node.name}`,
+        label: node.name,
+        align: 'right',
+        width: 170,
+        benchmarkSeconds: node.baseTime
+      }));
+      return [...TIMELINESS_TABLE_BASE_FIELDS.map(field => ({ ...field })), ...nodeFields];
+    }
+    function getAvailableTableFields(reportKey = state.currentReport, selectedBusinessTypes = getActiveBusinessTypes()) {
+      const report = reportDefinitions[reportKey];
+      if (reportKey === 'order') {
+        return getOrderVisibleFields(selectedBusinessTypes).map(key => ({
+          key,
+          label: ORDER_FIELD_DEFINITIONS[key].label,
+          align: ORDER_FIELD_DEFINITIONS[key].align || '',
+          width: ORDER_FIELD_DEFINITIONS[key].width || 132
+        }));
+      }
+      if (reportKey === 'timeliness') {
+        return getTimelinessTableFields(selectedBusinessTypes);
+      }
+      return getGenericTableFields(report);
+    }
+    function getTableProfileKey(reportKey = state.currentReport, selectedBusinessTypes = getActiveBusinessTypes()) {
+      return reportKey === 'timeliness'
+        ? `${reportKey}:${getCurrentTimelinessBusinessType(selectedBusinessTypes)}`
+        : reportKey;
+    }
+    function normalizeConfiguredFields(availableFields, savedProfile = null) {
+      const fieldMap = new Map(availableFields.map(field => [field.key, field]));
+      const validKeys = availableFields.map(field => field.key);
+      const order = Array.isArray(savedProfile?.order)
+        ? savedProfile.order.filter(key => fieldMap.has(key))
+        : [];
+      validKeys.forEach(key => {
+        if (!order.includes(key)) order.push(key);
+      });
+      const hiddenSet = new Set(Array.isArray(savedProfile?.hidden) ? savedProfile.hidden.filter(key => fieldMap.has(key)) : []);
+      const pinnedKeys = Array.isArray(savedProfile?.pinned) ? savedProfile.pinned.filter(key => fieldMap.has(key)) : [];
+      let pinnedCount = 0;
+      return order.map(key => {
+        const visible = !hiddenSet.has(key);
+        const pinned = visible && pinnedKeys.includes(key) && pinnedCount < MAX_PINNED_COLUMNS;
+        if (pinned) pinnedCount += 1;
+        return { ...fieldMap.get(key), visible, pinned };
+      });
+    }
+    function getConfiguredTableFields(reportKey = state.currentReport, selectedBusinessTypes = getActiveBusinessTypes()) {
+      const availableFields = getAvailableTableFields(reportKey, selectedBusinessTypes);
+      const profileKey = getTableProfileKey(reportKey, selectedBusinessTypes);
+      return normalizeConfiguredFields(availableFields, state.columnConfig.savedProfiles[profileKey]);
+    }
+    function getVisibleConfiguredTableFields(reportKey = state.currentReport, selectedBusinessTypes = getActiveBusinessTypes()) {
+      return getConfiguredTableFields(reportKey, selectedBusinessTypes).filter(field => field.visible);
+    }
+    function persistColumnConfig(profileKey, fields) {
+      state.columnConfig.savedProfiles[profileKey] = {
+        order: fields.map(field => field.key),
+        hidden: fields.filter(field => !field.visible).map(field => field.key),
+        pinned: fields.filter(field => field.visible && field.pinned).map(field => field.key)
+      };
+    }
+    function openColumnConfigModal() {
+      const selectedBusinessTypes = getActiveBusinessTypes();
+      state.columnConfig.profileKey = getTableProfileKey(state.currentReport, selectedBusinessTypes);
+      state.columnConfig.draftFields = getConfiguredTableFields(state.currentReport, selectedBusinessTypes).map(field => ({ ...field }));
+      state.columnConfig.draggingKey = '';
+      state.columnConfig.dragOverKey = '';
+      state.columnConfig.modalOpen = true;
+      renderColumnConfigModal();
+    }
+    function closeColumnConfigModal() {
+      state.columnConfig.modalOpen = false;
+      state.columnConfig.draftFields = [];
+      state.columnConfig.profileKey = '';
+      state.columnConfig.draggingKey = '';
+      state.columnConfig.dragOverKey = '';
+      renderColumnConfigModal();
+    }
+    function resetColumnConfigDraft() {
+      const selectedBusinessTypes = getActiveBusinessTypes();
+      state.columnConfig.draftFields = normalizeConfiguredFields(getAvailableTableFields(state.currentReport, selectedBusinessTypes)).map(field => ({ ...field }));
+      state.columnConfig.draggingKey = '';
+      state.columnConfig.dragOverKey = '';
+      renderColumnConfigModal();
+    }
+    function setDraftFieldVisible(fieldKey, visible) {
+      state.columnConfig.draftFields = state.columnConfig.draftFields.map(field => field.key === fieldKey ? { ...field, visible, pinned: visible ? field.pinned : false } : field);
+      renderColumnConfigModal();
+    }
+    function removeDraftField(fieldKey) {
+      setDraftFieldVisible(fieldKey, false);
+    }
+    function moveDraftFieldToTop(fieldKey) {
+      const currentIndex = state.columnConfig.draftFields.findIndex(field => field.key === fieldKey);
+      if (currentIndex <= 0) return;
+      const nextFields = [...state.columnConfig.draftFields];
+      const [movedField] = nextFields.splice(currentIndex, 1);
+      nextFields.unshift(movedField);
+      state.columnConfig.draftFields = nextFields;
+      renderColumnConfigModal();
+    }
+    function toggleDraftFieldPinned(fieldKey) {
+      const visiblePinnedCount = state.columnConfig.draftFields.filter(field => field.visible && field.pinned).length;
+      state.columnConfig.draftFields = state.columnConfig.draftFields.map(field => {
+        if (field.key !== fieldKey) return field;
+        if (!field.visible) return field;
+        if (field.pinned) {
+          return { ...field, pinned: false };
+        }
+        if (visiblePinnedCount >= MAX_PINNED_COLUMNS) {
+          showToast(`最多可固定${MAX_PINNED_COLUMNS}列`, 'warning');
+          return field;
+        }
+        return { ...field, pinned: true };
+      });
+      renderColumnConfigModal();
+    }
+    function clearDraftPinnedFields() {
+      state.columnConfig.draftFields = state.columnConfig.draftFields.map(field => ({ ...field, pinned: false }));
+      renderColumnConfigModal();
+    }
+    function reorderDraftField(dragKey, targetKey) {
+      if (!dragKey || !targetKey || dragKey === targetKey) return;
+      const nextFields = [...state.columnConfig.draftFields];
+      const dragIndex = nextFields.findIndex(field => field.key === dragKey);
+      const targetIndex = nextFields.findIndex(field => field.key === targetKey);
+      if (dragIndex < 0 || targetIndex < 0) return;
+      const [dragField] = nextFields.splice(dragIndex, 1);
+      const insertIndex = nextFields.findIndex(field => field.key === targetKey);
+      nextFields.splice(insertIndex, 0, dragField);
+      state.columnConfig.draftFields = nextFields;
+      renderColumnConfigModal();
+    }
+    function getPinnedFieldLayout(fields) {
+      const layout = {};
+      const pinnedFields = fields.filter(field => field.visible !== false && field.pinned);
+      const lastPinnedKey = pinnedFields[pinnedFields.length - 1]?.key || '';
+      let leftOffset = 0;
+      fields.forEach(field => {
+        const width = field.width || 132;
+        const pinned = Boolean(field.pinned);
+        layout[field.key] = {
+          width,
+          pinned,
+          left: pinned ? leftOffset : 0,
+          lastPinned: pinned && field.key === lastPinnedKey
+        };
+        if (pinned) leftOffset += width;
+      });
+      return layout;
+    }
+    function buildTableCellAttrs(field, layout, cellType = 'td') {
+      const meta = layout[field.key] || { width: field.width || 132, pinned: false, left: 0, lastPinned: false };
+      const classNames = [];
+      if (field.align === 'right') classNames.push('cell-right');
+      if (meta.pinned) {
+        classNames.push('table-pin-cell');
+        classNames.push(cellType === 'th' ? 'table-pin-head' : 'table-pin-body');
+        if (meta.lastPinned) classNames.push('table-pin-last');
+      }
+      const styles = [`min-width:${meta.width}px`, `width:${meta.width}px`];
+      if (meta.pinned) styles.push(`left:${meta.left}px`);
+      return {
+        className: classNames.join(' '),
+        styleText: styles.join(';')
+      };
+    }
+    function moveDraftField(fieldKey, direction) {
+      const visibleKeys = state.columnConfig.draftFields.filter(field => field.visible).map(field => field.key);
+      const currentVisibleIndex = visibleKeys.indexOf(fieldKey);
+      if (currentVisibleIndex < 0) return;
+      const targetVisibleKey = direction === 'up'
+        ? visibleKeys[currentVisibleIndex - 1]
+        : visibleKeys[currentVisibleIndex + 1];
+      if (!targetVisibleKey) return;
+      const nextFields = [...state.columnConfig.draftFields];
+      const currentIndex = nextFields.findIndex(field => field.key === fieldKey);
+      const targetIndex = nextFields.findIndex(field => field.key === targetVisibleKey);
+      const [movedField] = nextFields.splice(currentIndex, 1);
+      const insertIndex = direction === 'up'
+        ? nextFields.findIndex(field => field.key === targetVisibleKey)
+        : nextFields.findIndex(field => field.key === targetVisibleKey) + 1;
+      nextFields.splice(insertIndex, 0, movedField);
+      state.columnConfig.draftFields = nextFields;
+      renderColumnConfigModal();
+    }
+    function saveColumnConfigDraft() {
+      const visibleCount = state.columnConfig.draftFields.filter(field => field.visible).length;
+      if (!visibleCount) {
+        showToast('请至少保留1个列表字段', 'warning');
+        return;
+      }
+      persistColumnConfig(state.columnConfig.profileKey, state.columnConfig.draftFields);
+      closeColumnConfigModal();
+      renderTable();
+      showToast('列表字段配置已保存');
+    }
+    function renderColumnConfigModal() {
+      const modal = document.getElementById('columnConfigModal');
+      if (!modal) return;
+      if (!state.columnConfig.modalOpen) {
+        modal.classList.add('hidden');
+        return;
+      }
+      const draftFields = state.columnConfig.draftFields || [];
+      const visibleFields = draftFields.filter(field => field.visible);
+      const pinnedCount = visibleFields.filter(field => field.pinned).length;
+      const report = reportDefinitions[state.currentReport];
+      document.getElementById('columnConfigTitle').textContent = '列表设置';
+      document.getElementById('columnConfigScope').textContent = `${report.title.replace('统计报表', '明细列表')}当前共${draftFields.length}个可配置字段，支持显隐、顺序与固定列设置。`;
+      document.getElementById('columnConfigFieldCount').textContent = `系统字段(${visibleFields.length}/${draftFields.length})`;
+      document.getElementById('columnConfigFieldList').innerHTML = draftFields.map(field => `<label class="column-field-option"><input type="checkbox" data-column-toggle="${field.key}" ${field.visible ? 'checked' : ''}><span>${field.label}</span></label>`).join('');
+      document.getElementById('columnConfigPinCount').textContent = `最多可固定${MAX_PINNED_COLUMNS}列`;
+      document.getElementById('columnConfigPinnedHint').textContent = `已固定${pinnedCount}列`;
+      document.getElementById('columnConfigSelectedList').innerHTML = visibleFields.length
+        ? visibleFields.map((field, index) => `<div class="column-order-item ${field.pinned ? 'is-pinned' : ''} ${state.columnConfig.draggingKey === field.key ? 'is-dragging' : ''} ${state.columnConfig.dragOverKey === field.key ? 'is-drag-over' : ''}" draggable="true" data-column-drag-key="${field.key}"><span class="column-order-handle" title="拖动调整顺序"><i class="ri-draggable"></i></span><span class="column-order-label">${field.label}</span><button type="button" class="column-order-btn" data-column-remove="${field.key}" aria-label="删除${field.label}"><i class="ri-close-line"></i></button><button type="button" class="column-order-btn" data-column-top="${field.key}" ${index === 0 ? 'disabled' : ''} aria-label="置顶${field.label}"><i class="ri-arrow-up-line"></i></button><button type="button" class="column-order-btn ${field.pinned ? 'is-active' : ''}" data-column-pin="${field.key}" aria-label="${field.pinned ? '取消固定' : '固定'}${field.label}"><i class="${field.pinned ? 'ri-pushpin-2-fill' : 'ri-pushpin-2-line'}"></i></button></div>`).join('')
+        : '<div class="column-order-empty">暂无已选字段，请至少保留1个字段用于列表展示。</div>';
+      modal.classList.remove('hidden');
+    }
     function buildTimelinessNodeSummary(rows, businessType = getCurrentTimelinessBusinessType()) {
       const nodes = TIMELINESS_NODE_CONFIG[businessType] || [];
       return nodes.map((node, index) => {
@@ -884,7 +1145,8 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     function renderReportMenu() {
       document.getElementById('reportMenu').innerHTML = REPORT_ORDER.map((key, index) => {
         const report = reportDefinitions[key];
-        return `<button type="button" class="menu-item ${state.currentReport === key ? 'active' : ''}" data-report="${key}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span class="menu-label">${report.tabLabel}</span><span class="menu-note">（${report.focus}）</span></span></button>`;
+        const starred = STARRED_REPORTS.has(key);
+        return `<button type="button" class="menu-item ${state.currentReport === key ? 'active' : ''}" data-report="${key}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span class="menu-label">${report.tabLabel}报表</span></span><span class="menu-star ${starred ? 'is-active' : ''}" aria-hidden="true"><i class="${starred ? 'ri-star-fill' : 'ri-star-line'}"></i></span></button>`;
       }).join('');
     }
     function renderFilters() {
@@ -904,8 +1166,6 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       document.getElementById('customer').value = state.filters.customer;
       document.getElementById('filterA').value = state.filters.filterA;
       document.getElementById('filterB').value = state.filters.filterB;
-      document.getElementById('keywordInput').value = state.filters.keyword;
-      document.getElementById('keywordInput').placeholder = isTimelinessReport ? '搜索订单号/货主/仓库/卡点节点' : '搜索编号/客户/仓库/业务类型';
       syncHeaderWarehouseSelection(state.filters.selectedWarehouses);
       syncBusinessTypeSelection(state.filters.businessTypes);
       if (isTimelinessReport) refreshTimelinessNodeFilterOptions(state.filters.businessTypes);
@@ -1090,7 +1350,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       state.filters.customer = document.getElementById('customer').value;
       state.filters.filterA = document.getElementById('filterA').value;
       state.filters.filterB = document.getElementById('filterB').value;
-      state.filters.keyword = document.getElementById('keywordInput').value.trim();
+      state.filters.keyword = '';
       const selectedBusinessTypes = getSelectedBusinessTypes();
       if (!selectedBusinessTypes.length) {
         showToast('请至少选择1个业务类型', 'warning');
@@ -1131,33 +1391,41 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         return matchDate && matchWarehouse && matchBusinessType && matchCustomer && matchTag && matchStatus && matchKeyword;
       });
     }
-    function renderDefaultTableHeader() {
-      document.getElementById('tableHead').innerHTML = `<tr><th>编号</th><th>客户/货主</th><th>仓库</th><th>主题标签</th><th class="cell-right">关键值</th><th>更新时间</th><th>状态</th></tr>`;
-      document.getElementById('detailTable').style.minWidth = '980px';
-    }
     function renderOrderTableHeader(fields) {
-      document.getElementById('tableHead').innerHTML = `<tr>${fields.map(fieldKey => {
-        const field = ORDER_FIELD_DEFINITIONS[fieldKey];
-        return `<th class="${field.align === 'right' ? 'cell-right' : ''}">${field.label}</th>`;
+      const layout = getPinnedFieldLayout(fields);
+      document.getElementById('tableHead').innerHTML = `<tr>${fields.map(field => {
+        const attrs = buildTableCellAttrs(field, layout, 'th');
+        return `<th class="${attrs.className}" style="${attrs.styleText}">${field.label}</th>`;
       }).join('')}</tr>`;
-      document.getElementById('detailTable').style.minWidth = `${Math.max(980, fields.length * 128)}px`;
+      document.getElementById('detailTable').style.minWidth = `${Math.max(980, fields.reduce((sum, field) => sum + (field.width || 132), 0))}px`;
     }
-    function renderOrderTable(pageRows, selectedBusinessTypes) {
-      const fields = getOrderVisibleFields(selectedBusinessTypes);
+    function renderOrderTable(pageRows, fields) {
+      const layout = getPinnedFieldLayout(fields);
       renderOrderTableHeader(fields);
-      document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map(row => `<tr>${fields.map(fieldKey => {
-        const field = ORDER_FIELD_DEFINITIONS[fieldKey];
-        const content = field.getValue(row);
-        return `<td class="${field.align === 'right' ? 'cell-right' : ''}">${field.html ? content : content ?? '--'}</td>`;
+      document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map(row => `<tr>${fields.map(field => {
+        const definition = ORDER_FIELD_DEFINITIONS[field.key];
+        const content = definition.getValue(row);
+        const attrs = buildTableCellAttrs(field, layout, 'td');
+        return `<td class="${attrs.className}" style="${attrs.styleText}">${definition.html ? content : content ?? '--'}</td>`;
       }).join('')}</tr>`).join('') : `<tr class="empty-row"><td colspan="${fields.length}">暂无匹配数据，请调整查询条件后重试</td></tr>`;
     }
-    function renderGenericTable(pageRows) {
-      renderDefaultTableHeader();
-      document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map(row => `<tr><td>${row.code}</td><td>${row.customer}</td><td>${row.warehouse}</td><td><span class="badge ${tagClass(row.tag)}">${row.tag}</span></td><td class="cell-right">${row.value}</td><td>${row.time}</td><td><span class="badge ${statusClass(row.status)}">${row.status}</span></td></tr>`).join('') : `<tr class="empty-row"><td colspan="7">暂无匹配数据，请调整查询条件后重试</td></tr>`;
+    function renderGenericTable(pageRows, fields, report) {
+      const layout = getPinnedFieldLayout(fields);
+      document.getElementById('tableHead').innerHTML = `<tr>${fields.map(field => {
+        const attrs = buildTableCellAttrs(field, layout, 'th');
+        return `<th class="${attrs.className}" style="${attrs.styleText}">${field.label}</th>`;
+      }).join('')}</tr>`;
+      document.getElementById('detailTable').style.minWidth = `${Math.max(980, fields.reduce((sum, field) => sum + (field.width || 142), 0))}px`;
+      document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map(row => `<tr>${fields.map(field => {
+        const definition = GENERIC_TABLE_FIELD_DEFINITIONS[field.key];
+        const content = definition.getValue(row, report);
+        const attrs = buildTableCellAttrs(field, layout, 'td');
+        return `<td class="${attrs.className}" style="${attrs.styleText}">${definition.html ? content : content ?? '--'}</td>`;
+      }).join('')}</tr>`).join('') : `<tr class="empty-row"><td colspan="${fields.length}">暂无匹配数据，请调整查询条件后重试</td></tr>`;
     }
     function renderTimelinessTable(filteredRows, selectedBusinessTypes, report) {
       const businessType = getCurrentTimelinessBusinessType(selectedBusinessTypes);
-      const nodes = TIMELINESS_NODE_CONFIG[businessType] || [];
+      const fields = getVisibleConfiguredTableFields('timeliness', selectedBusinessTypes);
       const dailyRows = buildTimelinessDailyRows(filteredRows, businessType);
       const maxPage = Math.max(1, Math.ceil(dailyRows.length / state.pagination.pageSize));
       if (state.pagination.currentPage > maxPage) state.pagination.currentPage = maxPage;
@@ -1174,30 +1442,31 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         `关注节点:${state.filters.filterA || '全部关注节点'}`
       ].map(text => `<span class="toolbar-tag">${text}</span>`).join('');
 
-      document.getElementById('tableHead').innerHTML = `<tr>
-        <th>统计日期</th>
-        <th class="cell-right">当日订单数</th>
-        <th class="cell-right">平均全链路时效</th>
-        <th>当日主卡点</th>
-        ${nodes.map(node => `<th class="cell-right">${node.name}<div class="timeliness-metric-sub" style="margin-top:4px;">基线${formatDuration(node.baseTime)}</div></th>`).join('')}
-      </tr>`;
-      document.getElementById('detailTable').style.minWidth = `${Math.max(1320, 520 + nodes.length * 170)}px`;
-      document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map(row => `<tr>
-        <td>${row.date}</td>
-        <td class="cell-right">${formatNumber(row.orderCount)}</td>
-        <td class="cell-right">${row.orderCount ? formatDuration(row.avgTotalDurationSeconds) : '--'}</td>
-        <td>${row.bottleneckNode}</td>
-        ${nodes.map(node => {
-          const nodeStat = row.nodeStats[node.name];
-          const isFocused = state.filters.filterA === node.name;
-          return `<td class="cell-right ${isFocused ? 'bg-[#f4f8ff]' : ''}">
-            <button type="button" class="timeliness-metric-btn" data-timeliness-node-trigger="${node.name}" data-timeliness-date-trigger="${row.date}" ${nodeStat?.sampleCount ? '' : 'disabled'}>
-              <span class="timeliness-metric-main">${nodeStat?.sampleCount ? formatDuration(nodeStat.avgDurationSeconds) : '--'}</span>
-              <span class="timeliness-metric-sub">${nodeStat?.sampleCount ? `样本${nodeStat.sampleCount}单` : '无样本'}</span>
-            </button>
-          </td>`;
-        }).join('')}
-      </tr>`).join('') : `<tr class="empty-row"><td colspan="${4 + nodes.length}">暂无匹配数据，请调整查询条件后重试</td></tr>`;
+      const layout = getPinnedFieldLayout(fields);
+      document.getElementById('tableHead').innerHTML = `<tr>${fields.map(field => {
+        const attrs = buildTableCellAttrs(field, layout, 'th');
+        const content = field.key.startsWith('node:')
+          ? `${field.label}<div class="timeliness-metric-sub" style="margin-top:4px;">基线${formatDuration(field.benchmarkSeconds)}</div>`
+          : field.label;
+        return `<th class="${attrs.className}" style="${attrs.styleText}">${content}</th>`;
+      }).join('')}</tr>`;
+      document.getElementById('detailTable').style.minWidth = `${Math.max(980, fields.reduce((sum, field) => sum + (field.width || 148), 0))}px`;
+      document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map(row => `<tr>${fields.map(field => {
+        const attrs = buildTableCellAttrs(field, layout, 'td');
+        if (field.key === 'date') return `<td class="${attrs.className}" style="${attrs.styleText}">${row.date}</td>`;
+        if (field.key === 'orderCount') return `<td class="${attrs.className}" style="${attrs.styleText}">${formatNumber(row.orderCount)}</td>`;
+        if (field.key === 'avgTotalDuration') return `<td class="${attrs.className}" style="${attrs.styleText}">${row.orderCount ? formatDuration(row.avgTotalDurationSeconds) : '--'}</td>`;
+        if (field.key === 'bottleneckNode') return `<td class="${attrs.className}" style="${attrs.styleText}">${row.bottleneckNode}</td>`;
+        const nodeName = field.key.replace('node:', '');
+        const nodeStat = row.nodeStats[nodeName];
+        const isFocused = state.filters.filterA === nodeName;
+        return `<td class="${attrs.className} ${isFocused ? 'bg-[#f4f8ff]' : ''}" style="${attrs.styleText}">
+          <button type="button" class="timeliness-metric-btn" data-timeliness-node-trigger="${nodeName}" data-timeliness-date-trigger="${row.date}" ${nodeStat?.sampleCount ? '' : 'disabled'}>
+            <span class="timeliness-metric-main">${nodeStat?.sampleCount ? formatDuration(nodeStat.avgDurationSeconds) : '--'}</span>
+            <span class="timeliness-metric-sub">${nodeStat?.sampleCount ? `样本${nodeStat.sampleCount}单` : '无样本'}</span>
+          </button>
+        </td>`;
+      }).join('')}</tr>`).join('') : `<tr class="empty-row"><td colspan="${fields.length}">暂无匹配数据，请调整查询条件后重试</td></tr>`;
       renderPagination(dailyRows.length);
       return {
         total: dailyRows.length,
@@ -1301,10 +1570,11 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         if (state.pagination.currentPage > maxPage) state.pagination.currentPage = maxPage;
         const start = (state.pagination.currentPage - 1) * state.pagination.pageSize;
         const pageRows = filteredRows.slice(start, start + state.pagination.pageSize);
+        const visibleFields = getVisibleConfiguredTableFields(state.currentReport, selectedBusinessTypes);
         document.getElementById('tableTitle').textContent = report.title.replace('报表', '明细');
         document.getElementById('tableToolbar').innerHTML = [...report.toolbar, `当前仓库:${selectedWarehouses.length === COMMON_WAREHOUSES.length ? '全部仓库' : selectedWarehouses.join('、')}`, `业务类型:${selectedBusinessTypes.length === availableBusinessTypes.length ? '全部业务类型' : selectedBusinessTypes.join('、')}`].map(text => `<span class="toolbar-tag">${text}</span>`).join('');
-        if (state.currentReport === 'order') renderOrderTable(pageRows, selectedBusinessTypes);
-        else renderGenericTable(pageRows);
+        if (state.currentReport === 'order') renderOrderTable(pageRows, visibleFields);
+        else renderGenericTable(pageRows, visibleFields, report);
         renderPagination(filteredRows.length);
         startIndex = filteredRows.length ? start + 1 : 0;
         endIndex = filteredRows.length ? Math.min(start + state.pagination.pageSize, filteredRows.length) : 0;
@@ -1927,7 +2197,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       }
       content.innerHTML = `<div class="ai-placeholder">${state.ai.message}</div>`;
     }
-    function renderAll() { renderReportMenu(); renderFilters(); renderStats(); renderTimelinessOverview(); renderTable(); renderAiAnalysis(); renderTimelinessDetailModal(); }
+    function renderAll() { renderReportMenu(); renderFilters(); renderStats(); renderTimelinessOverview(); renderTable(); renderAiAnalysis(); renderTimelinessDetailModal(); renderColumnConfigModal(); }
     function setQuickRange(days) {
       const endDate = new Date(ANCHOR_DATE);
       const startDate = new Date(ANCHOR_DATE);
@@ -1952,6 +2222,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         selectedWarehouses: [...COMMON_WAREHOUSES]
       };
       state.pagination.currentPage = 1;
+      if (state.columnConfig.modalOpen) closeColumnConfigModal();
       closeTimelinessDetailModal();
       resetAiAnalysis('idle', '已恢复默认查询条件，点击生成AI分析可输出新的区间结论和优先关注事项。');
       renderAll();
@@ -1965,6 +2236,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       state.filters.filterB = '';
       state.filters.keyword = '';
       state.pagination.currentPage = 1;
+      if (state.columnConfig.modalOpen) closeColumnConfigModal();
       closeTimelinessDetailModal();
       resetAiAnalysis('idle', `已切换到${reportDefinitions[reportKey].title}，请重新生成区间分析。`);
       renderAll();
@@ -2045,7 +2317,18 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         showToast(`正在导出，共${total}条数据`, 'warning');
       });
       document.getElementById('subscribeBtn').addEventListener('click', () => { showToast('已订阅当前报表日报'); });
+      document.getElementById('columnConfigBtn').addEventListener('click', openColumnConfigModal);
       document.getElementById('aiAnalyzeBtn').addEventListener('click', triggerAiAnalysis);
+      document.getElementById('closeColumnConfigBtn').addEventListener('click', closeColumnConfigModal);
+      document.getElementById('cancelColumnConfigBtn').addEventListener('click', closeColumnConfigModal);
+      document.getElementById('saveColumnConfigBtn').addEventListener('click', saveColumnConfigDraft);
+      document.getElementById('resetColumnConfigBtn').addEventListener('click', resetColumnConfigDraft);
+      document.getElementById('columnConfigSelectAllBtn').addEventListener('click', () => {
+        state.columnConfig.draftFields = state.columnConfig.draftFields.map(field => ({ ...field, visible: true }));
+        renderColumnConfigModal();
+      });
+      document.getElementById('clearPinnedFieldsBtn').addEventListener('click', clearDraftPinnedFields);
+      document.getElementById('columnConfigBackdrop').addEventListener('click', closeColumnConfigModal);
       document.getElementById('toggleAiCollapseBtn').addEventListener('click', () => {
         if (!(state.ai.status === 'ready' && state.ai.result)) return;
         state.ai.reportCollapsed = !state.ai.reportCollapsed;
@@ -2070,7 +2353,6 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         if (state.pagination.currentPage < totalPages) { state.pagination.currentPage += 1; renderTable(); }
       });
       document.getElementById('pageSize').addEventListener('change', event => { state.pagination.pageSize = Number(event.target.value); state.pagination.currentPage = 1; renderTable(); });
-      document.getElementById('keywordInput').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); document.getElementById('queryBtn').click(); } });
       document.querySelectorAll('.quick-range').forEach(button => { button.addEventListener('click', () => setQuickRange(Number(button.dataset.days))); });
       document.getElementById('businessTypeBtn').addEventListener('click', event => {
         event.stopPropagation();
@@ -2087,6 +2369,11 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         syncBusinessTypeSelection(checked ? [...getReportBusinessTypeOptions(state.currentReport)] : []);
       });
       document.addEventListener('change', event => {
+        const columnToggle = event.target.closest('[data-column-toggle]');
+        if (columnToggle) {
+          setDraftFieldVisible(columnToggle.dataset.columnToggle, columnToggle.checked);
+          return;
+        }
         if (event.target.classList.contains('business-type-checkbox')) {
           if (isSingleBusinessTypeReport(state.currentReport)) {
             document.querySelectorAll('.business-type-checkbox').forEach(checkbox => {
@@ -2129,6 +2416,26 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       document.getElementById('menuToggle').addEventListener('click', () => { document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.remove('hidden'); });
       document.getElementById('sidebarOverlay').addEventListener('click', () => { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('sidebarOverlay').classList.add('hidden'); });
       document.addEventListener('click', event => {
+        const columnRemoveTrigger = event.target.closest('[data-column-remove]');
+        if (columnRemoveTrigger) {
+          removeDraftField(columnRemoveTrigger.dataset.columnRemove);
+          return;
+        }
+        const columnTopTrigger = event.target.closest('[data-column-top]');
+        if (columnTopTrigger) {
+          moveDraftFieldToTop(columnTopTrigger.dataset.columnTop);
+          return;
+        }
+        const columnPinTrigger = event.target.closest('[data-column-pin]');
+        if (columnPinTrigger) {
+          toggleDraftFieldPinned(columnPinTrigger.dataset.columnPin);
+          return;
+        }
+        const columnMoveTrigger = event.target.closest('[data-column-move]');
+        if (columnMoveTrigger) {
+          moveDraftField(columnMoveTrigger.dataset.columnKey, columnMoveTrigger.dataset.columnMove);
+          return;
+        }
         const moreEvidenceTrigger = event.target.closest('#moreAiEvidenceBtn');
         if (moreEvidenceTrigger) {
           if (!(state.ai.status === 'ready' && state.ai.result)) return;
@@ -2141,6 +2448,10 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       });
       document.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
+          if (state.columnConfig.modalOpen) {
+            closeColumnConfigModal();
+            return;
+          }
           if (state.timeliness.detailOpen) {
             closeTimelinessDetailModal();
           }
@@ -2151,6 +2462,33 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
           closeBusinessTypeDropdown();
           if (window.innerWidth < 768) { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('sidebarOverlay').classList.add('hidden'); }
         }
+      });
+      document.addEventListener('dragstart', event => {
+        const row = event.target.closest('[data-column-drag-key]');
+        if (!row) return;
+        state.columnConfig.draggingKey = row.dataset.columnDragKey;
+        state.columnConfig.dragOverKey = '';
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', state.columnConfig.draggingKey);
+      });
+      document.addEventListener('dragover', event => {
+        const row = event.target.closest('[data-column-drag-key]');
+        if (!row || !state.columnConfig.draggingKey) return;
+        event.preventDefault();
+        state.columnConfig.dragOverKey = row.dataset.columnDragKey;
+      });
+      document.addEventListener('drop', event => {
+        const row = event.target.closest('[data-column-drag-key]');
+        if (!row || !state.columnConfig.draggingKey) return;
+        event.preventDefault();
+        reorderDraftField(state.columnConfig.draggingKey, row.dataset.columnDragKey);
+        state.columnConfig.draggingKey = '';
+        state.columnConfig.dragOverKey = '';
+        renderColumnConfigModal();
+      });
+      document.addEventListener('dragend', () => {
+        state.columnConfig.draggingKey = '';
+        state.columnConfig.dragOverKey = '';
       });
       window.addEventListener('resize', () => { if (window.innerWidth >= 768) { document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.add('hidden'); } });
     }
