@@ -88,6 +88,7 @@
     }
   </script>
   <link rel="stylesheet" href="./assets/css/wms-workbench-v2.css">
+  <link rel="stylesheet" href="./assets/css/prd-viewer.css">
 </head>
 <body class="sdms-workbench-page font-sans text-slate-800 min-h-screen relative">
   <div class="app-shell relative z-10">
@@ -96,7 +97,7 @@
     
     <!-- 主内容区 -->
     <div class="page-shell">
-      <div class="header-tabs" data-sdms-header-tabs data-tab-set="overview" data-tab-key="workbench" data-include-tools="true" data-user-name="张三"></div>
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="overview" data-tab-key="workbench" data-include-tools="true" data-include-prd-entry="true" data-prd-entry-text="查看PRD" data-user-name="张三"></div>
 
       <main class="workbench-scroll">
       <!-- 顶部导航 -->
@@ -158,10 +159,6 @@
           </div>
         </div>
         <div class="flex items-center space-x-3">
-          <button class="relative p-2.5 text-slate-600/70 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all">
-            <i class="ri-notification-3-line text-xl"></i>
-            <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-accent-rose rounded-full glow-dot"></span>
-          </button>
           <button id="layoutBtn" class="px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center transition-all">
             <i class="ri-layout-grid-line mr-2 text-accent-cyan"></i> 布局配置
           </button>
@@ -181,39 +178,227 @@
             配置指标
           </button>
         </div>
-        <div id="kpiGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-          <!-- 今日出库量 -->
-          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="outboundQty" style="--accent-color: #3b82f6; --accent-color-light: #60a5fa; animation-delay: 0.1s;">
-            <div class="flex items-start justify-between relative z-10">
-              <div>
-                <p class="text-sm font-medium text-slate-600/60">今日出库量</p>
-                <h3 class="text-3xl font-bold text-slate-800 mt-2 font-mono">1,234</h3>
-                <div class="flex items-center mt-2 text-accent-emerald text-sm">
-                  <i class="ri-arrow-up-line mr-1"></i>
-                  <span class="font-medium">12.5%</span>
-                  <span class="text-slate-600/40 ml-1">较昨日</span>
+        <div id="kpiGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 xl:grid-cols-9 gap-4">
+          <!-- SKU库存卡片 -->
+          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="inboundQty" style="--accent-color: #7d67ff; --accent-color-light: #9381ff; animation-delay: 0.1s;">
+            <div class="relative z-10 h-full">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-[11px] font-medium tracking-wide text-slate-600/50">SKU库存数</p>
+                  <p class="mt-1.5 text-[26px] font-bold text-slate-800 font-mono leading-none">45,678</p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-stat-purple/20 flex items-center justify-center flex-shrink-0">
+                  <i class="ri-stack-line text-2xl text-stat-purpleLight"></i>
                 </div>
               </div>
-              <div class="w-12 h-12 rounded-xl bg-stat-blue/20 flex items-center justify-center">
-                <i class="ri-truck-line text-2xl text-stat-blueLight"></i>
+              <div class="mt-3.5 grid grid-cols-2 gap-2.5">
+                <div>
+                  <p class="text-[11px] font-semibold tracking-[0.12em] text-accent-emerald/80">入库</p>
+                  <div class="mt-1.5 space-y-1">
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">856</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">4,632</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">18,420</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-[11px] font-semibold tracking-[0.12em] text-stat-blueLight/90">出库</p>
+                  <div class="mt-1.5 space-y-1">
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">1,234</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">6,280</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">25,160</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           
-          <!-- 今日入库量 -->
-          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="inboundQty" style="--accent-color: #22c55e; --accent-color-light: #4ade80; animation-delay: 0.15s;">
-            <div class="flex items-start justify-between relative z-10">
-              <div>
-                <p class="text-sm font-medium text-slate-600/60">今日入库量</p>
-                <h3 class="text-3xl font-bold text-slate-800 mt-2 font-mono">856</h3>
-                <div class="flex items-center mt-2 text-accent-emerald text-sm">
-                  <i class="ri-arrow-up-line mr-1"></i>
-                  <span class="font-medium">8.3%</span>
-                  <span class="text-slate-600/40 ml-1">较昨日</span>
+          <!-- 退件库存卡片 -->
+          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="returnInventory" style="--accent-color: #f97316; --accent-color-light: #fb923c; animation-delay: 0.14s;">
+            <div class="relative z-10 h-full">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-[11px] font-medium tracking-wide text-slate-600/50">退件库存数</p>
+                  <p class="mt-1.5 text-[26px] font-bold text-slate-800 font-mono leading-none">6,328</p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+                  <i class="ri-arrow-go-back-line text-2xl text-orange-400"></i>
                 </div>
               </div>
-              <div class="w-12 h-12 rounded-xl bg-stat-green/20 flex items-center justify-center">
-                <i class="ri-inbox-archive-line text-2xl text-stat-greenLight"></i>
+              <div class="mt-3.5 grid grid-cols-2 gap-2.5">
+                <div>
+                  <p class="text-[11px] font-semibold tracking-[0.12em] text-accent-emerald/80">入库</p>
+                  <div class="mt-1.5 space-y-1">
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">128</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">786</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">3,240</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-[11px] font-semibold tracking-[0.12em] text-stat-blueLight/90">出库</p>
+                  <div class="mt-1.5 space-y-1">
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">96</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">512</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">2,180</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 订单数量卡片 -->
+          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="orderQty" style="--accent-color: #0f766e; --accent-color-light: #14b8a6; animation-delay: 0.18s;">
+            <div class="relative z-10 h-full">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-[11px] font-medium tracking-wide text-slate-600/50">今日订单总数</p>
+                  <p class="mt-1 text-[26px] font-bold text-slate-800 font-mono leading-none">193</p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-teal-500/15 flex items-center justify-center flex-shrink-0">
+                  <i class="ri-file-list-3-line text-2xl text-teal-500"></i>
+                </div>
+              </div>
+              <div class="mt-3.5 grid grid-cols-2 gap-2.5">
+                <div>
+                  <p class="text-[11px] font-semibold tracking-[0.12em] text-accent-emerald/80">备货订单</p>
+                  <div class="mt-1.5 space-y-1">
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">156</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">928</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">3,860</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-[11px] font-semibold tracking-[0.12em] text-stat-blueLight/90">重派订单</p>
+                  <div class="mt-1.5 space-y-1">
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">27</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">142</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
+                      <span class="text-[13px] font-semibold text-slate-800 font-mono">628</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 异常订单数卡片 -->
+          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="exceptionOrder" style="--accent-color: #e11d48; --accent-color-light: #fb7185; animation-delay: 0.20s;">
+            <div class="flex items-start justify-between relative z-10">
+              <div>
+                <p class="text-sm font-medium text-slate-600/60">异常订单数</p>
+                <h3 class="text-3xl font-bold text-accent-rose mt-2 font-mono">25</h3>
+                <div class="flex items-center mt-2 text-accent-rose text-sm">
+                  <i class="ri-arrow-up-line mr-1"></i>
+                  <span class="font-medium">3</span>
+                  <span class="text-slate-500 text-xs ml-1">较昨日</span>
+                </div>
+              </div>
+              <div class="w-11 h-11 rounded-xl bg-rose-500/15 flex items-center justify-center flex-shrink-0">
+                <i class="ri-error-warning-line text-2xl text-rose-500"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- 签出订单卡片 -->
+          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="signoutQty" style="--accent-color: #334155; --accent-color-light: #64748b; animation-delay: 0.22s;">
+            <div class="relative z-10 h-full">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-[11px] font-medium tracking-wide text-slate-600/50">签出订单总数</p>
+                  <p class="mt-1.5 text-[26px] font-bold text-slate-800 font-mono leading-none">159</p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-slate-500/15 flex items-center justify-center flex-shrink-0">
+                  <i class="ri-logout-box-r-line text-2xl text-slate-500"></i>
+                </div>
+              </div>
+              <div class="mt-3.5 grid grid-cols-2 gap-x-3 gap-y-2">
+                <div>
+                  <div class="flex items-baseline justify-between gap-3">
+                    <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">未上线</p>
+                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none">23</p>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-baseline justify-between gap-3">
+                    <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">已上线</p>
+                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none">96</p>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-baseline justify-between gap-3">
+                    <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">已拒收</p>
+                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none">12</p>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-baseline justify-between gap-3">
+                    <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">上线异常</p>
+                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none">8</p>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-baseline justify-between gap-3">
+                    <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">停更</p>
+                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none">15</p>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-baseline justify-between gap-3">
+                    <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">丢件</p>
+                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none">5</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -282,22 +467,6 @@
               </div>
               <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
                 <i class="ri-archive-line text-2xl text-emerald-400"></i>
-              </div>
-            </div>
-          </div>
-          <!-- 当前库存 -->
-          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="inventory" style="--accent-color: #a855f7; --accent-color-light: #c084fc; animation-delay: 0.2s;">
-            <div class="flex items-start justify-between relative z-10">
-              <div>
-                <p class="text-sm font-medium text-slate-600/60">当前库存</p>
-                <h3 class="text-3xl font-bold text-slate-800 mt-2 font-mono">45,678</h3>
-                <div class="flex items-center mt-2 text-slate-600/50 text-sm">
-                  <i class="ri-subtract-line mr-1"></i>
-                  <span>持平</span>
-                </div>
-              </div>
-              <div class="w-12 h-12 rounded-xl bg-stat-purple/20 flex items-center justify-center">
-                <i class="ri-stack-line text-2xl text-stat-purpleLight"></i>
               </div>
             </div>
           </div>
@@ -376,7 +545,7 @@
       <div class="px-6 pb-6">
         <div id="dashboardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- 待办任务组件 -->
-          <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="todo" style="animation-delay: 0.4s;">
+          <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="todo" style="animation-delay: 0.4s;">
             <div class="flex items-center justify-between mb-5 drag-handle">
               <h3 class="font-semibold text-slate-800 flex items-center text-lg">
                 <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center mr-3">
@@ -549,7 +718,7 @@
           </div>
           
           <!-- 出库趋势组件 -->
-          <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="trend" style="animation-delay: 0.5s;">
+          <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="trend" style="animation-delay: 0.5s;">
             <div class="module-header mb-5 drag-handle">
               <h3 class="module-header-title font-semibold text-slate-800 text-lg">
                 <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center mr-3">
@@ -876,7 +1045,7 @@
           </div>
           
           <!-- 时效统计流程图组件 -->
-          <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="timeliness" style="animation-delay: 0.7s;">
+          <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="timeliness" style="animation-delay: 0.7s;">
             <div class="module-header mb-4 drag-handle">
               <h3 class="module-header-title font-semibold text-slate-800 text-lg">
                 <div class="w-8 h-8 rounded-lg bg-accent-amber/20 flex items-center justify-center mr-3">
@@ -941,7 +1110,7 @@
           </div>
           
           <!-- 消息通知组件 -->
-          <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-2 animate-slide-up" data-component="message" style="animation-delay: 0.75s;">
+          <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="message" style="animation-delay: 0.75s;">
             <div class="flex items-center justify-between mb-5 drag-handle">
               <h3 class="font-semibold text-slate-800 flex items-center text-lg">
                 <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center mr-3">
@@ -1026,8 +1195,8 @@
             </div>
             <div class="flex items-center space-x-2 ml-10">
               <span class="text-sm text-slate-600/60">宽度:</span>
-              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="1">1列</button>
-              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="2">2列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="2">2列</button>
             </div>
           </div>
           
@@ -1064,8 +1233,8 @@
             </div>
             <div class="flex items-center space-x-2 ml-10">
               <span class="text-sm text-slate-600/60">宽度:</span>
-              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="1">1列</button>
-              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="2">2列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="2">2列</button>
             </div>
           </div>
           
@@ -1083,8 +1252,8 @@
             </div>
             <div class="flex items-center space-x-2 ml-10">
               <span class="text-sm text-slate-600/60">宽度:</span>
-              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="1">1列</button>
-              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="2">2列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="2">2列</button>
             </div>
           </div>
           
@@ -1157,8 +1326,8 @@
             </div>
             <div class="flex items-center space-x-2 ml-10">
               <span class="text-sm text-slate-600/60">宽度:</span>
-              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="1">1列</button>
-              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="2">2列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="2">2列</button>
             </div>
           </div>
           
@@ -1176,8 +1345,8 @@
             </div>
             <div class="flex items-center space-x-2 ml-10">
               <span class="text-sm text-slate-600/60">宽度:</span>
-              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="1">1列</button>
-              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="2">2列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors active" data-width="1">1列</button>
+              <button class="width-btn px-3 py-1.5 text-xs font-medium border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors" data-width="2">2列</button>
             </div>
           </div>
         </div>
@@ -1323,35 +1492,80 @@
         </div>
         <!-- KPI配置列表 -->
         <div id="kpiConfigList" class="space-y-2">
-          <!-- 今日出库量 -->
-          <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="outboundQty">
-            <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
-              <i class="ri-draggable text-lg"></i>
-            </div>
-            <input type="checkbox" data-kpi-checkbox="outboundQty" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
-            <div class="w-8 h-8 rounded-lg bg-stat-blue/20 flex items-center justify-center flex-shrink-0">
-              <i class="ri-truck-line text-stat-blueLight"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-slate-800">今日出库量</p>
-              <p class="text-xs text-slate-600/50">统计今日出库订单数量</p>
-            </div>
-            <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
-          </div>
-          <!-- 今日入库量 -->
+          <!-- SKU库存卡片 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="inboundQty">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
               <i class="ri-draggable text-lg"></i>
             </div>
             <input type="checkbox" data-kpi-checkbox="inboundQty" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
-            <div class="w-8 h-8 rounded-lg bg-stat-green/20 flex items-center justify-center flex-shrink-0">
-              <i class="ri-inbox-archive-line text-stat-greenLight"></i>
+            <div class="w-8 h-8 rounded-lg bg-stat-purple/20 flex items-center justify-center flex-shrink-0">
+              <i class="ri-stack-line text-stat-purpleLight"></i>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-slate-800">今日入库量</p>
-              <p class="text-xs text-slate-600/50">统计今日入库订单数量</p>
+              <p class="text-sm font-medium text-slate-800">SKU库存数</p>
+              <p class="text-xs text-slate-600/50">展示SKU库存、入库、出库的今日/本周/本月数据</p>
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
+          </div>
+          <!-- 退件库存数 -->
+          <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="returnInventory">
+            <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
+              <i class="ri-draggable text-lg"></i>
+            </div>
+            <input type="checkbox" data-kpi-checkbox="returnInventory" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <div class="w-8 h-8 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+              <i class="ri-arrow-go-back-line text-orange-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-800">退件库存数</p>
+              <p class="text-xs text-slate-600/50">展示退件库存、入库、出库的今日/本周/本月数据</p>
+            </div>
+            <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
+          </div>
+          <!-- 订单数量 -->
+          <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="orderQty">
+            <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
+              <i class="ri-draggable text-lg"></i>
+            </div>
+            <input type="checkbox" data-kpi-checkbox="orderQty" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <div class="w-8 h-8 rounded-lg bg-teal-500/15 flex items-center justify-center flex-shrink-0">
+              <i class="ri-file-list-3-line text-teal-500"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-800">订单数量</p>
+              <p class="text-xs text-slate-600/50">展示今日订单总数、异常单量及备货、重派订单的今日/本周/本月数据</p>
+            </div>
+            <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
+          </div>
+          <!-- 签出订单 -->
+          <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="signoutQty">
+            <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
+              <i class="ri-draggable text-lg"></i>
+            </div>
+            <input type="checkbox" data-kpi-checkbox="signoutQty" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <div class="w-8 h-8 rounded-lg bg-slate-500/15 flex items-center justify-center flex-shrink-0">
+              <i class="ri-logout-box-r-line text-slate-500"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-800">签出订单</p>
+              <p class="text-xs text-slate-600/50">展示签出订单总数及6类签出子块数量</p>
+            </div>
+            <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
+          </div>
+          <!-- 异常订单 -->
+          <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="exceptionOrder">
+            <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
+              <i class="ri-draggable text-lg"></i>
+            </div>
+            <input type="checkbox" data-kpi-checkbox="exceptionOrder" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/15 flex items-center justify-center flex-shrink-0">
+              <i class="ri-error-warning-line text-rose-500"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-800">异常订单数</p>
+              <p class="text-xs text-slate-600/50">展示今日异常订单数量及变化趋势</p>
+            </div>
+            <span class="px-2 py-1 text-xs font-medium text-rose-500 bg-rose-500/10 rounded-md">预警</span>
           </div>
           <!-- 出库重量 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="outboundWeight">
@@ -1412,21 +1626,6 @@
               <p class="text-xs text-slate-600/50">统计今日入库货物总件数</p>
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
-          </div>
-          <!-- 当前库存 -->
-          <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="inventory">
-            <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
-              <i class="ri-draggable text-lg"></i>
-            </div>
-            <input type="checkbox" data-kpi-checkbox="inventory" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
-            <div class="w-8 h-8 rounded-lg bg-stat-purple/20 flex items-center justify-center flex-shrink-0">
-              <i class="ri-stack-line text-stat-purpleLight"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-slate-800">当前库存</p>
-              <p class="text-xs text-slate-600/50">当前仓库总库存量</p>
-            </div>
-            <span class="px-2 py-1 text-xs font-medium text-accent-amber bg-accent-amber/10 rounded-md">快照</span>
           </div>
           <!-- 客诉率 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="complaintRate">
@@ -1584,8 +1783,37 @@
     </div>
   </div>
   
+  <aside class="page-prd-viewer" id="pagePrdViewer" aria-hidden="true">
+    <div class="page-prd-head">
+      <div class="page-prd-head-main">
+        <span class="page-prd-badge">PRD</span>
+        <div class="page-prd-head-copy">
+          <div class="page-prd-head-kicker">页面需求文档</div>
+          <div class="page-prd-head-title" id="pagePrdTitle">WMS工作台V2页面PRD</div>
+        </div>
+      </div>
+      <button class="page-prd-close" id="pagePrdClose" type="button" aria-label="关闭PRD阅读器">×</button>
+    </div>
+    <div class="page-prd-toolbar">
+      <div class="page-prd-toolbar-row">
+        <input class="page-prd-search" id="pagePrdSearch" type="text" placeholder="搜索章节/控件名称">
+        <button class="page-prd-tool-btn" id="pagePrdLocateBtn" type="button">控件定位模式</button>
+      </div>
+      <div class="page-prd-toolbar-tip">查看控件说明时，可打开定位模式后点击页面控件，或直接按Alt+点击控件跳转到文档对应位置。</div>
+      <div class="page-prd-current" id="pagePrdCurrent">当前未定位到具体控件</div>
+    </div>
+    <div class="page-prd-body">
+      <aside class="page-prd-toc" id="pagePrdToc"></aside>
+      <div class="page-prd-content" id="pagePrdContent"></div>
+    </div>
+  </aside>
+
   <script src="./assets/js/sdms-header-tabs.js"></script>
   <script src="./assets/js/sdms-sidebar.js"></script>
   <script src="./assets/js/wms-workbench-v2.js"></script>
+  <script>window.PRD_VIEWER_PAGE_KEY = "wms-workbench-v2";</script>
+  <script src="./assets/prd-data/wms-workbench-v2.prd-content.js"></script>
+  <script src="./assets/prd-data/wms-workbench-v2.prd-map.js"></script>
+  <script src="./assets/js/prd-viewer-core.js"></script>
 </body>
 </html>
