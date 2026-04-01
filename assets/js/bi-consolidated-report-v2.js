@@ -63,6 +63,85 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       createdTime: { label: '创建时间', getValue: row => row.time, width: 168 },
       orderSource: { label: '订单来源', getValue: row => row.orderSource, width: 118 }
     };
+    const CUSTOM_REPORT_STORAGE_KEY = 'sdms-bi-custom-reports-v2';
+    const CUSTOM_REPORT_TOPN_OPTIONS = [5, 10, 20, 50];
+    const CUSTOM_REPORT_VIEW_OPTIONS = [{ key: 'table', label: '表格' }, { key: 'bar', label: '条形结构' }];
+    const CUSTOM_REPORT_SCOPE_OPTIONS = [{ key: 'mine', label: '我的报表' }, { key: 'shared', label: '共享报表' }];
+    const CUSTOM_AGG_OPTIONS = {
+      count: '计数',
+      distinct_count: '去重计数',
+      sum: '求和'
+    };
+    const ORDER_SKU_LIBRARY = {
+      干线: [
+        { code: 'GL-A101', name: '智能摄像头模组', unitWeight: 2.6, unitVolume: 0.018 },
+        { code: 'GL-A102', name: '储能电源组件', unitWeight: 5.8, unitVolume: 0.036 },
+        { code: 'GL-A103', name: '显示屏总成', unitWeight: 3.9, unitVolume: 0.024 },
+        { code: 'GL-A104', name: '工业路由器套件', unitWeight: 2.1, unitVolume: 0.015 },
+        { code: 'GL-A105', name: '车载电器主板', unitWeight: 1.8, unitVolume: 0.012 }
+      ],
+      备货: [
+        { code: 'BH-B201', name: '磁吸手机壳', unitWeight: 0.14, unitVolume: 0.0012 },
+        { code: 'BH-B202', name: '桌面充电支架', unitWeight: 0.42, unitVolume: 0.0038 },
+        { code: 'BH-B203', name: '蓝牙耳机套装', unitWeight: 0.28, unitVolume: 0.0021 },
+        { code: 'BH-B204', name: 'USB-C拓展坞', unitWeight: 0.36, unitVolume: 0.0027 },
+        { code: 'BH-B205', name: '便携补光灯', unitWeight: 0.22, unitVolume: 0.0019 },
+        { code: 'BH-B206', name: '无线键盘', unitWeight: 0.64, unitVolume: 0.0042 }
+      ],
+      退件重派: [
+        { code: 'CP-C301', name: '改派面单包', unitWeight: 0.09, unitVolume: 0.0008 },
+        { code: 'CP-C302', name: '退件复检套装', unitWeight: 0.18, unitVolume: 0.0016 },
+        { code: 'CP-C303', name: '重派分拣袋', unitWeight: 0.12, unitVolume: 0.0011 },
+        { code: 'CP-C304', name: '异常件保护箱', unitWeight: 0.55, unitVolume: 0.0048 },
+        { code: 'CP-C305', name: '换标配件包', unitWeight: 0.15, unitVolume: 0.0010 }
+      ]
+    };
+    const CUSTOM_DATASET_DEFINITIONS = {
+      order_header: {
+        code: 'order_header',
+        label: '订单头数据集',
+        sourceReportKey: 'order',
+        grainLabel: '订单头',
+        dimensions: [
+          { key: 'ownerName', label: '客户/货主' },
+          { key: 'warehouse', label: '仓库' },
+          { key: 'businessType', label: '业务类型' },
+          { key: 'currentCountry', label: '现派国家' },
+          { key: 'status', label: '订单状态' },
+          { key: 'orderSource', label: '订单来源' },
+          { key: 'tag', label: '订单阶段' }
+        ],
+        metrics: [
+          { key: 'orderNo', label: '订单号', type: 'id', aggs: ['count', 'distinct_count'] },
+          { key: 'pieceCount', label: '件数', type: 'number', aggs: ['sum'] },
+          { key: 'itemQty', label: '商品数量', type: 'number', aggs: ['sum'] },
+          { key: 'weightValue', label: '重量', type: 'weight', aggs: ['sum'] },
+          { key: 'volumeValue', label: '体积', type: 'volume', aggs: ['sum'] },
+          { key: 'codAmount', label: 'COD金额', type: 'money', aggs: ['sum'] }
+        ]
+      },
+      order_item: {
+        code: 'order_item',
+        label: '订单行数据集',
+        sourceReportKey: 'order',
+        grainLabel: '订单行',
+        dimensions: [
+          { key: 'ownerName', label: '客户/货主' },
+          { key: 'warehouse', label: '仓库' },
+          { key: 'businessType', label: '业务类型' },
+          { key: 'currentCountry', label: '现派国家' },
+          { key: 'status', label: '订单状态' },
+          { key: 'skuCode', label: 'SKU编码' },
+          { key: 'skuName', label: 'SKU名称' }
+        ],
+        metrics: [
+          { key: 'orderNo', label: '订单号', type: 'id', aggs: ['count', 'distinct_count'] },
+          { key: 'skuQty', label: 'SKU数量', type: 'number', aggs: ['sum'] },
+          { key: 'weightValue', label: '重量', type: 'weight', aggs: ['sum'] },
+          { key: 'volumeValue', label: '体积', type: 'volume', aggs: ['sum'] }
+        ]
+      }
+    };
     const GENERIC_TABLE_FIELD_ORDER = ['code', 'customer', 'warehouse', 'tag', 'value', 'time', 'status'];
     const GENERIC_TABLE_FIELD_DEFINITIONS = {
       code: { label: '编号', getValue: row => row.code || '--', width: 132 },
@@ -84,7 +163,9 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     const charts = { trend: null, structure: null, warehouseMix: null, statusSignal: null };
 
     const state = {
+      reportMode: 'official',
       currentReport: 'order',
+      currentCustomReportCode: '',
       filters: {
         startDate: '2026-01-01',
         endDate: '2026-03-18',
@@ -123,6 +204,29 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         detailRows: [],
         detailBusinessType: '',
         detailDate: ''
+      },
+      customReports: {
+        mine: [],
+        shared: []
+      },
+      customBuilder: {
+        open: false,
+        mode: 'create',
+        scope: 'mine',
+        editingCode: '',
+        draft: null,
+        preview: null
+      },
+      customManager: {
+        open: false
+      },
+      customAggregateCache: null,
+      customDrilldown: {
+        open: false,
+        title: '',
+        scope: '',
+        rows: [],
+        columns: []
       }
     };
 
@@ -176,6 +280,129 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     }
     function hashText(text = '') {
       return Array.from(String(text)).reduce((sum, char, index) => (sum + char.charCodeAt(0) * (index + 1)) % 100000, 0);
+    }
+    function cloneFilters(filters = state.filters) {
+      return {
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        customer: filters.customer || '',
+        businessTypes: [...(filters.businessTypes || BUSINESS_TYPE_OPTIONS)],
+        filterA: filters.filterA || '',
+        filterB: filters.filterB || '',
+        keyword: filters.keyword || '',
+        quickDays: filters.quickDays || 90,
+        selectedWarehouses: [...(filters.selectedWarehouses || COMMON_WAREHOUSES)]
+      };
+    }
+    function isCustomReportView() {
+      return state.reportMode === 'custom';
+    }
+    function getCurrentCustomReport() {
+      const allReports = [...state.customReports.mine, ...state.customReports.shared];
+      return allReports.find(item => item.reportCode === state.currentCustomReportCode) || null;
+    }
+    function getBaseReportKey() {
+      return isCustomReportView() ? (getCurrentCustomReport()?.sourceReportKey || 'order') : state.currentReport;
+    }
+    function getCurrentReportTitle() {
+      return isCustomReportView() ? (getCurrentCustomReport()?.reportName || '自定义聚合报表') : reportDefinitions[state.currentReport].title;
+    }
+    function resetFiltersForBaseReport(baseReportKey = getBaseReportKey(), nextFilters = null) {
+      state.filters = nextFilters ? cloneFilters(nextFilters) : {
+        startDate: '2026-01-01',
+        endDate: '2026-03-18',
+        customer: '',
+        businessTypes: isSingleBusinessTypeReport(baseReportKey) ? [TIMELINESS_BUSINESS_TYPE_OPTIONS[0]] : [...getReportBusinessTypeOptions(baseReportKey)],
+        filterA: '',
+        filterB: '',
+        keyword: '',
+        quickDays: 90,
+        selectedWarehouses: [...COMMON_WAREHOUSES]
+      };
+    }
+    function buildOrderSkuLines(row, seed = hashText(row.orderNo || row.code || '')) {
+      const library = ORDER_SKU_LIBRARY[row.businessType] || ORDER_SKU_LIBRARY.备货;
+      const lineCount = Math.min(4, Math.max(2, 2 + (seed % 3)));
+      const totalQty = Math.max(1, row.itemQty || row.pieceCount || 1);
+      const baseWeight = Number(row.weightValue) || Math.max(0.1, totalQty * 0.24);
+      const baseVolume = Number(row.volumeValue) || Math.max(0.01, totalQty * 0.0014);
+      const selected = Array.from({ length: lineCount }, (_, index) => library[(seed + index) % library.length]);
+      const rawWeights = selected.map((item, index) => item.unitWeight * (1 + ((seed + index * 7) % 3)));
+      const rawSum = rawWeights.reduce((sum, value) => sum + value, 0) || 1;
+      let qtyLeft = totalQty;
+      return selected.map((item, index) => {
+        const isLast = index === selected.length - 1;
+        const qty = isLast ? qtyLeft : Math.max(1, Math.round(totalQty * (rawWeights[index] / rawSum)));
+        qtyLeft = Math.max(0, qtyLeft - qty);
+        return {
+          orderNo: row.orderNo,
+          ownerName: row.ownerName,
+          customer: row.customer,
+          warehouse: row.warehouse,
+          businessType: row.businessType,
+          currentCountry: row.currentCountry || '--',
+          status: row.status,
+          tag: row.tag,
+          time: row.time,
+          orderSource: row.orderSource,
+          skuCode: item.code,
+          skuName: item.name,
+          skuQty: qty,
+          weightValue: Number((baseWeight * (rawWeights[index] / rawSum)).toFixed(2)),
+          volumeValue: Number((baseVolume * (rawWeights[index] / rawSum)).toFixed(3))
+        };
+      });
+    }
+    function buildOrderItemRows(orderRows) {
+      return orderRows.flatMap((row, index) => buildOrderSkuLines(row, hashText(`${row.orderNo}-${index}`)));
+    }
+    function getMetricDefaultAlias(field, agg) {
+      if (!field) return '';
+      return `${field.label}${agg === 'distinct_count' ? '去重数' : agg === 'count' ? '数量' : '汇总'}`;
+    }
+    function createDefaultCustomMetric(fieldKey = 'orderNo', agg = 'distinct_count', alias = '订单数') {
+      return { field: fieldKey, agg, alias };
+    }
+    function createDefaultCustomReportDraft(options = {}) {
+      const baseFilters = options.filters ? cloneFilters(options.filters) : cloneFilters();
+      return {
+        reportCode: options.reportCode || '',
+        reportName: options.reportName || '',
+        scope: options.scope || 'mine',
+        sourceReportKey: 'order',
+        datasetCode: options.datasetCode || 'order_header',
+        preserveFilters: options.preserveFilters !== false,
+        defaultFilters: baseFilters,
+        dimensions: options.dimensions ? [...options.dimensions] : ['ownerName', '', ''],
+        metrics: options.metrics ? options.metrics.map(item => ({ ...item })) : [
+          createDefaultCustomMetric('orderNo', 'distinct_count', '订单数'),
+          createDefaultCustomMetric('weightValue', 'sum', '总重量'),
+          createDefaultCustomMetric('', 'sum', '')
+        ],
+        sortField: options.sortField || 'metric:0',
+        sortDirection: options.sortDirection || 'desc',
+        topN: Number(options.topN) || 10,
+        viewType: options.viewType || 'table',
+        description: options.description || '',
+        drilldownEnabled: options.drilldownEnabled !== false
+      };
+    }
+    function readCustomReportsFromStorage() {
+      try {
+        const raw = window.localStorage.getItem(CUSTOM_REPORT_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        return [];
+      }
+    }
+    function writeCustomReportsToStorage() {
+      try {
+        window.localStorage.setItem(CUSTOM_REPORT_STORAGE_KEY, JSON.stringify(state.customReports.mine));
+      } catch (error) {
+        showToast('浏览器存储不可用，刷新后我的报表不会保留', 'warning');
+      }
     }
     function getReportBusinessTypeOptions(reportKey = state.currentReport) {
       return reportKey === 'timeliness' ? TIMELINESS_BUSINESS_TYPE_OPTIONS : BUSINESS_TYPE_OPTIONS;
@@ -517,7 +744,64 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         .sort((left, right) => getTimeValue(right.time) - getTimeValue(left.time));
     }
     const ORDER_SAMPLE_ROWS = buildOrderRows();
+    const ORDER_ITEM_SAMPLE_ROWS = buildOrderItemRows(ORDER_SAMPLE_ROWS);
     const TIMELINESS_SAMPLE_ROWS = buildTimelinessRows(ORDER_SAMPLE_ROWS);
+    const SHARED_CUSTOM_REPORTS = [
+      createDefaultCustomReportDraft({
+        reportCode: 'shared_order_owner_rank',
+        reportName: '备货业务客户货量排名',
+        scope: 'shared',
+        datasetCode: 'order_item',
+        dimensions: ['ownerName', '', ''],
+        metrics: [
+          createDefaultCustomMetric('skuQty', 'sum', '商品数量'),
+          createDefaultCustomMetric('orderNo', 'distinct_count', '订单数'),
+          createDefaultCustomMetric('weightValue', 'sum', '总重量')
+        ],
+        sortField: 'metric:0',
+        topN: 10,
+        viewType: 'bar',
+        description: '按客户查看备货业务SKU数量、订单数和重量汇总。',
+        filters: {
+          startDate: '2026-01-01',
+          endDate: '2026-03-18',
+          customer: '',
+          businessTypes: ['备货'],
+          filterA: '',
+          filterB: '',
+          keyword: '',
+          quickDays: 90,
+          selectedWarehouses: [...COMMON_WAREHOUSES]
+        }
+      }),
+      createDefaultCustomReportDraft({
+        reportCode: 'shared_order_country_rank',
+        reportName: '备货业务派送国家SKU分布',
+        scope: 'shared',
+        datasetCode: 'order_item',
+        dimensions: ['currentCountry', 'skuCode', ''],
+        metrics: [
+          createDefaultCustomMetric('skuQty', 'sum', '商品数量'),
+          createDefaultCustomMetric('orderNo', 'distinct_count', '订单数'),
+          createDefaultCustomMetric('volumeValue', 'sum', '总体积')
+        ],
+        sortField: 'metric:0',
+        topN: 20,
+        viewType: 'table',
+        description: '按派送国家和SKU查看备货业务的商品数量与体积分布。',
+        filters: {
+          startDate: '2026-01-01',
+          endDate: '2026-03-18',
+          customer: '',
+          businessTypes: ['备货'],
+          filterA: '',
+          filterB: '',
+          keyword: '',
+          quickDays: 90,
+          selectedWarehouses: [...COMMON_WAREHOUSES]
+        }
+      })
+    ];
     function createReport(config) {
       return {
         ...config,
@@ -690,6 +974,464 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         rowsConfig: { prefix: 'PF', tags: ['货物丢失', '货物损坏', '配送延迟', '服务补偿'], statuses: ['待审批', '审批中', '已完成'], mode: 'currency', base: 1680, step: 320 }
       })
     };
+    function getCustomDatasetDefinition(datasetCode = 'order_header') {
+      return CUSTOM_DATASET_DEFINITIONS[datasetCode] || CUSTOM_DATASET_DEFINITIONS.order_header;
+    }
+    function getCustomDimensionOptions(datasetCode) {
+      return getCustomDatasetDefinition(datasetCode).dimensions || [];
+    }
+    function getCustomMetricOptions(datasetCode) {
+      return getCustomDatasetDefinition(datasetCode).metrics || [];
+    }
+    function getCustomDimensionMeta(datasetCode, fieldKey) {
+      return getCustomDimensionOptions(datasetCode).find(item => item.key === fieldKey) || null;
+    }
+    function getCustomMetricMeta(datasetCode, fieldKey) {
+      return getCustomMetricOptions(datasetCode).find(item => item.key === fieldKey) || null;
+    }
+    function getCustomDatasetRows(datasetCode = 'order_header') {
+      return datasetCode === 'order_item' ? ORDER_ITEM_SAMPLE_ROWS : ORDER_SAMPLE_ROWS;
+    }
+    function applyOrderFilters(rows, filters = state.filters) {
+      const selectedWarehouses = filters.selectedWarehouses.length ? filters.selectedWarehouses : COMMON_WAREHOUSES;
+      const selectedBusinessTypes = getActiveBusinessTypes(filters.businessTypes, 'order');
+      return rows.filter(row => {
+        const rowDate = row.time.slice(0, 10);
+        const matchDate = (!filters.startDate || rowDate >= filters.startDate) && (!filters.endDate || rowDate <= filters.endDate);
+        const matchWarehouse = selectedWarehouses.includes(row.warehouse);
+        const matchBusinessType = selectedBusinessTypes.includes(row.businessType);
+        const matchCustomer = !filters.customer || row.customer === filters.customer || row.ownerName === filters.customer;
+        const matchTag = !filters.filterA || row.tag === filters.filterA;
+        const matchStatus = !filters.filterB || row.status === filters.filterB;
+        return matchDate && matchWarehouse && matchBusinessType && matchCustomer && matchTag && matchStatus;
+      });
+    }
+    function formatCustomMetricValue(metric, value) {
+      const meta = getCustomMetricMeta(metric.datasetCode, metric.field);
+      if (!meta) return value ?? '--';
+      if (metric.agg === 'count' || metric.agg === 'distinct_count' || meta.type === 'number' || meta.type === 'id') return formatNumber(value || 0);
+      if (meta.type === 'weight') return formatWeight(value || 0);
+      if (meta.type === 'volume') return formatVolume(value || 0);
+      if (meta.type === 'money') return formatMoney(value || 0);
+      return value ?? '--';
+    }
+    function getCustomSortOptions(draft) {
+      const datasetCode = draft.datasetCode;
+      const dimensions = draft.dimensions.filter(Boolean).map((fieldKey, index) => ({
+        key: `dimension:${index}`,
+        label: getCustomDimensionMeta(datasetCode, fieldKey)?.label || `维度${index + 1}`
+      }));
+      const metrics = draft.metrics
+        .map((metric, index) => ({ ...metric, index }))
+        .filter(metric => metric.field && metric.alias)
+        .map(metric => ({ key: `metric:${metric.index}`, label: metric.alias }));
+      return [...metrics, ...dimensions];
+    }
+    function buildCustomAggregateResult(reportConfig, filters = state.filters) {
+      const dataset = getCustomDatasetDefinition(reportConfig.datasetCode);
+      const rawRows = applyOrderFilters(getCustomDatasetRows(dataset.code), filters);
+      const dimensions = reportConfig.dimensions.filter(Boolean).map(fieldKey => ({
+        key: fieldKey,
+        label: getCustomDimensionMeta(dataset.code, fieldKey)?.label || fieldKey
+      }));
+      const metrics = reportConfig.metrics
+        .map((metric, index) => ({ ...metric, index, datasetCode: dataset.code }))
+        .filter(metric => metric.field && metric.alias);
+      const groupMap = new Map();
+      rawRows.forEach(row => {
+        const groupKey = dimensions.length ? dimensions.map(item => row[item.key] ?? '--').join('||') : '__all__';
+        if (!groupMap.has(groupKey)) {
+          const baseRow = { __groupKey: groupKey, __sourceCount: 0 };
+          dimensions.forEach(item => { baseRow[item.key] = row[item.key] ?? '--'; });
+          metrics.forEach(metric => {
+            baseRow[`metric:${metric.index}`] = 0;
+            if (metric.agg === 'distinct_count') baseRow[`set:${metric.index}`] = new Set();
+          });
+          groupMap.set(groupKey, baseRow);
+        }
+        const group = groupMap.get(groupKey);
+        group.__sourceCount += 1;
+        metrics.forEach(metric => {
+          if (metric.agg === 'count') group[`metric:${metric.index}`] += 1;
+          else if (metric.agg === 'distinct_count') group[`set:${metric.index}`].add(row[metric.field]);
+          else if (metric.agg === 'sum') group[`metric:${metric.index}`] += Number(row[metric.field] || 0);
+        });
+      });
+      let rows = Array.from(groupMap.values()).map(item => {
+        const row = { ...item };
+        metrics.forEach(metric => {
+          if (metric.agg === 'distinct_count') row[`metric:${metric.index}`] = row[`set:${metric.index}`].size;
+          delete row[`set:${metric.index}`];
+        });
+        return row;
+      });
+      const sortField = reportConfig.sortField || 'metric:0';
+      rows.sort((left, right) => {
+        const leftValue = left[sortField] ?? '';
+        const rightValue = right[sortField] ?? '';
+        if (typeof leftValue === 'number' && typeof rightValue === 'number') return reportConfig.sortDirection === 'asc' ? leftValue - rightValue : rightValue - leftValue;
+        return reportConfig.sortDirection === 'asc'
+          ? String(leftValue).localeCompare(String(rightValue), 'zh-CN')
+          : String(rightValue).localeCompare(String(leftValue), 'zh-CN');
+      });
+      const totalGroups = rows.length;
+      if (reportConfig.topN) rows = rows.slice(0, reportConfig.topN);
+      const columns = [
+        ...dimensions.map(item => ({ key: item.key, label: item.label, align: '' })),
+        ...metrics.map(metric => ({ key: `metric:${metric.index}`, label: metric.alias, align: 'right' }))
+      ];
+      return {
+        dataset,
+        rawRows,
+        rows,
+        columns,
+        dimensions,
+        metrics,
+        totalGroups,
+        topRow: rows[0] || null,
+        primaryMetric: metrics[0] || null,
+        summaryValue: metrics[0] ? rows.reduce((sum, row) => sum + Number(row[`metric:${metrics[0].index}`] || 0), 0) : 0
+      };
+    }
+    function getCustomReportStats(report, aggregate) {
+      const primaryMetric = aggregate.primaryMetric;
+      const topRow = aggregate.topRow;
+      const topDimensionLabel = aggregate.dimensions[0]?.label || '分组';
+      return [
+        { label: '聚合分组数', value: formatNumber(aggregate.totalGroups), delta: `TopN:${report.topN || aggregate.totalGroups}`, tone: 'tone-blue', hint: `当前数据集:${aggregate.dataset.label}` },
+        { label: '底表命中记录', value: formatNumber(aggregate.rawRows.length), delta: `粒度:${aggregate.dataset.grainLabel}`, tone: 'tone-green', hint: report.preserveFilters ? '已继承当前页面筛选' : '使用系统默认筛选' },
+        { label: primaryMetric?.alias || '主指标', value: primaryMetric ? formatCustomMetricValue(primaryMetric, aggregate.summaryValue) : '--', delta: `排序:${report.sortDirection === 'asc' ? '升序' : '倒序'}`, tone: 'tone-orange', hint: primaryMetric ? `主指标字段:${getCustomMetricMeta(report.datasetCode, primaryMetric.field)?.label || '--'}` : '请补充指标字段' },
+        { label: `Top1${topDimensionLabel}`, value: topRow ? (aggregate.dimensions[0] ? topRow[aggregate.dimensions[0].key] : '全部数据') : '--', delta: topRow && primaryMetric ? formatCustomMetricValue(primaryMetric, topRow[`metric:${primaryMetric.index}`]) : '--', tone: 'tone-violet', hint: topRow ? '按当前排序口径排名第1' : '暂无结果' }
+      ];
+    }
+    function buildCustomReportVisualItems(aggregate) {
+      const primaryMetric = aggregate.primaryMetric;
+      if (!primaryMetric) return [];
+      const total = aggregate.rows.reduce((sum, row) => sum + Number(row[`metric:${primaryMetric.index}`] || 0), 0) || 1;
+      const nameField = aggregate.dimensions[0]?.key;
+      return aggregate.rows.slice(0, 5).map(row => ({
+        name: nameField ? row[nameField] : '全部数据',
+        value: formatCustomMetricValue(primaryMetric, row[`metric:${primaryMetric.index}`]),
+        share: Number(row[`metric:${primaryMetric.index}`] || 0) / total,
+        meta: aggregate.dimensions[1]?.key ? `${aggregate.dimensions[1].label}:${row[aggregate.dimensions[1].key] || '--'}` : `命中记录:${formatNumber(row.__sourceCount)}条`
+      }));
+    }
+    function getCustomReportFilterSummary(filters) {
+      const warehouseText = filters.selectedWarehouses.length === COMMON_WAREHOUSES.length ? '全部仓库' : filters.selectedWarehouses.join('、');
+      const businessText = filters.businessTypes.length === BUSINESS_TYPE_OPTIONS.length ? '全部业务类型' : filters.businessTypes.join('、');
+      return [`时间:${filters.startDate}至${filters.endDate}`, `仓库:${warehouseText}`, `业务类型:${businessText}`, `客户:${filters.customer || '全部'}`, `主题:${filters.filterA || '全部'}`, `状态:${filters.filterB || '全部'}`];
+    }
+    function buildCustomReportStorageRecord(draft, existing = null) {
+      const code = existing?.reportCode || `mine_${Date.now()}`;
+      return {
+        ...draft,
+        reportCode: code,
+        sourceReportKey: 'order',
+        defaultFilters: cloneFilters(draft.defaultFilters),
+        dimensions: [...draft.dimensions],
+        metrics: draft.metrics.map(item => ({ ...item })),
+        createdAt: existing?.createdAt || formatSystemTime(),
+        updatedAt: formatSystemTime()
+      };
+    }
+    function openCustomReport(reportCode) {
+      const report = [...state.customReports.mine, ...state.customReports.shared].find(item => item.reportCode === reportCode);
+      if (!report) return;
+      state.reportMode = 'custom';
+      state.currentReport = report.sourceReportKey;
+      state.currentCustomReportCode = report.reportCode;
+      state.customManager.open = false;
+      closeCustomReportDrilldown();
+      resetFiltersForBaseReport(report.sourceReportKey, report.defaultFilters);
+      state.pagination.currentPage = 1;
+      closeTimelinessDetailModal();
+      resetAiAnalysis('idle', '自定义聚合报表默认关闭AI分析，如需查看固定报表结论，请切换回官方报表。');
+      renderAll();
+      showToast(`已打开${report.reportName}`);
+    }
+    function closeCustomReportBuilder() {
+      state.customBuilder.open = false;
+      state.customBuilder.mode = 'create';
+      state.customBuilder.scope = 'mine';
+      state.customBuilder.editingCode = '';
+      state.customBuilder.draft = null;
+      state.customBuilder.preview = null;
+      renderCustomReportBuilder();
+    }
+    function openCustomReportBuilder(mode = 'create', reportCode = '') {
+      if (state.currentReport !== 'order' && !isCustomReportView()) {
+        showToast('当前Demo仅支持基于订单报表创建聚合报表', 'warning');
+        return;
+      }
+      const editing = reportCode ? [...state.customReports.mine, ...state.customReports.shared].find(item => item.reportCode === reportCode) : null;
+      state.customBuilder.open = true;
+      state.customBuilder.mode = mode;
+      state.customBuilder.editingCode = editing?.reportCode || '';
+      state.customBuilder.scope = editing?.scope || 'mine';
+      state.customBuilder.draft = editing ? createDefaultCustomReportDraft(editing) : createDefaultCustomReportDraft({
+        datasetCode: isCustomReportView() ? getCurrentCustomReport()?.datasetCode || 'order_header' : 'order_header',
+        filters: cloneFilters(),
+        reportName: mode === 'duplicate' && getCurrentCustomReport() ? `${getCurrentCustomReport().reportName}-副本` : ''
+      });
+      if (mode === 'duplicate') {
+        state.customBuilder.editingCode = '';
+        state.customBuilder.scope = 'mine';
+        if (state.customBuilder.draft) state.customBuilder.draft.scope = 'mine';
+      }
+      state.customBuilder.preview = buildCustomAggregateResult(state.customBuilder.draft, state.customBuilder.draft.defaultFilters);
+      renderCustomReportBuilder();
+    }
+    function updateCustomBuilderDraft(mutator) {
+      if (!state.customBuilder.draft) return;
+      mutator(state.customBuilder.draft);
+      state.customBuilder.preview = buildCustomAggregateResult(state.customBuilder.draft, state.customBuilder.draft.defaultFilters);
+      renderCustomReportBuilder();
+    }
+    function saveCustomReport(toDraftOnly = false) {
+      const draft = state.customBuilder.draft;
+      if (!draft) return;
+      const dimensions = draft.dimensions.filter(Boolean);
+      const metrics = draft.metrics.filter(item => item.field && item.alias);
+      if (!draft.reportName.trim()) {
+        showToast('请填写报表名称', 'warning');
+        return;
+      }
+      if (!dimensions.length) {
+        showToast('请至少选择1个维度字段', 'warning');
+        return;
+      }
+      if (!metrics.length) {
+        showToast('请至少配置1个指标字段', 'warning');
+        return;
+      }
+      const targetList = draft.scope === 'shared' ? state.customReports.shared : state.customReports.mine;
+      const existingIndex = targetList.findIndex(item => item.reportCode === state.customBuilder.editingCode);
+      const existing = existingIndex >= 0 ? targetList[existingIndex] : null;
+      const record = buildCustomReportStorageRecord(draft, existing);
+      if (draft.scope === 'shared') {
+        if (existingIndex >= 0) state.customReports.shared.splice(existingIndex, 1, record);
+        else state.customReports.shared.unshift(record);
+      } else {
+        if (existingIndex >= 0) state.customReports.mine.splice(existingIndex, 1, record);
+        else state.customReports.mine.unshift(record);
+        writeCustomReportsToStorage();
+      }
+      closeCustomReportBuilder();
+      renderReportMenu();
+      renderCustomReportManager();
+      if (toDraftOnly) showToast(`已保存${record.reportName}草稿`);
+      else openCustomReport(record.reportCode);
+    }
+    function deleteCustomReport(reportCode) {
+      const mineIndex = state.customReports.mine.findIndex(item => item.reportCode === reportCode);
+      if (mineIndex >= 0) {
+        const removed = state.customReports.mine.splice(mineIndex, 1)[0];
+        writeCustomReportsToStorage();
+        if (state.currentCustomReportCode === reportCode) switchReport('order');
+        renderReportMenu();
+        renderCustomReportManager();
+        showToast(`已删除${removed.reportName}`);
+        return;
+      }
+      const sharedIndex = state.customReports.shared.findIndex(item => item.reportCode === reportCode);
+      if (sharedIndex >= 0) {
+        const removed = state.customReports.shared.splice(sharedIndex, 1)[0];
+        if (state.currentCustomReportCode === reportCode) switchReport('order');
+        renderReportMenu();
+        renderCustomReportManager();
+        showToast(`已删除${removed.reportName}`);
+      }
+    }
+    function renderCustomReportManager() {
+      const modal = document.getElementById('customReportManagerModal');
+      if (!modal) return;
+      modal.classList.toggle('hidden', !state.customManager.open);
+      const renderList = (list, scope) => list.length ? list.map(item => `<div class="custom-report-manager-item">
+        <div>
+          <div class="custom-report-manager-name">${item.reportName}</div>
+          <div class="custom-report-manager-meta">数据集:${getCustomDatasetDefinition(item.datasetCode).label}｜维度:${item.dimensions.filter(Boolean).map(field => getCustomDimensionMeta(item.datasetCode, field)?.label || field).join('、')}｜更新于:${item.updatedAt}</div>
+        </div>
+        <div class="custom-report-manager-actions">
+          <button type="button" class="btn btn-secondary" data-open-custom-report="${item.reportCode}">打开</button>
+          <button type="button" class="btn btn-secondary" data-edit-custom-report="${item.reportCode}">编辑</button>
+          <button type="button" class="btn btn-secondary" data-duplicate-custom-report="${item.reportCode}">复制</button>
+          ${scope === 'mine' ? `<button type="button" class="btn btn-secondary" data-delete-custom-report="${item.reportCode}">删除</button>` : ''}
+        </div>
+      </div>`).join('') : '<div class="menu-item-empty">当前暂无自定义报表，可从页面右上角直接新建。</div>';
+      document.getElementById('customReportMineCount').textContent = `${state.customReports.mine.length}个`;
+      document.getElementById('customReportSharedCount').textContent = `${state.customReports.shared.length}个`;
+      document.getElementById('customReportMineList').innerHTML = renderList(state.customReports.mine, 'mine');
+      document.getElementById('customReportSharedList').innerHTML = renderList(state.customReports.shared, 'shared');
+    }
+    function renderCustomReportBuilder() {
+      const shell = document.getElementById('customReportBuilderDrawer');
+      if (!shell) return;
+      shell.classList.toggle('hidden', !state.customBuilder.open);
+      if (!state.customBuilder.open || !state.customBuilder.draft) return;
+      const draft = state.customBuilder.draft;
+      const dataset = getCustomDatasetDefinition(draft.datasetCode);
+      const preview = state.customBuilder.preview || buildCustomAggregateResult(draft, draft.defaultFilters);
+      const dimensionOptions = getCustomDimensionOptions(draft.datasetCode);
+      const metricOptions = getCustomMetricOptions(draft.datasetCode);
+      const sortOptions = getCustomSortOptions(draft);
+      document.getElementById('customReportBuilderTitle').textContent = state.customBuilder.editingCode ? '编辑聚合报表' : '新建聚合报表';
+      document.getElementById('customReportBuilderScope').textContent = `当前基于${dataset.label}配置维度、指标、排序与TopN，保存后会出现在${draft.scope === 'mine' ? '我的报表' : '共享报表'}目录。`;
+      document.getElementById('customReportBuilderForm').innerHTML = `
+        <section class="builder-section">
+          <div class="builder-section-head"><div><div class="builder-section-title">基础信息</div><div class="builder-section-sub">定义报表名称、归属目录和当前数据集。</div></div></div>
+          <div class="builder-grid">
+            <div class="builder-field"><label>报表名称<span class="required">*</span></label><input data-builder-input="reportName" class="form-input" type="text" maxlength="50" value="${draft.reportName}"></div>
+            <div class="builder-field"><label>所属目录</label><select data-builder-input="scope" class="form-input">${CUSTOM_REPORT_SCOPE_OPTIONS.map(item => `<option value="${item.key}" ${item.key === draft.scope ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>
+            <div class="builder-field"><label>数据集</label><select data-builder-input="datasetCode" class="form-input">${Object.values(CUSTOM_DATASET_DEFINITIONS).map(item => `<option value="${item.code}" ${item.code === draft.datasetCode ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>
+            <div class="builder-field"><label>主展示形式</label><select data-builder-input="viewType" class="form-input">${CUSTOM_REPORT_VIEW_OPTIONS.map(item => `<option value="${item.key}" ${item.key === draft.viewType ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>
+          </div>
+          <div class="builder-field" style="margin-top:12px;"><label>报表说明</label><textarea data-builder-input="description" class="form-input" style="height:78px;padding:10px 12px;line-height:1.7;resize:none;">${draft.description}</textarea></div>
+        </section>
+        <section class="builder-section">
+          <div class="builder-section-head"><div><div class="builder-section-title">默认筛选</div><div class="builder-section-sub">默认继承当前页面筛选，并保存为报表打开时的初始条件。</div></div></div>
+          <label class="builder-checkbox"><input type="checkbox" data-builder-toggle="preserveFilters" ${draft.preserveFilters ? 'checked' : ''}><span>保存当前页面筛选为默认条件</span></label>
+          <div class="builder-chip-row" style="margin-top:12px;">${getCustomReportFilterSummary(draft.defaultFilters).map(text => `<span class="builder-chip">${text}</span>`).join('')}</div>
+          <div class="builder-help">当前Demo默认沿用页面上的时间、仓库、业务类型、主题和状态筛选，不额外开放复杂筛选器配置。</div>
+        </section>
+        <section class="builder-section">
+          <div class="builder-section-head"><div><div class="builder-section-title">维度字段</div><div class="builder-section-sub">第一版最多支持3个维度字段，顺序决定分组层级。</div></div><span class="toolbar-tag">${dataset.grainLabel}</span></div>
+          <div class="builder-dimension-row">${[0, 1, 2].map(index => `<div class="builder-field"><label>维度${index + 1}${index === 0 ? '<span class="required">*</span>' : ''}</label><select data-builder-dimension="${index}" class="form-input"><option value="">请选择维度字段</option>${dimensionOptions.map(item => `<option value="${item.key}" ${draft.dimensions[index] === item.key ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>`).join('')}</div>
+        </section>
+        <section class="builder-section">
+          <div class="builder-section-head"><div><div class="builder-section-title">指标字段</div><div class="builder-section-sub">第一版支持计数、去重计数、求和3种聚合方式，最多展示3个指标。</div></div></div>
+          <div style="display:grid;gap:12px;">${draft.metrics.map((metric, index) => {
+            const currentMeta = getCustomMetricMeta(draft.datasetCode, metric.field);
+            const aggOptions = currentMeta?.aggs || ['sum'];
+            return `<div class="builder-metric-row">
+              <div class="builder-field"><label>指标字段${index + 1}${index === 0 ? '<span class="required">*</span>' : ''}</label><select data-builder-metric-field="${index}" class="form-input"><option value="">请选择指标字段</option>${metricOptions.map(item => `<option value="${item.key}" ${metric.field === item.key ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>
+              <div class="builder-field"><label>聚合方式</label><select data-builder-metric-agg="${index}" class="form-input">${aggOptions.map(item => `<option value="${item}" ${metric.agg === item ? 'selected' : ''}>${CUSTOM_AGG_OPTIONS[item]}</option>`).join('')}</select></div>
+              <div class="builder-field"><label>显示别名</label><input data-builder-metric-alias="${index}" class="form-input" type="text" maxlength="20" value="${metric.alias || ''}"></div>
+            </div>`;
+          }).join('')}</div>
+        </section>
+        <section class="builder-section">
+          <div class="builder-section-head"><div><div class="builder-section-title">排序与展示</div><div class="builder-section-sub">控制结果排序、TopN和是否允许继续下钻到底层订单明细。</div></div></div>
+          <div class="builder-grid">
+            <div class="builder-field"><label>排序字段</label><select data-builder-input="sortField" class="form-input">${sortOptions.map(item => `<option value="${item.key}" ${item.key === draft.sortField ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>
+            <div class="builder-field"><label>排序方向</label><select data-builder-input="sortDirection" class="form-input"><option value="desc" ${draft.sortDirection === 'desc' ? 'selected' : ''}>倒序</option><option value="asc" ${draft.sortDirection === 'asc' ? 'selected' : ''}>升序</option></select></div>
+            <div class="builder-field"><label>TopN</label><select data-builder-input="topN" class="form-input">${CUSTOM_REPORT_TOPN_OPTIONS.map(item => `<option value="${item}" ${Number(draft.topN) === item ? 'selected' : ''}>Top${item}</option>`).join('')}</select></div>
+            <div class="builder-field"><label>明细下钻</label><select data-builder-input="drilldownEnabled" class="form-input"><option value="true" ${draft.drilldownEnabled ? 'selected' : ''}>允许下钻到底层明细</option><option value="false" ${!draft.drilldownEnabled ? 'selected' : ''}>仅保留聚合结果</option></select></div>
+          </div>
+        </section>
+      `;
+      const summaryCards = [
+        { label: '底表命中', value: formatNumber(preview.rawRows.length), hint: '聚合前底表记录数' },
+        { label: '聚合分组', value: formatNumber(preview.totalGroups), hint: '应用TopN前分组数' },
+        { label: '主指标', value: preview.primaryMetric ? preview.primaryMetric.alias : '--', hint: preview.primaryMetric ? getCustomMetricMeta(draft.datasetCode, preview.primaryMetric.field)?.label || '--' : '请先配置指标' },
+        { label: 'Top1对象', value: preview.topRow && preview.dimensions[0] ? preview.topRow[preview.dimensions[0].key] : '--', hint: preview.topRow && preview.primaryMetric ? formatCustomMetricValue(preview.primaryMetric, preview.topRow[`metric:${preview.primaryMetric.index}`]) : '暂无结果' }
+      ];
+      document.getElementById('customReportPreviewDesc').textContent = `当前使用${dataset.label}进行预览，实时读取默认筛选条件下的聚合结果。`;
+      document.getElementById('customReportPreviewTag').textContent = `${preview.rows.length}/${preview.totalGroups || 0}`;
+      document.getElementById('customReportPreviewSummary').innerHTML = summaryCards.map(item => `<div class="drawer-preview-card"><div class="drawer-preview-card-label">${item.label}</div><div class="drawer-preview-card-value">${item.value}</div><div class="drawer-preview-card-hint">${item.hint}</div></div>`).join('');
+      document.getElementById('customReportPreviewTable').innerHTML = preview.columns.length
+        ? `<div class="builder-preview-table-shell"><table><thead><tr>${preview.columns.map(column => `<th class="${column.align === 'right' ? 'cell-right' : ''}">${column.label}</th>`).join('')}</tr></thead><tbody>${preview.rows.length ? preview.rows.slice(0, 8).map(row => `<tr>${preview.columns.map(column => {
+          if (column.key.startsWith('metric:')) {
+            const metric = preview.metrics.find(item => `metric:${item.index}` === column.key);
+            return `<td class="${column.align === 'right' ? 'cell-right' : ''}">${metric ? formatCustomMetricValue(metric, row[column.key]) : row[column.key]}</td>`;
+          }
+          return `<td>${row[column.key] ?? '--'}</td>`;
+        }).join('')}</tr>`).join('') : `<tr><td colspan="${preview.columns.length}" class="builder-preview-empty">当前配置暂无命中结果。</td></tr>`}</tbody></table></div>`
+        : '<div class="builder-preview-empty">请至少选择1个维度和1个指标，系统才会生成有效预览。</div>';
+    }
+    function renderCustomReportOverview() {
+      const section = document.getElementById('customReportOverviewSection');
+      if (!section) return;
+      section.classList.toggle('hidden', !isCustomReportView());
+      if (!isCustomReportView()) return;
+      const report = getCurrentCustomReport();
+      if (!report) return;
+      const aggregate = buildCustomAggregateResult(report, state.filters);
+      document.getElementById('customReportOverviewTitle').textContent = report.reportName;
+      document.getElementById('customReportOverviewDesc').textContent = report.description || '基于当前底表和默认筛选构建的自定义聚合报表，可在此页直接继续筛选与导出。';
+      document.getElementById('customReportOverviewMeta').innerHTML = [
+        `目录:${report.scope === 'mine' ? '我的报表' : '共享报表'}`,
+        `数据集:${aggregate.dataset.label}`,
+        `粒度:${aggregate.dataset.grainLabel}`,
+        `维度:${aggregate.dimensions.map(item => item.label).join('、') || '--'}`,
+        `指标:${aggregate.metrics.map(item => item.alias).join('、') || '--'}`,
+        `更新时间:${report.updatedAt}`
+      ].map(text => `<span class="toolbar-tag">${text}</span>`).join('');
+      document.getElementById('customReportSummaryText').textContent = `当前按${aggregate.dimensions.map(item => item.label).join('、') || '全部数据'}分组，主指标为${aggregate.primaryMetric?.alias || '--'}，排序方式为${report.sortDirection === 'asc' ? '升序' : '倒序'}，默认仅展示Top${report.topN}。`;
+      document.getElementById('customReportPrimaryMetricTag').textContent = aggregate.primaryMetric?.alias || '未配置主指标';
+      document.getElementById('customReportSummaryCards').innerHTML = getCustomReportStats(report, aggregate).map(item => `<div class="custom-report-summary-card"><div class="custom-report-summary-label">${item.label}</div><div class="custom-report-summary-value">${item.value}</div><div class="custom-report-summary-hint">${item.hint}</div></div>`).join('');
+      const visualItems = buildCustomReportVisualItems(aggregate);
+      document.getElementById('customReportVisualHint').textContent = report.viewType === 'bar' ? '当前主展示方式为条形结构，顶部预览按主指标展示前5项。' : '当前主展示方式为表格，右侧仍保留头部结构预览，方便快速校验Top对象。';
+      document.getElementById('customReportVisualTag').textContent = report.viewType === 'bar' ? '条形结构' : '表格预览';
+      document.getElementById('customReportVisualList').innerHTML = visualItems.length ? visualItems.map(item => `<div class="custom-report-visual-item"><div class="custom-report-visual-head"><div class="custom-report-visual-name">${item.name}</div><div class="custom-report-visual-value">${item.value}</div></div><div class="custom-report-visual-bar"><span class="custom-report-visual-fill" style="width:${Math.max(8, Math.min(100, item.share * 100))}%;"></span></div><div class="custom-report-visual-meta">${item.meta}</div></div>`).join('') : '<div class="custom-report-visual-empty">当前报表暂无可预览的头部结构，请调整筛选条件后重试。</div>';
+      const editable = report.scope === 'mine';
+      document.getElementById('editCurrentCustomReportBtn').style.display = editable ? '' : 'none';
+      document.getElementById('deleteCurrentCustomReportBtn').style.display = editable ? '' : 'none';
+    }
+    function getCustomDrilldownColumns(datasetCode) {
+      return datasetCode === 'order_item'
+        ? [
+          { key: 'orderNo', label: '订单号' },
+          { key: 'ownerName', label: '客户/货主' },
+          { key: 'warehouse', label: '仓库' },
+          { key: 'businessType', label: '业务类型' },
+          { key: 'skuCode', label: 'SKU编码' },
+          { key: 'skuName', label: 'SKU名称' },
+          { key: 'skuQty', label: 'SKU数量', align: 'right' },
+          { key: 'weightValue', label: '重量', align: 'right', format: value => formatWeight(value || 0) },
+          { key: 'volumeValue', label: '体积', align: 'right', format: value => formatVolume(value || 0) },
+          { key: 'status', label: '状态' },
+          { key: 'time', label: '更新时间' }
+        ]
+        : [
+          { key: 'orderNo', label: '订单号' },
+          { key: 'ownerName', label: '客户/货主' },
+          { key: 'warehouse', label: '仓库' },
+          { key: 'businessType', label: '业务类型' },
+          { key: 'currentCountry', label: '现派国家' },
+          { key: 'status', label: '状态' },
+          { key: 'time', label: '更新时间' }
+        ];
+    }
+    function openCustomReportDrilldown(rowIndex) {
+      const report = getCurrentCustomReport();
+      const aggregate = state.customAggregateCache;
+      if (!report || !aggregate || !report.drilldownEnabled) return;
+      const targetRow = aggregate.rows[rowIndex];
+      if (!targetRow) return;
+      const detailRows = aggregate.rawRows.filter(rawRow => aggregate.dimensions.every(item => (rawRow[item.key] ?? '--') === (targetRow[item.key] ?? '--')));
+      state.customDrilldown.open = true;
+      state.customDrilldown.title = aggregate.dimensions.length ? aggregate.dimensions.map(item => `${item.label}:${targetRow[item.key]}`).join('｜') : '全部数据';
+      state.customDrilldown.scope = `当前命中${detailRows.length}条底层记录，数据集:${aggregate.dataset.label}`;
+      state.customDrilldown.rows = detailRows;
+      state.customDrilldown.columns = getCustomDrilldownColumns(report.datasetCode);
+      renderCustomReportDrilldown();
+    }
+    function closeCustomReportDrilldown() {
+      state.customDrilldown.open = false;
+      state.customDrilldown.title = '';
+      state.customDrilldown.scope = '';
+      state.customDrilldown.rows = [];
+      state.customDrilldown.columns = [];
+      renderCustomReportDrilldown();
+    }
+    function renderCustomReportDrilldown() {
+      const modal = document.getElementById('customReportDrilldownModal');
+      if (!modal) return;
+      modal.classList.toggle('hidden', !state.customDrilldown.open);
+      if (!state.customDrilldown.open) return;
+      document.getElementById('customReportDrilldownTitle').textContent = state.customDrilldown.title;
+      document.getElementById('customReportDrilldownScope').textContent = state.customDrilldown.scope;
+      document.getElementById('customReportDrilldownStats').innerHTML = [
+        { label: '命中记录数', value: formatNumber(state.customDrilldown.rows.length) },
+        { label: '数据集', value: getCurrentCustomReport()?.datasetCode === 'order_item' ? '订单行' : '订单头' }
+      ].map(item => `<div class="timeliness-detail-stat"><div class="timeliness-detail-stat-label">${item.label}</div><div class="timeliness-detail-stat-value">${item.value}</div></div>`).join('');
+      document.getElementById('customReportDrilldownHead').innerHTML = `<tr>${state.customDrilldown.columns.map(column => `<th class="${column.align === 'right' ? 'cell-right' : ''}">${column.label}</th>`).join('')}</tr>`;
+      document.getElementById('customReportDrilldownBody').innerHTML = state.customDrilldown.rows.length ? state.customDrilldown.rows.slice(0, 50).map(row => `<tr>${state.customDrilldown.columns.map(column => {
+        const rawValue = row[column.key];
+        const text = column.format ? column.format(rawValue) : rawValue ?? '--';
+        return `<td class="${column.align === 'right' ? 'cell-right' : ''}">${column.key === 'status' ? `<span class="badge ${statusClass(rawValue)}">${rawValue}</span>` : text}</td>`;
+      }).join('')}</tr>`).join('') : `<tr class="empty-row"><td colspan="${state.customDrilldown.columns.length || 1}">暂无可展示的底层记录</td></tr>`;
+    }
 
     function getCurrentTimelinessBusinessType(selectedTypes = state.filters.businessTypes) {
       return getActiveBusinessTypes(selectedTypes, 'timeliness')[0] || TIMELINESS_BUSINESS_TYPE_OPTIONS[0];
@@ -772,6 +1514,10 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       };
     }
     function openColumnConfigModal() {
+      if (isCustomReportView()) {
+        showToast('自定义聚合报表暂不支持字段显隐配置', 'warning');
+        return;
+      }
       const selectedBusinessTypes = getActiveBusinessTypes();
       state.columnConfig.profileKey = getTableProfileKey(state.currentReport, selectedBusinessTypes);
       state.columnConfig.draftFields = getConfiguredTableFields(state.currentReport, selectedBusinessTypes).map(field => ({ ...field }));
@@ -1143,16 +1889,23 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       setTimeout(() => toast.remove(), 2400);
     }
     function renderReportMenu() {
-      document.getElementById('reportMenu').innerHTML = REPORT_ORDER.map((key, index) => {
+      const officialMarkup = REPORT_ORDER.map((key, index) => {
         const report = reportDefinitions[key];
         const starred = STARRED_REPORTS.has(key);
-        return `<button type="button" class="menu-item ${state.currentReport === key ? 'active' : ''}" data-report="${key}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span class="menu-label">${report.tabLabel}报表</span></span><span class="menu-star ${starred ? 'is-active' : ''}" aria-hidden="true"><i class="${starred ? 'ri-star-fill' : 'ri-star-line'}"></i></span></button>`;
+        return `<button type="button" class="menu-item ${!isCustomReportView() && state.currentReport === key ? 'active' : ''}" data-report="${key}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span><span class="menu-label">${report.tabLabel}报表</span></span></span><span class="menu-star ${starred ? 'is-active' : ''}" aria-hidden="true"><i class="${starred ? 'ri-star-fill' : 'ri-star-line'}"></i></span></button>`;
       }).join('');
+      const myMarkup = state.customReports.mine.length ? state.customReports.mine.map((report, index) => `<button type="button" class="menu-item is-custom ${isCustomReportView() && state.currentCustomReportCode === report.reportCode ? 'active' : ''}" data-open-custom-report="${report.reportCode}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span><span class="menu-label">${report.reportName}</span><span class="menu-meta">${getCustomDatasetDefinition(report.datasetCode).grainLabel}｜${report.metrics.filter(item => item.alias).map(item => item.alias).slice(0, 2).join('、') || '未配置指标'}</span></span></span><span class="menu-star is-active" aria-hidden="true"><i class="ri-user-star-line"></i></span></button>`).join('') : '<div class="menu-item-empty">当前暂无我的报表，支持从订单报表一键新建。</div>';
+      const sharedMarkup = state.customReports.shared.length ? state.customReports.shared.map((report, index) => `<button type="button" class="menu-item is-custom ${isCustomReportView() && state.currentCustomReportCode === report.reportCode ? 'active' : ''}" data-open-custom-report="${report.reportCode}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span><span class="menu-label">${report.reportName}</span><span class="menu-meta">${getCustomDatasetDefinition(report.datasetCode).grainLabel}｜${report.dimensions.filter(Boolean).length}个维度</span></span></span><span class="menu-star is-active" aria-hidden="true"><i class="ri-share-forward-line"></i></span></button>`).join('') : '<div class="menu-item-empty">当前暂无共享报表。</div>';
+      document.getElementById('reportMenu').innerHTML = `
+        <section class="menu-group"><div class="menu-group-title">官方报表</div>${officialMarkup}</section>
+        <section class="menu-group"><div class="menu-group-title">我的报表</div>${myMarkup}</section>
+        <section class="menu-group"><div class="menu-group-title">共享报表</div>${sharedMarkup}</section>
+      `;
     }
     function renderFilters() {
       const report = reportDefinitions[state.currentReport];
       const availableBusinessTypes = getReportBusinessTypeOptions(state.currentReport);
-      const isTimelinessReport = state.currentReport === 'timeliness';
+      const isTimelinessReport = !isCustomReportView() && state.currentReport === 'timeliness';
       const currentTimelinessBusinessType = getCurrentTimelinessBusinessType(state.filters.businessTypes);
       const filterAOptions = isTimelinessReport ? getTimelinessNodeOptions(currentTimelinessBusinessType) : report.filterA.options;
       document.getElementById('filterALabel').textContent = report.filterA.label;
@@ -1173,6 +1926,17 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       document.querySelectorAll('.quick-range').forEach(button => { button.classList.toggle('active', Number(button.dataset.days) === state.filters.quickDays); });
     }
     function renderStats() {
+      if (isCustomReportView()) {
+        const customReport = getCurrentCustomReport();
+        if (!customReport) {
+          document.getElementById('statCards').innerHTML = '';
+          return;
+        }
+        const aggregate = buildCustomAggregateResult(customReport, state.filters);
+        const items = getCustomReportStats(customReport, aggregate);
+        document.getElementById('statCards').innerHTML = items.map(item => `<div class="stat-card ${item.tone}"><div class="stat-card-head"><span class="stat-dot"></span><span class="stat-label">${item.label}</span></div><div class="stat-value">${item.value}</div><div class="stat-delta">${item.delta}</div><div class="stat-hint">${item.hint}</div></div>`).join('');
+        return;
+      }
       const report = reportDefinitions[state.currentReport];
       const items = state.currentReport === 'timeliness' ? buildTimelinessStats(getFilteredRows()) : report.stats;
       document.getElementById('statCards').innerHTML = items.map(item => `<div class="stat-card ${item.tone}"><div class="stat-card-head"><span class="stat-dot"></span><span class="stat-label">${item.label}</span></div><div class="stat-value">${item.value}</div><div class="stat-delta">${item.delta}</div><div class="stat-hint">${item.hint}</div></div>`).join('');
@@ -1180,7 +1944,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     function renderTimelinessOverview() {
       const section = document.getElementById('timelinessOverviewSection');
       if (!section) return;
-      const isVisible = state.currentReport === 'timeliness';
+      const isVisible = !isCustomReportView() && state.currentReport === 'timeliness';
       section.classList.toggle('hidden', !isVisible);
       if (!isVisible) return;
 
@@ -1372,6 +2136,11 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       return true;
     }
     function getFilteredRows() {
+      if (isCustomReportView()) {
+        const customReport = getCurrentCustomReport();
+        if (!customReport) return [];
+        return applyOrderFilters(getCustomDatasetRows(customReport.datasetCode), state.filters);
+      }
       const report = reportDefinitions[state.currentReport];
       const selectedWarehouses = state.filters.selectedWarehouses.length ? state.filters.selectedWarehouses : COMMON_WAREHOUSES;
       const selectedBusinessTypes = getActiveBusinessTypes(state.filters.businessTypes);
@@ -1551,6 +2320,46 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       document.getElementById('pageNumbers').innerHTML = pages.map(page => page === '...' ? `<span class="page-btn" style="cursor:default;">...</span>` : `<button type="button" class="page-btn ${page === state.pagination.currentPage ? 'active' : ''}" data-page="${page}">${page}</button>`).join('');
     }
     function renderTable() {
+      if (isCustomReportView()) {
+        const report = getCurrentCustomReport();
+        if (!report) {
+          document.getElementById('tableTitle').textContent = '自定义报表明细';
+          document.getElementById('tableToolbar').innerHTML = '';
+          document.getElementById('tableHead').innerHTML = '';
+          document.getElementById('tableBody').innerHTML = '<tr class="empty-row"><td colspan="1">当前自定义报表不存在或已失效</td></tr>';
+          return;
+        }
+        const aggregate = buildCustomAggregateResult(report, state.filters);
+        state.customAggregateCache = aggregate;
+        const maxPage = Math.max(1, Math.ceil(aggregate.rows.length / state.pagination.pageSize));
+        if (state.pagination.currentPage > maxPage) state.pagination.currentPage = maxPage;
+        const start = (state.pagination.currentPage - 1) * state.pagination.pageSize;
+        const pageRows = aggregate.rows.slice(start, start + state.pagination.pageSize);
+        document.getElementById('tableTitle').textContent = `${report.reportName}明细`;
+        document.getElementById('tableToolbar').innerHTML = [
+          `数据集:${aggregate.dataset.label}`,
+          `粒度:${aggregate.dataset.grainLabel}`,
+          `维度:${aggregate.dimensions.map(item => item.label).join('、') || '全部数据'}`,
+          `指标:${aggregate.metrics.map(item => item.alias).join('、') || '--'}`,
+          `TopN:${report.topN}`,
+          `排序:${report.sortDirection === 'asc' ? '升序' : '倒序'}`
+        ].map(text => `<span class="toolbar-tag">${text}</span>`).join('');
+        document.getElementById('columnConfigBtn').style.display = 'none';
+        document.getElementById('tableHead').innerHTML = `<tr>${aggregate.columns.map(column => `<th class="${column.align === 'right' ? 'cell-right' : ''}">${column.label}</th>`).join('')}</tr>`;
+        document.getElementById('detailTable').style.minWidth = `${Math.max(980, aggregate.columns.length * 160)}px`;
+        document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map((row, index) => `<tr class="${report.drilldownEnabled ? 'custom-row-drilldown' : ''}" ${report.drilldownEnabled ? `data-custom-drilldown-index="${start + index}"` : ''}>${aggregate.columns.map(column => {
+          if (column.key.startsWith('metric:')) {
+            const metric = aggregate.metrics.find(item => `metric:${item.index}` === column.key);
+            return `<td class="${column.align === 'right' ? 'cell-right' : ''}">${metric ? formatCustomMetricValue(metric, row[column.key]) : row[column.key]}</td>`;
+          }
+          return `<td>${row[column.key] ?? '--'}</td>`;
+        }).join('')}</tr>`).join('') : `<tr class="empty-row"><td colspan="${aggregate.columns.length || 1}">暂无匹配数据，请调整查询条件后重试</td></tr>`;
+        renderPagination(aggregate.rows.length);
+        document.getElementById('totalCount').textContent = aggregate.rows.length;
+        document.getElementById('currentStart').textContent = aggregate.rows.length ? start + 1 : 0;
+        document.getElementById('currentEnd').textContent = aggregate.rows.length ? Math.min(start + state.pagination.pageSize, aggregate.rows.length) : 0;
+        return;
+      }
       const report = reportDefinitions[state.currentReport];
       const filteredRows = getFilteredRows();
       const selectedWarehouses = state.filters.selectedWarehouses.length ? state.filters.selectedWarehouses : COMMON_WAREHOUSES;
@@ -1559,6 +2368,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       let total = filteredRows.length;
       let startIndex = 0;
       let endIndex = 0;
+      document.getElementById('columnConfigBtn').style.display = '';
 
       if (state.currentReport === 'timeliness') {
         const tableMeta = renderTimelinessTable(filteredRows, selectedBusinessTypes, report);
@@ -2164,6 +2974,13 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       modalBody.innerHTML = `<div class="ai-evidence-shell"><div><div class="section-title">图表佐证</div><div class="section-sub" style="margin-top:6px;">用轻量图表直观看到当前结论背后的结构分布</div><div style="margin-top:14px;">${renderAiVisualBlocks(result.evidenceCharts || [])}</div></div><div class="ai-evidence-grid"><div class="ai-card"><div class="section-title">重点样本</div><div class="section-sub" style="margin-top:6px;">默认只保留最值得复核的3条样本</div><div class="ai-list" style="margin-top:14px;">${result.evidenceRows.length ? result.evidenceRows.map(row => `<div class="evidence-card"><div class="evidence-head"><div class="evidence-title">${row.code}</div><span class="badge ${statusClass(row.status)}">${row.status}</span></div><div class="evidence-meta">${row.evidenceMeta || `${row.customer} / ${row.warehouse}`}</div><div class="evidence-tags"><span class="toolbar-tag">业务:${row.businessType || '--'}</span><span class="toolbar-tag">${row.evidenceTag || row.tag}</span><span class="toolbar-tag">${row.evidenceValue || `关键值:${row.value}`}</span><span class="toolbar-tag">更新时间:${row.time}</span></div></div>`).join('') : `<div class="ai-placeholder">当前筛选结果没有可展示的重点样本。</div>`}</div></div><div class="ai-card"><div class="section-title">结构摘要</div><div class="section-sub" style="margin-top:6px;">用于说明本次结论所依托的主要分布</div>${renderAiEvidenceSummary(result.evidenceSummary)}</div></div><div class="ai-card"><div class="section-title">分析依据</div><div class="section-sub" style="margin-top:6px;">适合评审时说明口径和判断原因</div><div class="ai-list" style="margin-top:14px;">${result.basis.map(item => `<div class="ai-list-item">${item}</div>`).join('')}</div></div></div>`;
     }
     function renderAiAnalysis() {
+      const section = document.getElementById('aiAnalysisSection');
+      if (isCustomReportView()) {
+        section.classList.add('hidden');
+        document.getElementById('aiEvidenceModal').classList.add('hidden');
+        return;
+      }
+      section.classList.remove('hidden');
       const rows = getFilteredRows();
       const button = document.getElementById('aiAnalyzeBtn');
       const buttonText = document.getElementById('aiAnalyzeBtnText');
@@ -2197,7 +3014,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       }
       content.innerHTML = `<div class="ai-placeholder">${state.ai.message}</div>`;
     }
-    function renderAll() { renderReportMenu(); renderFilters(); renderStats(); renderTimelinessOverview(); renderTable(); renderAiAnalysis(); renderTimelinessDetailModal(); renderColumnConfigModal(); }
+    function renderAll() { renderReportMenu(); renderFilters(); renderStats(); renderCustomReportOverview(); renderTimelinessOverview(); renderTable(); renderAiAnalysis(); renderTimelinessDetailModal(); renderColumnConfigModal(); renderCustomReportManager(); renderCustomReportBuilder(); renderCustomReportDrilldown(); }
     function setQuickRange(days) {
       const endDate = new Date(ANCHOR_DATE);
       const startDate = new Date(ANCHOR_DATE);
@@ -2210,26 +3027,27 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       document.querySelectorAll('.quick-range').forEach(button => { button.classList.toggle('active', Number(button.dataset.days) === days); });
     }
     function resetFilters() {
-      state.filters = {
-        startDate: '2026-01-01',
-        endDate: '2026-03-18',
-        customer: '',
-        businessTypes: isSingleBusinessTypeReport(state.currentReport) ? [TIMELINESS_BUSINESS_TYPE_OPTIONS[0]] : [...getReportBusinessTypeOptions(state.currentReport)],
-        filterA: '',
-        filterB: '',
-        keyword: '',
-        quickDays: 90,
-        selectedWarehouses: [...COMMON_WAREHOUSES]
-      };
+      if (isCustomReportView()) {
+        const currentCustom = getCurrentCustomReport();
+        resetFiltersForBaseReport(currentCustom?.sourceReportKey || 'order', currentCustom?.defaultFilters || null);
+      } else {
+        resetFiltersForBaseReport(state.currentReport);
+      }
       state.pagination.currentPage = 1;
       if (state.columnConfig.modalOpen) closeColumnConfigModal();
+      closeCustomReportDrilldown();
       closeTimelinessDetailModal();
       resetAiAnalysis('idle', '已恢复默认查询条件，点击生成AI分析可输出新的区间结论和优先关注事项。');
       renderAll();
     }
     function switchReport(reportKey) {
       if (!reportDefinitions[reportKey]) return;
+      state.reportMode = 'official';
       state.currentReport = reportKey;
+      state.currentCustomReportCode = '';
+      state.customManager.open = false;
+      closeCustomReportDrilldown();
+      if (state.customBuilder.open) closeCustomReportBuilder();
       state.filters.customer = '';
       state.filters.businessTypes = isSingleBusinessTypeReport(reportKey) ? [TIMELINESS_BUSINESS_TYPE_OPTIONS[0]] : [...getReportBusinessTypeOptions(reportKey)];
       state.filters.filterA = '';
@@ -2253,13 +3071,19 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         return false;
       }
       state.pagination.currentPage = 1;
+      closeCustomReportDrilldown();
       closeTimelinessDetailModal();
       renderStats();
+      renderCustomReportOverview();
       renderTimelinessOverview();
       renderTable();
       return true;
     }
     function triggerAiAnalysis() {
+      if (isCustomReportView()) {
+        showToast('自定义聚合报表默认不生成AI分析，请切换到官方报表查看AI结论', 'warning');
+        return;
+      }
       if (!applyFiltersAndRenderTable()) return;
       const rows = getFilteredRows();
       if (!rows.length) {
@@ -2293,6 +3117,33 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       document.addEventListener('click', event => {
         const reportTrigger = event.target.closest('[data-report]');
         if (reportTrigger) { switchReport(reportTrigger.dataset.report); return; }
+        const customReportTrigger = event.target.closest('[data-open-custom-report]');
+        if (customReportTrigger) {
+          openCustomReport(customReportTrigger.dataset.openCustomReport);
+          state.customManager.open = false;
+          renderCustomReportManager();
+          return;
+        }
+        const editCustomReportTrigger = event.target.closest('[data-edit-custom-report]');
+        if (editCustomReportTrigger) {
+          openCustomReportBuilder('edit', editCustomReportTrigger.dataset.editCustomReport);
+          return;
+        }
+        const duplicateCustomReportTrigger = event.target.closest('[data-duplicate-custom-report]');
+        if (duplicateCustomReportTrigger) {
+          openCustomReportBuilder('duplicate', duplicateCustomReportTrigger.dataset.duplicateCustomReport);
+          return;
+        }
+        const deleteCustomReportTrigger = event.target.closest('[data-delete-custom-report]');
+        if (deleteCustomReportTrigger) {
+          deleteCustomReport(deleteCustomReportTrigger.dataset.deleteCustomReport);
+          return;
+        }
+        const customDrilldownTrigger = event.target.closest('[data-custom-drilldown-index]');
+        if (customDrilldownTrigger) {
+          openCustomReportDrilldown(Number(customDrilldownTrigger.dataset.customDrilldownIndex));
+          return;
+        }
         const timelinessTrigger = event.target.closest('[data-timeliness-node-trigger]');
         if (timelinessTrigger) {
           openTimelinessDetailModal(timelinessTrigger.dataset.timelinessNodeTrigger, timelinessTrigger.dataset.timelinessDateTrigger || '');
@@ -2312,10 +3163,48 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       });
       document.getElementById('resetBtn').addEventListener('click', () => { resetFilters(); showToast('已重置查询条件'); });
       document.getElementById('exportBtn').addEventListener('click', () => {
-        const total = getFilteredRows().length;
+        const total = isCustomReportView() ? buildCustomAggregateResult(getCurrentCustomReport(), state.filters).rows.length : getFilteredRows().length;
         if (total > 100000) { showToast('数据量过大,请缩小查询范围', 'warning'); return; }
         showToast(`正在导出，共${total}条数据`, 'warning');
       });
+      document.getElementById('openCustomReportBuilderBtn').addEventListener('click', () => openCustomReportBuilder('create'));
+      document.getElementById('openCustomReportManagerBtn').addEventListener('click', () => {
+        state.customManager.open = true;
+        renderCustomReportManager();
+      });
+      document.getElementById('closeCustomReportManagerBtn').addEventListener('click', () => {
+        state.customManager.open = false;
+        renderCustomReportManager();
+      });
+      document.getElementById('customReportManagerBackdrop').addEventListener('click', () => {
+        state.customManager.open = false;
+        renderCustomReportManager();
+      });
+      document.getElementById('editCurrentCustomReportBtn').addEventListener('click', () => {
+        const report = getCurrentCustomReport();
+        if (!report) return;
+        openCustomReportBuilder('edit', report.reportCode);
+      });
+      document.getElementById('duplicateCurrentCustomReportBtn').addEventListener('click', () => {
+        const report = getCurrentCustomReport();
+        if (!report) return;
+        openCustomReportBuilder('duplicate', report.reportCode);
+      });
+      document.getElementById('deleteCurrentCustomReportBtn').addEventListener('click', () => {
+        const report = getCurrentCustomReport();
+        if (!report) return;
+        deleteCustomReport(report.reportCode);
+      });
+      document.getElementById('closeCustomReportBuilderBtn').addEventListener('click', closeCustomReportBuilder);
+      document.getElementById('customReportBuilderBackdrop').addEventListener('click', closeCustomReportBuilder);
+      document.getElementById('applyCustomReportBuilderBtn').addEventListener('click', () => {
+        if (!state.customBuilder.draft) return;
+        state.customBuilder.preview = buildCustomAggregateResult(state.customBuilder.draft, state.customBuilder.draft.defaultFilters);
+        renderCustomReportBuilder();
+        showToast('已刷新预览');
+      });
+      document.getElementById('saveCustomReportDraftBtn').addEventListener('click', () => saveCustomReport(true));
+      document.getElementById('saveCustomReportBtn').addEventListener('click', () => saveCustomReport(false));
       document.getElementById('subscribeBtn').addEventListener('click', () => { showToast('已订阅当前报表日报'); });
       document.getElementById('columnConfigBtn').addEventListener('click', openColumnConfigModal);
       document.getElementById('aiAnalyzeBtn').addEventListener('click', triggerAiAnalysis);
@@ -2342,11 +3231,15 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         state.ai.evidenceModalOpen = false;
         renderAiAnalysis();
       });
+      document.getElementById('closeCustomReportDrilldownBtn').addEventListener('click', closeCustomReportDrilldown);
+      document.getElementById('customReportDrilldownBackdrop').addEventListener('click', closeCustomReportDrilldown);
       document.getElementById('closeTimelinessDetailBtn').addEventListener('click', closeTimelinessDetailModal);
       document.getElementById('timelinessDetailBackdrop').addEventListener('click', closeTimelinessDetailModal);
       document.getElementById('prevBtn').addEventListener('click', () => { if (state.pagination.currentPage > 1) { state.pagination.currentPage -= 1; renderTable(); } });
       document.getElementById('nextBtn').addEventListener('click', () => {
-        const totalRows = state.currentReport === 'timeliness'
+        const totalRows = isCustomReportView()
+          ? buildCustomAggregateResult(getCurrentCustomReport(), state.filters).rows.length
+          : state.currentReport === 'timeliness'
           ? buildTimelinessDailyRows(getFilteredRows(), getCurrentTimelinessBusinessType(state.filters.businessTypes)).length
           : getFilteredRows().length;
         const totalPages = Math.max(1, Math.ceil(totalRows / state.pagination.pageSize));
@@ -2374,6 +3267,86 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
           setDraftFieldVisible(columnToggle.dataset.columnToggle, columnToggle.checked);
           return;
         }
+        if (event.target.matches('[data-builder-input="scope"]')) {
+          updateCustomBuilderDraft(draft => { draft.scope = event.target.value; });
+          return;
+        }
+        if (event.target.matches('[data-builder-input="datasetCode"]')) {
+          updateCustomBuilderDraft(draft => {
+            draft.datasetCode = event.target.value;
+            draft.dimensions = ['ownerName', '', ''].map((field, index) => index === 0 ? (getCustomDimensionOptions(draft.datasetCode)[0]?.key || '') : '');
+            const defaultMetricField = getCustomMetricOptions(draft.datasetCode)[0]?.key || 'orderNo';
+            const defaultAgg = defaultMetricField === 'orderNo' ? 'distinct_count' : 'sum';
+            draft.metrics = [
+              createDefaultCustomMetric(defaultMetricField, defaultAgg, getMetricDefaultAlias(getCustomMetricMeta(draft.datasetCode, defaultMetricField) || { label: defaultMetricField }, defaultAgg)),
+              createDefaultCustomMetric('', 'sum', ''),
+              createDefaultCustomMetric('', 'sum', '')
+            ];
+            draft.sortField = 'metric:0';
+          });
+          return;
+        }
+        if (event.target.matches('[data-builder-input="viewType"]')) {
+          updateCustomBuilderDraft(draft => { draft.viewType = event.target.value; });
+          return;
+        }
+        if (event.target.matches('[data-builder-input="sortField"]')) {
+          updateCustomBuilderDraft(draft => { draft.sortField = event.target.value; });
+          return;
+        }
+        if (event.target.matches('[data-builder-input="sortDirection"]')) {
+          updateCustomBuilderDraft(draft => { draft.sortDirection = event.target.value; });
+          return;
+        }
+        if (event.target.matches('[data-builder-input="topN"]')) {
+          updateCustomBuilderDraft(draft => { draft.topN = Number(event.target.value); });
+          return;
+        }
+        if (event.target.matches('[data-builder-input="drilldownEnabled"]')) {
+          updateCustomBuilderDraft(draft => { draft.drilldownEnabled = event.target.value === 'true'; });
+          return;
+        }
+        if (event.target.matches('[data-builder-dimension]')) {
+          const index = Number(event.target.dataset.builderDimension);
+          updateCustomBuilderDraft(draft => { draft.dimensions[index] = event.target.value; });
+          return;
+        }
+        if (event.target.matches('[data-builder-metric-field]')) {
+          const index = Number(event.target.dataset.builderMetricField);
+          updateCustomBuilderDraft(draft => {
+            draft.metrics[index].field = event.target.value;
+            const meta = getCustomMetricMeta(draft.datasetCode, event.target.value);
+            draft.metrics[index].agg = meta?.aggs[0] || 'sum';
+            draft.metrics[index].alias = event.target.value ? getMetricDefaultAlias(meta || { label: event.target.value }, draft.metrics[index].agg) : '';
+          });
+          return;
+        }
+        if (event.target.matches('[data-builder-metric-agg]')) {
+          const index = Number(event.target.dataset.builderMetricAgg);
+          updateCustomBuilderDraft(draft => {
+            draft.metrics[index].agg = event.target.value;
+            const meta = getCustomMetricMeta(draft.datasetCode, draft.metrics[index].field);
+            if (draft.metrics[index].field) draft.metrics[index].alias = getMetricDefaultAlias(meta || { label: draft.metrics[index].field }, draft.metrics[index].agg);
+          });
+          return;
+        }
+        if (event.target.matches('[data-builder-toggle="preserveFilters"]')) {
+          updateCustomBuilderDraft(draft => {
+            draft.preserveFilters = event.target.checked;
+            draft.defaultFilters = event.target.checked ? cloneFilters() : {
+              startDate: '2026-01-01',
+              endDate: '2026-03-18',
+              customer: '',
+              businessTypes: [...BUSINESS_TYPE_OPTIONS],
+              filterA: '',
+              filterB: '',
+              keyword: '',
+              quickDays: 90,
+              selectedWarehouses: [...COMMON_WAREHOUSES]
+            };
+          });
+          return;
+        }
         if (event.target.classList.contains('business-type-checkbox')) {
           if (isSingleBusinessTypeReport(state.currentReport)) {
             document.querySelectorAll('.business-type-checkbox').forEach(checkbox => {
@@ -2386,6 +3359,20 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
             refreshTimelinessNodeFilterOptions(getSelectedBusinessTypes());
           }
           syncBusinessTypeSelection(getSelectedBusinessTypes());
+        }
+      });
+      document.addEventListener('input', event => {
+        if (event.target.matches('[data-builder-input="reportName"]')) {
+          if (state.customBuilder.draft) state.customBuilder.draft.reportName = event.target.value;
+          return;
+        }
+        if (event.target.matches('[data-builder-input="description"]')) {
+          if (state.customBuilder.draft) state.customBuilder.draft.description = event.target.value;
+          return;
+        }
+        if (event.target.matches('[data-builder-metric-alias]')) {
+          const index = Number(event.target.dataset.builderMetricAlias);
+          if (state.customBuilder.draft?.metrics[index]) state.customBuilder.draft.metrics[index].alias = event.target.value;
         }
       });
       document.getElementById('warehouseBtn').addEventListener('click', event => { event.stopPropagation(); document.getElementById('warehouseDropdown').classList.toggle('hidden'); });
@@ -2407,6 +3394,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         state.pagination.currentPage = 1;
         closeTimelinessDetailModal();
         renderStats();
+        renderCustomReportOverview();
         renderTimelinessOverview();
         resetAiAnalysis('stale', '仓库范围已更新，请点击更新分析获取最新区间结论。');
         renderTable();
@@ -2448,8 +3436,21 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       });
       document.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
+          if (state.customBuilder.open) {
+            closeCustomReportBuilder();
+            return;
+          }
+          if (state.customManager.open) {
+            state.customManager.open = false;
+            renderCustomReportManager();
+            return;
+          }
           if (state.columnConfig.modalOpen) {
             closeColumnConfigModal();
+            return;
+          }
+          if (state.customDrilldown.open) {
+            closeCustomReportDrilldown();
             return;
           }
           if (state.timeliness.detailOpen) {
@@ -2495,6 +3496,8 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     document.addEventListener('DOMContentLoaded', () => {
       Chart.defaults.font.family = '"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif';
       Chart.defaults.color = '#627388';
+      state.customReports.mine = readCustomReportsFromStorage();
+      state.customReports.shared = SHARED_CUSTOM_REPORTS.map(item => ({ ...item }));
       if (window.innerWidth >= 768) document.getElementById('sidebar').classList.remove('-translate-x-full');
       renderAll();
       initEvents();
