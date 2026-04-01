@@ -1,7 +1,7 @@
     let selectedWarehouses = ['WH001', 'WH002', 'WH003', 'WH004', 'WH005', 'WH006'];
-    const LAYOUT_STORAGE_VERSION = 3;
-    const KPI_STORAGE_VERSION = 8;
-    const DEFAULT_COMPONENT_ORDER = ['trend', 'timeliness', 'efficiency', 'shortcut', 'operatingReport', 'inventory', 'alert', 'todo', 'message'];
+    const LAYOUT_STORAGE_VERSION = 4;
+    const KPI_STORAGE_VERSION = 9;
+    const DEFAULT_COMPONENT_ORDER = ['todo', 'alert', 'shortcut', 'inventory', 'timeliness', 'trend', 'efficiency', 'operatingReport', 'message'];
     const DEFAULT_HIDDEN_KPI_KEYS = ['outboundQty', 'outboundWeight', 'outboundPieces', 'inboundWeight', 'inboundPieces', 'inventory', 'orphanOrders'];
     
     const defaultLayout = {
@@ -38,7 +38,8 @@
         { key: 'inboundQty', show: true },
         { key: 'returnInventory', show: true },
         { key: 'orderQty', show: true },
-        { key: 'exceptionOrder', show: true },
+        { key: 'changeOrderQty', show: true },
+        { key: 'exceptionOrder', show: false },
         { key: 'signoutQty', show: true },
         { key: 'outboundQty', show: false },
         { key: 'outboundWeight', show: false },
@@ -47,7 +48,7 @@
         { key: 'inboundPieces', show: false },
         { key: 'inventory', show: false },
         { key: 'complaintRate', show: true },
-        { key: 'signRate', show: true },
+        { key: 'signRate', show: false },
         { key: 'redispatchRate', show: true },
         { key: 'orphanOrders', show: false }
       ]
@@ -106,9 +107,8 @@
     function syncShortcutGridLayout() {
       const shortcutGrid = document.getElementById('shortcutGrid');
       if (!shortcutGrid) return;
-      const shortcutWidth = currentLayout.shortcut?.width || 1;
       shortcutGrid.classList.remove('md:grid-cols-2', 'md:grid-cols-4');
-      shortcutGrid.classList.add(shortcutWidth === 2 ? 'md:grid-cols-4' : 'md:grid-cols-2');
+      shortcutGrid.classList.add('md:grid-cols-4');
     }
     function applyShortcutConfig() {
       let visibleCount = 0;
@@ -169,6 +169,30 @@
       });
       updateShortcutOptionStates();
     }
+    function formatMetricNumber(value) {
+      return Number(value || 0).toLocaleString('zh-CN');
+    }
+    function syncShipmentOrderCard() {
+      const card = document.querySelector('[data-shipment-order-card]');
+      if (!card) return;
+      let total = 0;
+      let signedValue = 0;
+      card.querySelectorAll('[data-shipment-metric]').forEach(metricNode => {
+        const metricValue = Number(metricNode.dataset.value || 0);
+        metricNode.textContent = formatMetricNumber(metricValue);
+        total += metricValue;
+        if (metricNode.dataset.shipmentMetric === 'signed') {
+          signedValue = metricValue;
+        }
+      });
+      const totalNode = card.querySelector('[data-shipment-total]');
+      if (totalNode) totalNode.textContent = formatMetricNumber(total);
+      const rateNode = card.querySelector('[data-shipment-rate]');
+      if (rateNode) {
+        const signedRate = total > 0 ? ((signedValue / total) * 100).toFixed(1) : '0.0';
+        rateNode.textContent = `${signedRate}%`;
+      }
+    }
     function applyShortcutConfigSelection() {
       currentShortcutConfig = collectShortcutConfigFromModal();
       applyShortcutConfig();
@@ -177,16 +201,21 @@
       alert('快捷按钮配置已更新！');
     }
     function formatTime(seconds) {
-      if (seconds >= 3600) {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        return `${hours}h${minutes}m${secs}s`;
-      } else {
-        const minutes = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${minutes}m${secs}s`;
+      const totalMinutes = Math.max(0, Math.round((Number(seconds) || 0) / 60));
+      const days = Math.floor(totalMinutes / 1440);
+      const hours = Math.floor((totalMinutes % 1440) / 60);
+      const minutes = totalMinutes % 60;
+      return `${days}天${hours}小时${minutes}分钟`;
+    }
+    function formatTimeCompact(seconds) {
+      const totalMinutes = Math.max(0, Math.round((Number(seconds) || 0) / 60));
+      const days = Math.floor(totalMinutes / 1440);
+      const hours = Math.floor((totalMinutes % 1440) / 60);
+      const minutes = totalMinutes % 60;
+      if (days > 0) {
+        return `${days}d${hours}h${minutes}m`;
       }
+      return `${hours}h${minutes}m`;
     }
     const MODULE_TIME_FILTER_KEYS = ['trend', 'efficiency', 'timeliness'];
     const MODULE_RANGE_PRESET_MAP = {
@@ -488,23 +517,25 @@
     }
     
     const beihuoData = [
-      { name: '入库', time: 915, abnormal: false, reason: '' },
-      { name: '上架', time: 2118, abnormal: true, reason: '上架员设备故障' },
-      { name: '拣货', time: 2723, abnormal: false, reason: '' },
-      { name: '打包', time: 1508, abnormal: true, reason: '打包台空间不足' },
-      { name: '出库', time: 612, abnormal: false, reason: '' }
+      { name: '下单', time: 195120, abnormal: false, reason: '' },
+      { name: '审核', time: 27300, abnormal: true, reason: '审核队列积压' },
+      { name: '装载', time: 12000, abnormal: false, reason: '' },
+      { name: '打包', time: 9900, abnormal: false, reason: '' },
+      { name: '发货', time: 22200, abnormal: true, reason: '发货交接排队' },
+      { name: '上线', time: 153000, abnormal: false, reason: '' },
+      { name: '签收', time: 1800, abnormal: false, reason: '' }
     ];
     
     const ganxianData = [
-      { name: '司机登记', time: 485, abnormal: false, reason: '' },
-      { name: '入库', time: 1215, abnormal: false, reason: '' },
-      { name: '上架', time: 1822, abnormal: true, reason: '货架空间紧张' },
-      { name: '数据确认', time: 918, abnormal: false, reason: '' },
-      { name: '通知出库', time: 607, abnormal: false, reason: '' },
-      { name: '配载出库', time: 1533, abnormal: false, reason: '' },
-      { name: '装车', time: 5448, abnormal: true, reason: '装卸人员不足' },
-      { name: '机场预约', time: 726, abnormal: false, reason: '' },
-      { name: '发车', time: 312, abnormal: false, reason: '' }
+      { name: '司机登记', time: 4800, abnormal: false, reason: '' },
+      { name: '入库', time: 22500, abnormal: false, reason: '' },
+      { name: '上架', time: 128400, abnormal: false, reason: '' },
+      { name: '数据确认', time: 180600, abnormal: true, reason: '待报关资料回传' },
+      { name: '通知出库', time: 20400, abnormal: true, reason: '等待航班放舱通知' },
+      { name: '配载出库', time: 30600, abnormal: false, reason: '' },
+      { name: '装车', time: 47700, abnormal: true, reason: '装卸人员不足' },
+      { name: '机场预约', time: 24600, abnormal: false, reason: '' },
+      { name: '发车', time: 8400, abnormal: false, reason: '' }
     ];
     
     function switchTimelinessTab(tab) {
@@ -585,7 +616,7 @@
       arrow.className = 'flex flex-col items-center justify-center px-1';
       const timeLabel = document.createElement('div');
       timeLabel.className = `flow-time ${isAbnormal ? 'bg-accent-rose/20 border-2 border-accent-rose text-accent-roseLight abnormal' : 'bg-slate-100 text-slate-600/70'} rounded-full px-2 py-0.5 text-xs font-mono font-medium cursor-pointer relative mb-1 hover:ring-2 hover:ring-accent-cyan/50 transition-all`;
-      timeLabel.textContent = formatTime(time);
+      timeLabel.textContent = formatTimeCompact(time);
       timeLabel.onclick = () => openTimelinessDetail(nextName, time, isAbnormal, reason);
       arrow.appendChild(timeLabel);
       
@@ -610,7 +641,7 @@
       
       const timeLabel = document.createElement('div');
       timeLabel.className = `flow-time ${isAbnormal ? 'bg-accent-rose/20 border-2 border-accent-rose text-accent-roseLight abnormal' : 'bg-slate-100 text-slate-600/70'} rounded-full px-2 py-0.5 text-xs font-mono font-medium cursor-pointer relative hover:ring-2 hover:ring-accent-cyan/50 transition-all`;
-      timeLabel.textContent = formatTime(time);
+      timeLabel.textContent = formatTimeCompact(time);
       timeLabel.onclick = () => openTimelinessDetail(nextName, time, isAbnormal, reason);
       downArrow.appendChild(timeLabel);
       
@@ -624,9 +655,13 @@
     let currentTimelinessData = null;
     let currentAbnormalRecords = null;
     let currentAvgTime = 0;
+    let currentTimelinessBaseTime = 1200;
+    let currentTimelinessAbnormalReason = '';
     
     function openTimelinessDetail(nodeName, currentTime, isAbnormal, reason) {
       currentTimelinessNode = nodeName;
+      currentTimelinessBaseTime = Math.max(300, currentTime || 300);
+      currentTimelinessAbnormalReason = reason || '';
       document.getElementById('timelinessDetailModal').classList.remove('hidden');
       document.getElementById('timelinessDetailTitle').textContent = `${nodeName} - 时效统计详情`;
       document.getElementById('timelinessDetailSubtitle').textContent = `当前时效: ${formatTime(currentTime)}${isAbnormal ? ' (异常)' : ''}`;
@@ -644,6 +679,8 @@
       }
       currentTimelinessData = null;
       currentAbnormalRecords = null;
+      currentTimelinessBaseTime = 1200;
+      currentTimelinessAbnormalReason = '';
     }
     
     function bindTimelinessRangeButtons() {
@@ -671,7 +708,9 @@
     function generateTimelinessData(days) {
       const data = [];
       const abnormalRecords = [];
-      const baseTime = Math.floor(Math.random() * 1000) + 500;
+      const baseTime = Math.max(300, currentTimelinessBaseTime || 1200);
+      const volatility = baseTime >= 86400 ? 0.12 : baseTime >= 3600 ? 0.18 : 0.3;
+      const abnormalThreshold = baseTime >= 86400 ? baseTime * 1.12 : baseTime >= 3600 ? baseTime * 1.2 : 2000;
       const today = new Date();
       
       for (let i = days - 1; i >= 0; i--) {
@@ -679,22 +718,23 @@
         date.setDate(date.getDate() - i);
         const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
         
-        const variance = Math.floor(Math.random() * 800) - 300;
-        const time = Math.max(300, baseTime + variance);
-        const isAbnormal = time > 2000 || Math.random() < 0.1;
+        const varianceFactor = 1 + ((Math.random() * 2 - 1) * volatility);
+        const time = Math.max(300, Math.round(baseTime * varianceFactor));
+        const isAbnormal = time > abnormalThreshold || Math.random() < (currentTimelinessAbnormalReason ? 0.18 : 0.08);
+        const abnormalReason = isAbnormal ? (currentTimelinessAbnormalReason || getRandomReason()) : '';
         
         data.push({
           date: dateStr,
           time: time,
           isAbnormal: isAbnormal,
-          reason: isAbnormal ? getRandomReason() : ''
+          reason: abnormalReason
         });
         
         if (isAbnormal) {
           abnormalRecords.push({
             date: dateStr,
             time: time,
-            reason: getRandomReason()
+            reason: abnormalReason
           });
         }
       }
@@ -778,14 +818,14 @@
           ctx.moveTo(xStart, yPixel);
           ctx.lineTo(xEnd, yPixel);
           ctx.stroke();
-          
+
           ctx.setLineDash([]);
           ctx.fillStyle = '#f59e0b';
           ctx.font = 'bold 12px Plus Jakarta Sans';
           ctx.textAlign = 'right';
           ctx.textBaseline = 'bottom';
           ctx.fillText(`平均: ${formatTime(avgTime)}`, xEnd - 5, yPixel - 5);
-          
+
           ctx.restore();
         }
       };
@@ -824,6 +864,9 @@
                 color: textColor,
                 usePointStyle: true
               }
+            },
+            datalabels: {
+              display: false
             },
             tooltip: {
               callbacks: {
@@ -1066,7 +1109,7 @@
       const kpiGrid = document.getElementById('kpiGrid');
       if (!kpiGrid) return;
       const visibleItems = (currentKpiConfig.items || []).filter(c => c.show);
-      const hasCompositeCards = visibleItems.some(item => ['inboundQty', 'returnInventory', 'orderQty', 'signoutQty'].includes(item.key));
+      const hasCompositeCards = visibleItems.some(item => ['inboundQty', 'returnInventory', 'orderQty', 'changeOrderQty', 'signoutQty'].includes(item.key));
       const orderedCards = [];
       // 隐藏所有卡片
       kpiGrid.querySelectorAll('[data-kpi]').forEach(card => {
@@ -1089,7 +1132,7 @@
     }
     function updateKpiGridColumns(count, hasCompositeCards = false) {
       const kpiGrid = document.getElementById('kpiGrid');
-      kpiGrid.classList.remove('xl:grid-cols-9', 'xl:grid-cols-8', 'xl:grid-cols-6', 'xl:grid-cols-5', 'xl:grid-cols-4', 'xl:grid-cols-3', 'xl:grid-cols-2', 'xl:grid-cols-1');
+      kpiGrid.classList.remove('xl:grid-cols-11', 'xl:grid-cols-10', 'xl:grid-cols-9', 'xl:grid-cols-8', 'xl:grid-cols-6', 'xl:grid-cols-5', 'xl:grid-cols-4', 'xl:grid-cols-3', 'xl:grid-cols-2', 'xl:grid-cols-1');
       if (count <= 2) {
         kpiGrid.classList.add('xl:grid-cols-2');
       } else if (count <= 3) {
@@ -1097,7 +1140,7 @@
       } else if (count <= 4) {
         kpiGrid.classList.add('xl:grid-cols-4');
       } else if (hasCompositeCards) {
-        kpiGrid.classList.add('xl:grid-cols-9');
+        kpiGrid.classList.add('xl:grid-cols-11');
       } else if (count <= 6) {
         kpiGrid.classList.add('xl:grid-cols-6');
       } else {
@@ -1144,6 +1187,41 @@
         syncKpiConfigModal();
         applyKpiConfig();
       }
+    }
+    function buildExceptionOrderListPageName(orderType) {
+      return `${orderType}异常订单列表页`;
+    }
+    function buildTodoListPageName(businessType, taskType) {
+      return `${businessType}${taskType}列表页`;
+    }
+    function bindExceptionOrderNavigation() {
+      const alertModule = document.querySelector('[data-component="alert"]');
+      if (!alertModule) return;
+      alertModule.addEventListener('click', function(event) {
+        const clickableTarget = event.target.closest('.order-code, .order-type');
+        if (!clickableTarget) return;
+        const row = clickableTarget.closest('.order-row');
+        if (!row) return;
+        const orderNo = row.querySelector('.order-code')?.textContent?.trim() || '--';
+        const orderType = row.querySelector('.order-type')?.textContent?.trim() || '异常订单';
+        const targetPage = buildExceptionOrderListPageName(orderType);
+        const promptText = clickableTarget.classList.contains('order-code')
+          ? `将跳转至【${targetPage}】\n并自动带入订单号：${orderNo}`
+          : `将跳转至【${targetPage}】\n并自动筛选订单类型：${orderType}`;
+        alert(promptText);
+      });
+    }
+    function bindTodoMatrixNavigation() {
+      const todoModule = document.querySelector('[data-component="todo"]');
+      if (!todoModule) return;
+      todoModule.addEventListener('click', function(event) {
+        const cell = event.target.closest('.todo-matrix-cell.is-clickable');
+        if (!cell) return;
+        const businessType = cell.dataset.business || '业务';
+        const taskType = cell.dataset.task || '待办任务';
+        const targetPage = buildTodoListPageName(businessType, taskType);
+        alert(`将跳转至【${targetPage}】\n并自动筛选业务类型：${businessType}\n任务类型：${taskType}`);
+      });
     }
     // 已移除initKpiMaxControls函数，最大显示数量固定为10
     function initKpiCheckboxListeners() {
@@ -1214,6 +1292,7 @@
       // KPI配置初始化
       loadKpiConfigFromStorage();
       renderKpiGrid();
+      syncShipmentOrderCard();
       document.getElementById('kpiConfigBtn').addEventListener('click', openKpiConfigModal);
       document.getElementById('applyKpiConfigBtn').addEventListener('click', applyKpiConfig);
       document.getElementById('resetKpiConfigBtn').addEventListener('click', resetKpiConfig);
@@ -1280,6 +1359,8 @@
           document.getElementById('warehouseDropdown').classList.add('hidden');
         }
       });
+      bindExceptionOrderNavigation();
+      bindTodoMatrixNavigation();
     });
     function openLayoutModal() {
       document.getElementById('layoutModal').classList.remove('hidden');
