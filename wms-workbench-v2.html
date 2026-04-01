@@ -178,7 +178,7 @@
             配置指标
           </button>
         </div>
-        <div id="kpiGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 xl:grid-cols-9 gap-4">
+        <div id="kpiGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 xl:grid-cols-11 gap-4">
           <!-- SKU库存卡片 -->
           <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="inboundQty" style="--accent-color: #7d67ff; --accent-color-light: #9381ff; animation-delay: 0.1s;">
             <div class="relative z-10 h-full">
@@ -286,7 +286,10 @@
             <div class="relative z-10 h-full">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <p class="text-[11px] font-medium tracking-wide text-slate-600/50">今日订单总数</p>
+                  <div class="flex items-center gap-2">
+                    <p class="text-[11px] font-medium tracking-wide text-slate-600/50">订单总数</p>
+                    <span class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600/70">今日</span>
+                  </div>
                   <p class="mt-1 text-[26px] font-bold text-slate-800 font-mono leading-none">193</p>
                 </div>
                 <div class="w-11 h-11 rounded-xl bg-teal-500/15 flex items-center justify-center flex-shrink-0">
@@ -332,6 +335,47 @@
             </div>
           </div>
 
+          <!-- 换单订单卡片 -->
+          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="changeOrderQty" style="--accent-color: #2563eb; --accent-color-light: #60a5fa; animation-delay: 0.19s;">
+            <div class="relative z-10 h-full">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="text-[11px] font-medium tracking-wide text-slate-600/50">换单订单总数</p>
+                    <span class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600/70">今日</span>
+                  </div>
+                  <p class="mt-1.5 text-[26px] font-bold text-slate-800 font-mono leading-none">74</p>
+                </div>
+                <div class="w-11 h-11 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+                  <i class="ri-links-line text-2xl text-blue-500"></i>
+                </div>
+              </div>
+              <div class="mt-3.5">
+                <div class="grid grid-cols-[56px_repeat(3,minmax(0,1fr))] gap-x-2 gap-y-1.5 items-center">
+                  <span></span>
+                  <span class="text-[10px] font-semibold tracking-[0.08em] text-slate-600/60 text-center">已签入</span>
+                  <span class="text-[10px] font-semibold tracking-[0.08em] text-slate-600/60 text-center">已出库</span>
+                  <span class="text-[10px] font-semibold tracking-[0.08em] text-accent-rose text-center">拦截</span>
+
+                  <span class="text-[10px] font-medium tracking-wide text-slate-600/55">今日</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">26</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">18</span>
+                  <span class="text-[12px] font-semibold text-accent-rose font-mono text-center">3</span>
+
+                  <span class="text-[10px] font-medium tracking-wide text-slate-600/55">本周</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">132</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">106</span>
+                  <span class="text-[12px] font-semibold text-accent-rose font-mono text-center">11</span>
+
+                  <span class="text-[10px] font-medium tracking-wide text-slate-600/55">本月</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">508</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">462</span>
+                  <span class="text-[12px] font-semibold text-accent-rose font-mono text-center">39</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- 异常订单数卡片 -->
           <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="exceptionOrder" style="--accent-color: #e11d48; --accent-color-light: #fb7185; animation-delay: 0.20s;">
             <div class="flex items-start justify-between relative z-10">
@@ -350,53 +394,70 @@
             </div>
           </div>
 
-          <!-- 签出订单卡片 -->
-          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="signoutQty" style="--accent-color: #334155; --accent-color-light: #64748b; animation-delay: 0.22s;">
+          <!-- 发货订单卡片 -->
+          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="signoutQty" data-shipment-order-card style="--accent-color: #334155; --accent-color-light: #64748b; animation-delay: 0.22s;">
             <div class="relative z-10 h-full">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <p class="text-[11px] font-medium tracking-wide text-slate-600/50">签出订单总数</p>
-                  <p class="mt-1.5 text-[26px] font-bold text-slate-800 font-mono leading-none">159</p>
+                  <div class="flex items-center gap-2">
+                    <p class="text-[11px] font-medium tracking-wide text-slate-600/50">发货订单总数</p>
+                    <span class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600/70">近30天</span>
+                  </div>
+                  <p class="mt-1 text-[25px] font-bold text-slate-800 font-mono leading-none" data-shipment-total>--</p>
                 </div>
                 <div class="w-11 h-11 rounded-xl bg-slate-500/15 flex items-center justify-center flex-shrink-0">
-                  <i class="ri-logout-box-r-line text-2xl text-slate-500"></i>
+                  <i class="ri-truck-line text-2xl text-slate-500"></i>
                 </div>
               </div>
-              <div class="mt-3.5 grid grid-cols-2 gap-x-3 gap-y-2">
+              <div class="mt-1.5 flex items-center justify-between gap-3 rounded-md bg-emerald-50/60 px-2 py-1 text-[11px] leading-none shadow-[inset_0_0_0_1px_rgba(16,185,129,0.16)]">
+                <div class="flex items-center gap-1.5 text-slate-600/75">
+                  <i class="ri-checkbox-circle-line text-[14px] text-emerald-600"></i>
+                  <span class="font-medium">已签收</span>
+                </div>
+                <div class="flex items-center gap-2.5 text-right">
+                  <span class="text-[15px] font-semibold text-emerald-700 font-mono">
+                    <span data-shipment-metric="signed" data-value="3862">--</span><span class="ml-0.5 text-[11px] font-medium text-slate-500">单</span>
+                  </span>
+                  <span class="text-[11px] text-slate-500">
+                    签收率<span class="ml-0.5 font-mono font-semibold text-emerald-700" data-shipment-rate>--</span>
+                  </span>
+                </div>
+              </div>
+              <div class="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-2">
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">未上线</p>
-                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none">23</p>
+                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none" data-shipment-metric="pending" data-value="123">--</p>
                   </div>
                 </div>
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">已上线</p>
-                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none">96</p>
+                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none" data-shipment-metric="online" data-value="174">--</p>
                   </div>
                 </div>
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">已拒收</p>
-                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none">12</p>
+                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none" data-shipment-metric="rejected" data-value="31">--</p>
                   </div>
                 </div>
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">上线异常</p>
-                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none">8</p>
+                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none" data-shipment-metric="onlineException" data-value="18">--</p>
                   </div>
                 </div>
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">停更</p>
-                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none">15</p>
+                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none" data-shipment-metric="stale" data-value="52">--</p>
                   </div>
                 </div>
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">丢件</p>
-                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none">5</p>
+                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none" data-shipment-metric="lost" data-value="8">--</p>
                   </div>
                 </div>
               </div>
@@ -546,172 +607,176 @@
         <div id="dashboardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- 待办任务组件 -->
           <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="todo" style="animation-delay: 0.4s;">
-            <div class="flex items-center justify-between mb-5 drag-handle">
+            <div class="flex items-start justify-between mb-5 drag-handle gap-4">
               <h3 class="font-semibold text-slate-800 flex items-center text-lg">
                 <div class="w-8 h-8 rounded-lg bg-accent-cyan/20 flex items-center justify-center mr-3">
                   <i class="ri-task-line text-accent-cyan"></i>
                 </div>
                 待办任务
               </h3>
-              <div class="flex items-center space-x-2 text-slate-600/50 text-xs">
-                <span>自动刷新</span>
-                <span class="w-2 h-2 bg-accent-emerald rounded-full glow-dot animate-pulse"></span>
+              <div class="text-right flex-shrink-0">
+                <p class="text-[11px] text-slate-600/50">总待办</p>
+                <p class="mt-1 text-2xl font-bold text-slate-800 font-mono leading-none">94</p>
               </div>
             </div>
-            <div class="module-content module-scroll space-y-3">
-              <!-- 待上架订单 -->
-              <div class="task-item flex items-center justify-between p-4 bg-stat-blue/10 border border-stat-blue/20 rounded-xl cursor-pointer hover:bg-stat-blue/15">
-                <div class="flex items-center">
-                  <div class="w-11 h-11 rounded-xl bg-stat-blue/20 flex items-center justify-center">
-                    <i class="ri-upload-2-line text-xl text-stat-blueLight"></i>
-                  </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-slate-800">待上架订单</p>
-                    <p class="text-xs text-slate-600/50 mt-0.5">需要及时处理</p>
-                  </div>
+            <div class="module-content module-fill">
+              <div class="todo-matrix-shell flex-1 min-h-0">
+                <div class="todo-matrix-head">
+                  <span></span>
+                  <span>备货</span>
+                  <span>换单</span>
+                  <span>重派</span>
+                  <span>装袋</span>
                 </div>
-                <div class="text-right">
-                  <p class="text-2xl font-bold text-slate-800 font-mono">156</p>
-                  <p class="text-xs text-accent-rose mt-0.5 flex items-center justify-end">
-                    <i class="ri-time-line mr-1"></i>超时 23
-                  </p>
-                </div>
-              </div>
-              
-              <!-- 待出库订单 -->
-              <div class="task-item flex items-center justify-between p-4 bg-stat-green/10 border border-stat-green/20 rounded-xl cursor-pointer hover:bg-stat-green/15">
-                <div class="flex items-center">
-                  <div class="w-11 h-11 rounded-xl bg-stat-green/20 flex items-center justify-center">
-                    <i class="ri-truck-line text-xl text-stat-greenLight"></i>
+                <div class="todo-matrix-body">
+                  <div class="todo-matrix-row">
+                    <span class="todo-matrix-label">待审核</span>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="待审核">12</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="待审核">3</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="待审核">5</button>
+                    <span class="todo-matrix-cell is-empty">-</span>
                   </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-slate-800">待出库订单</p>
-                    <p class="text-xs text-slate-600/50 mt-0.5">今日待处理</p>
+                  <div class="todo-matrix-row">
+                    <span class="todo-matrix-label">待上架</span>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="待上架">7</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="待上架">2</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="待上架">4</button>
+                    <span class="todo-matrix-cell is-empty">-</span>
                   </div>
-                </div>
-                <div class="text-right">
-                  <p class="text-2xl font-bold text-slate-800 font-mono">89</p>
-                  <p class="text-xs text-accent-emerald mt-0.5 flex items-center justify-end">
-                    <i class="ri-checkbox-circle-line mr-1"></i>正常
-                  </p>
-                </div>
-              </div>
-              
-              <!-- 待装车订单 -->
-              <div class="task-item flex items-center justify-between p-4 bg-stat-yellow/10 border border-stat-yellow/20 rounded-xl cursor-pointer hover:bg-stat-yellow/15">
-                <div class="flex items-center">
-                  <div class="w-11 h-11 rounded-xl bg-stat-yellow/20 flex items-center justify-center">
-                    <i class="ri-car-line text-xl text-stat-yellowLight"></i>
+                  <div class="todo-matrix-row">
+                    <span class="todo-matrix-label">待出库</span>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="待出库">16</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="待出库">8</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="待出库">9</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="装袋" data-task="待出库">11</button>
                   </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-slate-800">待装车订单</p>
-                    <p class="text-xs text-slate-600/50 mt-0.5">等待装车</p>
+                  <div class="todo-matrix-row">
+                    <span class="todo-matrix-label">轨迹停更</span>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="轨迹停更">4</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="轨迹停更">1</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="轨迹停更">6</button>
+                    <span class="todo-matrix-cell is-empty">-</span>
                   </div>
-                </div>
-                <div class="text-right">
-                  <p class="text-2xl font-bold text-slate-800 font-mono">45</p>
-                  <p class="text-xs text-accent-rose mt-0.5 flex items-center justify-end">
-                    <i class="ri-time-line mr-1"></i>超时 12
-                  </p>
-                </div>
-              </div>
-              
-              <!-- 待审核单据 -->
-              <div class="task-item flex items-center justify-between p-4 bg-stat-purple/10 border border-stat-purple/20 rounded-xl cursor-pointer hover:bg-stat-purple/15">
-                <div class="flex items-center">
-                  <div class="w-11 h-11 rounded-xl bg-stat-purple/20 flex items-center justify-center">
-                    <i class="ri-file-text-line text-xl text-stat-purpleLight"></i>
+                  <div class="todo-matrix-row">
+                    <span class="todo-matrix-label">异常订单</span>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="异常订单">2</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="异常订单">1</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="异常订单">3</button>
+                    <span class="todo-matrix-cell is-empty">-</span>
                   </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-slate-800">待审核单据</p>
-                    <p class="text-xs text-slate-600/50 mt-0.5">需要审核</p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="text-2xl font-bold text-slate-800 font-mono">23</p>
-                  <p class="text-xs text-accent-emerald mt-0.5 flex items-center justify-end">
-                    <i class="ri-checkbox-circle-line mr-1"></i>正常
-                  </p>
-                </div>
-              </div>
-              
-              <!-- 未处理客诉 -->
-              <div class="task-item flex items-center justify-between p-4 bg-stat-red/10 border border-stat-red/20 rounded-xl cursor-pointer hover:bg-stat-red/15">
-                <div class="flex items-center">
-                  <div class="w-11 h-11 rounded-xl bg-stat-red/20 flex items-center justify-center">
-                    <i class="ri-alarm-warning-line text-xl text-stat-redLight"></i>
-                  </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-slate-800">未处理客诉</p>
-                    <p class="text-xs text-slate-600/50 mt-0.5">紧急处理</p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="text-2xl font-bold text-slate-800 font-mono">8</p>
-                  <p class="text-xs text-accent-rose mt-0.5 flex items-center justify-end">
-                    <i class="ri-time-line mr-1"></i>超时 5
-                  </p>
                 </div>
               </div>
             </div>
           </div>
           
-          <!-- 异常预警组件 -->
+          <!-- 异常订单组件 -->
           <div class="glass-card dashboard-module rounded-2xl p-5 col-span-1 md:col-span-1 animate-slide-up" data-component="alert" style="animation-delay: 0.45s;">
-            <div class="flex items-center justify-between mb-5 drag-handle">
+            <div class="flex items-start justify-between mb-5 drag-handle gap-4">
               <h3 class="font-semibold text-slate-800 flex items-center text-lg">
                 <div class="w-8 h-8 rounded-lg bg-accent-rose/20 flex items-center justify-center mr-3">
-                  <i class="ri-alarm-warning-line text-accent-rose"></i>
+                  <i class="ri-file-warning-line text-accent-rose"></i>
                 </div>
-                异常预警
+                异常订单
               </h3>
-              <div class="flex items-center space-x-2 text-slate-600/50 text-xs">
-                <span>30秒刷新</span>
-                <span class="w-2 h-2 bg-accent-emerald rounded-full glow-dot animate-pulse"></span>
+              <div class="text-right flex-shrink-0">
+                <p class="text-[11px] text-slate-600/50">总量</p>
+                <p class="mt-1 text-2xl font-bold text-accent-rose font-mono leading-none">23</p>
               </div>
             </div>
-            <div class="module-content module-scroll space-y-3">
-              <!-- 高级异常 -->
-              <div class="alert-item p-3 bg-accent-rose/10 border-accent-rose rounded-xl">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <p class="text-sm font-medium text-accent-roseLight">出库积压严重</p>
-                    <p class="text-xs text-slate-600/60 mt-1">当前积压订单 256 单，超过阈值 200</p>
-                  </div>
-                  <span class="px-2 py-1 text-xs font-medium text-white bg-accent-rose rounded-md flex-shrink-0 ml-2">高</span>
+            <div class="module-content module-fill">
+              <div class="order-list-shell flex-1 min-h-0">
+                <div class="order-list-head">
+                  <span>订单号</span>
+                  <span>订单类型</span>
+                  <span>异常时间</span>
                 </div>
-              </div>
-              
-              <!-- 中级异常 -->
-              <div class="alert-item p-3 bg-accent-amber/10 border-accent-amber rounded-xl">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <p class="text-sm font-medium text-accent-amberLight">库存预警</p>
-                    <p class="text-xs text-slate-600/60 mt-1">SKU001 库存低于安全库存</p>
+                <div class="order-scroll-viewport">
+                  <div class="order-scroll-track">
+                    <div class="order-scroll-group">
+                      <div class="order-row">
+                        <span class="order-code">BH202603310023</span>
+                        <span class="order-type">备货订单</span>
+                        <span class="order-time">2026-03-31 15:42:18</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">CP202603310019</span>
+                        <span class="order-type">重派订单</span>
+                        <span class="order-time">2026-03-31 15:28:06</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">HD202603310041</span>
+                        <span class="order-type">大货订单</span>
+                        <span class="order-time">2026-03-31 15:11:43</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">HD202603310037</span>
+                        <span class="order-type">换单订单</span>
+                        <span class="order-time">2026-03-31 14:57:22</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">BH202603310018</span>
+                        <span class="order-type">备货订单</span>
+                        <span class="order-time">2026-03-31 14:35:09</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">CP202603310014</span>
+                        <span class="order-type">重派订单</span>
+                        <span class="order-time">2026-03-31 14:13:54</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">HD202603310029</span>
+                        <span class="order-type">大货订单</span>
+                        <span class="order-time">2026-03-31 13:56:18</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">HD202603310021</span>
+                        <span class="order-type">换单订单</span>
+                        <span class="order-time">2026-03-31 13:22:47</span>
+                      </div>
+                    </div>
+                    <div class="order-scroll-group" aria-hidden="true">
+                      <div class="order-row">
+                        <span class="order-code">BH202603310023</span>
+                        <span class="order-type">备货订单</span>
+                        <span class="order-time">2026-03-31 15:42:18</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">CP202603310019</span>
+                        <span class="order-type">重派订单</span>
+                        <span class="order-time">2026-03-31 15:28:06</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">HD202603310041</span>
+                        <span class="order-type">大货订单</span>
+                        <span class="order-time">2026-03-31 15:11:43</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">HD202603310037</span>
+                        <span class="order-type">换单订单</span>
+                        <span class="order-time">2026-03-31 14:57:22</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">BH202603310018</span>
+                        <span class="order-type">备货订单</span>
+                        <span class="order-time">2026-03-31 14:35:09</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">CP202603310014</span>
+                        <span class="order-type">重派订单</span>
+                        <span class="order-time">2026-03-31 14:13:54</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">HD202603310029</span>
+                        <span class="order-type">大货订单</span>
+                        <span class="order-time">2026-03-31 13:56:18</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">HD202603310021</span>
+                        <span class="order-type">换单订单</span>
+                        <span class="order-time">2026-03-31 13:22:47</span>
+                      </div>
+                    </div>
                   </div>
-                  <span class="px-2 py-1 text-xs font-medium text-surface-800 bg-accent-amber rounded-md flex-shrink-0 ml-2">中</span>
-                </div>
-              </div>
-              
-              <!-- 低级异常 -->
-              <div class="alert-item p-3 bg-accent-cyan/10 border-accent-cyan rounded-xl">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <p class="text-sm font-medium text-accent-cyanLight">设备离线</p>
-                    <p class="text-xs text-slate-600/60 mt-1">PDA设备 #003 已离线 10 分钟</p>
-                  </div>
-                  <span class="px-2 py-1 text-xs font-medium text-surface-800 bg-accent-cyan rounded-md flex-shrink-0 ml-2">低</span>
-                </div>
-              </div>
-              
-              <!-- 低级异常 -->
-              <div class="alert-item p-3 bg-accent-cyan/10 border-accent-cyan rounded-xl">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <p class="text-sm font-medium text-accent-cyanLight">温湿度异常</p>
-                    <p class="text-xs text-slate-600/60 mt-1">A区温度 28°C，超出设定范围</p>
-                  </div>
-                  <span class="px-2 py-1 text-xs font-medium text-surface-800 bg-accent-cyan rounded-md flex-shrink-0 ml-2">低</span>
                 </div>
               </div>
             </div>
@@ -777,7 +842,7 @@
               </button>
             </div>
             <div class="module-content module-fill gap-3">
-            <div id="shortcutGrid" class="grid grid-cols-2 gap-3 md:grid-cols-2">
+            <div id="shortcutGrid" class="grid grid-cols-2 gap-2.5 md:grid-cols-4">
               <button type="button" data-shortcut-item="createInbound" class="shortcut-btn flex flex-col items-center justify-center p-4 bg-stat-blue/10 border border-stat-blue/20 rounded-xl hover:bg-stat-blue/20">
                 <i class="ri-add-circle-line text-2xl text-stat-blueLight mb-2"></i>
                 <span class="text-sm font-medium text-slate-800">新建入库</span>
@@ -1200,7 +1265,7 @@
             </div>
           </div>
           
-          <!-- 异常预警组件配置 -->
+          <!-- 异常订单组件配置 -->
           <div class="component-item glass-card-light rounded-xl p-4 border border-slate-200" data-config="alert">
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center">
@@ -1208,9 +1273,9 @@
                   <i class="ri-draggable text-lg"></i>
                 </div>
                 <input type="checkbox" id="showAlert" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
-                <label for="showAlert" class="ml-3 font-medium text-slate-800">异常预警</label>
+                <label for="showAlert" class="ml-3 font-medium text-slate-800">异常订单</label>
               </div>
-              <span class="text-xs text-slate-600/40">30秒刷新</span>
+              <span class="text-xs text-slate-600/40">循环滚动</span>
             </div>
             <div class="flex items-center space-x-2 ml-10">
               <span class="text-sm text-slate-600/60">宽度:</span>
@@ -1384,7 +1449,7 @@
           </div>
           <div>
             <p class="text-sm font-medium text-slate-800">配置说明</p>
-            <p class="text-xs text-slate-600/50 mt-1">当工作台布局将快捷操作设置为2列宽度时，该模块自动按每行4个按钮展示。</p>
+            <p class="text-xs text-slate-600/50 mt-1">快捷操作模块在桌面态默认按每行4个按钮展示，宽度配置仅影响卡片占位。</p>
           </div>
         </div>
         <div id="shortcutConfigList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1537,18 +1602,33 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
           </div>
-          <!-- 签出订单 -->
+          <!-- 换单订单 -->
+          <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="changeOrderQty">
+            <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
+              <i class="ri-draggable text-lg"></i>
+            </div>
+            <input type="checkbox" data-kpi-checkbox="changeOrderQty" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <div class="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+              <i class="ri-links-line text-blue-500"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-800">换单订单</p>
+              <p class="text-xs text-slate-600/50">展示换单订单已签入、已出库、拦截的今日/本周/本月数据</p>
+            </div>
+            <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
+          </div>
+          <!-- 发货订单 -->
           <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="signoutQty">
             <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
               <i class="ri-draggable text-lg"></i>
             </div>
             <input type="checkbox" data-kpi-checkbox="signoutQty" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
             <div class="w-8 h-8 rounded-lg bg-slate-500/15 flex items-center justify-center flex-shrink-0">
-              <i class="ri-logout-box-r-line text-slate-500"></i>
+              <i class="ri-truck-line text-slate-500"></i>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-slate-800">签出订单</p>
-              <p class="text-xs text-slate-600/50">展示签出订单总数及6类签出子块数量</p>
+              <p class="text-sm font-medium text-slate-800">发货订单</p>
+              <p class="text-xs text-slate-600/50">展示近30天发货订单总数、已签收数量/签收率及7类状态汇总</p>
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
           </div>
