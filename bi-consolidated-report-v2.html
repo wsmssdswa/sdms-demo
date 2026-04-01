@@ -29,6 +29,8 @@
               </div>
             </div>
             <div class="head-actions">
+              <button id="openCustomReportBuilderBtn" type="button" class="btn btn-primary"><i class="ri-add-line"></i><span>新建聚合报表</span></button>
+              <button id="openCustomReportManagerBtn" type="button" class="btn btn-secondary"><i class="ri-folder-chart-line"></i><span>管理自定义报表</span></button>
               <div id="warehouseSelector" style="position:relative;">
                 <button id="warehouseBtn" type="button" class="btn warehouse-selector"><span id="warehouseText">全部仓库</span><i class="ri-arrow-down-s-line"></i></button>
                 <div id="warehouseDropdown" class="panel hidden" style="position:absolute;right:0;top:40px;width:272px;z-index:22;box-shadow:var(--shadow-panel);">
@@ -80,6 +82,43 @@
                 </div>
               </section>
               <section id="statCards" class="stats-grid"></section>
+
+              <section id="customReportOverviewSection" class="panel custom-report-overview hidden">
+                <div class="custom-report-overview-head">
+                  <div>
+                    <div id="customReportOverviewTitle" class="section-title">自定义聚合报表</div>
+                    <div id="customReportOverviewDesc" class="section-sub custom-report-overview-desc">基于订单底表配置的聚合报表，支持维度、指标、排序和TopN的轻量自助分析。</div>
+                  </div>
+                  <div class="custom-report-overview-actions">
+                    <button id="editCurrentCustomReportBtn" type="button" class="btn btn-secondary"><i class="ri-edit-line"></i><span>编辑配置</span></button>
+                    <button id="duplicateCurrentCustomReportBtn" type="button" class="btn btn-secondary"><i class="ri-file-copy-line"></i><span>另存为</span></button>
+                    <button id="deleteCurrentCustomReportBtn" type="button" class="btn btn-secondary"><i class="ri-delete-bin-line"></i><span>删除</span></button>
+                  </div>
+                </div>
+                <div id="customReportOverviewMeta" class="custom-report-meta-row"></div>
+                <div class="custom-report-overview-grid">
+                  <section class="custom-report-card">
+                    <div class="custom-report-card-head">
+                      <div>
+                        <div class="custom-report-card-title">报表配置摘要</div>
+                        <div id="customReportSummaryText" class="custom-report-card-sub">--</div>
+                      </div>
+                      <span id="customReportPrimaryMetricTag" class="toolbar-tag">--</span>
+                    </div>
+                    <div id="customReportSummaryCards" class="custom-report-summary-grid"></div>
+                  </section>
+                  <section class="custom-report-card">
+                    <div class="custom-report-card-head">
+                      <div>
+                        <div class="custom-report-card-title">头部结构预览</div>
+                        <div id="customReportVisualHint" class="custom-report-card-sub">默认展示聚合结果前5项，适合快速校验配置是否符合预期。</div>
+                      </div>
+                      <span id="customReportVisualTag" class="toolbar-tag">Top5</span>
+                    </div>
+                    <div id="customReportVisualList" class="custom-report-visual-list"></div>
+                  </section>
+                </div>
+              </section>
 
               <section id="timelinessOverviewSection" class="panel timeliness-panel hidden">
                 <div class="timeliness-panel-head">
@@ -203,6 +242,67 @@
                 </div>
               </div>
 
+              <div id="customReportManagerModal" class="modal hidden" aria-hidden="true">
+                <div id="customReportManagerBackdrop" class="modal-backdrop"></div>
+                <div class="modal-dialog modal-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="customReportManagerTitle">
+                  <div class="modal-panel custom-report-manager-panel">
+                    <div class="modal-head">
+                      <div>
+                        <div class="modal-eyebrow">自定义报表目录</div>
+                        <div id="customReportManagerTitle" class="modal-title">管理自定义报表</div>
+                        <div class="modal-scope">用于查看我的报表和共享报表，并进行编辑、复制和删除。</div>
+                      </div>
+                      <div class="modal-actions">
+                        <button id="closeCustomReportManagerBtn" type="button" class="btn btn-secondary"><i class="ri-close-line"></i><span>关闭</span></button>
+                      </div>
+                    </div>
+                    <div class="modal-body custom-report-manager-body">
+                      <section class="custom-report-manager-section">
+                        <div class="custom-report-manager-head">
+                          <div class="custom-report-manager-title">我的报表</div>
+                          <span id="customReportMineCount" class="toolbar-tag">0个</span>
+                        </div>
+                        <div id="customReportMineList" class="custom-report-manager-list"></div>
+                      </section>
+                      <section class="custom-report-manager-section">
+                        <div class="custom-report-manager-head">
+                          <div class="custom-report-manager-title">共享报表</div>
+                          <span id="customReportSharedCount" class="toolbar-tag">0个</span>
+                        </div>
+                        <div id="customReportSharedList" class="custom-report-manager-list"></div>
+                      </section>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="customReportDrilldownModal" class="modal hidden" aria-hidden="true">
+                <div id="customReportDrilldownBackdrop" class="modal-backdrop"></div>
+                <div class="modal-dialog modal-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="customReportDrilldownTitle">
+                  <div class="modal-panel">
+                    <div class="modal-head">
+                      <div>
+                        <div class="modal-eyebrow">聚合结果下钻</div>
+                        <div id="customReportDrilldownTitle" class="modal-title">命中底层明细</div>
+                        <div id="customReportDrilldownScope" class="modal-scope">--</div>
+                      </div>
+                      <div class="modal-actions">
+                        <button id="closeCustomReportDrilldownBtn" type="button" class="btn btn-secondary"><i class="ri-close-line"></i><span>关闭</span></button>
+                      </div>
+                    </div>
+                    <div class="modal-body">
+                      <div id="customReportDrilldownStats" class="timeliness-detail-stats"></div>
+                      <div class="timeliness-detail-table-wrap" style="margin-top:14px;">
+                        <table id="customReportDrilldownTable" class="data-table">
+                          <thead id="customReportDrilldownHead"></thead>
+                          <tbody id="customReportDrilldownBody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <section class="panel table-panel">
                 <div class="table-head"><div class="table-head-main"><div id="tableTitle" class="section-title">--</div><div id="tableToolbar" class="table-toolbar table-toolbar-inline"></div></div><div class="table-head-actions"><button id="columnConfigBtn" type="button" class="btn btn-secondary"><i class="ri-settings-3-line"></i><span>字段配置</span></button><button id="exportBtn" type="button" class="btn btn-secondary"><i class="ri-download-2-line"></i><span>导出</span></button></div></div>
                 <div class="table-wrap">
@@ -223,6 +323,45 @@
   </div>
 
   <div id="toastContainer" class="toast-stack"></div>
+
+  <div id="customReportBuilderDrawer" class="drawer-shell hidden" aria-hidden="true">
+    <div id="customReportBuilderBackdrop" class="drawer-backdrop"></div>
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="customReportBuilderTitle">
+      <div class="drawer-head">
+        <div>
+          <div class="drawer-eyebrow">自定义聚合报表</div>
+          <div id="customReportBuilderTitle" class="drawer-title">新建聚合报表</div>
+          <div id="customReportBuilderScope" class="drawer-scope">基于当前页面底表配置维度、指标和默认筛选，并实时预览聚合结果。</div>
+        </div>
+        <div class="drawer-actions">
+          <button id="closeCustomReportBuilderBtn" type="button" class="btn btn-secondary"><i class="ri-close-line"></i><span>关闭</span></button>
+        </div>
+      </div>
+      <div class="drawer-body">
+        <div class="drawer-layout">
+          <div id="customReportBuilderForm" class="drawer-form"></div>
+          <aside class="drawer-preview">
+            <div class="drawer-preview-head">
+              <div>
+                <div class="drawer-preview-title">预览结果</div>
+                <div id="customReportPreviewDesc" class="drawer-preview-sub">--</div>
+              </div>
+              <span id="customReportPreviewTag" class="toolbar-tag">预览</span>
+            </div>
+            <div id="customReportPreviewSummary" class="drawer-preview-summary"></div>
+            <div id="customReportPreviewTable" class="drawer-preview-table"></div>
+          </aside>
+        </div>
+      </div>
+      <div class="drawer-foot">
+        <button id="saveCustomReportDraftBtn" type="button" class="btn btn-secondary">存为草稿</button>
+        <div class="drawer-foot-actions">
+          <button id="applyCustomReportBuilderBtn" type="button" class="btn btn-secondary">仅刷新预览</button>
+          <button id="saveCustomReportBtn" type="button" class="btn btn-primary">保存并生成报表</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script src="./assets/js/sdms-header-tabs.js"></script>
   <script src="./assets/js/sdms-sidebar.js"></script>
