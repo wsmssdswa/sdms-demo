@@ -180,7 +180,7 @@
         </div>
         <div id="kpiGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 xl:grid-cols-11 gap-4">
           <!-- SKU库存卡片 -->
-          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="inboundQty" style="--accent-color: #7d67ff; --accent-color-light: #9381ff; animation-delay: 0.1s;">
+          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-3 xl:col-span-3 animate-slide-up" data-kpi="inboundQty" style="--accent-color: #7d67ff; --accent-color-light: #9381ff; animation-delay: 0.1s;">
             <div class="relative z-10 h-full">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
@@ -191,41 +191,67 @@
                   <i class="ri-stack-line text-2xl text-stat-purpleLight"></i>
                 </div>
               </div>
-              <div class="mt-3.5 grid grid-cols-2 gap-2.5">
-                <div>
-                  <p class="text-[11px] font-semibold tracking-[0.12em] text-accent-emerald/80">入库</p>
-                  <div class="mt-1.5 space-y-1">
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">856</span>
+              <div class="inventory-flow-grid inventory-flow-grid--three mt-3">
+                <section class="inventory-flow-panel">
+                  <div class="inventory-flow-head">
+                    <span class="inventory-flow-dot inventory-flow-dot-inbound" aria-hidden="true"></span>
+                    <p class="inventory-flow-title">入库</p>
+                  </div>
+                  <div class="inventory-flow-list">
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">今日</span>
+                      <span class="inventory-flow-value">856</span>
                     </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">4,632</span>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">本周</span>
+                      <span class="inventory-flow-value">4,632</span>
                     </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">18,420</span>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">本月</span>
+                      <span class="inventory-flow-value">18,420</span>
                     </div>
                   </div>
-                </div>
-                <div>
-                  <p class="text-[11px] font-semibold tracking-[0.12em] text-stat-blueLight/90">出库</p>
-                  <div class="mt-1.5 space-y-1">
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">1,234</span>
+                </section>
+                <section class="inventory-flow-panel">
+                  <div class="inventory-flow-head">
+                    <span class="inventory-flow-dot inventory-flow-dot-outbound" aria-hidden="true"></span>
+                    <p class="inventory-flow-title">出库</p>
+                  </div>
+                  <div class="inventory-flow-list">
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">今日</span>
+                      <span class="inventory-flow-value">1,234</span>
                     </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">6,280</span>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">本周</span>
+                      <span class="inventory-flow-value">6,280</span>
                     </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">25,160</span>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">本月</span>
+                      <span class="inventory-flow-value">25,160</span>
                     </div>
                   </div>
-                </div>
+                </section>
+                <section class="inventory-flow-panel">
+                  <div class="inventory-flow-head">
+                    <span class="inventory-flow-dot inventory-flow-dot-inbound" aria-hidden="true"></span>
+                    <p class="inventory-flow-title">库内</p>
+                  </div>
+                  <div class="inventory-flow-list">
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">破损</span>
+                      <span class="inventory-flow-value" data-bi-order-nav data-bi-nav-label="库内破损" data-bi-range-preset="today">12</span>
+                    </div>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">到期</span>
+                      <span class="inventory-flow-value" data-bi-order-nav data-bi-nav-label="库内到期" data-bi-range-preset="today">45</span>
+                    </div>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">销毁</span>
+                      <span class="inventory-flow-value" data-bi-order-nav data-bi-nav-label="库内销毁" data-bi-range-preset="today">3</span>
+                    </div>
+                  </div>
+                </section>
               </div>
             </div>
           </div>
@@ -242,41 +268,47 @@
                   <i class="ri-arrow-go-back-line text-2xl text-orange-400"></i>
                 </div>
               </div>
-              <div class="mt-3.5 grid grid-cols-2 gap-2.5">
-                <div>
-                  <p class="text-[11px] font-semibold tracking-[0.12em] text-accent-emerald/80">入库</p>
-                  <div class="mt-1.5 space-y-1">
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">128</span>
+              <div class="inventory-flow-grid mt-3">
+                <section class="inventory-flow-panel">
+                  <div class="inventory-flow-head">
+                    <span class="inventory-flow-dot inventory-flow-dot-inbound" aria-hidden="true"></span>
+                    <p class="inventory-flow-title">入库</p>
+                  </div>
+                  <div class="inventory-flow-list">
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">今日</span>
+                      <span class="inventory-flow-value">128</span>
                     </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">786</span>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">本周</span>
+                      <span class="inventory-flow-value">786</span>
                     </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">3,240</span>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">本月</span>
+                      <span class="inventory-flow-value">3,240</span>
                     </div>
                   </div>
-                </div>
-                <div>
-                  <p class="text-[11px] font-semibold tracking-[0.12em] text-stat-blueLight/90">出库</p>
-                  <div class="mt-1.5 space-y-1">
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">96</span>
+                </section>
+                <section class="inventory-flow-panel">
+                  <div class="inventory-flow-head">
+                    <span class="inventory-flow-dot inventory-flow-dot-inbound" aria-hidden="true"></span>
+                    <p class="inventory-flow-title">库内</p>
+                  </div>
+                  <div class="inventory-flow-list">
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">已到期</span>
+                      <span class="inventory-flow-value" data-bi-order-nav data-bi-nav-label="退件库内-已到期" data-bi-range-preset="today">86</span>
                     </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">512</span>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">销售中</span>
+                      <span class="inventory-flow-value" data-bi-order-nav data-bi-nav-label="退件库内-销售中" data-bi-range-preset="today">234</span>
                     </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">2,180</span>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">无主</span>
+                      <span class="inventory-flow-value" data-bi-order-nav data-bi-nav-label="退件库内-无主" data-bi-range-preset="today">18</span>
                     </div>
                   </div>
-                </div>
+                </section>
               </div>
             </div>
           </div>
@@ -290,87 +322,33 @@
                     <p class="text-[11px] font-medium tracking-wide text-slate-600/50">订单总数</p>
                     <span class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600/70">今日</span>
                   </div>
-                  <p class="mt-1 text-[26px] font-bold text-slate-800 font-mono leading-none">193</p>
+                  <p class="mt-1 text-[26px] font-bold text-slate-800 font-mono leading-none" data-bi-order-nav data-bi-nav-label="今日订单总数" data-bi-range-preset="today" data-bi-order-types="备货,重派,换单">193</p>
                 </div>
                 <div class="w-11 h-11 rounded-xl bg-teal-500/15 flex items-center justify-center flex-shrink-0">
                   <i class="ri-file-list-3-line text-2xl text-teal-500"></i>
                 </div>
               </div>
-              <div class="mt-3.5 grid grid-cols-2 gap-2.5">
-                <div>
-                  <p class="text-[11px] font-semibold tracking-[0.12em] text-accent-emerald/80">备货订单</p>
-                  <div class="mt-1.5 space-y-1">
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">156</span>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">928</span>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">3,860</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <p class="text-[11px] font-semibold tracking-[0.12em] text-stat-blueLight/90">重派订单</p>
-                  <div class="mt-1.5 space-y-1">
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">今日</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">27</span>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本周</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">142</span>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-4">
-                      <span class="text-[11px] font-medium tracking-wide text-slate-600/55">本月</span>
-                      <span class="text-[13px] font-semibold text-slate-800 font-mono">628</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 换单订单卡片 -->
-          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="changeOrderQty" style="--accent-color: #2563eb; --accent-color-light: #60a5fa; animation-delay: 0.19s;">
-            <div class="relative z-10 h-full">
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                  <div class="flex items-center gap-2">
-                    <p class="text-[11px] font-medium tracking-wide text-slate-600/50">换单订单总数</p>
-                    <span class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600/70">今日</span>
-                  </div>
-                  <p class="mt-1.5 text-[26px] font-bold text-slate-800 font-mono leading-none">74</p>
-                </div>
-                <div class="w-11 h-11 rounded-xl bg-blue-500/15 flex items-center justify-center flex-shrink-0">
-                  <i class="ri-links-line text-2xl text-blue-500"></i>
-                </div>
-              </div>
               <div class="mt-3.5">
                 <div class="grid grid-cols-[56px_repeat(3,minmax(0,1fr))] gap-x-2 gap-y-1.5 items-center">
                   <span></span>
-                  <span class="text-[10px] font-semibold tracking-[0.08em] text-slate-600/60 text-center">已签入</span>
-                  <span class="text-[10px] font-semibold tracking-[0.08em] text-slate-600/60 text-center">已出库</span>
-                  <span class="text-[10px] font-semibold tracking-[0.08em] text-accent-rose text-center">拦截</span>
+                  <span class="text-[10px] font-semibold tracking-[0.08em] text-slate-600/60 text-center">备货</span>
+                  <span class="text-[10px] font-semibold tracking-[0.08em] text-slate-600/60 text-center">重派</span>
+                  <span class="text-[10px] font-semibold tracking-[0.08em] text-slate-600/60 text-center">换单</span>
 
                   <span class="text-[10px] font-medium tracking-wide text-slate-600/55">今日</span>
-                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">26</span>
-                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">18</span>
-                  <span class="text-[12px] font-semibold text-accent-rose font-mono text-center">3</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center" data-bi-order-nav data-bi-nav-label="备货订单-今日" data-bi-range-preset="today" data-bi-order-types="备货">156</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center" data-bi-order-nav data-bi-nav-label="重派订单-今日" data-bi-range-preset="today" data-bi-order-types="重派">27</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center" data-bi-order-nav data-bi-nav-label="换单订单-今日" data-bi-range-preset="today" data-bi-order-types="换单">74</span>
 
                   <span class="text-[10px] font-medium tracking-wide text-slate-600/55">本周</span>
-                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">132</span>
-                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">106</span>
-                  <span class="text-[12px] font-semibold text-accent-rose font-mono text-center">11</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center" data-bi-order-nav data-bi-nav-label="备货订单-本周" data-bi-range-preset="thisWeek" data-bi-order-types="备货">928</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center" data-bi-order-nav data-bi-nav-label="重派订单-本周" data-bi-range-preset="thisWeek" data-bi-order-types="重派">142</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center" data-bi-nav-label="换单订单-本周" data-bi-order-nav data-bi-range-preset="thisWeek" data-bi-order-types="换单">508</span>
 
                   <span class="text-[10px] font-medium tracking-wide text-slate-600/55">本月</span>
-                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">508</span>
-                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center">462</span>
-                  <span class="text-[12px] font-semibold text-accent-rose font-mono text-center">39</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center" data-bi-order-nav data-bi-nav-label="备货订单-本月" data-bi-range-preset="thisMonth" data-bi-order-types="备货">3,860</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center" data-bi-order-nav data-bi-nav-label="重派订单-本月" data-bi-range-preset="thisMonth" data-bi-order-types="重派">628</span>
+                  <span class="text-[12px] font-semibold text-slate-800 font-mono text-center" data-bi-order-nav data-bi-nav-label="换单订单-本月" data-bi-range-preset="thisMonth" data-bi-order-types="换单">2,186</span>
                 </div>
               </div>
             </div>
@@ -381,7 +359,7 @@
             <div class="flex items-start justify-between relative z-10">
               <div>
                 <p class="text-sm font-medium text-slate-600/60">异常订单数</p>
-                <h3 class="text-3xl font-bold text-accent-rose mt-2 font-mono">25</h3>
+                <h3 class="text-3xl font-bold text-accent-rose mt-2 font-mono" data-bi-order-nav data-bi-nav-label="异常订单数-今日" data-bi-range-preset="today" data-bi-order-stages="异常">25</h3>
                 <div class="flex items-center mt-2 text-accent-rose text-sm">
                   <i class="ri-arrow-up-line mr-1"></i>
                   <span class="font-medium">3</span>
@@ -403,7 +381,7 @@
                     <p class="text-[11px] font-medium tracking-wide text-slate-600/50">发货订单总数</p>
                     <span class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600/70">近30天</span>
                   </div>
-                  <p class="mt-1 text-[25px] font-bold text-slate-800 font-mono leading-none" data-shipment-total>--</p>
+                  <p class="mt-1 text-[25px] font-bold text-slate-800 font-mono leading-none" data-shipment-total data-bi-order-nav data-bi-nav-label="发货订单总数-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-order-stages="已发货,已签收">--</p>
                 </div>
                 <div class="w-11 h-11 rounded-xl bg-slate-500/15 flex items-center justify-center flex-shrink-0">
                   <i class="ri-truck-line text-2xl text-slate-500"></i>
@@ -416,10 +394,10 @@
                 </div>
                 <div class="flex items-center gap-2.5 text-right">
                   <span class="text-[15px] font-semibold text-emerald-700 font-mono">
-                    <span data-shipment-metric="signed" data-value="3862">--</span><span class="ml-0.5 text-[11px] font-medium text-slate-500">单</span>
+                    <span data-shipment-metric="signed" data-value="3862" data-bi-order-nav data-bi-nav-label="已签收订单-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-order-stages="已签收" data-bi-track-statuses="已签收">--</span><span class="ml-0.5 text-[11px] font-medium text-slate-500">单</span>
                   </span>
                   <span class="text-[11px] text-slate-500">
-                    签收率<span class="ml-0.5 font-mono font-semibold text-emerald-700" data-shipment-rate>--</span>
+                    签收率<span class="ml-0.5 font-mono font-semibold text-emerald-700" data-shipment-rate data-bi-order-nav data-bi-nav-label="签收率-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-order-stages="已签收" data-bi-track-statuses="已签收">--</span>
                   </span>
                 </div>
               </div>
@@ -427,37 +405,37 @@
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">未上线</p>
-                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none" data-shipment-metric="pending" data-value="123">--</p>
+                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none" data-shipment-metric="pending" data-value="123" data-bi-order-nav data-bi-nav-label="未上线订单-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-order-stages="已发货" data-bi-track-statuses="未上线">--</p>
                   </div>
                 </div>
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">已上线</p>
-                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none" data-shipment-metric="online" data-value="174">--</p>
+                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none" data-shipment-metric="online" data-value="174" data-bi-order-nav data-bi-nav-label="已上线订单-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-order-stages="已发货" data-bi-track-statuses="已上线">--</p>
                   </div>
                 </div>
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">已拒收</p>
-                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none" data-shipment-metric="rejected" data-value="31">--</p>
+                    <p class="text-[13px] font-semibold text-slate-800 font-mono leading-none" data-shipment-metric="rejected" data-value="31" data-bi-order-nav data-bi-nav-label="已拒收订单-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-track-statuses="已拒收">--</p>
                   </div>
                 </div>
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">上线异常</p>
-                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none" data-shipment-metric="onlineException" data-value="18">--</p>
+                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none" data-shipment-metric="onlineException" data-value="18" data-bi-order-nav data-bi-nav-label="上线异常订单-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-track-statuses="上线异常">--</p>
                   </div>
                 </div>
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">停更</p>
-                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none" data-shipment-metric="stale" data-value="52">--</p>
+                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none" data-shipment-metric="stale" data-value="52" data-bi-order-nav data-bi-nav-label="停更订单-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-track-statuses="停更">--</p>
                   </div>
                 </div>
                 <div>
                   <div class="flex items-baseline justify-between gap-3">
                     <p class="text-[10px] font-medium tracking-wide text-slate-600/55 leading-4">丢件</p>
-                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none" data-shipment-metric="lost" data-value="8">--</p>
+                    <p class="text-[13px] font-semibold text-accent-rose font-mono leading-none" data-shipment-metric="lost" data-value="8" data-bi-order-nav data-bi-nav-label="丢件订单-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-track-statuses="丢件">--</p>
                   </div>
                 </div>
               </div>
@@ -553,7 +531,7 @@
             <div class="flex items-start justify-between relative z-10">
               <div>
                 <p class="text-sm font-medium text-slate-600/60">签收率</p>
-                <h3 class="text-3xl font-bold text-slate-800 mt-2 font-mono">96.8%</h3>
+                <h3 class="text-3xl font-bold text-slate-800 mt-2 font-mono" data-bi-order-nav data-bi-nav-label="签收率" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-order-stages="已签收" data-bi-track-statuses="已签收">96.8%</h3>
                 <div class="flex items-center mt-2 text-accent-emerald text-sm">
                   <i class="ri-arrow-up-line mr-1"></i>
                   <span class="font-medium">1.2%</span>
@@ -570,7 +548,7 @@
             <div class="flex items-start justify-between relative z-10">
               <div>
                 <p class="text-sm font-medium text-slate-600/60">重派率</p>
-                <h3 class="text-3xl font-bold text-slate-800 mt-2 font-mono">3.2%</h3>
+                <h3 class="text-3xl font-bold text-slate-800 mt-2 font-mono" data-bi-order-nav data-bi-nav-label="重派率" data-bi-range-preset="today" data-bi-order-types="重派">3.2%</h3>
                 <div class="flex items-center mt-2 text-accent-rose text-sm">
                   <i class="ri-arrow-up-line mr-1"></i>
                   <span class="font-medium">0.8%</span>
@@ -587,7 +565,7 @@
             <div class="flex items-start justify-between relative z-10">
               <div>
                 <p class="text-sm font-medium text-slate-600/60">无主单量</p>
-                <h3 class="text-3xl font-bold text-slate-800 mt-2 font-mono">18</h3>
+                <h3 class="text-3xl font-bold text-slate-800 mt-2 font-mono" data-bi-order-nav data-bi-nav-label="无主单量" data-bi-range-preset="today" data-bi-order-stages="异常">18</h3>
                 <div class="flex items-center mt-2 text-accent-rose text-sm">
                   <i class="ri-arrow-up-line mr-1"></i>
                   <span class="font-medium">+3</span>
@@ -624,44 +602,44 @@
                 <div class="todo-matrix-head">
                   <span></span>
                   <span>备货</span>
-                  <span>换单</span>
                   <span>重派</span>
+                  <span>换单</span>
                   <span>装袋</span>
                 </div>
                 <div class="todo-matrix-body">
                   <div class="todo-matrix-row">
                     <span class="todo-matrix-label">待审核</span>
                     <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="待审核">12</button>
-                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="待审核">3</button>
                     <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="待审核">5</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="待审核">3</button>
                     <span class="todo-matrix-cell is-empty">-</span>
                   </div>
                   <div class="todo-matrix-row">
                     <span class="todo-matrix-label">待上架</span>
                     <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="待上架">7</button>
-                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="待上架">2</button>
                     <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="待上架">4</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="待上架">2</button>
                     <span class="todo-matrix-cell is-empty">-</span>
                   </div>
                   <div class="todo-matrix-row">
                     <span class="todo-matrix-label">待出库</span>
                     <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="待出库">16</button>
-                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="待出库">8</button>
                     <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="待出库">9</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="待出库">8</button>
                     <button class="todo-matrix-cell is-clickable" type="button" data-business="装袋" data-task="待出库">11</button>
                   </div>
                   <div class="todo-matrix-row">
                     <span class="todo-matrix-label">轨迹停更</span>
                     <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="轨迹停更">4</button>
-                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="轨迹停更">1</button>
                     <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="轨迹停更">6</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="轨迹停更">1</button>
                     <span class="todo-matrix-cell is-empty">-</span>
                   </div>
                   <div class="todo-matrix-row">
                     <span class="todo-matrix-label">异常订单</span>
-                    <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="异常订单">2</button>
-                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="异常订单">1</button>
-                    <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="异常订单">3</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="备货" data-task="异常订单">7</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="重派" data-task="异常订单">7</button>
+                    <button class="todo-matrix-cell is-clickable" type="button" data-business="换单" data-task="异常订单">9</button>
                     <span class="todo-matrix-cell is-empty">-</span>
                   </div>
                 </div>
@@ -688,92 +666,97 @@
                 <div class="order-list-head">
                   <span>订单号</span>
                   <span>订单类型</span>
+                  <span>异常原因</span>
                   <span>异常时间</span>
                 </div>
                 <div class="order-scroll-viewport">
                   <div class="order-scroll-track">
                     <div class="order-scroll-group">
                       <div class="order-row">
-                        <span class="order-code">BH202603310023</span>
+                        <span class="order-code">SNEJAK260402A12756</span>
                         <span class="order-type">备货订单</span>
-                        <span class="order-time">2026-03-31 15:42:18</span>
+                        <span class="order-reason">邮箱错误</span>
+                        <span class="order-time">2026-04-02 15:42:18</span>
                       </div>
                       <div class="order-row">
-                        <span class="order-code">CP202603310019</span>
+                        <span class="order-code">SNRJAK260402A44334</span>
                         <span class="order-type">重派订单</span>
-                        <span class="order-time">2026-03-31 15:28:06</span>
+                        <span class="order-reason">地址不详</span>
+                        <span class="order-time">2026-04-02 15:28:06</span>
                       </div>
                       <div class="order-row">
-                        <span class="order-code">HD202603310041</span>
-                        <span class="order-type">大货订单</span>
-                        <span class="order-time">2026-03-31 15:11:43</span>
-                      </div>
-                      <div class="order-row">
-                        <span class="order-code">HD202603310037</span>
+                        <span class="order-code">EXJAK26040100034</span>
                         <span class="order-type">换单订单</span>
-                        <span class="order-time">2026-03-31 14:57:22</span>
+                        <span class="order-reason">面单申请失败</span>
+                        <span class="order-time">2026-04-02 15:11:43</span>
                       </div>
                       <div class="order-row">
-                        <span class="order-code">BH202603310018</span>
+                        <span class="order-code">SNEJAK260402A44334</span>
                         <span class="order-type">备货订单</span>
-                        <span class="order-time">2026-03-31 14:35:09</span>
+                        <span class="order-reason">收件人电话无效</span>
+                        <span class="order-time">2026-04-02 14:57:22</span>
                       </div>
                       <div class="order-row">
-                        <span class="order-code">CP202603310014</span>
-                        <span class="order-type">重派订单</span>
-                        <span class="order-time">2026-03-31 14:13:54</span>
-                      </div>
-                      <div class="order-row">
-                        <span class="order-code">HD202603310029</span>
-                        <span class="order-type">大货订单</span>
-                        <span class="order-time">2026-03-31 13:56:18</span>
-                      </div>
-                      <div class="order-row">
-                        <span class="order-code">HD202603310021</span>
+                        <span class="order-code">EXJAK26040100033</span>
                         <span class="order-type">换单订单</span>
-                        <span class="order-time">2026-03-31 13:22:47</span>
+                        <span class="order-reason">清关资料缺失</span>
+                        <span class="order-time">2026-04-02 14:46:09</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">SNRJAK260402A12789</span>
+                        <span class="order-type">重派订单</span>
+                        <span class="order-reason">末端网点拒收</span>
+                        <span class="order-time">2026-04-02 14:35:54</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">EXJAK26040100029</span>
+                        <span class="order-type">换单订单</span>
+                        <span class="order-reason">申报信息不一致</span>
+                        <span class="order-time">2026-04-02 13:22:47</span>
                       </div>
                     </div>
                     <div class="order-scroll-group" aria-hidden="true">
                       <div class="order-row">
-                        <span class="order-code">BH202603310023</span>
+                        <span class="order-code">SNEJAK260402A12756</span>
                         <span class="order-type">备货订单</span>
-                        <span class="order-time">2026-03-31 15:42:18</span>
+                        <span class="order-reason">邮箱错误</span>
+                        <span class="order-time">2026-04-02 15:42:18</span>
                       </div>
                       <div class="order-row">
-                        <span class="order-code">CP202603310019</span>
+                        <span class="order-code">SNRJAK260402A44334</span>
                         <span class="order-type">重派订单</span>
-                        <span class="order-time">2026-03-31 15:28:06</span>
+                        <span class="order-reason">地址不详</span>
+                        <span class="order-time">2026-04-02 15:28:06</span>
                       </div>
                       <div class="order-row">
-                        <span class="order-code">HD202603310041</span>
-                        <span class="order-type">大货订单</span>
-                        <span class="order-time">2026-03-31 15:11:43</span>
-                      </div>
-                      <div class="order-row">
-                        <span class="order-code">HD202603310037</span>
+                        <span class="order-code">EXJAK26040100034</span>
                         <span class="order-type">换单订单</span>
-                        <span class="order-time">2026-03-31 14:57:22</span>
+                        <span class="order-reason">面单申请失败</span>
+                        <span class="order-time">2026-04-02 15:11:43</span>
                       </div>
                       <div class="order-row">
-                        <span class="order-code">BH202603310018</span>
+                        <span class="order-code">SNEJAK260402A44334</span>
                         <span class="order-type">备货订单</span>
-                        <span class="order-time">2026-03-31 14:35:09</span>
+                        <span class="order-reason">收件人电话无效</span>
+                        <span class="order-time">2026-04-02 14:57:22</span>
                       </div>
                       <div class="order-row">
-                        <span class="order-code">CP202603310014</span>
-                        <span class="order-type">重派订单</span>
-                        <span class="order-time">2026-03-31 14:13:54</span>
-                      </div>
-                      <div class="order-row">
-                        <span class="order-code">HD202603310029</span>
-                        <span class="order-type">大货订单</span>
-                        <span class="order-time">2026-03-31 13:56:18</span>
-                      </div>
-                      <div class="order-row">
-                        <span class="order-code">HD202603310021</span>
+                        <span class="order-code">EXJAK26040100033</span>
                         <span class="order-type">换单订单</span>
-                        <span class="order-time">2026-03-31 13:22:47</span>
+                        <span class="order-reason">清关资料缺失</span>
+                        <span class="order-time">2026-04-02 14:46:09</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">SNRJAK260402A12789</span>
+                        <span class="order-type">重派订单</span>
+                        <span class="order-reason">末端网点拒收</span>
+                        <span class="order-time">2026-04-02 14:35:54</span>
+                      </div>
+                      <div class="order-row">
+                        <span class="order-code">EXJAK26040100029</span>
+                        <span class="order-type">换单订单</span>
+                        <span class="order-reason">申报信息不一致</span>
+                        <span class="order-time">2026-04-02 13:22:47</span>
                       </div>
                     </div>
                   </div>
@@ -1598,22 +1581,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-sm font-medium text-slate-800">订单数量</p>
-              <p class="text-xs text-slate-600/50">展示今日订单总数、异常单量及备货、重派订单的今日/本周/本月数据</p>
-            </div>
-            <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
-          </div>
-          <!-- 换单订单 -->
-          <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="changeOrderQty">
-            <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
-              <i class="ri-draggable text-lg"></i>
-            </div>
-            <input type="checkbox" data-kpi-checkbox="changeOrderQty" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
-            <div class="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
-              <i class="ri-links-line text-blue-500"></i>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-slate-800">换单订单</p>
-              <p class="text-xs text-slate-600/50">展示换单订单已签入、已出库、拦截的今日/本周/本月数据</p>
+              <p class="text-xs text-slate-600/50">展示今日订单总数及备货、重派、换单订单的今日/本周/本月数据</p>
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
           </div>

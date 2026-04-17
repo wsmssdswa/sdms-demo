@@ -4,6 +4,9 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     const COMMON_WAREHOUSES = ['深圳兴围仓', '广州白云仓', '香港葵涌仓'];
     const COMMON_CUSTOMERS = ['Anker跨境', 'SHEIN华南', 'Temu直发', 'Lazada华南', '菜鸟云配', '敏捷供应链'];
     const BUSINESS_TYPE_OPTIONS = ['干线', '备货', '退件重派'];
+    const ORDER_TYPE_OPTIONS = ['备货', '重派', '换单'];
+    const ORDER_STAGE_OPTIONS = ['待审核', '处理中', '已发货', '已签收', '异常'];
+    const TRACK_STATUS_OPTIONS = ['未上线', '已上线', '已签收', '已拒收', '上线异常', '停更', '丢件'];
     const TIMELINESS_BUSINESS_TYPE_OPTIONS = ['备货', '干线'];
     const TIMELINESS_STATUS_OPTIONS = ['已完成', '处理中', '待审核'];
     const TIMELINESS_NODE_CONFIG = {
@@ -29,17 +32,33 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     const TIMELINESS_COLOR_PALETTE = ['#4d77ea', '#2eb67d', '#f59e0b', '#7d67ff', '#ff7b54', '#14b8a6', '#ef4444', '#8b5cf6', '#0ea5e9'];
     const ORDER_SOURCE_OPTIONS = ['客户下单', '客服建单', 'API下单'];
     const ORDER_PO_TYPES = ['B2B', 'B2C'];
+    const ORDER_PRODUCT_CATALOG = [
+      { category: '3C配件', names: ['蓝牙耳机', '充电底座', '数据线套装', '移动电源'] },
+      { category: '服饰鞋包', names: ['运动卫衣', '轻量羽绒服', '通勤双肩包', '休闲板鞋'] },
+      { category: '家居日用', names: ['折叠收纳箱', '厨房置物架', '真空保温杯', '便携晾衣架'] },
+      { category: '美妆个护', names: ['电动牙刷', '修护面膜', '护发精油', '洁面套装'] },
+      { category: '母婴用品', names: ['婴儿湿巾', '恒温奶瓶', '宝宝餐具', '防走失背包'] }
+    ];
+    const DATE_PICKER_SHORTCUTS = [
+      { key: 'today', label: '今天' },
+      { key: 'yesterday', label: '昨天' },
+      { key: 'last7', label: '近7天' },
+      { key: 'last30', label: '近30天' },
+      { key: 'thisMonth', label: '本月' },
+      { key: 'lastMonth', label: '上月' },
+      { key: 'last90', label: '近90天' }
+    ];
     const ORDER_COUNTRY_CURRENCY = { 美国: '$', 加拿大: '$', 英国: '£', 德国: '€', 法国: '€', 西班牙: '€', 意大利: '€', 日本: '¥' };
-    const ORDER_FIELD_DISPLAY_ORDER = ['orderNo', 'masterNo', 'splitCount', 'pieceCount', 'weight', 'volume', 'palletCount', 'warehouse', 'originPort', 'destinationPort', 'poType', 'codAmount', 'itemQty', 'carrier', 'originalCountry', 'currentCountry', 'ownerName', 'orderStatus', 'createdTime', 'orderSource'];
+    const ORDER_FIELD_DISPLAY_ORDER = ['orderNo', 'masterNo', 'splitCount', 'pieceCount', 'itemQty', 'weight', 'volume', 'palletCount', 'warehouse', 'originPort', 'destinationPort', 'poType', 'codAmount', 'carrier', 'originalCountry', 'currentCountry', 'ownerName', 'trackStatus', 'orderStatus', 'createdTime', 'shipTime', 'orderSource'];
     const ORDER_FIELD_SETS = {
-      干线: ['orderNo', 'masterNo', 'splitCount', 'pieceCount', 'weight', 'volume', 'palletCount', 'warehouse', 'originPort', 'destinationPort', 'ownerName', 'orderStatus', 'createdTime', 'orderSource'],
-      备货: ['orderNo', 'poType', 'codAmount', 'warehouse', 'itemQty', 'carrier', 'currentCountry', 'ownerName', 'orderStatus', 'createdTime', 'orderSource'],
-      退件重派: ['orderNo', 'codAmount', 'warehouse', 'itemQty', 'originalCountry', 'currentCountry', 'ownerName', 'orderStatus', 'orderSource']
+      备货: ['orderNo', 'poType', 'codAmount', 'warehouse', 'itemQty', 'carrier', 'currentCountry', 'ownerName', 'trackStatus', 'orderStatus', 'createdTime', 'shipTime', 'orderSource'],
+      重派: ['orderNo', 'codAmount', 'warehouse', 'itemQty', 'originalCountry', 'currentCountry', 'ownerName', 'trackStatus', 'orderStatus', 'createdTime', 'shipTime', 'orderSource'],
+      换单: ['orderNo', 'masterNo', 'splitCount', 'pieceCount', 'itemQty', 'weight', 'volume', 'palletCount', 'warehouse', 'originPort', 'destinationPort', 'ownerName', 'trackStatus', 'orderStatus', 'createdTime', 'shipTime', 'orderSource']
     };
     const ORDER_ANALYSIS_CONFIG = {
-      干线: [{ label: '起运港占比', field: 'originPort' }, { label: '目的港占比', field: 'destinationPort' }],
+      换单: [{ label: '起运港占比', field: 'originPort' }, { label: '目的港占比', field: 'destinationPort' }],
       备货: [{ label: 'PO Type占比', field: 'poType' }, { label: '现派国家占比', field: 'currentCountry' }],
-      退件重派: [{ label: '原派国占比', field: 'originalCountry' }, { label: '现派国家占比', field: 'currentCountry' }]
+      重派: [{ label: '原派国占比', field: 'originalCountry' }, { label: '现派国家占比', field: 'currentCountry' }]
     };
     const ORDER_FIELD_DEFINITIONS = {
       orderNo: { label: '订单号', getValue: row => row.orderNo, width: 156 },
@@ -59,89 +78,20 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       originalCountry: { label: '原派国', getValue: row => row.originalCountry || '--', width: 110 },
       currentCountry: { label: '现派国', getValue: row => row.currentCountry || '--', width: 110 },
       ownerName: { label: '货主名称', getValue: row => row.ownerName, width: 152 },
-      orderStatus: { label: '订单状态', getValue: row => `<span class="badge ${statusClass(row.status)}">${row.status}</span>`, html: true, width: 112 },
-      createdTime: { label: '创建时间', getValue: row => row.time, width: 168 },
+      trackStatus: { label: '轨迹状态', getValue: row => getTrackStatusDisplay(row), html: true, width: 118 },
+      orderStatus: { label: '订单阶段', getValue: row => `<span class="badge ${statusClass(row.orderStage)}">${row.orderStage || '--'}</span>`, html: true, width: 112 },
+      createdTime: { label: '下单时间', getValue: row => row.orderTime || row.time, width: 168 },
+      shipTime: { label: '发货时间', getValue: row => row.shipTime || '--', width: 168 },
       orderSource: { label: '订单来源', getValue: row => row.orderSource, width: 118 }
     };
-    const CUSTOM_REPORT_STORAGE_KEY = 'sdms-bi-custom-reports-v2';
-    const CUSTOM_REPORT_TOPN_OPTIONS = [5, 10, 20, 50];
-    const CUSTOM_REPORT_VIEW_OPTIONS = [{ key: 'table', label: '表格' }, { key: 'bar', label: '条形结构' }];
-    const CUSTOM_REPORT_SCOPE_OPTIONS = [{ key: 'mine', label: '我的报表' }, { key: 'shared', label: '共享报表' }];
-    const CUSTOM_AGG_OPTIONS = {
-      count: '计数',
-      distinct_count: '去重计数',
-      sum: '求和'
-    };
-    const ORDER_SKU_LIBRARY = {
-      干线: [
-        { code: 'GL-A101', name: '智能摄像头模组', unitWeight: 2.6, unitVolume: 0.018 },
-        { code: 'GL-A102', name: '储能电源组件', unitWeight: 5.8, unitVolume: 0.036 },
-        { code: 'GL-A103', name: '显示屏总成', unitWeight: 3.9, unitVolume: 0.024 },
-        { code: 'GL-A104', name: '工业路由器套件', unitWeight: 2.1, unitVolume: 0.015 },
-        { code: 'GL-A105', name: '车载电器主板', unitWeight: 1.8, unitVolume: 0.012 }
-      ],
-      备货: [
-        { code: 'BH-B201', name: '磁吸手机壳', unitWeight: 0.14, unitVolume: 0.0012 },
-        { code: 'BH-B202', name: '桌面充电支架', unitWeight: 0.42, unitVolume: 0.0038 },
-        { code: 'BH-B203', name: '蓝牙耳机套装', unitWeight: 0.28, unitVolume: 0.0021 },
-        { code: 'BH-B204', name: 'USB-C拓展坞', unitWeight: 0.36, unitVolume: 0.0027 },
-        { code: 'BH-B205', name: '便携补光灯', unitWeight: 0.22, unitVolume: 0.0019 },
-        { code: 'BH-B206', name: '无线键盘', unitWeight: 0.64, unitVolume: 0.0042 }
-      ],
-      退件重派: [
-        { code: 'CP-C301', name: '改派面单包', unitWeight: 0.09, unitVolume: 0.0008 },
-        { code: 'CP-C302', name: '退件复检套装', unitWeight: 0.18, unitVolume: 0.0016 },
-        { code: 'CP-C303', name: '重派分拣袋', unitWeight: 0.12, unitVolume: 0.0011 },
-        { code: 'CP-C304', name: '异常件保护箱', unitWeight: 0.55, unitVolume: 0.0048 },
-        { code: 'CP-C305', name: '换标配件包', unitWeight: 0.15, unitVolume: 0.0010 }
-      ]
-    };
-    const CUSTOM_DATASET_DEFINITIONS = {
-      order_header: {
-        code: 'order_header',
-        label: '订单头数据集',
-        sourceReportKey: 'order',
-        grainLabel: '订单头',
-        dimensions: [
-          { key: 'ownerName', label: '客户/货主' },
-          { key: 'warehouse', label: '仓库' },
-          { key: 'businessType', label: '业务类型' },
-          { key: 'currentCountry', label: '现派国家' },
-          { key: 'status', label: '订单状态' },
-          { key: 'orderSource', label: '订单来源' },
-          { key: 'tag', label: '订单阶段' }
-        ],
-        metrics: [
-          { key: 'orderNo', label: '订单号', type: 'id', aggs: ['count', 'distinct_count'] },
-          { key: 'pieceCount', label: '件数', type: 'number', aggs: ['sum'] },
-          { key: 'itemQty', label: '商品数量', type: 'number', aggs: ['sum'] },
-          { key: 'weightValue', label: '重量', type: 'weight', aggs: ['sum'] },
-          { key: 'volumeValue', label: '体积', type: 'volume', aggs: ['sum'] },
-          { key: 'codAmount', label: 'COD金额', type: 'money', aggs: ['sum'] }
-        ]
-      },
-      order_item: {
-        code: 'order_item',
-        label: '订单行数据集',
-        sourceReportKey: 'order',
-        grainLabel: '订单行',
-        dimensions: [
-          { key: 'ownerName', label: '客户/货主' },
-          { key: 'warehouse', label: '仓库' },
-          { key: 'businessType', label: '业务类型' },
-          { key: 'currentCountry', label: '现派国家' },
-          { key: 'status', label: '订单状态' },
-          { key: 'skuCode', label: 'SKU编码' },
-          { key: 'skuName', label: 'SKU名称' }
-        ],
-        metrics: [
-          { key: 'orderNo', label: '订单号', type: 'id', aggs: ['count', 'distinct_count'] },
-          { key: 'skuQty', label: 'SKU数量', type: 'number', aggs: ['sum'] },
-          { key: 'weightValue', label: '重量', type: 'weight', aggs: ['sum'] },
-          { key: 'volumeValue', label: '体积', type: 'volume', aggs: ['sum'] }
-        ]
-      }
-    };
+    TRACK_STATUS_OPTIONS.length = 0;
+    TRACK_STATUS_OPTIONS.push('\u672a\u4e0a\u7ebf', '\u5df2\u4e0a\u7ebf', '\u5df2\u7b7e\u6536', '\u5df2\u62d2\u6536', '\u4e0a\u7ebf\u5f02\u5e38', '\u505c\u66f4', '\u4e22\u4ef6');
+    ORDER_FIELD_DISPLAY_ORDER.splice(0, ORDER_FIELD_DISPLAY_ORDER.length, 'orderNo', 'masterNo', 'splitCount', 'pieceCount', 'itemQty', 'weight', 'volume', 'palletCount', 'warehouse', 'originPort', 'destinationPort', 'poType', 'codAmount', 'carrier', 'originalCountry', 'currentCountry', 'ownerName', 'orderStatus', 'trackStatus', 'createdTime', 'shipTime', 'orderSource');
+    ORDER_FIELD_SETS[ORDER_TYPE_OPTIONS[0]] = ['orderNo', 'poType', 'codAmount', 'warehouse', 'itemQty', 'carrier', 'currentCountry', 'ownerName', 'orderStatus', 'trackStatus', 'createdTime', 'shipTime', 'orderSource'];
+    ORDER_FIELD_SETS[ORDER_TYPE_OPTIONS[1]] = ['orderNo', 'codAmount', 'warehouse', 'itemQty', 'originalCountry', 'currentCountry', 'ownerName', 'orderStatus', 'trackStatus', 'createdTime', 'shipTime', 'orderSource'];
+    ORDER_FIELD_SETS[ORDER_TYPE_OPTIONS[2]] = ['orderNo', 'masterNo', 'splitCount', 'pieceCount', 'itemQty', 'weight', 'volume', 'palletCount', 'warehouse', 'originPort', 'destinationPort', 'ownerName', 'orderStatus', 'trackStatus', 'createdTime', 'shipTime', 'orderSource'];
+    const CROSS_PAGE_REPORT_NAV_STORAGE_KEY = 'sdmsBiReportNavigation';
+    const CROSS_PAGE_REPORT_NAV_MAX_AGE = 10 * 60 * 1000;
     const GENERIC_TABLE_FIELD_ORDER = ['code', 'customer', 'warehouse', 'tag', 'value', 'time', 'status'];
     const GENERIC_TABLE_FIELD_DEFINITIONS = {
       code: { label: '编号', getValue: row => row.code || '--', width: 132 },
@@ -163,13 +113,17 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     const charts = { trend: null, structure: null, warehouseMix: null, statusSignal: null };
 
     const state = {
-      reportMode: 'official',
       currentReport: 'order',
-      currentCustomReportCode: '',
       filters: {
         startDate: '2026-01-01',
         endDate: '2026-03-18',
+        shipStartDate: '',
+        shipEndDate: '',
+        dateType: 'primary',
         customer: '',
+        orderTypes: [...ORDER_TYPE_OPTIONS],
+        orderStages: [...ORDER_STAGE_OPTIONS],
+        trackStatuses: [...TRACK_STATUS_OPTIONS],
         businessTypes: [...BUSINESS_TYPE_OPTIONS],
         filterA: '',
         filterB: '',
@@ -205,28 +159,18 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         detailBusinessType: '',
         detailDate: ''
       },
-      customReports: {
-        mine: [],
-        shared: []
-      },
-      customBuilder: {
+      productDetail: {
         open: false,
-        mode: 'create',
-        scope: 'mine',
-        editingCode: '',
-        draft: null,
-        preview: null
+        row: null
       },
-      customManager: {
-        open: false
-      },
-      customAggregateCache: null,
-      customDrilldown: {
+      datePicker: {
         open: false,
-        title: '',
-        scope: '',
-        rows: [],
-        columns: []
+        field: 'primary',
+        draftStart: '',
+        draftEnd: '',
+        panelMonth: formatDateOnly(new Date(ANCHOR_DATE.getFullYear(), ANCHOR_DATE.getMonth(), 1)),
+        anchorLeft: 0,
+        anchorTop: 0
       }
     };
 
@@ -244,6 +188,12 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       const draft = new Date(date);
       draft.setHours(8 + (index % 9), (index * 7) % 60, 0, 0);
       return `${draft.getFullYear()}-${pad(draft.getMonth() + 1)}-${pad(draft.getDate())} ${pad(draft.getHours())}:${pad(draft.getMinutes())}:00`;
+    }
+    function formatDateOnly(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+    function formatMonthLabel(date) {
+      return `${date.getFullYear()}年${date.getMonth() + 1}月`;
     }
     function formatSystemTime(date = new Date()) {
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
@@ -278,154 +228,230 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     function parseDateTime(text) {
       return new Date(String(text).replace(' ', 'T'));
     }
-    function hashText(text = '') {
-      return Array.from(String(text)).reduce((sum, char, index) => (sum + char.charCodeAt(0) * (index + 1)) % 100000, 0);
+    function parseDateOnly(text) {
+      if (!text) return null;
+      return new Date(`${text}T00:00:00`);
     }
-    function cloneFilters(filters = state.filters) {
-      return {
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-        customer: filters.customer || '',
-        businessTypes: [...(filters.businessTypes || BUSINESS_TYPE_OPTIONS)],
-        filterA: filters.filterA || '',
-        filterB: filters.filterB || '',
-        keyword: filters.keyword || '',
-        quickDays: filters.quickDays || 90,
-        selectedWarehouses: [...(filters.selectedWarehouses || COMMON_WAREHOUSES)]
-      };
+    function addDays(date, days) {
+      const next = new Date(date);
+      next.setDate(next.getDate() + days);
+      return next;
     }
-    function isCustomReportView() {
-      return state.reportMode === 'custom';
+    function addMonths(date, months) {
+      const next = new Date(date);
+      next.setMonth(next.getMonth() + months, 1);
+      return next;
     }
-    function getCurrentCustomReport() {
-      const allReports = [...state.customReports.mine, ...state.customReports.shared];
-      return allReports.find(item => item.reportCode === state.currentCustomReportCode) || null;
+    function getMonthStart(date) {
+      return new Date(date.getFullYear(), date.getMonth(), 1);
     }
-    function getBaseReportKey() {
-      return isCustomReportView() ? (getCurrentCustomReport()?.sourceReportKey || 'order') : state.currentReport;
+    function getDateRangeText(start, end, emptyText = '请选择日期范围') {
+      if (!start && !end) return emptyText;
+      if (start && !end) return `${start} - ${start}`;
+      if (!start && end) return `${end} - ${end}`;
+      return `${start} - ${end}`;
     }
-    function getCurrentReportTitle() {
-      return isCustomReportView() ? (getCurrentCustomReport()?.reportName || '自定义聚合报表') : reportDefinitions[state.currentReport].title;
+    function getCurrentDateField() {
+      return state.currentReport === 'order' ? (state.filters.dateType || 'primary') : 'primary';
     }
-    function resetFiltersForBaseReport(baseReportKey = getBaseReportKey(), nextFilters = null) {
-      state.filters = nextFilters ? cloneFilters(nextFilters) : {
+    function getDateFieldLabel(field = state.datePicker.field) {
+      if (field === 'ship') return '发货时间';
+      return state.currentReport === 'order' ? '下单时间' : '时间范围';
+    }
+    function getDateFieldRange(field = state.datePicker.field) {
+      if (field === 'ship') return { start: state.filters.shipStartDate, end: state.filters.shipEndDate };
+      return { start: state.filters.startDate, end: state.filters.endDate };
+    }
+    function setDateFieldRange(field, start, end) {
+      if (field === 'ship') {
+        state.filters.shipStartDate = start;
+        state.filters.shipEndDate = end;
+        return;
+      }
+      state.filters.startDate = start;
+      state.filters.endDate = end;
+    }
+    function normalizeExternalFilterList(list, options) {
+      if (!Array.isArray(list) || !list.length) return [];
+      return list.filter(item => options.includes(item));
+    }
+    function consumeCrossPageReportNavigation() {
+      try {
+        const rawValue = localStorage.getItem(CROSS_PAGE_REPORT_NAV_STORAGE_KEY);
+        if (!rawValue) return null;
+        localStorage.removeItem(CROSS_PAGE_REPORT_NAV_STORAGE_KEY);
+        const payload = JSON.parse(rawValue);
+        if (!payload || !payload.reportKey || !reportDefinitions[payload.reportKey]) return null;
+        if (payload.createdAt && Date.now() - Number(payload.createdAt) > CROSS_PAGE_REPORT_NAV_MAX_AGE) return null;
+        return payload;
+      } catch (error) {
+        localStorage.removeItem(CROSS_PAGE_REPORT_NAV_STORAGE_KEY);
+        return null;
+      }
+    }
+    function applyCrossPageReportNavigation(payload) {
+      const reportKey = payload?.reportKey;
+      if (!reportKey || !reportDefinitions[reportKey]) return false;
+      state.currentReport = reportKey;
+      state.filters = {
         startDate: '2026-01-01',
         endDate: '2026-03-18',
+        shipStartDate: '',
+        shipEndDate: '',
+        dateType: 'primary',
         customer: '',
-        businessTypes: isSingleBusinessTypeReport(baseReportKey) ? [TIMELINESS_BUSINESS_TYPE_OPTIONS[0]] : [...getReportBusinessTypeOptions(baseReportKey)],
+        orderTypes: [...ORDER_TYPE_OPTIONS],
+        orderStages: [...ORDER_STAGE_OPTIONS],
+        trackStatuses: [...TRACK_STATUS_OPTIONS],
+        businessTypes: isSingleBusinessTypeReport(reportKey) ? [TIMELINESS_BUSINESS_TYPE_OPTIONS[0]] : [...getReportBusinessTypeOptions(reportKey)],
         filterA: '',
         filterB: '',
         keyword: '',
         quickDays: 90,
         selectedWarehouses: [...COMMON_WAREHOUSES]
       };
+      const incomingFilters = payload.filters || {};
+      if (incomingFilters.dateType === 'ship') state.filters.dateType = 'ship';
+      if (incomingFilters.startDate) state.filters.startDate = incomingFilters.startDate;
+      if (incomingFilters.endDate) state.filters.endDate = incomingFilters.endDate;
+      if (incomingFilters.shipStartDate) state.filters.shipStartDate = incomingFilters.shipStartDate;
+      if (incomingFilters.shipEndDate) state.filters.shipEndDate = incomingFilters.shipEndDate;
+      if (state.filters.dateType === 'ship' && !state.filters.shipStartDate && incomingFilters.startDate) state.filters.shipStartDate = incomingFilters.startDate;
+      if (state.filters.dateType === 'ship' && !state.filters.shipEndDate && incomingFilters.endDate) state.filters.shipEndDate = incomingFilters.endDate;
+      if (isOrderReport(reportKey)) {
+        const orderTypes = normalizeExternalFilterList(incomingFilters.orderTypes, ORDER_TYPE_OPTIONS);
+        const orderStages = normalizeExternalFilterList(incomingFilters.orderStages, ORDER_STAGE_OPTIONS);
+        const trackStatuses = normalizeExternalFilterList(incomingFilters.trackStatuses, TRACK_STATUS_OPTIONS);
+        if (orderTypes.length) state.filters.orderTypes = orderTypes;
+        if (orderStages.length) state.filters.orderStages = orderStages;
+        if (trackStatuses.length) state.filters.trackStatuses = trackStatuses;
+      }
+      const warehouses = normalizeExternalFilterList(incomingFilters.selectedWarehouses, COMMON_WAREHOUSES);
+      if (warehouses.length) state.filters.selectedWarehouses = warehouses;
+      state.pagination.currentPage = 1;
+      closeTimelinessDetailModal();
+      closeProductDetailModal();
+      closeDatePicker();
+      resetAiAnalysis('idle', `已按工作台指标“${payload.sourceLabel || '订单统计'}”带入查询条件，请查看订单报表明细。`);
+      renderAll();
+      showToast(`已按${payload.sourceLabel || '工作台指标'}带入订单报表`, 'success');
+      return true;
     }
-    function buildOrderSkuLines(row, seed = hashText(row.orderNo || row.code || '')) {
-      const library = ORDER_SKU_LIBRARY[row.businessType] || ORDER_SKU_LIBRARY.备货;
-      const lineCount = Math.min(4, Math.max(2, 2 + (seed % 3)));
-      const totalQty = Math.max(1, row.itemQty || row.pieceCount || 1);
-      const baseWeight = Number(row.weightValue) || Math.max(0.1, totalQty * 0.24);
-      const baseVolume = Number(row.volumeValue) || Math.max(0.01, totalQty * 0.0014);
-      const selected = Array.from({ length: lineCount }, (_, index) => library[(seed + index) % library.length]);
-      const rawWeights = selected.map((item, index) => item.unitWeight * (1 + ((seed + index * 7) % 3)));
-      const rawSum = rawWeights.reduce((sum, value) => sum + value, 0) || 1;
-      let qtyLeft = totalQty;
-      return selected.map((item, index) => {
-        const isLast = index === selected.length - 1;
-        const qty = isLast ? qtyLeft : Math.max(1, Math.round(totalQty * (rawWeights[index] / rawSum)));
-        qtyLeft = Math.max(0, qtyLeft - qty);
+    function buildDateShortcutRange(shortcutKey) {
+      const anchor = new Date(ANCHOR_DATE);
+      if (shortcutKey === 'today') {
+        const day = formatDateOnly(anchor);
+        return { start: day, end: day };
+      }
+      if (shortcutKey === 'yesterday') {
+        const day = formatDateOnly(addDays(anchor, -1));
+        return { start: day, end: day };
+      }
+      if (shortcutKey === 'last7') return { start: formatDateOnly(addDays(anchor, -6)), end: formatDateOnly(anchor) };
+      if (shortcutKey === 'last30') return { start: formatDateOnly(addDays(anchor, -29)), end: formatDateOnly(anchor) };
+      if (shortcutKey === 'last90') return { start: formatDateOnly(addDays(anchor, -89)), end: formatDateOnly(anchor) };
+      if (shortcutKey === 'thisMonth') {
+        const start = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+        return { start: formatDateOnly(start), end: formatDateOnly(anchor) };
+      }
+      if (shortcutKey === 'lastMonth') {
+        const start = new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1);
+        const end = new Date(anchor.getFullYear(), anchor.getMonth(), 0);
+        return { start: formatDateOnly(start), end: formatDateOnly(end) };
+      }
+      return { start: '', end: '' };
+    }
+    function getMatchedDateShortcut(start, end) {
+      if (!start || !end) return '';
+      const matched = DATE_PICKER_SHORTCUTS.find(item => {
+        const range = buildDateShortcutRange(item.key);
+        return range.start === start && range.end === end;
+      });
+      return matched?.key || '';
+    }
+    function getDatePickerBaseMonth(start, end) {
+      const baseDate = parseDateOnly(start || end || formatDateOnly(ANCHOR_DATE)) || new Date(ANCHOR_DATE);
+      return formatDateOnly(getMonthStart(baseDate));
+    }
+    function buildCalendarCells(monthText, startText, endText) {
+      const monthDate = parseDateOnly(monthText) || getMonthStart(ANCHOR_DATE);
+      const monthStart = getMonthStart(monthDate);
+      const offset = (monthStart.getDay() + 6) % 7;
+      const gridStart = addDays(monthStart, -offset);
+      return Array.from({ length: 42 }, (_, index) => {
+        const current = addDays(gridStart, index);
+        const text = formatDateOnly(current);
+        const inMonth = current.getMonth() === monthStart.getMonth();
+        const isToday = text === formatDateOnly(ANCHOR_DATE);
+        const hasRange = Boolean(startText && endText);
+        const inRange = hasRange && text >= startText && text <= endText;
         return {
-          orderNo: row.orderNo,
-          ownerName: row.ownerName,
-          customer: row.customer,
-          warehouse: row.warehouse,
-          businessType: row.businessType,
-          currentCountry: row.currentCountry || '--',
-          status: row.status,
-          tag: row.tag,
-          time: row.time,
-          orderSource: row.orderSource,
-          skuCode: item.code,
-          skuName: item.name,
-          skuQty: qty,
-          weightValue: Number((baseWeight * (rawWeights[index] / rawSum)).toFixed(2)),
-          volumeValue: Number((baseVolume * (rawWeights[index] / rawSum)).toFixed(3))
+          text,
+          day: current.getDate(),
+          inMonth,
+          isToday,
+          isStart: Boolean(startText) && text === startText,
+          isEnd: Boolean(endText) && text === endText,
+          inRange
         };
       });
     }
-    function buildOrderItemRows(orderRows) {
-      return orderRows.flatMap((row, index) => buildOrderSkuLines(row, hashText(`${row.orderNo}-${index}`)));
-    }
-    function getMetricDefaultAlias(field, agg) {
-      if (!field) return '';
-      return `${field.label}${agg === 'distinct_count' ? '去重数' : agg === 'count' ? '数量' : '汇总'}`;
-    }
-    function createDefaultCustomMetric(fieldKey = 'orderNo', agg = 'distinct_count', alias = '订单数') {
-      return { field: fieldKey, agg, alias };
-    }
-    function createDefaultCustomReportDraft(options = {}) {
-      const baseFilters = options.filters ? cloneFilters(options.filters) : cloneFilters();
-      return {
-        reportCode: options.reportCode || '',
-        reportName: options.reportName || '',
-        scope: options.scope || 'mine',
-        sourceReportKey: 'order',
-        datasetCode: options.datasetCode || 'order_header',
-        preserveFilters: options.preserveFilters !== false,
-        defaultFilters: baseFilters,
-        dimensions: options.dimensions ? [...options.dimensions] : ['ownerName', '', ''],
-        metrics: options.metrics ? options.metrics.map(item => ({ ...item })) : [
-          createDefaultCustomMetric('orderNo', 'distinct_count', '订单数'),
-          createDefaultCustomMetric('weightValue', 'sum', '总重量'),
-          createDefaultCustomMetric('', 'sum', '')
-        ],
-        sortField: options.sortField || 'metric:0',
-        sortDirection: options.sortDirection || 'desc',
-        topN: Number(options.topN) || 10,
-        viewType: options.viewType || 'table',
-        description: options.description || '',
-        drilldownEnabled: options.drilldownEnabled !== false
-      };
-    }
-    function readCustomReportsFromStorage() {
-      try {
-        const raw = window.localStorage.getItem(CUSTOM_REPORT_STORAGE_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch (error) {
-        return [];
-      }
-    }
-    function writeCustomReportsToStorage() {
-      try {
-        window.localStorage.setItem(CUSTOM_REPORT_STORAGE_KEY, JSON.stringify(state.customReports.mine));
-      } catch (error) {
-        showToast('浏览器存储不可用，刷新后我的报表不会保留', 'warning');
-      }
+    function hashText(text = '') {
+      return Array.from(String(text)).reduce((sum, char, index) => (sum + char.charCodeAt(0) * (index + 1)) % 100000, 0);
     }
     function getReportBusinessTypeOptions(reportKey = state.currentReport) {
+      if (reportKey === 'order') return ORDER_TYPE_OPTIONS;
       return reportKey === 'timeliness' ? TIMELINESS_BUSINESS_TYPE_OPTIONS : BUSINESS_TYPE_OPTIONS;
     }
     function isSingleBusinessTypeReport(reportKey = state.currentReport) {
       return reportKey === 'timeliness';
     }
+    function isOrderReport(reportKey = state.currentReport) {
+      return reportKey === 'order';
+    }
     function parseMetricValue(value) {
       const normalized = String(value).replace(/,/g, '').replace(/[^\d.-]/g, '');
       return normalized ? Number(normalized) : 0;
     }
-    function stageToOrderStatus(stage) {
-      if (stage === '已完成') return '已完成';
+    function orderStageToProcessStatus(stage) {
+      if (stage === '已签收') return '已完成';
       if (stage === '待审核') return '待审核';
       return '处理中';
     }
-    function getActiveBusinessTypes(list = state.filters.businessTypes, reportKey = state.currentReport) {
+    function normalizeOrderType(type) {
+      if (type === '干线') return '换单';
+      if (type === '退件重派') return '重派';
+      return type;
+    }
+    function getCurrentTypeFilters(reportKey = state.currentReport) {
+      return reportKey === 'order' ? state.filters.orderTypes : state.filters.businessTypes;
+    }
+    function getActiveBusinessTypes(list, reportKey = state.currentReport) {
       const options = getReportBusinessTypeOptions(reportKey);
-      const selected = Array.isArray(list) && list.length ? list : options;
+      const sourceList = Array.isArray(list) ? list : getCurrentTypeFilters(reportKey);
+      const selected = sourceList.length ? sourceList : options;
       return selected.filter(item => options.includes(item));
     }
-    function getOrderVisibleFields(selectedTypes = getActiveBusinessTypes()) {
-      const normalizedTypes = getActiveBusinessTypes(selectedTypes);
+    function isTrackedOrderStage(orderStage) {
+      return ['\u5df2\u53d1\u8d27', '\u5df2\u7b7e\u6536'].includes(orderStage);
+    }
+    function getTrackStatusBadgeClass(trackStatus) {
+      if (trackStatus === '\u5df2\u7b7e\u6536') return 'badge-green';
+      if (trackStatus === '\u5df2\u4e0a\u7ebf') return 'badge-blue';
+      if (trackStatus === '\u672a\u4e0a\u7ebf') return 'badge-orange';
+      if (['\u4e0a\u7ebf\u5f02\u5e38', '\u505c\u66f4', '\u4e22\u4ef6', '\u5df2\u62d2\u6536'].includes(trackStatus)) return 'badge-orange';
+      return 'badge-blue';
+    }
+    function getTrackStatusDisplay(row) {
+      if (!row.trackStatus) return '--';
+      return `<span class="badge ${getTrackStatusBadgeClass(row.trackStatus)}">${row.trackStatus}</span>`;
+    }
+    function getOrderVisibleFields(selectedTypes = getActiveBusinessTypes(state.filters.orderTypes, 'order')) {
+      const sourceTypes = Array.isArray(selectedTypes) && selectedTypes.length
+        ? selectedTypes
+        : getActiveBusinessTypes(state.filters.orderTypes, 'order');
+      const normalizedTypes = sourceTypes.map(normalizeOrderType).filter(type => ORDER_FIELD_SETS[type]);
+      if (!normalizedTypes.length) return [...ORDER_FIELD_SETS[ORDER_TYPE_OPTIONS[0]]];
       if (normalizedTypes.length === 1) return [...ORDER_FIELD_SETS[normalizedTypes[0]]];
       const sharedFields = ORDER_FIELD_DISPLAY_ORDER.filter(fieldKey => normalizedTypes.every(type => ORDER_FIELD_SETS[type].includes(fieldKey)));
       return sharedFields.length ? sharedFields : [...ORDER_FIELD_SETS[normalizedTypes[0]]];
@@ -449,7 +475,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     }
     function getStatusBucket(status) {
       if (['已签收', '已完成', '已闭环', '健康', '优秀', '已复核', '已发运', '已审核'].includes(status)) return 'success';
-      if (['预警', '待确认'].includes(status)) return 'risk';
+      if (['异常', '已拒收', '上线异常', '停更', '丢件', '预警', '待确认'].includes(status)) return 'risk';
       return 'warning';
     }
     function getSelectedHeaderWarehouses() {
@@ -467,12 +493,19 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     function getSelectedBusinessTypes() {
       return Array.from(document.querySelectorAll('.business-type-checkbox:checked')).map(item => item.value);
     }
+    function getSelectedOrderStages() {
+      return Array.from(document.querySelectorAll('.order-stage-checkbox:checked')).map(item => item.value);
+    }
+    function getSelectedTrackStatuses() {
+      return Array.from(document.querySelectorAll('.track-status-checkbox:checked')).map(item => item.value);
+    }
     function getTimelinessNodeOptions(businessType) {
       return (TIMELINESS_NODE_CONFIG[businessType] || []).map(item => item.name);
     }
     function syncBusinessTypeSelection(selectedTypes = getReportBusinessTypeOptions(state.currentReport)) {
       const options = getReportBusinessTypeOptions(state.currentReport);
       const singleSelect = isSingleBusinessTypeReport(state.currentReport);
+      const labelBase = isOrderReport() ? '订单类型' : '业务类型';
       const selectedSet = new Set(selectedTypes);
       document.querySelectorAll('.business-type-checkbox').forEach(checkbox => { checkbox.checked = selectedSet.has(checkbox.value); });
       const selectAll = document.getElementById('selectAllBusinessTypes');
@@ -480,16 +513,44 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       if (selectAllWrap) selectAllWrap.classList.toggle('hidden', singleSelect);
       selectAll.checked = selectedTypes.length === options.length && !singleSelect;
       selectAll.indeterminate = !singleSelect && selectedTypes.length > 0 && selectedTypes.length < options.length;
-      document.getElementById('businessTypeLabel').textContent = singleSelect ? '业务类型(单选)' : '业务类型';
+      document.getElementById('businessTypeLabel').textContent = singleSelect ? `${labelBase}(单选)` : labelBase;
       document.getElementById('businessTypeText').textContent = !selectedTypes.length
-        ? '请选择业务类型'
+        ? `请选择${labelBase}`
         : singleSelect
           ? selectedTypes[0]
           : selectedTypes.length === options.length
-            ? '全部业务类型'
+            ? `全部${labelBase}`
             : selectedTypes.length === 1
               ? selectedTypes[0]
-              : `已选${selectedTypes.length}个业务类型`;
+              : `已选${selectedTypes.length}个${labelBase}`;
+    }
+    function syncOrderStageSelection(selectedValues = ORDER_STAGE_OPTIONS) {
+      const selectedSet = new Set(selectedValues);
+      document.querySelectorAll('.order-stage-checkbox').forEach(checkbox => { checkbox.checked = selectedSet.has(checkbox.value); });
+      const selectAll = document.getElementById('selectAllOrderStages');
+      selectAll.checked = selectedValues.length === ORDER_STAGE_OPTIONS.length;
+      selectAll.indeterminate = selectedValues.length > 0 && selectedValues.length < ORDER_STAGE_OPTIONS.length;
+      document.getElementById('orderStageText').textContent = !selectedValues.length
+        ? '请选择订单阶段'
+        : selectedValues.length === ORDER_STAGE_OPTIONS.length
+          ? '全部订单阶段'
+          : selectedValues.length === 1
+            ? selectedValues[0]
+            : `已选${selectedValues.length}个订单阶段`;
+    }
+    function syncTrackStatusSelection(selectedValues = TRACK_STATUS_OPTIONS) {
+      const selectedSet = new Set(selectedValues);
+      document.querySelectorAll('.track-status-checkbox').forEach(checkbox => { checkbox.checked = selectedSet.has(checkbox.value); });
+      const selectAll = document.getElementById('selectAllTrackStatuses');
+      selectAll.checked = selectedValues.length === TRACK_STATUS_OPTIONS.length;
+      selectAll.indeterminate = selectedValues.length > 0 && selectedValues.length < TRACK_STATUS_OPTIONS.length;
+      document.getElementById('trackStatusText').textContent = !selectedValues.length
+        ? '请选择轨迹状态'
+        : selectedValues.length === TRACK_STATUS_OPTIONS.length
+          ? '全部轨迹状态'
+          : selectedValues.length === 1
+            ? selectedValues[0]
+            : `已选${selectedValues.length}个轨迹状态`;
     }
     function refreshTimelinessNodeFilterOptions(selectedTypes = state.filters.businessTypes) {
       if (state.currentReport !== 'timeliness') return;
@@ -506,6 +567,14 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     function closeBusinessTypeDropdown() {
       document.getElementById('businessTypeDropdown').classList.add('hidden');
       document.getElementById('businessTypeBtn').setAttribute('aria-expanded', 'false');
+    }
+    function closeOrderStageDropdown() {
+      document.getElementById('orderStageDropdown').classList.add('hidden');
+      document.getElementById('orderStageBtn').setAttribute('aria-expanded', 'false');
+    }
+    function closeTrackStatusDropdown() {
+      document.getElementById('trackStatusDropdown').classList.add('hidden');
+      document.getElementById('trackStatusBtn').setAttribute('aria-expanded', 'false');
     }
     function buildRows(config) {
       return Array.from({ length: 26 }, (_, index) => {
@@ -527,26 +596,60 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         };
       });
     }
+    function buildOrderProducts(orderNo, itemQty, seed) {
+      const totalQty = Math.max(1, Number(itemQty) || 1);
+      const productCount = Math.min(4, Math.max(2, 2 + (seed % 3)));
+      let remainingQty = totalQty;
+      return Array.from({ length: productCount }, (_, index) => {
+        const catalog = ORDER_PRODUCT_CATALOG[(seed + index) % ORDER_PRODUCT_CATALOG.length];
+        const slotsLeft = productCount - index;
+        const minReserved = slotsLeft - 1;
+        const suggestedQty = Math.max(1, Math.round(remainingQty / slotsLeft) + (((seed + index) % 3) - 1));
+        const qty = index === productCount - 1
+          ? remainingQty
+          : Math.max(1, Math.min(remainingQty - minReserved, suggestedQty));
+        remainingQty -= qty;
+        return {
+          name: catalog.names[(seed + index * 2) % catalog.names.length],
+          code: `${orderNo}-SKU${pad(index + 1)}`,
+          qty,
+          category: catalog.category
+        };
+      });
+    }
+    function resolveTrackStatus(orderStage, seed) {
+      if (orderStage === '\u5df2\u7b7e\u6536') return '\u5df2\u7b7e\u6536';
+      if (orderStage !== '\u5df2\u53d1\u8d27') return '';
+      return pick(['\u672a\u4e0a\u7ebf', '\u5df2\u4e0a\u7ebf', '\u5df2\u4e0a\u7ebf', '\u5df2\u4e0a\u7ebf', '\u4e0a\u7ebf\u5f02\u5e38', '\u505c\u66f4', '\u4e22\u4ef6', '\u5df2\u62d2\u6536'], seed);
+    }
+    function resolveShipTime(orderTime, orderStage, trackStatus, seed) {
+      const requireShipTime = isTrackedOrderStage(orderStage) || Boolean(trackStatus);
+      if (!requireShipTime) return '';
+      const shipDate = parseDateTime(orderTime);
+      shipDate.setDate(shipDate.getDate() + 1 + (seed % 4));
+      shipDate.setHours(9 + (seed % 7), ((seed + 5) * 11) % 60, 0, 0);
+      return formatSystemTime(shipDate);
+    }
     function buildOrderRows() {
       const rows = [];
       const startDate = new Date('2026-01-01T00:00:00');
       const endDate = new Date(ANCHOR_DATE);
-      const trunkStages = ['已完成', '执行中', '已审核', '待审核'];
-      const stockStages = ['已完成', '执行中', '已审核', '待审核'];
-      const redispatchStages = ['执行中', '待审核', '已审核', '已完成'];
-      const trunkDailyStages = ['已完成', '执行中', '待审核', '已审核'];
-      const stockDailyStages = ['已完成', '执行中', '待审核'];
-      const redispatchDailyStages = ['执行中', '待审核'];
+      const replaceStages = ['已签收', '已发货', '处理中', '待审核', '异常'];
+      const stockStages = ['已签收', '已发货', '处理中', '待审核', '异常'];
+      const switchStages = ['处理中', '异常', '已发货', '待审核', '已签收'];
+      const replaceDailyStages = ['已签收', '已发货', '处理中', '待审核'];
+      const stockDailyStages = ['已签收', '已发货', '处理中'];
+      const switchDailyStages = ['处理中', '异常'];
       const originPorts = ['深圳(SZX)', '广州(CAN)', '香港(HKG)'];
       const destinationPorts = ['洛杉矶(LAX)', '纽约(JFK)', '伦敦(LHR)', '法兰克福(FRA)', '东京(NRT)'];
       const stockCountries = ['美国', '英国', '德国', '加拿大', '日本'];
-      const redispatchCountries = ['英国', '德国', '美国', '法国', '加拿大', '日本'];
+      const switchCountries = ['英国', '德国', '美国', '法国', '加拿大', '日本'];
       const carriers = ['DHL', 'UPS', 'FedEx', 'YunExpress'];
       const dayMs = 24 * 60 * 60 * 1000;
       const totalDays = Math.floor((endDate.getTime() - startDate.getTime()) / dayMs) + 1;
-      let trunkCounter = 1;
+      let replaceCounter = 1;
       let stockCounter = 1;
-      let redispatchCounter = 1;
+      let switchCounter = 1;
       let globalIndex = 0;
 
       function buildDateCode(date) {
@@ -558,26 +661,31 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         rowDate.setDate(startDate.getDate() + dayOffset);
         const dateCode = buildDateCode(rowDate);
         const isAnchorDay = rowDate.getTime() === endDate.getTime();
-        const trunkCount = isAnchorDay ? 8 : 4;
+        const replaceCount = isAnchorDay ? 8 : 4;
         const stockCount = isAnchorDay ? 6 : 3;
-        const redispatchCount = isAnchorDay ? 4 : 2;
+        const switchCount = isAnchorDay ? 4 : 2;
 
-        Array.from({ length: trunkCount }, (_, innerIndex) => {
+        Array.from({ length: replaceCount }, (_, innerIndex) => {
           const seed = dayOffset * 10 + innerIndex;
-          const stage = trunkDailyStages[innerIndex] || pick(trunkStages, seed);
+          const orderStage = replaceDailyStages[innerIndex] || pick(replaceStages, seed);
           const pieceCount = 42 + (dayOffset % 12) * 4 + innerIndex * 7;
+          const itemQty = pieceCount + 18 + ((dayOffset + innerIndex) % 5) * 6;
           const weightValue = 520 + dayOffset * 5 + innerIndex * 38;
           const volumeValue = 3.2 + (dayOffset % 5) * 0.34 + innerIndex * 0.28;
           const palletCount = 2 + ((dayOffset + innerIndex) % 4);
           const ownerName = pick(COMMON_CUSTOMERS, seed);
-          const orderNo = `GL${dateCode}${pad(trunkCounter)}`;
-          const masterNo = `MAWB-${pad((dayOffset % 9) + 81)}-${pad((innerIndex % 7) + 11)}${pad((trunkCounter % 17) + 1)}`;
+          const orderNo = `GL${dateCode}${pad(replaceCounter)}`;
+          const masterNo = `MAWB-${pad((dayOffset % 9) + 81)}-${pad((innerIndex % 7) + 11)}${pad((replaceCounter % 17) + 1)}`;
+          const orderTime = formatDateTime(rowDate, globalIndex);
+          const trackStatus = resolveTrackStatus(orderStage, seed);
+          const shipTime = resolveShipTime(orderTime, orderStage, trackStatus, seed);
           rows.push({
             code: orderNo,
             orderNo,
             masterNo,
             splitCount: 1 + ((dayOffset + innerIndex) % 5),
             pieceCount,
+            itemQty,
             weightValue,
             weightDisplay: formatWeight(weightValue),
             volumeValue,
@@ -589,22 +697,29 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
             ownerName,
             customer: ownerName,
             businessType: '干线',
+            orderType: '换单',
             orderSource: pick(ORDER_SOURCE_OPTIONS, seed),
-            tag: stage,
-            status: stageToOrderStatus(stage),
-            time: formatDateTime(rowDate, globalIndex),
+            orderStage,
+            trackStatus,
+            processStatus: orderStageToProcessStatus(orderStage),
+            products: buildOrderProducts(orderNo, itemQty, seed),
+            tag: orderStage,
+            status: orderStage,
+            orderTime,
+            shipTime,
+            time: orderTime,
             value: formatWeight(weightValue),
             evidenceTag: `主单:${masterNo}`,
             evidenceValue: `重量:${formatWeight(weightValue)}`,
             priorityValue: weightValue + pieceCount * 6 + palletCount * 35
           });
-          trunkCounter += 1;
+          replaceCounter += 1;
           globalIndex += 1;
         });
 
         Array.from({ length: stockCount }, (_, innerIndex) => {
           const seed = dayOffset * 10 + innerIndex + 3;
-          const stage = stockDailyStages[innerIndex] || pick(stockStages, seed + 1);
+          const orderStage = stockDailyStages[innerIndex] || pick(stockStages, seed + 1);
           const currentCountry = pick(stockCountries, seed + 2);
           const codAmount = seed % 4 === 0 ? null : 68 + dayOffset * 2.4 + innerIndex * 18.6;
           const itemQty = 10 + (dayOffset % 6) * 4 + innerIndex * 7;
@@ -612,6 +727,9 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
           const poType = pick(ORDER_PO_TYPES, seed);
           const orderNo = `BH${dateCode}${pad(stockCounter)}`;
           const codAmountDisplay = formatCodAmount(currentCountry, codAmount);
+          const orderTime = formatDateTime(rowDate, globalIndex);
+          const trackStatus = resolveTrackStatus(orderStage, seed + 1);
+          const shipTime = resolveShipTime(orderTime, orderStage, trackStatus, seed + 1);
           rows.push({
             code: orderNo,
             orderNo,
@@ -625,10 +743,17 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
             ownerName,
             customer: ownerName,
             businessType: '备货',
+            orderType: '备货',
             orderSource: pick(ORDER_SOURCE_OPTIONS, seed + 1),
-            tag: stage,
-            status: stageToOrderStatus(stage),
-            time: formatDateTime(rowDate, globalIndex),
+            orderStage,
+            trackStatus,
+            processStatus: orderStageToProcessStatus(orderStage),
+            products: buildOrderProducts(orderNo, itemQty, seed + 7),
+            tag: orderStage,
+            status: orderStage,
+            orderTime,
+            shipTime,
+            time: orderTime,
             value: codAmountDisplay === '-' ? `${itemQty}` : codAmountDisplay,
             evidenceTag: `PO Type:${poType}`,
             evidenceValue: codAmountDisplay === '-' ? `商品数量:${itemQty}` : `COD:${codAmountDisplay}`,
@@ -638,16 +763,19 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
           globalIndex += 1;
         });
 
-        Array.from({ length: redispatchCount }, (_, innerIndex) => {
+        Array.from({ length: switchCount }, (_, innerIndex) => {
           const seed = dayOffset * 10 + innerIndex + 5;
-          const stage = redispatchDailyStages[innerIndex] || pick(redispatchStages, seed + 2);
-          const originalCountry = pick(redispatchCountries, seed);
-          const currentCountry = pick(redispatchCountries, seed + 2);
+          const orderStage = switchDailyStages[innerIndex] || pick(switchStages, seed + 2);
+          const originalCountry = pick(switchCountries, seed);
+          const currentCountry = pick(switchCountries, seed + 2);
           const codAmount = seed % 5 === 1 ? null : 42 + dayOffset * 1.8 + innerIndex * 22.4;
           const itemQty = 4 + (dayOffset % 4) * 3 + innerIndex * 5;
           const ownerName = pick(COMMON_CUSTOMERS, seed + 3);
-          const orderNo = `CP${dateCode}${pad(redispatchCounter)}`;
+          const orderNo = `CP${dateCode}${pad(switchCounter)}`;
           const codAmountDisplay = formatCodAmount(currentCountry, codAmount);
+          const orderTime = formatDateTime(rowDate, globalIndex);
+          const trackStatus = resolveTrackStatus(orderStage, seed + 2);
+          const shipTime = resolveShipTime(orderTime, orderStage, trackStatus, seed + 2);
           rows.push({
             code: orderNo,
             orderNo,
@@ -660,16 +788,23 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
             ownerName,
             customer: ownerName,
             businessType: '退件重派',
+            orderType: '重派',
             orderSource: pick(ORDER_SOURCE_OPTIONS, seed + 2),
-            tag: stage,
-            status: stageToOrderStatus(stage),
-            time: formatDateTime(rowDate, globalIndex),
+            orderStage,
+            trackStatus,
+            processStatus: orderStageToProcessStatus(orderStage),
+            products: buildOrderProducts(orderNo, itemQty, seed + 13),
+            tag: orderStage,
+            status: orderStage,
+            orderTime,
+            shipTime,
+            time: orderTime,
             value: codAmountDisplay === '-' ? `${itemQty}` : codAmountDisplay,
             evidenceTag: `改派:${originalCountry}->${currentCountry}`,
             evidenceValue: codAmountDisplay === '-' ? `商品数量:${itemQty}` : `COD:${codAmountDisplay}`,
             priorityValue: (codAmount || 0) * 2.4 + itemQty * 22 + (originalCountry !== currentCountry ? 80 : 0)
           });
-          redispatchCounter += 1;
+          switchCounter += 1;
           globalIndex += 1;
         });
       }
@@ -686,8 +821,9 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         .filter(row => TIMELINESS_BUSINESS_TYPE_OPTIONS.includes(row.businessType))
         .map((row, index) => {
           const nodes = TIMELINESS_NODE_CONFIG[row.businessType] || [];
-          const seed = hashText(`${row.orderNo}-${row.warehouse}-${row.status}`);
-          const completedNodeCount = getTimelinessCompletedNodeCount(row.status, nodes.length, seed);
+          const timelinessStatus = row.processStatus || row.status;
+          const seed = hashText(`${row.orderNo}-${row.warehouse}-${timelinessStatus}`);
+          const completedNodeCount = getTimelinessCompletedNodeCount(timelinessStatus, nodes.length, seed);
           const nodeTimeline = {};
           const nodeDurations = [];
           let totalDurationSeconds = 0;
@@ -700,7 +836,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
             const baseFactor = 0.84 + (((seed + nodeIndex * 17) % 31) / 100);
             const pressureFactor = row.warehouse === '香港葵涌仓' && nodeIndex >= Math.max(2, nodes.length - 3)
               ? 1.08
-              : row.status === '处理中' && nodeIndex === completedNodeCount - 1
+              : timelinessStatus === '处理中' && nodeIndex === completedNodeCount - 1
                 ? 1.12
                 : 1;
             let durationSeconds = Math.round(node.baseTime * baseFactor * pressureFactor);
@@ -728,6 +864,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
           const bottleneck = [...nodeDurations].sort((left, right) => right.durationSeconds - left.durationSeconds)[0];
           return {
             ...row,
+            status: timelinessStatus,
             tag: bottleneck?.name || '--',
             value: formatDuration(totalDurationSeconds),
             totalDurationSeconds,
@@ -744,64 +881,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         .sort((left, right) => getTimeValue(right.time) - getTimeValue(left.time));
     }
     const ORDER_SAMPLE_ROWS = buildOrderRows();
-    const ORDER_ITEM_SAMPLE_ROWS = buildOrderItemRows(ORDER_SAMPLE_ROWS);
     const TIMELINESS_SAMPLE_ROWS = buildTimelinessRows(ORDER_SAMPLE_ROWS);
-    const SHARED_CUSTOM_REPORTS = [
-      createDefaultCustomReportDraft({
-        reportCode: 'shared_order_owner_rank',
-        reportName: '备货业务客户货量排名',
-        scope: 'shared',
-        datasetCode: 'order_item',
-        dimensions: ['ownerName', '', ''],
-        metrics: [
-          createDefaultCustomMetric('skuQty', 'sum', '商品数量'),
-          createDefaultCustomMetric('orderNo', 'distinct_count', '订单数'),
-          createDefaultCustomMetric('weightValue', 'sum', '总重量')
-        ],
-        sortField: 'metric:0',
-        topN: 10,
-        viewType: 'bar',
-        description: '按客户查看备货业务SKU数量、订单数和重量汇总。',
-        filters: {
-          startDate: '2026-01-01',
-          endDate: '2026-03-18',
-          customer: '',
-          businessTypes: ['备货'],
-          filterA: '',
-          filterB: '',
-          keyword: '',
-          quickDays: 90,
-          selectedWarehouses: [...COMMON_WAREHOUSES]
-        }
-      }),
-      createDefaultCustomReportDraft({
-        reportCode: 'shared_order_country_rank',
-        reportName: '备货业务派送国家SKU分布',
-        scope: 'shared',
-        datasetCode: 'order_item',
-        dimensions: ['currentCountry', 'skuCode', ''],
-        metrics: [
-          createDefaultCustomMetric('skuQty', 'sum', '商品数量'),
-          createDefaultCustomMetric('orderNo', 'distinct_count', '订单数'),
-          createDefaultCustomMetric('volumeValue', 'sum', '总体积')
-        ],
-        sortField: 'metric:0',
-        topN: 20,
-        viewType: 'table',
-        description: '按派送国家和SKU查看备货业务的商品数量与体积分布。',
-        filters: {
-          startDate: '2026-01-01',
-          endDate: '2026-03-18',
-          customer: '',
-          businessTypes: ['备货'],
-          filterA: '',
-          filterB: '',
-          keyword: '',
-          quickDays: 90,
-          selectedWarehouses: [...COMMON_WAREHOUSES]
-        }
-      })
-    ];
     function createReport(config) {
       return {
         ...config,
@@ -817,21 +897,21 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
 
     const reportDefinitions = {
       order: createReport({
-        tabLabel: '订单', title: '订单统计报表', summary: '用于查看各业务类型下的订单规模、审核进度与异常订单分布，适合经营复盘时先看订单入口与履约准备情况。', scope: '数据范围:深圳兴围仓/广州白云仓/香港葵涌仓', sync: '最近同步:2026-03-18 23:46:08', focus: '重点关注订单规模与审核转化', note: '口径=已创建订单+审核回传', owner: '订单运营组', review: '适合放在目录首位做总览入口',
-        filterA: { label: '订单阶段', options: ['待审核', '已审核', '执行中', '已完成'] },
-        filterB: { label: '订单状态', options: ['已完成', '处理中', '待审核'] },
+        tabLabel: '订单', title: '订单统计报表', summary: '用于查看各订单类型下的订单规模、发货进度与异常订单分布，适合经营复盘时先看订单入口与履约准备情况。', scope: '数据范围:深圳兴围仓/广州白云仓/香港葵涌仓', sync: '最近同步:2026-03-18 23:46:08', focus: '重点关注订单规模与签收闭环', note: '口径=下单记录+轨迹回传', owner: '订单运营组', review: '适合放在目录首位做总览入口',
+        filterA: { label: '订单阶段', options: ORDER_STAGE_OPTIONS },
+        filterB: { label: '轨迹状态', options: TRACK_STATUS_OPTIONS },
         tagHeader: '订单阶段', valueHeader: '订单量',
         stats: [
           { label: '订单总量', value: '18,426', delta: '较上期+7.9%', tone: 'tone-blue', hint: '备货业务增长最明显' },
-          { label: '审核通过率', value: '96.1%', delta: '较上期+1.3%', tone: 'tone-green', hint: '干线业务最稳定' },
-          { label: '平均建单时长', value: '18分钟', delta: '较上期-4分钟', tone: 'tone-orange', hint: '自动回填效率提升' },
-          { label: '异常订单数', value: '57', delta: '较上期-6单', tone: 'tone-violet', hint: '退件重派仍需重点跟进' }
+          { label: '上线成功率', value: '96.1%', delta: '较上期+1.3%', tone: 'tone-green', hint: '换单类型最稳定' },
+          { label: '平均发货时长', value: '18小时', delta: '较上期-4小时', tone: 'tone-orange', hint: '下单至发货链路更顺畅' },
+          { label: '异常订单数', value: '57', delta: '较上期-6单', tone: 'tone-violet', hint: '重派类型仍需重点跟进' }
         ],
-        trend: { title: '近18天订单量与审核完成趋势', type: 'line', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '订单量', data: [1320, 1386, 1402, 1468, 1496, 1542, 1588, 1634, 1602], color: '#4d77ea' }, { label: '审核完成量', data: [1268, 1325, 1344, 1410, 1441, 1488, 1532, 1582, 1556], color: '#2eb67d' }] },
-        structure: { title: '订单阶段占比', type: 'doughnut', labels: ['待审核', '已审核', '执行中', '已完成'], values: [12, 28, 34, 26] },
-        insights: ['备货业务订单量持续抬升，建议同步关注入仓和拣货资源准备。', '退件重派业务的异常订单占比更高，适合单独追踪审核驳回原因。', '广州白云仓的订单审核完成节奏更平稳，可作为流程对标样本。'],
-        toolbar: ['默认按创建时间倒序', '异常订单需人工复核', '当前口径:订单创建+审核回传'],
-        rowsConfig: { prefix: 'OD', tags: ['待审核', '已审核', '执行中', '已完成'], statuses: ['已完成', '处理中', '待审核'], unit: '单', base: 680, step: 22, businessTypes: BUSINESS_TYPE_OPTIONS },
+        trend: { title: '近18天订单量与发货完成趋势', type: 'line', labels: ['03-01', '03-03', '03-05', '03-07', '03-09', '03-11', '03-13', '03-15', '03-17'], datasets: [{ label: '订单量', data: [1320, 1386, 1402, 1468, 1496, 1542, 1588, 1634, 1602], color: '#4d77ea' }, { label: '已发货订单量', data: [1268, 1325, 1344, 1410, 1441, 1488, 1532, 1582, 1556], color: '#2eb67d' }] },
+        structure: { title: '订单阶段占比', type: 'doughnut', labels: ['待审核', '处理中', '已发货', '已签收', '异常'], values: [12, 26, 24, 30, 8] },
+        insights: ['备货类型订单量持续抬升，建议同步关注入仓和拣货资源准备。', '重派类型的异常订单占比更高，适合单独追踪异常轨迹原因。', '广州白云仓的签收闭环节奏更平稳，可作为流程对标样本。'],
+        toolbar: ['默认按下单时间倒序', '商品数量支持点击查看商品详情', '当前口径:下单记录+轨迹回传'],
+        rowsConfig: { prefix: 'OD', tags: ORDER_STAGE_OPTIONS, statuses: ORDER_STAGE_OPTIONS, unit: '单', base: 680, step: 22, businessTypes: ORDER_TYPE_OPTIONS },
         rows: ORDER_SAMPLE_ROWS
       }),
       inbound: createReport({
@@ -974,464 +1054,6 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         rowsConfig: { prefix: 'PF', tags: ['货物丢失', '货物损坏', '配送延迟', '服务补偿'], statuses: ['待审批', '审批中', '已完成'], mode: 'currency', base: 1680, step: 320 }
       })
     };
-    function getCustomDatasetDefinition(datasetCode = 'order_header') {
-      return CUSTOM_DATASET_DEFINITIONS[datasetCode] || CUSTOM_DATASET_DEFINITIONS.order_header;
-    }
-    function getCustomDimensionOptions(datasetCode) {
-      return getCustomDatasetDefinition(datasetCode).dimensions || [];
-    }
-    function getCustomMetricOptions(datasetCode) {
-      return getCustomDatasetDefinition(datasetCode).metrics || [];
-    }
-    function getCustomDimensionMeta(datasetCode, fieldKey) {
-      return getCustomDimensionOptions(datasetCode).find(item => item.key === fieldKey) || null;
-    }
-    function getCustomMetricMeta(datasetCode, fieldKey) {
-      return getCustomMetricOptions(datasetCode).find(item => item.key === fieldKey) || null;
-    }
-    function getCustomDatasetRows(datasetCode = 'order_header') {
-      return datasetCode === 'order_item' ? ORDER_ITEM_SAMPLE_ROWS : ORDER_SAMPLE_ROWS;
-    }
-    function applyOrderFilters(rows, filters = state.filters) {
-      const selectedWarehouses = filters.selectedWarehouses.length ? filters.selectedWarehouses : COMMON_WAREHOUSES;
-      const selectedBusinessTypes = getActiveBusinessTypes(filters.businessTypes, 'order');
-      return rows.filter(row => {
-        const rowDate = row.time.slice(0, 10);
-        const matchDate = (!filters.startDate || rowDate >= filters.startDate) && (!filters.endDate || rowDate <= filters.endDate);
-        const matchWarehouse = selectedWarehouses.includes(row.warehouse);
-        const matchBusinessType = selectedBusinessTypes.includes(row.businessType);
-        const matchCustomer = !filters.customer || row.customer === filters.customer || row.ownerName === filters.customer;
-        const matchTag = !filters.filterA || row.tag === filters.filterA;
-        const matchStatus = !filters.filterB || row.status === filters.filterB;
-        return matchDate && matchWarehouse && matchBusinessType && matchCustomer && matchTag && matchStatus;
-      });
-    }
-    function formatCustomMetricValue(metric, value) {
-      const meta = getCustomMetricMeta(metric.datasetCode, metric.field);
-      if (!meta) return value ?? '--';
-      if (metric.agg === 'count' || metric.agg === 'distinct_count' || meta.type === 'number' || meta.type === 'id') return formatNumber(value || 0);
-      if (meta.type === 'weight') return formatWeight(value || 0);
-      if (meta.type === 'volume') return formatVolume(value || 0);
-      if (meta.type === 'money') return formatMoney(value || 0);
-      return value ?? '--';
-    }
-    function getCustomSortOptions(draft) {
-      const datasetCode = draft.datasetCode;
-      const dimensions = draft.dimensions.filter(Boolean).map((fieldKey, index) => ({
-        key: `dimension:${index}`,
-        label: getCustomDimensionMeta(datasetCode, fieldKey)?.label || `维度${index + 1}`
-      }));
-      const metrics = draft.metrics
-        .map((metric, index) => ({ ...metric, index }))
-        .filter(metric => metric.field && metric.alias)
-        .map(metric => ({ key: `metric:${metric.index}`, label: metric.alias }));
-      return [...metrics, ...dimensions];
-    }
-    function buildCustomAggregateResult(reportConfig, filters = state.filters) {
-      const dataset = getCustomDatasetDefinition(reportConfig.datasetCode);
-      const rawRows = applyOrderFilters(getCustomDatasetRows(dataset.code), filters);
-      const dimensions = reportConfig.dimensions.filter(Boolean).map(fieldKey => ({
-        key: fieldKey,
-        label: getCustomDimensionMeta(dataset.code, fieldKey)?.label || fieldKey
-      }));
-      const metrics = reportConfig.metrics
-        .map((metric, index) => ({ ...metric, index, datasetCode: dataset.code }))
-        .filter(metric => metric.field && metric.alias);
-      const groupMap = new Map();
-      rawRows.forEach(row => {
-        const groupKey = dimensions.length ? dimensions.map(item => row[item.key] ?? '--').join('||') : '__all__';
-        if (!groupMap.has(groupKey)) {
-          const baseRow = { __groupKey: groupKey, __sourceCount: 0 };
-          dimensions.forEach(item => { baseRow[item.key] = row[item.key] ?? '--'; });
-          metrics.forEach(metric => {
-            baseRow[`metric:${metric.index}`] = 0;
-            if (metric.agg === 'distinct_count') baseRow[`set:${metric.index}`] = new Set();
-          });
-          groupMap.set(groupKey, baseRow);
-        }
-        const group = groupMap.get(groupKey);
-        group.__sourceCount += 1;
-        metrics.forEach(metric => {
-          if (metric.agg === 'count') group[`metric:${metric.index}`] += 1;
-          else if (metric.agg === 'distinct_count') group[`set:${metric.index}`].add(row[metric.field]);
-          else if (metric.agg === 'sum') group[`metric:${metric.index}`] += Number(row[metric.field] || 0);
-        });
-      });
-      let rows = Array.from(groupMap.values()).map(item => {
-        const row = { ...item };
-        metrics.forEach(metric => {
-          if (metric.agg === 'distinct_count') row[`metric:${metric.index}`] = row[`set:${metric.index}`].size;
-          delete row[`set:${metric.index}`];
-        });
-        return row;
-      });
-      const sortField = reportConfig.sortField || 'metric:0';
-      rows.sort((left, right) => {
-        const leftValue = left[sortField] ?? '';
-        const rightValue = right[sortField] ?? '';
-        if (typeof leftValue === 'number' && typeof rightValue === 'number') return reportConfig.sortDirection === 'asc' ? leftValue - rightValue : rightValue - leftValue;
-        return reportConfig.sortDirection === 'asc'
-          ? String(leftValue).localeCompare(String(rightValue), 'zh-CN')
-          : String(rightValue).localeCompare(String(leftValue), 'zh-CN');
-      });
-      const totalGroups = rows.length;
-      if (reportConfig.topN) rows = rows.slice(0, reportConfig.topN);
-      const columns = [
-        ...dimensions.map(item => ({ key: item.key, label: item.label, align: '' })),
-        ...metrics.map(metric => ({ key: `metric:${metric.index}`, label: metric.alias, align: 'right' }))
-      ];
-      return {
-        dataset,
-        rawRows,
-        rows,
-        columns,
-        dimensions,
-        metrics,
-        totalGroups,
-        topRow: rows[0] || null,
-        primaryMetric: metrics[0] || null,
-        summaryValue: metrics[0] ? rows.reduce((sum, row) => sum + Number(row[`metric:${metrics[0].index}`] || 0), 0) : 0
-      };
-    }
-    function getCustomReportStats(report, aggregate) {
-      const primaryMetric = aggregate.primaryMetric;
-      const topRow = aggregate.topRow;
-      const topDimensionLabel = aggregate.dimensions[0]?.label || '分组';
-      return [
-        { label: '聚合分组数', value: formatNumber(aggregate.totalGroups), delta: `TopN:${report.topN || aggregate.totalGroups}`, tone: 'tone-blue', hint: `当前数据集:${aggregate.dataset.label}` },
-        { label: '底表命中记录', value: formatNumber(aggregate.rawRows.length), delta: `粒度:${aggregate.dataset.grainLabel}`, tone: 'tone-green', hint: report.preserveFilters ? '已继承当前页面筛选' : '使用系统默认筛选' },
-        { label: primaryMetric?.alias || '主指标', value: primaryMetric ? formatCustomMetricValue(primaryMetric, aggregate.summaryValue) : '--', delta: `排序:${report.sortDirection === 'asc' ? '升序' : '倒序'}`, tone: 'tone-orange', hint: primaryMetric ? `主指标字段:${getCustomMetricMeta(report.datasetCode, primaryMetric.field)?.label || '--'}` : '请补充指标字段' },
-        { label: `Top1${topDimensionLabel}`, value: topRow ? (aggregate.dimensions[0] ? topRow[aggregate.dimensions[0].key] : '全部数据') : '--', delta: topRow && primaryMetric ? formatCustomMetricValue(primaryMetric, topRow[`metric:${primaryMetric.index}`]) : '--', tone: 'tone-violet', hint: topRow ? '按当前排序口径排名第1' : '暂无结果' }
-      ];
-    }
-    function buildCustomReportVisualItems(aggregate) {
-      const primaryMetric = aggregate.primaryMetric;
-      if (!primaryMetric) return [];
-      const total = aggregate.rows.reduce((sum, row) => sum + Number(row[`metric:${primaryMetric.index}`] || 0), 0) || 1;
-      const nameField = aggregate.dimensions[0]?.key;
-      return aggregate.rows.slice(0, 5).map(row => ({
-        name: nameField ? row[nameField] : '全部数据',
-        value: formatCustomMetricValue(primaryMetric, row[`metric:${primaryMetric.index}`]),
-        share: Number(row[`metric:${primaryMetric.index}`] || 0) / total,
-        meta: aggregate.dimensions[1]?.key ? `${aggregate.dimensions[1].label}:${row[aggregate.dimensions[1].key] || '--'}` : `命中记录:${formatNumber(row.__sourceCount)}条`
-      }));
-    }
-    function getCustomReportFilterSummary(filters) {
-      const warehouseText = filters.selectedWarehouses.length === COMMON_WAREHOUSES.length ? '全部仓库' : filters.selectedWarehouses.join('、');
-      const businessText = filters.businessTypes.length === BUSINESS_TYPE_OPTIONS.length ? '全部业务类型' : filters.businessTypes.join('、');
-      return [`时间:${filters.startDate}至${filters.endDate}`, `仓库:${warehouseText}`, `业务类型:${businessText}`, `客户:${filters.customer || '全部'}`, `主题:${filters.filterA || '全部'}`, `状态:${filters.filterB || '全部'}`];
-    }
-    function buildCustomReportStorageRecord(draft, existing = null) {
-      const code = existing?.reportCode || `mine_${Date.now()}`;
-      return {
-        ...draft,
-        reportCode: code,
-        sourceReportKey: 'order',
-        defaultFilters: cloneFilters(draft.defaultFilters),
-        dimensions: [...draft.dimensions],
-        metrics: draft.metrics.map(item => ({ ...item })),
-        createdAt: existing?.createdAt || formatSystemTime(),
-        updatedAt: formatSystemTime()
-      };
-    }
-    function openCustomReport(reportCode) {
-      const report = [...state.customReports.mine, ...state.customReports.shared].find(item => item.reportCode === reportCode);
-      if (!report) return;
-      state.reportMode = 'custom';
-      state.currentReport = report.sourceReportKey;
-      state.currentCustomReportCode = report.reportCode;
-      state.customManager.open = false;
-      closeCustomReportDrilldown();
-      resetFiltersForBaseReport(report.sourceReportKey, report.defaultFilters);
-      state.pagination.currentPage = 1;
-      closeTimelinessDetailModal();
-      resetAiAnalysis('idle', '自定义聚合报表默认关闭AI分析，如需查看固定报表结论，请切换回官方报表。');
-      renderAll();
-      showToast(`已打开${report.reportName}`);
-    }
-    function closeCustomReportBuilder() {
-      state.customBuilder.open = false;
-      state.customBuilder.mode = 'create';
-      state.customBuilder.scope = 'mine';
-      state.customBuilder.editingCode = '';
-      state.customBuilder.draft = null;
-      state.customBuilder.preview = null;
-      renderCustomReportBuilder();
-    }
-    function openCustomReportBuilder(mode = 'create', reportCode = '') {
-      if (state.currentReport !== 'order' && !isCustomReportView()) {
-        showToast('当前Demo仅支持基于订单报表创建聚合报表', 'warning');
-        return;
-      }
-      const editing = reportCode ? [...state.customReports.mine, ...state.customReports.shared].find(item => item.reportCode === reportCode) : null;
-      state.customBuilder.open = true;
-      state.customBuilder.mode = mode;
-      state.customBuilder.editingCode = editing?.reportCode || '';
-      state.customBuilder.scope = editing?.scope || 'mine';
-      state.customBuilder.draft = editing ? createDefaultCustomReportDraft(editing) : createDefaultCustomReportDraft({
-        datasetCode: isCustomReportView() ? getCurrentCustomReport()?.datasetCode || 'order_header' : 'order_header',
-        filters: cloneFilters(),
-        reportName: mode === 'duplicate' && getCurrentCustomReport() ? `${getCurrentCustomReport().reportName}-副本` : ''
-      });
-      if (mode === 'duplicate') {
-        state.customBuilder.editingCode = '';
-        state.customBuilder.scope = 'mine';
-        if (state.customBuilder.draft) state.customBuilder.draft.scope = 'mine';
-      }
-      state.customBuilder.preview = buildCustomAggregateResult(state.customBuilder.draft, state.customBuilder.draft.defaultFilters);
-      renderCustomReportBuilder();
-    }
-    function updateCustomBuilderDraft(mutator) {
-      if (!state.customBuilder.draft) return;
-      mutator(state.customBuilder.draft);
-      state.customBuilder.preview = buildCustomAggregateResult(state.customBuilder.draft, state.customBuilder.draft.defaultFilters);
-      renderCustomReportBuilder();
-    }
-    function saveCustomReport(toDraftOnly = false) {
-      const draft = state.customBuilder.draft;
-      if (!draft) return;
-      const dimensions = draft.dimensions.filter(Boolean);
-      const metrics = draft.metrics.filter(item => item.field && item.alias);
-      if (!draft.reportName.trim()) {
-        showToast('请填写报表名称', 'warning');
-        return;
-      }
-      if (!dimensions.length) {
-        showToast('请至少选择1个维度字段', 'warning');
-        return;
-      }
-      if (!metrics.length) {
-        showToast('请至少配置1个指标字段', 'warning');
-        return;
-      }
-      const targetList = draft.scope === 'shared' ? state.customReports.shared : state.customReports.mine;
-      const existingIndex = targetList.findIndex(item => item.reportCode === state.customBuilder.editingCode);
-      const existing = existingIndex >= 0 ? targetList[existingIndex] : null;
-      const record = buildCustomReportStorageRecord(draft, existing);
-      if (draft.scope === 'shared') {
-        if (existingIndex >= 0) state.customReports.shared.splice(existingIndex, 1, record);
-        else state.customReports.shared.unshift(record);
-      } else {
-        if (existingIndex >= 0) state.customReports.mine.splice(existingIndex, 1, record);
-        else state.customReports.mine.unshift(record);
-        writeCustomReportsToStorage();
-      }
-      closeCustomReportBuilder();
-      renderReportMenu();
-      renderCustomReportManager();
-      if (toDraftOnly) showToast(`已保存${record.reportName}草稿`);
-      else openCustomReport(record.reportCode);
-    }
-    function deleteCustomReport(reportCode) {
-      const mineIndex = state.customReports.mine.findIndex(item => item.reportCode === reportCode);
-      if (mineIndex >= 0) {
-        const removed = state.customReports.mine.splice(mineIndex, 1)[0];
-        writeCustomReportsToStorage();
-        if (state.currentCustomReportCode === reportCode) switchReport('order');
-        renderReportMenu();
-        renderCustomReportManager();
-        showToast(`已删除${removed.reportName}`);
-        return;
-      }
-      const sharedIndex = state.customReports.shared.findIndex(item => item.reportCode === reportCode);
-      if (sharedIndex >= 0) {
-        const removed = state.customReports.shared.splice(sharedIndex, 1)[0];
-        if (state.currentCustomReportCode === reportCode) switchReport('order');
-        renderReportMenu();
-        renderCustomReportManager();
-        showToast(`已删除${removed.reportName}`);
-      }
-    }
-    function renderCustomReportManager() {
-      const modal = document.getElementById('customReportManagerModal');
-      if (!modal) return;
-      modal.classList.toggle('hidden', !state.customManager.open);
-      const renderList = (list, scope) => list.length ? list.map(item => `<div class="custom-report-manager-item">
-        <div>
-          <div class="custom-report-manager-name">${item.reportName}</div>
-          <div class="custom-report-manager-meta">数据集:${getCustomDatasetDefinition(item.datasetCode).label}｜维度:${item.dimensions.filter(Boolean).map(field => getCustomDimensionMeta(item.datasetCode, field)?.label || field).join('、')}｜更新于:${item.updatedAt}</div>
-        </div>
-        <div class="custom-report-manager-actions">
-          <button type="button" class="btn btn-secondary" data-open-custom-report="${item.reportCode}">打开</button>
-          <button type="button" class="btn btn-secondary" data-edit-custom-report="${item.reportCode}">编辑</button>
-          <button type="button" class="btn btn-secondary" data-duplicate-custom-report="${item.reportCode}">复制</button>
-          ${scope === 'mine' ? `<button type="button" class="btn btn-secondary" data-delete-custom-report="${item.reportCode}">删除</button>` : ''}
-        </div>
-      </div>`).join('') : '<div class="menu-item-empty">当前暂无自定义报表，可从页面右上角直接新建。</div>';
-      document.getElementById('customReportMineCount').textContent = `${state.customReports.mine.length}个`;
-      document.getElementById('customReportSharedCount').textContent = `${state.customReports.shared.length}个`;
-      document.getElementById('customReportMineList').innerHTML = renderList(state.customReports.mine, 'mine');
-      document.getElementById('customReportSharedList').innerHTML = renderList(state.customReports.shared, 'shared');
-    }
-    function renderCustomReportBuilder() {
-      const shell = document.getElementById('customReportBuilderDrawer');
-      if (!shell) return;
-      shell.classList.toggle('hidden', !state.customBuilder.open);
-      if (!state.customBuilder.open || !state.customBuilder.draft) return;
-      const draft = state.customBuilder.draft;
-      const dataset = getCustomDatasetDefinition(draft.datasetCode);
-      const preview = state.customBuilder.preview || buildCustomAggregateResult(draft, draft.defaultFilters);
-      const dimensionOptions = getCustomDimensionOptions(draft.datasetCode);
-      const metricOptions = getCustomMetricOptions(draft.datasetCode);
-      const sortOptions = getCustomSortOptions(draft);
-      document.getElementById('customReportBuilderTitle').textContent = state.customBuilder.editingCode ? '编辑聚合报表' : '新建聚合报表';
-      document.getElementById('customReportBuilderScope').textContent = `当前基于${dataset.label}配置维度、指标、排序与TopN，保存后会出现在${draft.scope === 'mine' ? '我的报表' : '共享报表'}目录。`;
-      document.getElementById('customReportBuilderForm').innerHTML = `
-        <section class="builder-section">
-          <div class="builder-section-head"><div><div class="builder-section-title">基础信息</div><div class="builder-section-sub">定义报表名称、归属目录和当前数据集。</div></div></div>
-          <div class="builder-grid">
-            <div class="builder-field"><label>报表名称<span class="required">*</span></label><input data-builder-input="reportName" class="form-input" type="text" maxlength="50" value="${draft.reportName}"></div>
-            <div class="builder-field"><label>所属目录</label><select data-builder-input="scope" class="form-input">${CUSTOM_REPORT_SCOPE_OPTIONS.map(item => `<option value="${item.key}" ${item.key === draft.scope ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>
-            <div class="builder-field"><label>数据集</label><select data-builder-input="datasetCode" class="form-input">${Object.values(CUSTOM_DATASET_DEFINITIONS).map(item => `<option value="${item.code}" ${item.code === draft.datasetCode ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>
-            <div class="builder-field"><label>主展示形式</label><select data-builder-input="viewType" class="form-input">${CUSTOM_REPORT_VIEW_OPTIONS.map(item => `<option value="${item.key}" ${item.key === draft.viewType ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>
-          </div>
-          <div class="builder-field" style="margin-top:12px;"><label>报表说明</label><textarea data-builder-input="description" class="form-input" style="height:78px;padding:10px 12px;line-height:1.7;resize:none;">${draft.description}</textarea></div>
-        </section>
-        <section class="builder-section">
-          <div class="builder-section-head"><div><div class="builder-section-title">默认筛选</div><div class="builder-section-sub">默认继承当前页面筛选，并保存为报表打开时的初始条件。</div></div></div>
-          <label class="builder-checkbox"><input type="checkbox" data-builder-toggle="preserveFilters" ${draft.preserveFilters ? 'checked' : ''}><span>保存当前页面筛选为默认条件</span></label>
-          <div class="builder-chip-row" style="margin-top:12px;">${getCustomReportFilterSummary(draft.defaultFilters).map(text => `<span class="builder-chip">${text}</span>`).join('')}</div>
-          <div class="builder-help">当前Demo默认沿用页面上的时间、仓库、业务类型、主题和状态筛选，不额外开放复杂筛选器配置。</div>
-        </section>
-        <section class="builder-section">
-          <div class="builder-section-head"><div><div class="builder-section-title">维度字段</div><div class="builder-section-sub">第一版最多支持3个维度字段，顺序决定分组层级。</div></div><span class="toolbar-tag">${dataset.grainLabel}</span></div>
-          <div class="builder-dimension-row">${[0, 1, 2].map(index => `<div class="builder-field"><label>维度${index + 1}${index === 0 ? '<span class="required">*</span>' : ''}</label><select data-builder-dimension="${index}" class="form-input"><option value="">请选择维度字段</option>${dimensionOptions.map(item => `<option value="${item.key}" ${draft.dimensions[index] === item.key ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>`).join('')}</div>
-        </section>
-        <section class="builder-section">
-          <div class="builder-section-head"><div><div class="builder-section-title">指标字段</div><div class="builder-section-sub">第一版支持计数、去重计数、求和3种聚合方式，最多展示3个指标。</div></div></div>
-          <div style="display:grid;gap:12px;">${draft.metrics.map((metric, index) => {
-            const currentMeta = getCustomMetricMeta(draft.datasetCode, metric.field);
-            const aggOptions = currentMeta?.aggs || ['sum'];
-            return `<div class="builder-metric-row">
-              <div class="builder-field"><label>指标字段${index + 1}${index === 0 ? '<span class="required">*</span>' : ''}</label><select data-builder-metric-field="${index}" class="form-input"><option value="">请选择指标字段</option>${metricOptions.map(item => `<option value="${item.key}" ${metric.field === item.key ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>
-              <div class="builder-field"><label>聚合方式</label><select data-builder-metric-agg="${index}" class="form-input">${aggOptions.map(item => `<option value="${item}" ${metric.agg === item ? 'selected' : ''}>${CUSTOM_AGG_OPTIONS[item]}</option>`).join('')}</select></div>
-              <div class="builder-field"><label>显示别名</label><input data-builder-metric-alias="${index}" class="form-input" type="text" maxlength="20" value="${metric.alias || ''}"></div>
-            </div>`;
-          }).join('')}</div>
-        </section>
-        <section class="builder-section">
-          <div class="builder-section-head"><div><div class="builder-section-title">排序与展示</div><div class="builder-section-sub">控制结果排序、TopN和是否允许继续下钻到底层订单明细。</div></div></div>
-          <div class="builder-grid">
-            <div class="builder-field"><label>排序字段</label><select data-builder-input="sortField" class="form-input">${sortOptions.map(item => `<option value="${item.key}" ${item.key === draft.sortField ? 'selected' : ''}>${item.label}</option>`).join('')}</select></div>
-            <div class="builder-field"><label>排序方向</label><select data-builder-input="sortDirection" class="form-input"><option value="desc" ${draft.sortDirection === 'desc' ? 'selected' : ''}>倒序</option><option value="asc" ${draft.sortDirection === 'asc' ? 'selected' : ''}>升序</option></select></div>
-            <div class="builder-field"><label>TopN</label><select data-builder-input="topN" class="form-input">${CUSTOM_REPORT_TOPN_OPTIONS.map(item => `<option value="${item}" ${Number(draft.topN) === item ? 'selected' : ''}>Top${item}</option>`).join('')}</select></div>
-            <div class="builder-field"><label>明细下钻</label><select data-builder-input="drilldownEnabled" class="form-input"><option value="true" ${draft.drilldownEnabled ? 'selected' : ''}>允许下钻到底层明细</option><option value="false" ${!draft.drilldownEnabled ? 'selected' : ''}>仅保留聚合结果</option></select></div>
-          </div>
-        </section>
-      `;
-      const summaryCards = [
-        { label: '底表命中', value: formatNumber(preview.rawRows.length), hint: '聚合前底表记录数' },
-        { label: '聚合分组', value: formatNumber(preview.totalGroups), hint: '应用TopN前分组数' },
-        { label: '主指标', value: preview.primaryMetric ? preview.primaryMetric.alias : '--', hint: preview.primaryMetric ? getCustomMetricMeta(draft.datasetCode, preview.primaryMetric.field)?.label || '--' : '请先配置指标' },
-        { label: 'Top1对象', value: preview.topRow && preview.dimensions[0] ? preview.topRow[preview.dimensions[0].key] : '--', hint: preview.topRow && preview.primaryMetric ? formatCustomMetricValue(preview.primaryMetric, preview.topRow[`metric:${preview.primaryMetric.index}`]) : '暂无结果' }
-      ];
-      document.getElementById('customReportPreviewDesc').textContent = `当前使用${dataset.label}进行预览，实时读取默认筛选条件下的聚合结果。`;
-      document.getElementById('customReportPreviewTag').textContent = `${preview.rows.length}/${preview.totalGroups || 0}`;
-      document.getElementById('customReportPreviewSummary').innerHTML = summaryCards.map(item => `<div class="drawer-preview-card"><div class="drawer-preview-card-label">${item.label}</div><div class="drawer-preview-card-value">${item.value}</div><div class="drawer-preview-card-hint">${item.hint}</div></div>`).join('');
-      document.getElementById('customReportPreviewTable').innerHTML = preview.columns.length
-        ? `<div class="builder-preview-table-shell"><table><thead><tr>${preview.columns.map(column => `<th class="${column.align === 'right' ? 'cell-right' : ''}">${column.label}</th>`).join('')}</tr></thead><tbody>${preview.rows.length ? preview.rows.slice(0, 8).map(row => `<tr>${preview.columns.map(column => {
-          if (column.key.startsWith('metric:')) {
-            const metric = preview.metrics.find(item => `metric:${item.index}` === column.key);
-            return `<td class="${column.align === 'right' ? 'cell-right' : ''}">${metric ? formatCustomMetricValue(metric, row[column.key]) : row[column.key]}</td>`;
-          }
-          return `<td>${row[column.key] ?? '--'}</td>`;
-        }).join('')}</tr>`).join('') : `<tr><td colspan="${preview.columns.length}" class="builder-preview-empty">当前配置暂无命中结果。</td></tr>`}</tbody></table></div>`
-        : '<div class="builder-preview-empty">请至少选择1个维度和1个指标，系统才会生成有效预览。</div>';
-    }
-    function renderCustomReportOverview() {
-      const section = document.getElementById('customReportOverviewSection');
-      if (!section) return;
-      section.classList.toggle('hidden', !isCustomReportView());
-      if (!isCustomReportView()) return;
-      const report = getCurrentCustomReport();
-      if (!report) return;
-      const aggregate = buildCustomAggregateResult(report, state.filters);
-      document.getElementById('customReportOverviewTitle').textContent = report.reportName;
-      document.getElementById('customReportOverviewDesc').textContent = report.description || '基于当前底表和默认筛选构建的自定义聚合报表，可在此页直接继续筛选与导出。';
-      document.getElementById('customReportOverviewMeta').innerHTML = [
-        `目录:${report.scope === 'mine' ? '我的报表' : '共享报表'}`,
-        `数据集:${aggregate.dataset.label}`,
-        `粒度:${aggregate.dataset.grainLabel}`,
-        `维度:${aggregate.dimensions.map(item => item.label).join('、') || '--'}`,
-        `指标:${aggregate.metrics.map(item => item.alias).join('、') || '--'}`,
-        `更新时间:${report.updatedAt}`
-      ].map(text => `<span class="toolbar-tag">${text}</span>`).join('');
-      document.getElementById('customReportSummaryText').textContent = `当前按${aggregate.dimensions.map(item => item.label).join('、') || '全部数据'}分组，主指标为${aggregate.primaryMetric?.alias || '--'}，排序方式为${report.sortDirection === 'asc' ? '升序' : '倒序'}，默认仅展示Top${report.topN}。`;
-      document.getElementById('customReportPrimaryMetricTag').textContent = aggregate.primaryMetric?.alias || '未配置主指标';
-      document.getElementById('customReportSummaryCards').innerHTML = getCustomReportStats(report, aggregate).map(item => `<div class="custom-report-summary-card"><div class="custom-report-summary-label">${item.label}</div><div class="custom-report-summary-value">${item.value}</div><div class="custom-report-summary-hint">${item.hint}</div></div>`).join('');
-      const visualItems = buildCustomReportVisualItems(aggregate);
-      document.getElementById('customReportVisualHint').textContent = report.viewType === 'bar' ? '当前主展示方式为条形结构，顶部预览按主指标展示前5项。' : '当前主展示方式为表格，右侧仍保留头部结构预览，方便快速校验Top对象。';
-      document.getElementById('customReportVisualTag').textContent = report.viewType === 'bar' ? '条形结构' : '表格预览';
-      document.getElementById('customReportVisualList').innerHTML = visualItems.length ? visualItems.map(item => `<div class="custom-report-visual-item"><div class="custom-report-visual-head"><div class="custom-report-visual-name">${item.name}</div><div class="custom-report-visual-value">${item.value}</div></div><div class="custom-report-visual-bar"><span class="custom-report-visual-fill" style="width:${Math.max(8, Math.min(100, item.share * 100))}%;"></span></div><div class="custom-report-visual-meta">${item.meta}</div></div>`).join('') : '<div class="custom-report-visual-empty">当前报表暂无可预览的头部结构，请调整筛选条件后重试。</div>';
-      const editable = report.scope === 'mine';
-      document.getElementById('editCurrentCustomReportBtn').style.display = editable ? '' : 'none';
-      document.getElementById('deleteCurrentCustomReportBtn').style.display = editable ? '' : 'none';
-    }
-    function getCustomDrilldownColumns(datasetCode) {
-      return datasetCode === 'order_item'
-        ? [
-          { key: 'orderNo', label: '订单号' },
-          { key: 'ownerName', label: '客户/货主' },
-          { key: 'warehouse', label: '仓库' },
-          { key: 'businessType', label: '业务类型' },
-          { key: 'skuCode', label: 'SKU编码' },
-          { key: 'skuName', label: 'SKU名称' },
-          { key: 'skuQty', label: 'SKU数量', align: 'right' },
-          { key: 'weightValue', label: '重量', align: 'right', format: value => formatWeight(value || 0) },
-          { key: 'volumeValue', label: '体积', align: 'right', format: value => formatVolume(value || 0) },
-          { key: 'status', label: '状态' },
-          { key: 'time', label: '更新时间' }
-        ]
-        : [
-          { key: 'orderNo', label: '订单号' },
-          { key: 'ownerName', label: '客户/货主' },
-          { key: 'warehouse', label: '仓库' },
-          { key: 'businessType', label: '业务类型' },
-          { key: 'currentCountry', label: '现派国家' },
-          { key: 'status', label: '状态' },
-          { key: 'time', label: '更新时间' }
-        ];
-    }
-    function openCustomReportDrilldown(rowIndex) {
-      const report = getCurrentCustomReport();
-      const aggregate = state.customAggregateCache;
-      if (!report || !aggregate || !report.drilldownEnabled) return;
-      const targetRow = aggregate.rows[rowIndex];
-      if (!targetRow) return;
-      const detailRows = aggregate.rawRows.filter(rawRow => aggregate.dimensions.every(item => (rawRow[item.key] ?? '--') === (targetRow[item.key] ?? '--')));
-      state.customDrilldown.open = true;
-      state.customDrilldown.title = aggregate.dimensions.length ? aggregate.dimensions.map(item => `${item.label}:${targetRow[item.key]}`).join('｜') : '全部数据';
-      state.customDrilldown.scope = `当前命中${detailRows.length}条底层记录，数据集:${aggregate.dataset.label}`;
-      state.customDrilldown.rows = detailRows;
-      state.customDrilldown.columns = getCustomDrilldownColumns(report.datasetCode);
-      renderCustomReportDrilldown();
-    }
-    function closeCustomReportDrilldown() {
-      state.customDrilldown.open = false;
-      state.customDrilldown.title = '';
-      state.customDrilldown.scope = '';
-      state.customDrilldown.rows = [];
-      state.customDrilldown.columns = [];
-      renderCustomReportDrilldown();
-    }
-    function renderCustomReportDrilldown() {
-      const modal = document.getElementById('customReportDrilldownModal');
-      if (!modal) return;
-      modal.classList.toggle('hidden', !state.customDrilldown.open);
-      if (!state.customDrilldown.open) return;
-      document.getElementById('customReportDrilldownTitle').textContent = state.customDrilldown.title;
-      document.getElementById('customReportDrilldownScope').textContent = state.customDrilldown.scope;
-      document.getElementById('customReportDrilldownStats').innerHTML = [
-        { label: '命中记录数', value: formatNumber(state.customDrilldown.rows.length) },
-        { label: '数据集', value: getCurrentCustomReport()?.datasetCode === 'order_item' ? '订单行' : '订单头' }
-      ].map(item => `<div class="timeliness-detail-stat"><div class="timeliness-detail-stat-label">${item.label}</div><div class="timeliness-detail-stat-value">${item.value}</div></div>`).join('');
-      document.getElementById('customReportDrilldownHead').innerHTML = `<tr>${state.customDrilldown.columns.map(column => `<th class="${column.align === 'right' ? 'cell-right' : ''}">${column.label}</th>`).join('')}</tr>`;
-      document.getElementById('customReportDrilldownBody').innerHTML = state.customDrilldown.rows.length ? state.customDrilldown.rows.slice(0, 50).map(row => `<tr>${state.customDrilldown.columns.map(column => {
-        const rawValue = row[column.key];
-        const text = column.format ? column.format(rawValue) : rawValue ?? '--';
-        return `<td class="${column.align === 'right' ? 'cell-right' : ''}">${column.key === 'status' ? `<span class="badge ${statusClass(rawValue)}">${rawValue}</span>` : text}</td>`;
-      }).join('')}</tr>`).join('') : `<tr class="empty-row"><td colspan="${state.customDrilldown.columns.length || 1}">暂无可展示的底层记录</td></tr>`;
-    }
 
     function getCurrentTimelinessBusinessType(selectedTypes = state.filters.businessTypes) {
       return getActiveBusinessTypes(selectedTypes, 'timeliness')[0] || TIMELINESS_BUSINESS_TYPE_OPTIONS[0];
@@ -1514,10 +1136,6 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       };
     }
     function openColumnConfigModal() {
-      if (isCustomReportView()) {
-        showToast('自定义聚合报表暂不支持字段显隐配置', 'warning');
-        return;
-      }
       const selectedBusinessTypes = getActiveBusinessTypes();
       state.columnConfig.profileKey = getTableProfileKey(state.currentReport, selectedBusinessTypes);
       state.columnConfig.draftFields = getConfiguredTableFields(state.currentReport, selectedBusinessTypes).map(field => ({ ...field }));
@@ -1870,9 +1488,9 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
 
     function statusClass(value) {
       if (['已签收', '已完成', '已闭环', '健康', '优秀', '已复核', '已发运', '已审核'].includes(value)) return 'badge-green';
-      if (['运输中', '处理中', '审批中', '拣货中'].includes(value)) return 'badge-blue';
-      if (['待装车', '待上架', '待复核', '待审批', '关注', '待收货', '待拣货', '待出库', '待审核'].includes(value)) return 'badge-orange';
-      if (['预警', '待确认'].includes(value)) return 'badge-red';
+      if (['运输中', '处理中', '审批中', '拣货中', '已发货', '已上线'].includes(value)) return 'badge-blue';
+      if (['待装车', '待上架', '待复核', '待审批', '关注', '待收货', '待拣货', '待出库', '待审核', '未上线'].includes(value)) return 'badge-orange';
+      if (['预警', '待确认', '异常', '已拒收', '上线异常', '停更', '丢件'].includes(value)) return 'badge-red';
       return 'badge-blue';
     }
     function tagClass(value) {
@@ -1888,55 +1506,197 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       container.appendChild(toast);
       setTimeout(() => toast.remove(), 2400);
     }
+    function syncDateTriggerText() {
+      const activeField = getCurrentDateField();
+      const activeRange = getDateFieldRange(activeField);
+      const trigger = document.getElementById('dateRangeTrigger');
+      const text = document.getElementById('dateRangeText');
+      const typeSelect = document.getElementById('dateTypeSelect');
+      const combo = document.getElementById('dateRangeCombo');/*
+      const startText = activeRange.start || '开始时间';
+      const endText = activeRange.end || '结束时间';
+      const rangeText = getDateRangeText(activeRange.start, activeRange.end, '请选择日期范围');
+      */
+      const startText = activeRange.start || '\u5f00\u59cb\u65f6\u95f4';
+      const endText = activeRange.end || '\u7ed3\u675f\u65f6\u95f4';
+      const rangeText = getDateRangeText(activeRange.start, activeRange.end, '\u8bf7\u9009\u62e9\u65e5\u671f\u8303\u56f4');
+      if (typeSelect) typeSelect.value = activeField;
+      if (combo) combo.classList.toggle('is-single', state.currentReport !== 'order');/*
+      text.textContent = getDateRangeText(activeRange.start, activeRange.end, '请选择日期范围');
+      */
+      text.innerHTML = `<span class="date-range-trigger-text">${startText}</span><span class="date-range-trigger-separator">-</span><span class="date-range-trigger-text">${endText}</span>`;
+      trigger.classList.toggle('is-empty', !(activeRange.start || activeRange.end));
+      trigger.setAttribute('title', rangeText);
+      trigger.setAttribute('aria-label', `${getDateFieldLabel(activeField)} ${rangeText}`);
+      trigger.setAttribute('aria-expanded', String(state.datePicker.open));
+    }
+    function positionDatePickerPopover() {
+      const popover = document.getElementById('dateRangePickerPopover');
+      const filterPanel = document.querySelector('.filter-panel');
+      const combo = document.getElementById('dateRangeCombo');
+      if (!(popover && filterPanel && combo)) return;
+      const panelRect = filterPanel.getBoundingClientRect();
+      const comboRect = combo.getBoundingClientRect();
+      const panelWidth = Math.max(320, panelRect.width - 24);
+      const popoverWidth = Math.min(720, panelWidth);
+      const rawLeft = comboRect.left - panelRect.left;
+      const left = Math.max(0, Math.min(rawLeft, panelWidth - popoverWidth));
+      const top = comboRect.bottom - panelRect.top + 10;
+      popover.style.setProperty('--picker-left', `${left}px`);
+      popover.style.setProperty('--picker-top', `${top}px`);
+    }
+    function renderDatePickerGrid(elementId, monthText) {
+      const monthDate = parseDateOnly(monthText) || getMonthStart(ANCHOR_DATE);
+      const cells = buildCalendarCells(monthText, state.datePicker.draftStart, state.datePicker.draftEnd);
+      document.getElementById(elementId).innerHTML = cells.map(cell => {
+        const classes = [
+          'date-picker-cell',
+          cell.inRange ? 'is-in-range' : '',
+          cell.isStart ? 'is-range-start' : '',
+          cell.isEnd ? 'is-range-end' : ''
+        ].filter(Boolean).join(' ');
+        const dayClasses = [
+          'date-picker-day',
+          !cell.inMonth ? 'is-muted' : '',
+          cell.isToday ? 'is-today' : '',
+          cell.isStart || cell.isEnd ? 'is-selected' : ''
+        ].filter(Boolean).join(' ');
+        return `<div class="${classes}"><button type="button" class="${dayClasses}" data-date-cell="${cell.text}" data-date-month="${formatDateOnly(monthDate)}">${cell.day}</button></div>`;
+      }).join('');
+    }
+    function renderDatePicker() {
+      syncDateTriggerText();
+      const popover = document.getElementById('dateRangePickerPopover');
+      if (!state.datePicker.open) {
+        popover.classList.add('hidden');
+        popover.setAttribute('aria-hidden', 'true');
+        return;
+      }
+      const title = document.getElementById('datePickerTitle');
+      const rangeText = document.getElementById('datePickerRangeText');
+      const shortcutList = document.getElementById('datePickerShortcutList');
+      const baseMonth = parseDateOnly(state.datePicker.panelMonth) || getMonthStart(ANCHOR_DATE);
+      const nextMonth = addMonths(baseMonth, 1);
+      const activeShortcut = getMatchedDateShortcut(state.datePicker.draftStart, state.datePicker.draftEnd);
+      title.textContent = `选择${getDateFieldLabel()}`;
+      rangeText.textContent = getDateRangeText(state.datePicker.draftStart, state.datePicker.draftEnd, '请选择开始日期和结束日期');
+      shortcutList.innerHTML = DATE_PICKER_SHORTCUTS.map(item => `<button type="button" class="date-picker-shortcut ${activeShortcut === item.key ? 'is-active' : ''}" data-date-shortcut="${item.key}">${item.label}</button>`).join('');
+      document.getElementById('datePickerMonthLabelA').textContent = formatMonthLabel(baseMonth);
+      document.getElementById('datePickerMonthLabelB').textContent = formatMonthLabel(nextMonth);
+      renderDatePickerGrid('datePickerGridA', formatDateOnly(baseMonth));
+      renderDatePickerGrid('datePickerGridB', formatDateOnly(nextMonth));
+      popover.classList.remove('hidden');
+      popover.setAttribute('aria-hidden', 'false');
+      positionDatePickerPopover();
+    }
+    function openDatePicker(field = getCurrentDateField()) {
+      const range = getDateFieldRange(field);
+      state.datePicker.open = true;
+      state.datePicker.field = field;
+      state.datePicker.draftStart = range.start;
+      state.datePicker.draftEnd = range.end;
+      state.datePicker.panelMonth = getDatePickerBaseMonth(range.start, range.end);
+      renderDatePicker();
+    }
+    function closeDatePicker() {
+      state.datePicker.open = false;
+      renderDatePicker();
+    }
+    function shiftDatePickerMonth(offset) {
+      const monthDate = parseDateOnly(state.datePicker.panelMonth) || getMonthStart(ANCHOR_DATE);
+      state.datePicker.panelMonth = formatDateOnly(addMonths(monthDate, offset));
+      renderDatePicker();
+    }
+    function applyDateShortcut(shortcutKey) {
+      const range = buildDateShortcutRange(shortcutKey);
+      state.datePicker.draftStart = range.start;
+      state.datePicker.draftEnd = range.end;
+      state.datePicker.panelMonth = getDatePickerBaseMonth(range.start, range.end);
+      renderDatePicker();
+    }
+    function pickDateRangeValue(dateText) {
+      const { draftStart, draftEnd } = state.datePicker;
+      if (!draftStart || (draftStart && draftEnd)) {
+        state.datePicker.draftStart = dateText;
+        state.datePicker.draftEnd = '';
+      } else if (dateText < draftStart) {
+        state.datePicker.draftStart = dateText;
+        state.datePicker.draftEnd = draftStart;
+      } else {
+        state.datePicker.draftEnd = dateText;
+      }
+      renderDatePicker();
+    }
+    function clearDatePicker() {
+      state.datePicker.draftStart = '';
+      state.datePicker.draftEnd = '';
+      renderDatePicker();
+    }
+    function confirmDatePicker() {
+      let { draftStart, draftEnd, field } = state.datePicker;
+      if (!draftStart && !draftEnd) {
+        setDateFieldRange(field, '', '');
+        closeDatePicker();
+        return;
+      }
+      if (draftStart && !draftEnd) draftEnd = draftStart;
+      if (!draftStart && draftEnd) draftStart = draftEnd;
+      if (draftStart > draftEnd) [draftStart, draftEnd] = [draftEnd, draftStart];
+      setDateFieldRange(field, draftStart, draftEnd);
+      closeDatePicker();
+      renderFilters();
+    }
     function renderReportMenu() {
-      const officialMarkup = REPORT_ORDER.map((key, index) => {
+      document.getElementById('reportMenu').innerHTML = REPORT_ORDER.map((key, index) => {
         const report = reportDefinitions[key];
         const starred = STARRED_REPORTS.has(key);
-        return `<button type="button" class="menu-item ${!isCustomReportView() && state.currentReport === key ? 'active' : ''}" data-report="${key}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span><span class="menu-label">${report.tabLabel}报表</span></span></span><span class="menu-star ${starred ? 'is-active' : ''}" aria-hidden="true"><i class="${starred ? 'ri-star-fill' : 'ri-star-line'}"></i></span></button>`;
+        return `<button type="button" class="menu-item ${state.currentReport === key ? 'active' : ''}" data-report="${key}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span class="menu-label">${report.tabLabel}报表</span></span><span class="menu-star ${starred ? 'is-active' : ''}" aria-hidden="true"><i class="${starred ? 'ri-star-fill' : 'ri-star-line'}"></i></span></button>`;
       }).join('');
-      const myMarkup = state.customReports.mine.length ? state.customReports.mine.map((report, index) => `<button type="button" class="menu-item is-custom ${isCustomReportView() && state.currentCustomReportCode === report.reportCode ? 'active' : ''}" data-open-custom-report="${report.reportCode}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span><span class="menu-label">${report.reportName}</span><span class="menu-meta">${getCustomDatasetDefinition(report.datasetCode).grainLabel}｜${report.metrics.filter(item => item.alias).map(item => item.alias).slice(0, 2).join('、') || '未配置指标'}</span></span></span><span class="menu-star is-active" aria-hidden="true"><i class="ri-user-star-line"></i></span></button>`).join('') : '<div class="menu-item-empty">当前暂无我的报表，支持从订单报表一键新建。</div>';
-      const sharedMarkup = state.customReports.shared.length ? state.customReports.shared.map((report, index) => `<button type="button" class="menu-item is-custom ${isCustomReportView() && state.currentCustomReportCode === report.reportCode ? 'active' : ''}" data-open-custom-report="${report.reportCode}"><span class="menu-serial">${pad(index + 1)}</span><span class="menu-text"><span><span class="menu-label">${report.reportName}</span><span class="menu-meta">${getCustomDatasetDefinition(report.datasetCode).grainLabel}｜${report.dimensions.filter(Boolean).length}个维度</span></span></span><span class="menu-star is-active" aria-hidden="true"><i class="ri-share-forward-line"></i></span></button>`).join('') : '<div class="menu-item-empty">当前暂无共享报表。</div>';
-      document.getElementById('reportMenu').innerHTML = `
-        <section class="menu-group"><div class="menu-group-title">官方报表</div>${officialMarkup}</section>
-        <section class="menu-group"><div class="menu-group-title">我的报表</div>${myMarkup}</section>
-        <section class="menu-group"><div class="menu-group-title">共享报表</div>${sharedMarkup}</section>
-      `;
     }
     function renderFilters() {
       const report = reportDefinitions[state.currentReport];
       const availableBusinessTypes = getReportBusinessTypeOptions(state.currentReport);
-      const isTimelinessReport = !isCustomReportView() && state.currentReport === 'timeliness';
+      const isOrderScope = isOrderReport();
+      const isTimelinessReport = state.currentReport === 'timeliness';
       const currentTimelinessBusinessType = getCurrentTimelinessBusinessType(state.filters.businessTypes);
       const filterAOptions = isTimelinessReport ? getTimelinessNodeOptions(currentTimelinessBusinessType) : report.filterA.options;
+      document.getElementById('primaryDateLabel').innerHTML = isOrderScope ? '时间筛选<span class="required">*</span>' : '时间范围<span class="required">*</span>';
+      document.getElementById('shipDateFilterItem').classList.add('hidden');
+      document.getElementById('genericFilterAItem').classList.toggle('hidden', isOrderScope);
+      document.getElementById('genericFilterBItem').classList.toggle('hidden', isOrderScope);
+      document.getElementById('orderStageFilterItem').classList.toggle('hidden', !isOrderScope);
+      document.getElementById('trackStatusFilterItem').classList.toggle('hidden', !isOrderScope);
       document.getElementById('filterALabel').textContent = report.filterA.label;
       document.getElementById('filterBLabel').textContent = report.filterB.label;
       document.getElementById('customer').innerHTML = `<option value="">全部客户/货主</option>${COMMON_CUSTOMERS.map(item => `<option value="${item}">${item}</option>`).join('')}`;
       document.getElementById('businessTypeList').innerHTML = availableBusinessTypes.map(item => `<label class="multi-select-option"><input class="business-type-checkbox" type="checkbox" value="${item}"><span>${item}</span></label>`).join('');
-      document.getElementById('filterA').innerHTML = `<option value="">全部${report.filterA.label}</option>${filterAOptions.map(item => `<option value="${item}">${item}</option>`).join('')}`;
-      document.getElementById('filterB').innerHTML = `<option value="">全部${report.filterB.label}</option>${report.filterB.options.map(item => `<option value="${item}">${item}</option>`).join('')}`;
-      document.getElementById('startDate').value = state.filters.startDate;
-      document.getElementById('endDate').value = state.filters.endDate;
+      if (isOrderScope) {
+        document.getElementById('orderStageList').innerHTML = ORDER_STAGE_OPTIONS.map(item => `<label class="multi-select-option"><input class="order-stage-checkbox" type="checkbox" value="${item}"><span>${item}</span></label>`).join('');
+        document.getElementById('trackStatusList').innerHTML = TRACK_STATUS_OPTIONS.map(item => `<label class="multi-select-option"><input class="track-status-checkbox" type="checkbox" value="${item}"><span>${item}</span></label>`).join('');
+      } else {
+        document.getElementById('filterA').innerHTML = `<option value="">全部${report.filterA.label}</option>${filterAOptions.map(item => `<option value="${item}">${item}</option>`).join('')}`;
+        document.getElementById('filterB').innerHTML = `<option value="">全部${report.filterB.label}</option>${report.filterB.options.map(item => `<option value="${item}">${item}</option>`).join('')}`;
+      }
       document.getElementById('customer').value = state.filters.customer;
-      document.getElementById('filterA').value = state.filters.filterA;
-      document.getElementById('filterB').value = state.filters.filterB;
+      if (!isOrderScope) {
+        document.getElementById('filterA').value = state.filters.filterA;
+        document.getElementById('filterB').value = state.filters.filterB;
+      }
       syncHeaderWarehouseSelection(state.filters.selectedWarehouses);
-      syncBusinessTypeSelection(state.filters.businessTypes);
+      syncBusinessTypeSelection(getCurrentTypeFilters(state.currentReport));
+      document.getElementById('dateTypeSelect').parentElement.classList.toggle('is-single', !isOrderScope);
+      document.getElementById('dateTypeSelect').disabled = !isOrderScope;
+      if (isOrderScope) {
+        syncOrderStageSelection(state.filters.orderStages);
+        syncTrackStatusSelection(state.filters.trackStatuses);
+      }
       if (isTimelinessReport) refreshTimelinessNodeFilterOptions(state.filters.businessTypes);
       closeBusinessTypeDropdown();
-      document.querySelectorAll('.quick-range').forEach(button => { button.classList.toggle('active', Number(button.dataset.days) === state.filters.quickDays); });
+      closeOrderStageDropdown();
+      closeTrackStatusDropdown();
+      syncDateTriggerText();
     }
     function renderStats() {
-      if (isCustomReportView()) {
-        const customReport = getCurrentCustomReport();
-        if (!customReport) {
-          document.getElementById('statCards').innerHTML = '';
-          return;
-        }
-        const aggregate = buildCustomAggregateResult(customReport, state.filters);
-        const items = getCustomReportStats(customReport, aggregate);
-        document.getElementById('statCards').innerHTML = items.map(item => `<div class="stat-card ${item.tone}"><div class="stat-card-head"><span class="stat-dot"></span><span class="stat-label">${item.label}</span></div><div class="stat-value">${item.value}</div><div class="stat-delta">${item.delta}</div><div class="stat-hint">${item.hint}</div></div>`).join('');
-        return;
-      }
       const report = reportDefinitions[state.currentReport];
       const items = state.currentReport === 'timeliness' ? buildTimelinessStats(getFilteredRows()) : report.stats;
       document.getElementById('statCards').innerHTML = items.map(item => `<div class="stat-card ${item.tone}"><div class="stat-card-head"><span class="stat-dot"></span><span class="stat-label">${item.label}</span></div><div class="stat-value">${item.value}</div><div class="stat-delta">${item.delta}</div><div class="stat-hint">${item.hint}</div></div>`).join('');
@@ -1944,7 +1704,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     function renderTimelinessOverview() {
       const section = document.getElementById('timelinessOverviewSection');
       if (!section) return;
-      const isVisible = !isCustomReportView() && state.currentReport === 'timeliness';
+      const isVisible = state.currentReport === 'timeliness';
       section.classList.toggle('hidden', !isVisible);
       if (!isVisible) return;
 
@@ -2109,22 +1869,48 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       document.getElementById('insightList').innerHTML = report.insights.map((text, index) => `<div class="insight-card"><div class="insight-index">关注点${index + 1}</div><div class="insight-text">${text}</div></div>`).join('');
     }
     function collectFilters() {
-      state.filters.startDate = document.getElementById('startDate').value;
-      state.filters.endDate = document.getElementById('endDate').value;
+      const orderScope = isOrderReport();
+      if (orderScope) {
+        state.filters.dateType = document.getElementById('dateTypeSelect').value || 'primary';
+      }
+      if (!orderScope) {
+        state.filters.shipStartDate = '';
+        state.filters.shipEndDate = '';
+      }
+      const activeDateField = orderScope ? state.filters.dateType : 'primary';
+      const activeDateRange = getDateFieldRange(activeDateField);
+      if (!activeDateRange.start || !activeDateRange.end) {
+        showToast(`请选择${getDateFieldLabel(activeDateField)}`, 'warning');
+        return false;
+      }
       state.filters.customer = document.getElementById('customer').value;
-      state.filters.filterA = document.getElementById('filterA').value;
-      state.filters.filterB = document.getElementById('filterB').value;
+      state.filters.filterA = orderScope ? '' : document.getElementById('filterA').value;
+      state.filters.filterB = orderScope ? '' : document.getElementById('filterB').value;
       state.filters.keyword = '';
       const selectedBusinessTypes = getSelectedBusinessTypes();
       if (!selectedBusinessTypes.length) {
-        showToast('请至少选择1个业务类型', 'warning');
+        showToast(`请至少选择1个${orderScope ? '订单类型' : '业务类型'}`, 'warning');
         return false;
       }
       if (isSingleBusinessTypeReport(state.currentReport) && selectedBusinessTypes.length !== 1) {
         showToast('时效报表仅支持选择1个业务类型', 'warning');
         return false;
       }
-      state.filters.businessTypes = [...selectedBusinessTypes];
+      if (orderScope) {
+        state.filters.orderTypes = [...selectedBusinessTypes];
+        state.filters.orderStages = getSelectedOrderStages();
+        state.filters.trackStatuses = getSelectedTrackStatuses();
+        if (!state.filters.orderStages.length) {
+          showToast('请至少选择1个订单阶段', 'warning');
+          return false;
+        }
+        if (!state.filters.trackStatuses.length) {
+          showToast('请至少选择1个轨迹状态', 'warning');
+          return false;
+        }
+      } else {
+        state.filters.businessTypes = [...selectedBusinessTypes];
+      }
       const selectedWarehouses = getSelectedHeaderWarehouses();
       if (!selectedWarehouses.length) {
         showToast('请至少选择1个仓库', 'warning');
@@ -2132,24 +1918,40 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       }
       state.filters.selectedWarehouses = [...selectedWarehouses];
       syncHeaderWarehouseSelection(state.filters.selectedWarehouses);
-      syncBusinessTypeSelection(state.filters.businessTypes);
+      syncBusinessTypeSelection(getCurrentTypeFilters(state.currentReport));
+      if (orderScope) {
+        syncOrderStageSelection(state.filters.orderStages);
+        syncTrackStatusSelection(state.filters.trackStatuses);
+      }
       return true;
     }
     function getFilteredRows() {
-      if (isCustomReportView()) {
-        const customReport = getCurrentCustomReport();
-        if (!customReport) return [];
-        return applyOrderFilters(getCustomDatasetRows(customReport.datasetCode), state.filters);
-      }
       const report = reportDefinitions[state.currentReport];
+      const orderScope = isOrderReport();
       const selectedWarehouses = state.filters.selectedWarehouses.length ? state.filters.selectedWarehouses : COMMON_WAREHOUSES;
-      const selectedBusinessTypes = getActiveBusinessTypes(state.filters.businessTypes);
+      const selectedBusinessTypes = getActiveBusinessTypes(getCurrentTypeFilters(state.currentReport), state.currentReport);
+      const activeDateField = orderScope ? getCurrentDateField() : 'primary';
       return report.rows.filter(row => {
-        const rowDate = row.time.slice(0, 10);
-        const matchDate = (!state.filters.startDate || rowDate >= state.filters.startDate) && (!state.filters.endDate || rowDate <= state.filters.endDate);
+        const orderDate = (row.orderTime || row.time).slice(0, 10);
+        const shipDate = row.shipTime ? row.shipTime.slice(0, 10) : '';
+        const matchPrimaryDate = (!state.filters.startDate || orderDate >= state.filters.startDate) && (!state.filters.endDate || orderDate <= state.filters.endDate);
+        const matchShipDate = (!state.filters.shipStartDate || shipDate >= state.filters.shipStartDate) && (!state.filters.shipEndDate || shipDate <= state.filters.shipEndDate);
+        const matchDate = orderScope
+          ? (activeDateField === 'ship' ? (Boolean(shipDate) && matchShipDate) : matchPrimaryDate)
+          : matchPrimaryDate;
         const matchWarehouse = selectedWarehouses.includes(row.warehouse);
-        const matchBusinessType = selectedBusinessTypes.includes(row.businessType);
+        const matchBusinessType = orderScope ? selectedBusinessTypes.includes(row.orderType) : selectedBusinessTypes.includes(row.businessType);
         const matchCustomer = !state.filters.customer || row.customer === state.filters.customer;
+        if (orderScope) {
+          const orderStages = state.filters.orderStages.length ? state.filters.orderStages : ORDER_STAGE_OPTIONS;
+          const trackStatuses = state.filters.trackStatuses.length ? state.filters.trackStatuses : TRACK_STATUS_OPTIONS;
+          const trackFilterUsesAll = trackStatuses.length === TRACK_STATUS_OPTIONS.length;
+          const matchOrderStage = orderStages.includes(row.orderStage);
+          const matchTrackStatus = row.trackStatus ? trackStatuses.includes(row.trackStatus) : trackFilterUsesAll;
+          const keyword = state.filters.keyword.toLowerCase();
+          const matchKeyword = !keyword || Object.values(row).some(value => String(value).toLowerCase().includes(keyword));
+          return matchDate && matchWarehouse && matchBusinessType && matchCustomer && matchOrderStage && matchTrackStatus && matchKeyword;
+        }
         const matchTag = !state.filters.filterA
           || (state.currentReport === 'timeliness'
             ? Boolean(row.nodeTimeline?.[state.filters.filterA])
@@ -2173,8 +1975,11 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       renderOrderTableHeader(fields);
       document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map(row => `<tr>${fields.map(field => {
         const definition = ORDER_FIELD_DEFINITIONS[field.key];
-        const content = definition.getValue(row);
         const attrs = buildTableCellAttrs(field, layout, 'td');
+        if (field.key === 'itemQty') {
+          return `<td class="${attrs.className} cell-right" style="${attrs.styleText}">${row.itemQty ? `<button type="button" class="table-link-btn" data-product-detail="${row.orderNo}">${formatNumber(row.itemQty)}</button>` : '--'}</td>`;
+        }
+        const content = definition.getValue(row);
         return `<td class="${attrs.className}" style="${attrs.styleText}">${definition.html ? content : content ?? '--'}</td>`;
       }).join('')}</tr>`).join('') : `<tr class="empty-row"><td colspan="${fields.length}">暂无匹配数据，请调整查询条件后重试</td></tr>`;
     }
@@ -2307,6 +2112,44 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       state.timeliness.detailDate = dateKey;
       renderTimelinessDetailModal();
     }
+    function closeProductDetailModal() {
+      state.productDetail.open = false;
+      state.productDetail.row = null;
+      document.getElementById('productDetailModal').classList.add('hidden');
+    }
+    function renderProductDetailModal() {
+      const modal = document.getElementById('productDetailModal');
+      const row = state.productDetail.row;
+      if (!(state.productDetail.open && row)) {
+        modal.classList.add('hidden');
+        return;
+      }
+      const productRows = row.products || [];
+      const totalQty = productRows.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+      document.getElementById('productDetailTitle').textContent = `${row.orderNo}商品详情`;
+      document.getElementById('productDetailScope').textContent = `当前展示${row.ownerName}在${row.warehouse}下的商品明细，字段包含商品名称、商品编码、数量与商品分类。`;
+      document.getElementById('productDetailOrderTag').textContent = `订单类型:${row.orderType || '--'}`;
+      document.getElementById('productDetailStats').innerHTML = [
+        { label: '商品明细行数', value: formatNumber(productRows.length) },
+        { label: '商品总数量', value: formatNumber(totalQty) },
+        { label: '当前订单阶段', value: row.orderStage || '--' }
+      ].map(item => `<div class="product-detail-stat"><div class="product-detail-stat-label">${item.label}</div><div class="product-detail-stat-value">${item.value}</div></div>`).join('');
+      document.getElementById('productDetailBody').innerHTML = productRows.length
+        ? productRows.map(item => `<tr><td>${item.name || '--'}</td><td>${item.code || '--'}</td><td class="cell-right">${formatNumber(item.qty || 0)}</td><td>${item.category || '--'}</td></tr>`).join('')
+        : '<tr><td colspan="4" class="timeliness-detail-empty">当前订单暂无商品明细。</td></tr>';
+      modal.classList.remove('hidden');
+    }
+    function openProductDetailModal(orderNo) {
+      if (state.currentReport !== 'order') return;
+      const row = reportDefinitions.order.rows.find(item => item.orderNo === orderNo);
+      if (!row) {
+        showToast('未找到对应订单商品明细', 'warning');
+        return;
+      }
+      state.productDetail.open = true;
+      state.productDetail.row = row;
+      renderProductDetailModal();
+    }
     function renderPagination(total) {
       const maxPage = Math.max(1, Math.ceil(total / state.pagination.pageSize));
       if (state.pagination.currentPage > maxPage) state.pagination.currentPage = maxPage;
@@ -2320,55 +2163,14 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       document.getElementById('pageNumbers').innerHTML = pages.map(page => page === '...' ? `<span class="page-btn" style="cursor:default;">...</span>` : `<button type="button" class="page-btn ${page === state.pagination.currentPage ? 'active' : ''}" data-page="${page}">${page}</button>`).join('');
     }
     function renderTable() {
-      if (isCustomReportView()) {
-        const report = getCurrentCustomReport();
-        if (!report) {
-          document.getElementById('tableTitle').textContent = '自定义报表明细';
-          document.getElementById('tableToolbar').innerHTML = '';
-          document.getElementById('tableHead').innerHTML = '';
-          document.getElementById('tableBody').innerHTML = '<tr class="empty-row"><td colspan="1">当前自定义报表不存在或已失效</td></tr>';
-          return;
-        }
-        const aggregate = buildCustomAggregateResult(report, state.filters);
-        state.customAggregateCache = aggregate;
-        const maxPage = Math.max(1, Math.ceil(aggregate.rows.length / state.pagination.pageSize));
-        if (state.pagination.currentPage > maxPage) state.pagination.currentPage = maxPage;
-        const start = (state.pagination.currentPage - 1) * state.pagination.pageSize;
-        const pageRows = aggregate.rows.slice(start, start + state.pagination.pageSize);
-        document.getElementById('tableTitle').textContent = `${report.reportName}明细`;
-        document.getElementById('tableToolbar').innerHTML = [
-          `数据集:${aggregate.dataset.label}`,
-          `粒度:${aggregate.dataset.grainLabel}`,
-          `维度:${aggregate.dimensions.map(item => item.label).join('、') || '全部数据'}`,
-          `指标:${aggregate.metrics.map(item => item.alias).join('、') || '--'}`,
-          `TopN:${report.topN}`,
-          `排序:${report.sortDirection === 'asc' ? '升序' : '倒序'}`
-        ].map(text => `<span class="toolbar-tag">${text}</span>`).join('');
-        document.getElementById('columnConfigBtn').style.display = 'none';
-        document.getElementById('tableHead').innerHTML = `<tr>${aggregate.columns.map(column => `<th class="${column.align === 'right' ? 'cell-right' : ''}">${column.label}</th>`).join('')}</tr>`;
-        document.getElementById('detailTable').style.minWidth = `${Math.max(980, aggregate.columns.length * 160)}px`;
-        document.getElementById('tableBody').innerHTML = pageRows.length ? pageRows.map((row, index) => `<tr class="${report.drilldownEnabled ? 'custom-row-drilldown' : ''}" ${report.drilldownEnabled ? `data-custom-drilldown-index="${start + index}"` : ''}>${aggregate.columns.map(column => {
-          if (column.key.startsWith('metric:')) {
-            const metric = aggregate.metrics.find(item => `metric:${item.index}` === column.key);
-            return `<td class="${column.align === 'right' ? 'cell-right' : ''}">${metric ? formatCustomMetricValue(metric, row[column.key]) : row[column.key]}</td>`;
-          }
-          return `<td>${row[column.key] ?? '--'}</td>`;
-        }).join('')}</tr>`).join('') : `<tr class="empty-row"><td colspan="${aggregate.columns.length || 1}">暂无匹配数据，请调整查询条件后重试</td></tr>`;
-        renderPagination(aggregate.rows.length);
-        document.getElementById('totalCount').textContent = aggregate.rows.length;
-        document.getElementById('currentStart').textContent = aggregate.rows.length ? start + 1 : 0;
-        document.getElementById('currentEnd').textContent = aggregate.rows.length ? Math.min(start + state.pagination.pageSize, aggregate.rows.length) : 0;
-        return;
-      }
       const report = reportDefinitions[state.currentReport];
       const filteredRows = getFilteredRows();
       const selectedWarehouses = state.filters.selectedWarehouses.length ? state.filters.selectedWarehouses : COMMON_WAREHOUSES;
-      const selectedBusinessTypes = getActiveBusinessTypes();
+      const selectedBusinessTypes = getActiveBusinessTypes(getCurrentTypeFilters(state.currentReport), state.currentReport);
       const availableBusinessTypes = getReportBusinessTypeOptions(state.currentReport);
       let total = filteredRows.length;
       let startIndex = 0;
       let endIndex = 0;
-      document.getElementById('columnConfigBtn').style.display = '';
 
       if (state.currentReport === 'timeliness') {
         const tableMeta = renderTimelinessTable(filteredRows, selectedBusinessTypes, report);
@@ -2382,7 +2184,18 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         const pageRows = filteredRows.slice(start, start + state.pagination.pageSize);
         const visibleFields = getVisibleConfiguredTableFields(state.currentReport, selectedBusinessTypes);
         document.getElementById('tableTitle').textContent = report.title.replace('报表', '明细');
-        document.getElementById('tableToolbar').innerHTML = [...report.toolbar, `当前仓库:${selectedWarehouses.length === COMMON_WAREHOUSES.length ? '全部仓库' : selectedWarehouses.join('、')}`, `业务类型:${selectedBusinessTypes.length === availableBusinessTypes.length ? '全部业务类型' : selectedBusinessTypes.join('、')}`].map(text => `<span class="toolbar-tag">${text}</span>`).join('');
+        const toolbarItems = [
+          ...report.toolbar,
+          `当前仓库:${selectedWarehouses.length === COMMON_WAREHOUSES.length ? '全部仓库' : selectedWarehouses.join('、')}`,
+          `${isOrderReport() ? '订单类型' : '业务类型'}:${selectedBusinessTypes.length === availableBusinessTypes.length ? `全部${isOrderReport() ? '订单类型' : '业务类型'}` : selectedBusinessTypes.join('、')}`
+        ];
+        if (state.currentReport === 'order') {
+          toolbarItems.push(
+            `订单阶段:${state.filters.orderStages.length === ORDER_STAGE_OPTIONS.length ? '全部订单阶段' : state.filters.orderStages.join('、')}`,
+            `轨迹状态:${state.filters.trackStatuses.length === TRACK_STATUS_OPTIONS.length ? '全部轨迹状态' : state.filters.trackStatuses.join('、')}`
+          );
+        }
+        document.getElementById('tableToolbar').innerHTML = toolbarItems.map(text => `<span class="toolbar-tag">${text}</span>`).join('');
         if (state.currentReport === 'order') renderOrderTable(pageRows, visibleFields);
         else renderGenericTable(pageRows, visibleFields, report);
         renderPagination(filteredRows.length);
@@ -2494,6 +2307,11 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       return mapping[mode.key] || mapping.review || '';
     }
     function getCurrentRangeText() {
+      if (state.currentReport === 'order') {
+        const activeField = getCurrentDateField();
+        const activeRange = getDateFieldRange(activeField);
+        return `${getDateFieldLabel(activeField)}${activeRange.start || '--'}至${activeRange.end || '--'}`;
+      }
       return `${state.filters.startDate}至${state.filters.endDate}`;
     }
     function aiEmphasis(text, tone = 'neutral') {
@@ -2543,12 +2361,12 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       if (!rows.length) return `${type}当前没有命中样本，建议保持筛选范围后再复核专项结构。`;
       const dimensions = ORDER_ANALYSIS_CONFIG[type] || [];
       const topItems = dimensions.map(config => ({ ...config, top: buildDistribution(rows, config.field)[0] || null }));
-      if (type === '干线') {
+      if (type === '换单') {
         const originTop = topItems[0]?.top;
         const destinationTop = topItems[1]?.top;
-        if (destinationTop && destinationTop.share >= 0.4) return `干线订单目的港集中在${destinationTop.name}(${formatRatio(destinationTop.share)})，建议提前锁定对应航线舱位、清关和地面交接资源。`;
-        if (originTop && originTop.share >= 0.4) return `干线订单起运港主要来自${originTop.name}(${formatRatio(originTop.share)})，建议重点校验该起运港对应仓的装板与配载能力。`;
-        return '干线订单港口分布相对均衡，可按周复盘起运港和目的港组合变化，提前安排舱位与出库节奏。';
+        if (destinationTop && destinationTop.share >= 0.4) return `换单订单目的港集中在${destinationTop.name}(${formatRatio(destinationTop.share)})，建议提前锁定对应航线舱位、清关和地面交接资源。`;
+        if (originTop && originTop.share >= 0.4) return `换单订单起运港主要来自${originTop.name}(${formatRatio(originTop.share)})，建议重点校验该起运港对应仓的装板与配载能力。`;
+        return '换单订单港口分布相对均衡，可按周复盘起运港和目的港组合变化，提前安排舱位与出库节奏。';
       }
       if (type === '备货') {
         const poTypeTop = topItems[0]?.top;
@@ -2560,13 +2378,14 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       }
       const originalCountryTop = topItems[0]?.top;
       const currentCountryTop = topItems[1]?.top;
-      if (currentCountryTop && currentCountryTop.share >= 0.35) return `退件重派订单现派国家集中在${currentCountryTop.name}(${formatRatio(currentCountryTop.share)})，建议提前准备改派线路、异常件处理和客户通知模板。`;
-      if (originalCountryTop && originalCountryTop.share >= 0.35) return `退件重派订单原派国主要来自${originalCountryTop.name}(${formatRatio(originalCountryTop.share)})，建议专项复盘该国家的首次派送失败原因和改派规则。`;
-      return '退件重派订单国家分布较分散，可继续按原派国和现派国家建立失败原因看板，减少重复改派。';
+      if (currentCountryTop && currentCountryTop.share >= 0.35) return `重派订单现派国家集中在${currentCountryTop.name}(${formatRatio(currentCountryTop.share)})，建议提前准备改派线路、异常件处理和客户通知模板。`;
+      if (originalCountryTop && originalCountryTop.share >= 0.35) return `重派订单原派国主要来自${originalCountryTop.name}(${formatRatio(originalCountryTop.share)})，建议专项复盘该国家的首次派送失败原因和改派规则。`;
+      return '重派订单国家分布较分散，可继续按原派国和现派国家建立失败原因看板，减少重复改派。';
     }
     function buildOrderEvidenceRows(rows) {
       return [...rows].map(row => {
-        const riskScore = row.status === '待审核' ? 3 : row.status === '处理中' ? 2 : 1;
+        const stage = row.orderStage || row.status;
+        const riskScore = stage === '异常' ? 4 : stage === '待审核' ? 3 : ['处理中', '已发货'].includes(stage) ? 2 : 1;
         const evidenceScore = Number(row.priorityValue || 0);
         return { ...row, riskScore, evidenceScore, timeValue: getTimeValue(row.time) };
       }).sort((left, right) => (right.riskScore - left.riskScore) || (right.evidenceScore - left.evidenceScore) || (right.timeValue - left.timeValue)).slice(0, 3);
@@ -2574,28 +2393,28 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     function buildOrderAiAnalysis(rows) {
       const mode = getAnalysisMode();
       const rangeText = getCurrentRangeText();
-      const availableTypes = BUSINESS_TYPE_OPTIONS.filter(type => rows.some(row => row.businessType === type));
-      const businessDistribution = buildDistribution(rows, 'businessType');
+      const availableTypes = ORDER_TYPE_OPTIONS.filter(type => rows.some(row => row.orderType === type));
+      const businessDistribution = buildDistribution(rows, 'orderType');
       const warehouseDistribution = buildDistribution(rows, 'warehouse');
       const ownerDistribution = buildDistribution(rows, 'ownerName');
       const sourceDistribution = buildDistribution(rows, 'orderSource');
-      const statusDistribution = buildDistribution(rows, 'status');
+      const statusDistribution = buildDistribution(rows, 'orderStage');
       const latestTime = [...rows].sort((left, right) => getTimeValue(right.time) - getTimeValue(left.time))[0]?.time || '--';
       const topBusiness = businessDistribution[0] || null;
       const topWarehouse = warehouseDistribution[0] || null;
       const topSource = sourceDistribution[0] || null;
       const topStatus = statusDistribution[0] || null;
-      const followUpRows = rows.filter(row => getStatusBucket(row.status) !== 'success');
+      const followUpRows = rows.filter(row => getStatusBucket(row.orderStage) !== 'success');
       const followUpRate = rows.length ? followUpRows.length / rows.length : 0;
-      const topBusinessText = aiEmphasis(topBusiness?.name || '当前业务');
+      const topBusinessText = aiEmphasis(topBusiness?.name || '当前订单类型');
       const topWarehouseText = aiEmphasis(topWarehouse?.name || '当前仓库');
       const topSourceText = aiEmphasis(topSource?.name || '--');
       const topStatusText = aiEmphasis(topStatus?.name || '--', toneByStatus(topStatus?.name || '--'));
       const followUpText = aiEmphasis(formatRatio(followUpRate), toneByFollowRate(followUpRate));
-      const focusType = BUSINESS_TYPE_OPTIONS.map(type => {
-        const typeRows = rows.filter(row => row.businessType === type);
+      const focusType = ORDER_TYPE_OPTIONS.map(type => {
+        const typeRows = rows.filter(row => row.orderType === type);
         if (!typeRows.length) return null;
-        const pendingRows = typeRows.filter(row => getStatusBucket(row.status) !== 'success');
+        const pendingRows = typeRows.filter(row => getStatusBucket(row.orderStage) !== 'success');
         return {
           type,
           rows: typeRows,
@@ -2609,32 +2428,32 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       return {
         mode,
         risk,
-        headline: `在${aiEmphasis(rangeText)}的查询范围内，${topBusinessText}是主要订单结构，${topWarehouseText}承接了最多订单样本，优先关注该业务在该仓的审核与执行闭环。`,
-        digest: `本次分析覆盖${aiEmphasis(formatNumber(rows.length))}条订单样本，主业务占比${aiEmphasis(topBusiness ? formatRatio(topBusiness.share) : '--')}，主仓占比${aiEmphasis(topWarehouse ? formatRatio(topWarehouse.share) : '--')}，待跟进订单占比${followUpText}。${pickModeText(mode, { monitor: '当前更适合从异常处置角度看待审核与处理中订单。', review: '当前更适合从阶段复盘角度看业务结构、仓库承压与来源质量。', management: '当前更适合从管理分析角度看结构集中度与流程优化方向。' })}`,
+        headline: `在${aiEmphasis(rangeText)}的查询范围内，${topBusinessText}是主要订单类型，${topWarehouseText}承接了最多订单样本，优先关注该类型在该仓的发货与签收闭环。`,
+        digest: `本次分析覆盖${aiEmphasis(formatNumber(rows.length))}条订单样本，主订单类型占比${aiEmphasis(topBusiness ? formatRatio(topBusiness.share) : '--')}，主仓占比${aiEmphasis(topWarehouse ? formatRatio(topWarehouse.share) : '--')}，待跟进订单占比${followUpText}。${pickModeText(mode, { monitor: '当前更适合从异常处置角度看待待审核、处理中和异常订单。', review: '当前更适合从阶段复盘角度看订单类型结构、仓库承压与来源质量。', management: '当前更适合从管理分析角度看订单类型集中度与履约优化方向。' })}`,
         overview: [
           { label: '分析模式', value: aiEmphasis(mode.label), hint: mode.description },
           { label: '风险等级', value: aiEmphasis(risk.label, risk.tone === 'danger' ? 'negative' : risk.tone === 'safe' ? 'positive' : 'neutral'), hint: risk.hint },
           { label: '主要波动仓', value: topWarehouseText, hint: topWarehouse ? `样本占比${aiEmphasis(formatRatio(topWarehouse.share))}` : '暂无仓库分布' },
-          { label: '主业务结构', value: topBusinessText, hint: topBusiness ? `业务占比${aiEmphasis(formatRatio(topBusiness.share))}` : '暂无业务分布' }
+          { label: '主订单类型', value: topBusinessText, hint: topBusiness ? `类型占比${aiEmphasis(formatRatio(topBusiness.share))}` : '暂无类型分布' }
         ],
         priorities: [
           {
-            title: `${topBusinessText}是主要订单结构`,
+            title: `${topBusinessText}是主要订单类型`,
             tone: resolvePriorityTone(topBusiness?.share || 0, 0.55, 0.35),
             badge: topBusiness ? `占比${aiEmphasis(formatRatio(topBusiness.share))}` : '结构待确认',
-            impact: topBusiness ? `该业务在当前查询范围内占${aiEmphasis(formatRatio(topBusiness.share))}，共${aiEmphasis(topBusiness.count)}单，是订单规模的主要来源。` : '当前暂无业务结构样本。',
-            reason: topBusiness ? `${topBusinessText}在业务结构中最集中，${buildOrderBusinessHighlight(topBusiness.name, rows.filter(row => row.businessType === topBusiness.name))}。` : '当前没有足够样本支持业务结构判断。',
-            action: topBusiness ? (mode.key === 'monitor' ? `优先查看${topBusiness.name}相关明细，确认待审核和处理中订单是否在持续堆积。` : buildOrderBusinessSuggestion(topBusiness.name, rows.filter(row => row.businessType === topBusiness.name))) : '建议扩大查询范围后再复核。'
+            impact: topBusiness ? `该订单类型在当前查询范围内占${aiEmphasis(formatRatio(topBusiness.share))}，共${aiEmphasis(topBusiness.count)}单，是订单规模的主要来源。` : '当前暂无订单类型结构样本。',
+            reason: topBusiness ? `${topBusinessText}在订单类型结构中最集中，${buildOrderBusinessHighlight(topBusiness.name, rows.filter(row => row.orderType === topBusiness.name))}。` : '当前没有足够样本支持订单类型判断。',
+            action: topBusiness ? (mode.key === 'monitor' ? `优先查看${topBusiness.name}相关明细，确认待审核、处理中和异常订单是否在持续堆积。` : buildOrderBusinessSuggestion(topBusiness.name, rows.filter(row => row.orderType === topBusiness.name))) : '建议扩大查询范围后再复核。'
           },
           {
             title: `${topWarehouseText}承接最多订单`,
             tone: resolvePriorityTone(topWarehouse?.share || 0, 0.48, 0.34),
             badge: topWarehouse ? `占比${aiEmphasis(formatRatio(topWarehouse.share))}` : '仓库待确认',
             impact: topWarehouse ? `该仓命中${aiEmphasis(topWarehouse.count)}单，订单样本占比${aiEmphasis(formatRatio(topWarehouse.share))}，是当前最主要的承压仓。` : '当前暂无仓库分布。',
-            reason: topSource ? `订单来源以${topSourceText}为主，占比${aiEmphasis(formatRatio(topSource.share))}；主状态为${topStatusText}。` : `主状态为${topStatusText}。`,
+            reason: topSource ? `订单来源以${topSourceText}为主，占比${aiEmphasis(formatRatio(topSource.share))}；主订单阶段为${topStatusText}。` : `主订单阶段为${topStatusText}。`,
             action: pickModeText(mode, {
-              monitor: `优先检查${topWarehouse?.name || '当前仓库'}的审核、收货和出库衔接，避免单仓拥堵放大波动。`,
-              review: `围绕${topWarehouse?.name || '当前仓库'}复盘订单创建到执行的闭环节奏，定位单仓承压原因。`,
+              monitor: `优先检查${topWarehouse?.name || '当前仓库'}的上线、发货和签收衔接，避免单仓拥堵放大波动。`,
+              review: `围绕${topWarehouse?.name || '当前仓库'}复盘下单到签收的闭环节奏，定位单仓承压原因。`,
               management: `将${topWarehouse?.name || '当前仓库'}纳入专项管理观察，评估分仓与资源配置策略是否需要调整。`
             })
           },
@@ -2642,22 +2461,22 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
             title: focusType ? `${aiEmphasis(focusType.type)}更需要优先复盘` : '待跟进订单需要持续观察',
             tone: resolvePriorityTone(focusType?.rate || followUpRate, 0.45, 0.25),
             badge: focusType ? `待跟进${aiEmphasis(formatRatio(focusType.rate), toneByFollowRate(focusType.rate))}` : `待跟进${followUpText}`,
-            impact: focusType ? `该业务待跟进${aiEmphasis(focusType.pendingCount)}单，占该业务${aiEmphasis(formatRatio(focusType.rate), toneByFollowRate(focusType.rate))}，高于整体订单待跟进占比${followUpText}。` : `当前待跟进订单占比${followUpText}，主状态为${topStatusText}。`,
+            impact: focusType ? `该订单类型待跟进${aiEmphasis(focusType.pendingCount)}单，占该类型${aiEmphasis(formatRatio(focusType.rate), toneByFollowRate(focusType.rate))}，高于整体订单待跟进占比${followUpText}。` : `当前待跟进订单占比${followUpText}，主订单阶段为${topStatusText}。`,
             reason: focusType ? `${buildOrderBusinessSpecificSummary(focusType.type, focusType.rows)}。` : `订单来源分布:${formatDistributionText(sourceDistribution)}。`,
-            action: focusType ? (mode.key === 'monitor' ? `先查看${focusType.type}待跟进明细，优先清理待审核和处理中订单。` : buildOrderBusinessSuggestion(focusType.type, focusType.rows)) : '建议继续按业务类型观察异常是否向单一结构集中。'
+            action: focusType ? (mode.key === 'monitor' ? `先查看${focusType.type}待跟进明细，优先清理待审核、处理中和异常订单。` : buildOrderBusinessSuggestion(focusType.type, focusType.rows)) : '建议继续按订单类型观察异常是否向单一结构集中。'
           }
         ],
         driverSummary: [
-          `${topBusinessText}是主业务结构，占比${aiEmphasis(topBusiness ? formatRatio(topBusiness.share) : '--')}。`,
+          `${topBusinessText}是主订单类型，占比${aiEmphasis(topBusiness ? formatRatio(topBusiness.share) : '--')}。`,
           `${topWarehouseText}是主波动仓，订单来源以${topSourceText}为主。`,
           `待跟进订单占比${followUpText}，问题性质判断为“${aiEmphasis(issueNature, followUpRate >= 0.35 ? 'negative' : 'neutral')}”。`
         ],
         evidenceCharts: [
           {
             title: '订单结构佐证',
-            subtitle: '用业务和仓库分布说明当前主问题为何成立',
+            subtitle: '用订单类型和仓库分布说明当前主问题为何成立',
             sections: [
-              { label: '业务类型占比', chartType: 'donut', centerLabel: '主业务', items: buildVisualItems(businessDistribution, { limit: 3, aggregateOthers: true }) },
+              { label: '订单类型占比', chartType: 'donut', centerLabel: '主类型', items: buildVisualItems(businessDistribution, { limit: 3, aggregateOthers: true }) },
               { label: '仓库占比', chartType: 'donut', centerLabel: '主仓', items: buildVisualItems(warehouseDistribution, { limit: 3, aggregateOthers: true }) }
             ]
           },
@@ -2671,7 +2490,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
           }
         ],
         evidenceSummary: [
-          `订单业务占比:主业务${topBusinessText}，占${aiEmphasis(topBusiness ? formatRatio(topBusiness.share) : '--')}`,
+          `订单类型占比:主类型${topBusinessText}，占${aiEmphasis(topBusiness ? formatRatio(topBusiness.share) : '--')}`,
           `仓库占比:主仓${topWarehouseText}，占${aiEmphasis(topWarehouse ? formatRatio(topWarehouse.share) : '--')}`,
           `订单来源:主来源${topSourceText}，占${aiEmphasis(topSource ? formatRatio(topSource.share) : '--')}`,
           `货主TOP3:${aiEmphasis(formatOwnerRanking(ownerDistribution))}`
@@ -2680,10 +2499,10 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         basis: [
           `问题性质:${aiEmphasis(issueNature, followUpRate >= 0.35 ? 'negative' : 'neutral')}`,
           `最新样本更新时间:${aiEmphasis(latestTime)}`,
-          `订单业务占比:${formatDistributionText(businessDistribution)}`,
+          `订单类型占比:${formatDistributionText(businessDistribution)}`,
           `仓库占比:${formatDistributionText(warehouseDistribution)}`,
           `订单来源统计:${formatDistributionText(sourceDistribution)}`,
-          ...availableTypes.map(type => buildOrderBusinessSpecificSummary(type, rows.filter(row => row.businessType === type)))
+          ...availableTypes.map(type => buildOrderBusinessSpecificSummary(type, rows.filter(row => row.orderType === type)))
         ]
       };
     }
@@ -2936,14 +2755,23 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       const mode = getAnalysisMode();
       const selectedWarehouses = state.filters.selectedWarehouses.length ? state.filters.selectedWarehouses : COMMON_WAREHOUSES;
       const availableBusinessTypes = getReportBusinessTypeOptions(state.currentReport);
-      const selectedBusinessTypes = getActiveBusinessTypes(state.filters.businessTypes);
+      const selectedBusinessTypes = getActiveBusinessTypes(getCurrentTypeFilters(state.currentReport), state.currentReport);
       const warehouseText = selectedWarehouses.length === COMMON_WAREHOUSES.length ? '全部仓库' : selectedWarehouses.join('、');
       const customerText = state.filters.customer || '全部客户/货主';
-      const businessTypeText = selectedBusinessTypes.length === availableBusinessTypes.length && !isSingleBusinessTypeReport(state.currentReport) ? '全部业务类型' : selectedBusinessTypes.join('、');
+      const typeLabel = state.currentReport === 'order' ? '订单类型' : '业务类型';
+      const businessTypeText = selectedBusinessTypes.length === availableBusinessTypes.length && !isSingleBusinessTypeReport(state.currentReport) ? `全部${typeLabel}` : selectedBusinessTypes.join('、');
+      if (state.currentReport === 'order') {
+        const activeField = getCurrentDateField();
+        const activeRange = getDateFieldRange(activeField);
+        const orderStageText = state.filters.orderStages.length === ORDER_STAGE_OPTIONS.length ? '全部订单阶段' : state.filters.orderStages.join('、');
+        const trackStatusText = state.filters.trackStatuses.length === TRACK_STATUS_OPTIONS.length ? '全部轨迹状态' : state.filters.trackStatuses.join('、');
+        const rangeText = `${activeRange.start || '--'}至${activeRange.end || '--'}`;
+        return `分析范围:${getDateFieldLabel(activeField)}${rangeText}｜分析模式:${mode.label}｜报表:${report.title}｜仓库:${warehouseText}｜客户/货主:${customerText}｜订单类型:${businessTypeText}｜订单阶段:${orderStageText}｜轨迹状态:${trackStatusText}｜样本:${total}条`;
+      }
       const filterAText = state.filters.filterA || `全部${report.filterA.label}`;
       const filterBText = state.filters.filterB || `全部${report.filterB.label}`;
       const keywordText = state.filters.keyword ? `｜关键词:${state.filters.keyword}` : '';
-      return `分析范围:${state.filters.startDate}至${state.filters.endDate}｜分析模式:${mode.label}｜报表:${report.title}｜仓库:${warehouseText}｜客户/货主:${customerText}｜业务类型:${businessTypeText}｜${report.filterA.label}:${filterAText}｜${report.filterB.label}:${filterBText}${keywordText}｜样本:${total}条`;
+      return `分析范围:${state.filters.startDate}至${state.filters.endDate}｜分析模式:${mode.label}｜报表:${report.title}｜仓库:${warehouseText}｜客户/货主:${customerText}｜${typeLabel}:${businessTypeText}｜${report.filterA.label}:${filterAText}｜${report.filterB.label}:${filterBText}${keywordText}｜样本:${total}条`;
     }
     function renderAiPriorityCards(items = []) {
       return items.map((item, index) => `<div class="ai-priority-card" data-tone="${item.tone || 'safe'}"><div class="ai-priority-top"><span class="ai-priority-index">关注${index + 1}</span><span class="ai-priority-badge">${item.badge || '--'}</span></div><div class="ai-priority-title">${item.title}</div><div class="ai-priority-block"><div class="ai-priority-label">影响表现</div><div class="ai-priority-text">${item.impact}</div></div><div class="ai-priority-block"><div class="ai-priority-label">判断依据</div><div class="ai-priority-text">${item.reason}</div></div><div class="ai-priority-block"><div class="ai-priority-label">建议动作</div><div class="ai-priority-text">${item.action}</div></div></div>`).join('');
@@ -2971,13 +2799,12 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       modalTitle.textContent = `${reportDefinitions[state.currentReport].title}依据详情`;
       modalScope.textContent = scopeText;
       modalGeneratedAt.textContent = state.ai.generatedAt ? `生成时间:${state.ai.generatedAt}` : '分析口径:当前查询结果';
-      modalBody.innerHTML = `<div class="ai-evidence-shell"><div><div class="section-title">图表佐证</div><div class="section-sub" style="margin-top:6px;">用轻量图表直观看到当前结论背后的结构分布</div><div style="margin-top:14px;">${renderAiVisualBlocks(result.evidenceCharts || [])}</div></div><div class="ai-evidence-grid"><div class="ai-card"><div class="section-title">重点样本</div><div class="section-sub" style="margin-top:6px;">默认只保留最值得复核的3条样本</div><div class="ai-list" style="margin-top:14px;">${result.evidenceRows.length ? result.evidenceRows.map(row => `<div class="evidence-card"><div class="evidence-head"><div class="evidence-title">${row.code}</div><span class="badge ${statusClass(row.status)}">${row.status}</span></div><div class="evidence-meta">${row.evidenceMeta || `${row.customer} / ${row.warehouse}`}</div><div class="evidence-tags"><span class="toolbar-tag">业务:${row.businessType || '--'}</span><span class="toolbar-tag">${row.evidenceTag || row.tag}</span><span class="toolbar-tag">${row.evidenceValue || `关键值:${row.value}`}</span><span class="toolbar-tag">更新时间:${row.time}</span></div></div>`).join('') : `<div class="ai-placeholder">当前筛选结果没有可展示的重点样本。</div>`}</div></div><div class="ai-card"><div class="section-title">结构摘要</div><div class="section-sub" style="margin-top:6px;">用于说明本次结论所依托的主要分布</div>${renderAiEvidenceSummary(result.evidenceSummary)}</div></div><div class="ai-card"><div class="section-title">分析依据</div><div class="section-sub" style="margin-top:6px;">适合评审时说明口径和判断原因</div><div class="ai-list" style="margin-top:14px;">${result.basis.map(item => `<div class="ai-list-item">${item}</div>`).join('')}</div></div></div>`;
+      modalBody.innerHTML = `<div class="ai-evidence-shell"><div><div class="section-title">图表佐证</div><div class="section-sub" style="margin-top:6px;">用轻量图表直观看到当前结论背后的结构分布</div><div style="margin-top:14px;">${renderAiVisualBlocks(result.evidenceCharts || [])}</div></div><div class="ai-evidence-grid"><div class="ai-card"><div class="section-title">重点样本</div><div class="section-sub" style="margin-top:6px;">默认只保留最值得复核的3条样本</div><div class="ai-list" style="margin-top:14px;">${result.evidenceRows.length ? result.evidenceRows.map(row => `<div class="evidence-card"><div class="evidence-head"><div class="evidence-title">${row.code}</div><span class="badge ${statusClass(row.status)}">${row.status}</span></div><div class="evidence-meta">${row.evidenceMeta || `${row.customer} / ${row.warehouse}`}</div><div class="evidence-tags"><span class="toolbar-tag">${state.currentReport === 'order' ? '订单类型' : '业务'}:${row.orderType || row.businessType || '--'}</span><span class="toolbar-tag">${row.evidenceTag || row.tag}</span><span class="toolbar-tag">${row.evidenceValue || `关键值:${row.value}`}</span><span class="toolbar-tag">更新时间:${row.time}</span></div></div>`).join('') : `<div class="ai-placeholder">当前筛选结果没有可展示的重点样本。</div>`}</div></div><div class="ai-card"><div class="section-title">结构摘要</div><div class="section-sub" style="margin-top:6px;">用于说明本次结论所依托的主要分布</div>${renderAiEvidenceSummary(result.evidenceSummary)}</div></div><div class="ai-card"><div class="section-title">分析依据</div><div class="section-sub" style="margin-top:6px;">适合评审时说明口径和判断原因</div><div class="ai-list" style="margin-top:14px;">${result.basis.map(item => `<div class="ai-list-item">${item}</div>`).join('')}</div></div></div>`;
     }
     function renderAiAnalysis() {
       const section = document.getElementById('aiAnalysisSection');
-      if (isCustomReportView()) {
+      if (state.currentReport === 'order') {
         section.classList.add('hidden');
-        document.getElementById('aiEvidenceModal').classList.add('hidden');
         return;
       }
       section.classList.remove('hidden');
@@ -3014,7 +2841,7 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       }
       content.innerHTML = `<div class="ai-placeholder">${state.ai.message}</div>`;
     }
-    function renderAll() { renderReportMenu(); renderFilters(); renderStats(); renderCustomReportOverview(); renderTimelinessOverview(); renderTable(); renderAiAnalysis(); renderTimelinessDetailModal(); renderColumnConfigModal(); renderCustomReportManager(); renderCustomReportBuilder(); renderCustomReportDrilldown(); }
+    function renderAll() { renderReportMenu(); renderFilters(); renderDatePicker(); renderStats(); renderTimelinessOverview(); renderTable(); renderAiAnalysis(); renderTimelinessDetailModal(); renderProductDetailModal(); renderColumnConfigModal(); }
     function setQuickRange(days) {
       const endDate = new Date(ANCHOR_DATE);
       const startDate = new Date(ANCHOR_DATE);
@@ -3022,33 +2849,44 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       state.filters.startDate = `${startDate.getFullYear()}-${pad(startDate.getMonth() + 1)}-${pad(startDate.getDate())}`;
       state.filters.endDate = `${endDate.getFullYear()}-${pad(endDate.getMonth() + 1)}-${pad(endDate.getDate())}`;
       state.filters.quickDays = days;
-      document.getElementById('startDate').value = state.filters.startDate;
-      document.getElementById('endDate').value = state.filters.endDate;
-      document.querySelectorAll('.quick-range').forEach(button => { button.classList.toggle('active', Number(button.dataset.days) === days); });
+      syncDateTriggerText();
     }
     function resetFilters() {
-      if (isCustomReportView()) {
-        const currentCustom = getCurrentCustomReport();
-        resetFiltersForBaseReport(currentCustom?.sourceReportKey || 'order', currentCustom?.defaultFilters || null);
-      } else {
-        resetFiltersForBaseReport(state.currentReport);
-      }
+      state.filters = {
+        startDate: '2026-01-01',
+        endDate: '2026-03-18',
+        shipStartDate: '',
+        shipEndDate: '',
+        dateType: 'primary',
+        customer: '',
+        orderTypes: [...ORDER_TYPE_OPTIONS],
+        orderStages: [...ORDER_STAGE_OPTIONS],
+        trackStatuses: [...TRACK_STATUS_OPTIONS],
+        businessTypes: isSingleBusinessTypeReport(state.currentReport) ? [TIMELINESS_BUSINESS_TYPE_OPTIONS[0]] : [...getReportBusinessTypeOptions(state.currentReport)],
+        filterA: '',
+        filterB: '',
+        keyword: '',
+        quickDays: 90,
+        selectedWarehouses: [...COMMON_WAREHOUSES]
+      };
       state.pagination.currentPage = 1;
       if (state.columnConfig.modalOpen) closeColumnConfigModal();
-      closeCustomReportDrilldown();
       closeTimelinessDetailModal();
+      closeProductDetailModal();
+      closeDatePicker();
       resetAiAnalysis('idle', '已恢复默认查询条件，点击生成AI分析可输出新的区间结论和优先关注事项。');
       renderAll();
     }
     function switchReport(reportKey) {
       if (!reportDefinitions[reportKey]) return;
-      state.reportMode = 'official';
       state.currentReport = reportKey;
-      state.currentCustomReportCode = '';
-      state.customManager.open = false;
-      closeCustomReportDrilldown();
-      if (state.customBuilder.open) closeCustomReportBuilder();
       state.filters.customer = '';
+      state.filters.shipStartDate = '';
+      state.filters.shipEndDate = '';
+      state.filters.dateType = 'primary';
+      state.filters.orderTypes = [...ORDER_TYPE_OPTIONS];
+      state.filters.orderStages = [...ORDER_STAGE_OPTIONS];
+      state.filters.trackStatuses = [...TRACK_STATUS_OPTIONS];
       state.filters.businessTypes = isSingleBusinessTypeReport(reportKey) ? [TIMELINESS_BUSINESS_TYPE_OPTIONS[0]] : [...getReportBusinessTypeOptions(reportKey)];
       state.filters.filterA = '';
       state.filters.filterB = '';
@@ -3056,6 +2894,8 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       state.pagination.currentPage = 1;
       if (state.columnConfig.modalOpen) closeColumnConfigModal();
       closeTimelinessDetailModal();
+      closeProductDetailModal();
+      closeDatePicker();
       resetAiAnalysis('idle', `已切换到${reportDefinitions[reportKey].title}，请重新生成区间分析。`);
       renderAll();
       if (window.innerWidth < 768) {
@@ -3066,22 +2906,24 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     }
     function applyFiltersAndRenderTable() {
       if (!collectFilters()) return false;
-      if (state.filters.startDate && state.filters.endDate && state.filters.startDate > state.filters.endDate) {
-        showToast('开始日期不能晚于结束日期', 'error');
+      const activeField = isOrderReport() ? getCurrentDateField() : 'primary';
+      const activeRange = getDateFieldRange(activeField);
+      if (activeRange.start && activeRange.end && activeRange.start > activeRange.end) {
+        showToast(`${getDateFieldLabel(activeField)}开始日期不能晚于结束日期`, 'error');
         return false;
       }
       state.pagination.currentPage = 1;
-      closeCustomReportDrilldown();
       closeTimelinessDetailModal();
+      closeProductDetailModal();
+      closeDatePicker();
       renderStats();
-      renderCustomReportOverview();
       renderTimelinessOverview();
       renderTable();
       return true;
     }
     function triggerAiAnalysis() {
-      if (isCustomReportView()) {
-        showToast('自定义聚合报表默认不生成AI分析，请切换到官方报表查看AI结论', 'warning');
+      if (state.currentReport === 'order') {
+        showToast('订单报表暂不支持AI分析功能', 'warning');
         return;
       }
       if (!applyFiltersAndRenderTable()) return;
@@ -3115,33 +2957,34 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
     }
     function initEvents() {
       document.addEventListener('click', event => {
+        const dateTrigger = event.target.closest('[data-date-trigger]');
+        if (dateTrigger) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const field = getCurrentDateField();
+          if (state.datePicker.open && state.datePicker.field === field) closeDatePicker();
+          else openDatePicker(field);
+          return;
+        }
+        const dateCell = event.target.closest('[data-date-cell]');
+        if (dateCell) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          pickDateRangeValue(dateCell.dataset.dateCell);
+          return;
+        }
+        const dateShortcut = event.target.closest('[data-date-shortcut]');
+        if (dateShortcut) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          applyDateShortcut(dateShortcut.dataset.dateShortcut);
+          return;
+        }
         const reportTrigger = event.target.closest('[data-report]');
         if (reportTrigger) { switchReport(reportTrigger.dataset.report); return; }
-        const customReportTrigger = event.target.closest('[data-open-custom-report]');
-        if (customReportTrigger) {
-          openCustomReport(customReportTrigger.dataset.openCustomReport);
-          state.customManager.open = false;
-          renderCustomReportManager();
-          return;
-        }
-        const editCustomReportTrigger = event.target.closest('[data-edit-custom-report]');
-        if (editCustomReportTrigger) {
-          openCustomReportBuilder('edit', editCustomReportTrigger.dataset.editCustomReport);
-          return;
-        }
-        const duplicateCustomReportTrigger = event.target.closest('[data-duplicate-custom-report]');
-        if (duplicateCustomReportTrigger) {
-          openCustomReportBuilder('duplicate', duplicateCustomReportTrigger.dataset.duplicateCustomReport);
-          return;
-        }
-        const deleteCustomReportTrigger = event.target.closest('[data-delete-custom-report]');
-        if (deleteCustomReportTrigger) {
-          deleteCustomReport(deleteCustomReportTrigger.dataset.deleteCustomReport);
-          return;
-        }
-        const customDrilldownTrigger = event.target.closest('[data-custom-drilldown-index]');
-        if (customDrilldownTrigger) {
-          openCustomReportDrilldown(Number(customDrilldownTrigger.dataset.customDrilldownIndex));
+        const productTrigger = event.target.closest('[data-product-detail]');
+        if (productTrigger) {
+          openProductDetailModal(productTrigger.dataset.productDetail);
           return;
         }
         const timelinessTrigger = event.target.closest('[data-timeliness-node-trigger]');
@@ -3163,48 +3006,10 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
       });
       document.getElementById('resetBtn').addEventListener('click', () => { resetFilters(); showToast('已重置查询条件'); });
       document.getElementById('exportBtn').addEventListener('click', () => {
-        const total = isCustomReportView() ? buildCustomAggregateResult(getCurrentCustomReport(), state.filters).rows.length : getFilteredRows().length;
+        const total = getFilteredRows().length;
         if (total > 100000) { showToast('数据量过大,请缩小查询范围', 'warning'); return; }
         showToast(`正在导出，共${total}条数据`, 'warning');
       });
-      document.getElementById('openCustomReportBuilderBtn').addEventListener('click', () => openCustomReportBuilder('create'));
-      document.getElementById('openCustomReportManagerBtn').addEventListener('click', () => {
-        state.customManager.open = true;
-        renderCustomReportManager();
-      });
-      document.getElementById('closeCustomReportManagerBtn').addEventListener('click', () => {
-        state.customManager.open = false;
-        renderCustomReportManager();
-      });
-      document.getElementById('customReportManagerBackdrop').addEventListener('click', () => {
-        state.customManager.open = false;
-        renderCustomReportManager();
-      });
-      document.getElementById('editCurrentCustomReportBtn').addEventListener('click', () => {
-        const report = getCurrentCustomReport();
-        if (!report) return;
-        openCustomReportBuilder('edit', report.reportCode);
-      });
-      document.getElementById('duplicateCurrentCustomReportBtn').addEventListener('click', () => {
-        const report = getCurrentCustomReport();
-        if (!report) return;
-        openCustomReportBuilder('duplicate', report.reportCode);
-      });
-      document.getElementById('deleteCurrentCustomReportBtn').addEventListener('click', () => {
-        const report = getCurrentCustomReport();
-        if (!report) return;
-        deleteCustomReport(report.reportCode);
-      });
-      document.getElementById('closeCustomReportBuilderBtn').addEventListener('click', closeCustomReportBuilder);
-      document.getElementById('customReportBuilderBackdrop').addEventListener('click', closeCustomReportBuilder);
-      document.getElementById('applyCustomReportBuilderBtn').addEventListener('click', () => {
-        if (!state.customBuilder.draft) return;
-        state.customBuilder.preview = buildCustomAggregateResult(state.customBuilder.draft, state.customBuilder.draft.defaultFilters);
-        renderCustomReportBuilder();
-        showToast('已刷新预览');
-      });
-      document.getElementById('saveCustomReportDraftBtn').addEventListener('click', () => saveCustomReport(true));
-      document.getElementById('saveCustomReportBtn').addEventListener('click', () => saveCustomReport(false));
       document.getElementById('subscribeBtn').addEventListener('click', () => { showToast('已订阅当前报表日报'); });
       document.getElementById('columnConfigBtn').addEventListener('click', openColumnConfigModal);
       document.getElementById('aiAnalyzeBtn').addEventListener('click', triggerAiAnalysis);
@@ -3231,26 +3036,44 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         state.ai.evidenceModalOpen = false;
         renderAiAnalysis();
       });
-      document.getElementById('closeCustomReportDrilldownBtn').addEventListener('click', closeCustomReportDrilldown);
-      document.getElementById('customReportDrilldownBackdrop').addEventListener('click', closeCustomReportDrilldown);
       document.getElementById('closeTimelinessDetailBtn').addEventListener('click', closeTimelinessDetailModal);
       document.getElementById('timelinessDetailBackdrop').addEventListener('click', closeTimelinessDetailModal);
+      document.getElementById('closeProductDetailBtn').addEventListener('click', closeProductDetailModal);
+      document.getElementById('productDetailBackdrop').addEventListener('click', closeProductDetailModal);
+      document.getElementById('closeDatePickerBtn').addEventListener('click', closeDatePicker);
+      document.getElementById('cancelDatePickerBtn').addEventListener('click', closeDatePicker);
+      document.getElementById('clearDatePickerBtn').addEventListener('click', clearDatePicker);
+      document.getElementById('confirmDatePickerBtn').addEventListener('click', confirmDatePicker);
+      document.getElementById('datePickerPrevBtn').addEventListener('click', () => shiftDatePickerMonth(-1));
+      document.getElementById('datePickerNextBtn').addEventListener('click', () => shiftDatePickerMonth(1));
       document.getElementById('prevBtn').addEventListener('click', () => { if (state.pagination.currentPage > 1) { state.pagination.currentPage -= 1; renderTable(); } });
       document.getElementById('nextBtn').addEventListener('click', () => {
-        const totalRows = isCustomReportView()
-          ? buildCustomAggregateResult(getCurrentCustomReport(), state.filters).rows.length
-          : state.currentReport === 'timeliness'
+        const totalRows = state.currentReport === 'timeliness'
           ? buildTimelinessDailyRows(getFilteredRows(), getCurrentTimelinessBusinessType(state.filters.businessTypes)).length
           : getFilteredRows().length;
         const totalPages = Math.max(1, Math.ceil(totalRows / state.pagination.pageSize));
         if (state.pagination.currentPage < totalPages) { state.pagination.currentPage += 1; renderTable(); }
       });
       document.getElementById('pageSize').addEventListener('change', event => { state.pagination.pageSize = Number(event.target.value); state.pagination.currentPage = 1; renderTable(); });
-      document.querySelectorAll('.quick-range').forEach(button => { button.addEventListener('click', () => setQuickRange(Number(button.dataset.days))); });
+      document.getElementById('dateTypeSelect').addEventListener('change', event => {
+        state.filters.dateType = event.target.value || 'primary';
+        syncDateTriggerText();
+        if (state.datePicker.open) openDatePicker(state.filters.dateType);
+      });
       document.getElementById('businessTypeBtn').addEventListener('click', event => {
         event.stopPropagation();
         document.getElementById('businessTypeDropdown').classList.toggle('hidden');
         document.getElementById('businessTypeBtn').setAttribute('aria-expanded', String(!document.getElementById('businessTypeDropdown').classList.contains('hidden')));
+      });
+      document.getElementById('orderStageBtn').addEventListener('click', event => {
+        event.stopPropagation();
+        document.getElementById('orderStageDropdown').classList.toggle('hidden');
+        document.getElementById('orderStageBtn').setAttribute('aria-expanded', String(!document.getElementById('orderStageDropdown').classList.contains('hidden')));
+      });
+      document.getElementById('trackStatusBtn').addEventListener('click', event => {
+        event.stopPropagation();
+        document.getElementById('trackStatusDropdown').classList.toggle('hidden');
+        document.getElementById('trackStatusBtn').setAttribute('aria-expanded', String(!document.getElementById('trackStatusDropdown').classList.contains('hidden')));
       });
       document.getElementById('selectAllBusinessTypes').addEventListener('change', event => {
         if (isSingleBusinessTypeReport(state.currentReport)) {
@@ -3261,90 +3084,20 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         document.querySelectorAll('.business-type-checkbox').forEach(checkbox => { checkbox.checked = checked; });
         syncBusinessTypeSelection(checked ? [...getReportBusinessTypeOptions(state.currentReport)] : []);
       });
+      document.getElementById('selectAllOrderStages').addEventListener('change', event => {
+        const checked = event.target.checked;
+        document.querySelectorAll('.order-stage-checkbox').forEach(checkbox => { checkbox.checked = checked; });
+        syncOrderStageSelection(checked ? [...ORDER_STAGE_OPTIONS] : []);
+      });
+      document.getElementById('selectAllTrackStatuses').addEventListener('change', event => {
+        const checked = event.target.checked;
+        document.querySelectorAll('.track-status-checkbox').forEach(checkbox => { checkbox.checked = checked; });
+        syncTrackStatusSelection(checked ? [...TRACK_STATUS_OPTIONS] : []);
+      });
       document.addEventListener('change', event => {
         const columnToggle = event.target.closest('[data-column-toggle]');
         if (columnToggle) {
           setDraftFieldVisible(columnToggle.dataset.columnToggle, columnToggle.checked);
-          return;
-        }
-        if (event.target.matches('[data-builder-input="scope"]')) {
-          updateCustomBuilderDraft(draft => { draft.scope = event.target.value; });
-          return;
-        }
-        if (event.target.matches('[data-builder-input="datasetCode"]')) {
-          updateCustomBuilderDraft(draft => {
-            draft.datasetCode = event.target.value;
-            draft.dimensions = ['ownerName', '', ''].map((field, index) => index === 0 ? (getCustomDimensionOptions(draft.datasetCode)[0]?.key || '') : '');
-            const defaultMetricField = getCustomMetricOptions(draft.datasetCode)[0]?.key || 'orderNo';
-            const defaultAgg = defaultMetricField === 'orderNo' ? 'distinct_count' : 'sum';
-            draft.metrics = [
-              createDefaultCustomMetric(defaultMetricField, defaultAgg, getMetricDefaultAlias(getCustomMetricMeta(draft.datasetCode, defaultMetricField) || { label: defaultMetricField }, defaultAgg)),
-              createDefaultCustomMetric('', 'sum', ''),
-              createDefaultCustomMetric('', 'sum', '')
-            ];
-            draft.sortField = 'metric:0';
-          });
-          return;
-        }
-        if (event.target.matches('[data-builder-input="viewType"]')) {
-          updateCustomBuilderDraft(draft => { draft.viewType = event.target.value; });
-          return;
-        }
-        if (event.target.matches('[data-builder-input="sortField"]')) {
-          updateCustomBuilderDraft(draft => { draft.sortField = event.target.value; });
-          return;
-        }
-        if (event.target.matches('[data-builder-input="sortDirection"]')) {
-          updateCustomBuilderDraft(draft => { draft.sortDirection = event.target.value; });
-          return;
-        }
-        if (event.target.matches('[data-builder-input="topN"]')) {
-          updateCustomBuilderDraft(draft => { draft.topN = Number(event.target.value); });
-          return;
-        }
-        if (event.target.matches('[data-builder-input="drilldownEnabled"]')) {
-          updateCustomBuilderDraft(draft => { draft.drilldownEnabled = event.target.value === 'true'; });
-          return;
-        }
-        if (event.target.matches('[data-builder-dimension]')) {
-          const index = Number(event.target.dataset.builderDimension);
-          updateCustomBuilderDraft(draft => { draft.dimensions[index] = event.target.value; });
-          return;
-        }
-        if (event.target.matches('[data-builder-metric-field]')) {
-          const index = Number(event.target.dataset.builderMetricField);
-          updateCustomBuilderDraft(draft => {
-            draft.metrics[index].field = event.target.value;
-            const meta = getCustomMetricMeta(draft.datasetCode, event.target.value);
-            draft.metrics[index].agg = meta?.aggs[0] || 'sum';
-            draft.metrics[index].alias = event.target.value ? getMetricDefaultAlias(meta || { label: event.target.value }, draft.metrics[index].agg) : '';
-          });
-          return;
-        }
-        if (event.target.matches('[data-builder-metric-agg]')) {
-          const index = Number(event.target.dataset.builderMetricAgg);
-          updateCustomBuilderDraft(draft => {
-            draft.metrics[index].agg = event.target.value;
-            const meta = getCustomMetricMeta(draft.datasetCode, draft.metrics[index].field);
-            if (draft.metrics[index].field) draft.metrics[index].alias = getMetricDefaultAlias(meta || { label: draft.metrics[index].field }, draft.metrics[index].agg);
-          });
-          return;
-        }
-        if (event.target.matches('[data-builder-toggle="preserveFilters"]')) {
-          updateCustomBuilderDraft(draft => {
-            draft.preserveFilters = event.target.checked;
-            draft.defaultFilters = event.target.checked ? cloneFilters() : {
-              startDate: '2026-01-01',
-              endDate: '2026-03-18',
-              customer: '',
-              businessTypes: [...BUSINESS_TYPE_OPTIONS],
-              filterA: '',
-              filterB: '',
-              keyword: '',
-              quickDays: 90,
-              selectedWarehouses: [...COMMON_WAREHOUSES]
-            };
-          });
           return;
         }
         if (event.target.classList.contains('business-type-checkbox')) {
@@ -3359,20 +3112,14 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
             refreshTimelinessNodeFilterOptions(getSelectedBusinessTypes());
           }
           syncBusinessTypeSelection(getSelectedBusinessTypes());
-        }
-      });
-      document.addEventListener('input', event => {
-        if (event.target.matches('[data-builder-input="reportName"]')) {
-          if (state.customBuilder.draft) state.customBuilder.draft.reportName = event.target.value;
           return;
         }
-        if (event.target.matches('[data-builder-input="description"]')) {
-          if (state.customBuilder.draft) state.customBuilder.draft.description = event.target.value;
+        if (event.target.classList.contains('order-stage-checkbox')) {
+          syncOrderStageSelection(getSelectedOrderStages());
           return;
         }
-        if (event.target.matches('[data-builder-metric-alias]')) {
-          const index = Number(event.target.dataset.builderMetricAlias);
-          if (state.customBuilder.draft?.metrics[index]) state.customBuilder.draft.metrics[index].alias = event.target.value;
+        if (event.target.classList.contains('track-status-checkbox')) {
+          syncTrackStatusSelection(getSelectedTrackStatuses());
         }
       });
       document.getElementById('warehouseBtn').addEventListener('click', event => { event.stopPropagation(); document.getElementById('warehouseDropdown').classList.toggle('hidden'); });
@@ -3393,8 +3140,8 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         document.getElementById('warehouseDropdown').classList.add('hidden');
         state.pagination.currentPage = 1;
         closeTimelinessDetailModal();
+        closeProductDetailModal();
         renderStats();
-        renderCustomReportOverview();
         renderTimelinessOverview();
         resetAiAnalysis('stale', '仓库范围已更新，请点击更新分析获取最新区间结论。');
         renderTable();
@@ -3433,24 +3180,14 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         }
         if (!document.getElementById('warehouseSelector').contains(event.target)) document.getElementById('warehouseDropdown').classList.add('hidden');
         if (!document.getElementById('businessTypeSelector').contains(event.target)) closeBusinessTypeDropdown();
+        if (!document.getElementById('orderStageSelector').contains(event.target)) closeOrderStageDropdown();
+        if (!document.getElementById('trackStatusSelector').contains(event.target)) closeTrackStatusDropdown();
+        if (state.datePicker.open && !document.getElementById('dateRangePickerPopover').contains(event.target) && !event.target.closest('[data-date-trigger]')) closeDatePicker();
       });
       document.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
-          if (state.customBuilder.open) {
-            closeCustomReportBuilder();
-            return;
-          }
-          if (state.customManager.open) {
-            state.customManager.open = false;
-            renderCustomReportManager();
-            return;
-          }
           if (state.columnConfig.modalOpen) {
             closeColumnConfigModal();
-            return;
-          }
-          if (state.customDrilldown.open) {
-            closeCustomReportDrilldown();
             return;
           }
           if (state.timeliness.detailOpen) {
@@ -3460,7 +3197,15 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
             state.ai.evidenceModalOpen = false;
             renderAiAnalysis();
           }
+          if (state.productDetail.open) {
+            closeProductDetailModal();
+          }
+          if (state.datePicker.open) {
+            closeDatePicker();
+          }
           closeBusinessTypeDropdown();
+          closeOrderStageDropdown();
+          closeTrackStatusDropdown();
           if (window.innerWidth < 768) { document.getElementById('sidebar').classList.add('-translate-x-full'); document.getElementById('sidebarOverlay').classList.add('hidden'); }
         }
       });
@@ -3491,14 +3236,19 @@ const REPORT_ORDER = ['order', 'inbound', 'putaway', 'picking', 'outbound', 'tim
         state.columnConfig.draggingKey = '';
         state.columnConfig.dragOverKey = '';
       });
-      window.addEventListener('resize', () => { if (window.innerWidth >= 768) { document.getElementById('sidebar').classList.remove('-translate-x-full'); document.getElementById('sidebarOverlay').classList.add('hidden'); } });
+      window.addEventListener('resize', () => {
+        if (window.innerWidth >= 768) {
+          document.getElementById('sidebar').classList.remove('-translate-x-full');
+          document.getElementById('sidebarOverlay').classList.add('hidden');
+        }
+        if (state.datePicker.open) positionDatePickerPopover();
+      });
     }
     document.addEventListener('DOMContentLoaded', () => {
       Chart.defaults.font.family = '"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif';
       Chart.defaults.color = '#627388';
-      state.customReports.mine = readCustomReportsFromStorage();
-      state.customReports.shared = SHARED_CUSTOM_REPORTS.map(item => ({ ...item }));
       if (window.innerWidth >= 768) document.getElementById('sidebar').classList.remove('-translate-x-full');
-      renderAll();
       initEvents();
+      const pendingNavigation = consumeCrossPageReportNavigation();
+      if (!applyCrossPageReportNavigation(pendingNavigation)) renderAll();
     });
