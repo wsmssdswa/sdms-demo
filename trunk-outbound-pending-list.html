@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>干线待出库列表</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/trunk-outbound-pending-list.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-bar" data-sdms-sidebar data-sidebar-key="business"></aside>
+    <div class="page-shell">
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="business" data-tab-key="trunk-outbound-pending" data-include-tools="true" data-user-name="杨鑫"></div>
+      <main class="content-wrap">
+        <section class="page-card">
+          <section class="filter-panel filter-panel-combined">
+            <div class="status-tabs" id="statusTabs"></div>
+            <div class="query-row">
+              <div class="search-box">
+                <input class="search-input" id="keywordInput" type="text" maxlength="50" placeholder="请输入工作单号/主单号/拼货组号/车牌号">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Zm0 1.8a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4Zm8.7 11.9 1.8 1.8-1.3 1.3-1.8-1.8 1.3-1.3Z"></path>
+                </svg>
+              </div>
+              <button class="btn btn-primary" id="queryBtn" type="button">查询</button>
+              <button class="btn btn-default" id="resetBtn" type="button">重置</button>
+              <div class="query-hints" aria-label="页面规则说明">
+                <span class="query-hint"><i class="ri-sort-desc"></i>拼货订单优先展示</span>
+                <span class="query-hint"><i class="ri-links-line"></i>同组订单连续展示</span>
+                <span class="query-hint"><i class="ri-price-tag-3-line"></i>移入分组图标显示组号</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="table-panel">
+            <div class="panel-toolbar">
+              <div class="panel-toolbar-left">
+                <button class="btn btn-primary btn-compact" id="primaryActionBtn" type="button">配车</button>
+                <span class="selection-tip" id="selectionTip">未选择订单</span>
+              </div>
+              <div class="panel-toolbar-right" id="panelExtra"></div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="list-table" id="dataTable">
+                <colgroup id="tableColGroup"></colgroup>
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+            </div>
+
+            <div class="table-footer">
+              <div id="totalCountText">共0条记录</div>
+              <div class="pager">
+                <div class="pager-group" id="pageBtnGroup"></div>
+                <div class="pager-group">
+                  <select class="page-size" id="pageSizeSelect" aria-label="每页条数">
+                    <option value="20" selected>20条/页</option>
+                    <option value="50">50条/页</option>
+                    <option value="100">100条/页</option>
+                  </select>
+                </div>
+                <div class="jump-box">
+                  <span>前往</span>
+                  <input class="jump-input" id="jumpInput" type="text" inputmode="numeric" maxlength="3" value="1">
+                  <span>页</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack"></div>
+
+  <script src="./assets/js/sdms-header-tabs.js"></script>
+  <script src="./assets/js/sdms-sidebar.js"></script>
+  <script src="./assets/js/trunk-outbound-pending-list.js"></script>
+</body>
+</html>

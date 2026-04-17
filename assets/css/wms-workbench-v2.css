@@ -73,6 +73,78 @@
       opacity: 0.15;
       transform: translate(30%, -30%);
     }
+    .inventory-flow-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .inventory-flow-grid--three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .inventory-flow-panel {
+      min-width: 0;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 8px;
+      background: #f8fafc;
+      box-shadow: none;
+    }
+    .inventory-flow-head {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 6px;
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+    .inventory-flow-dot {
+      display: none;
+    }
+    .inventory-flow-title {
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: rgba(71, 85, 105, 0.72);
+    }
+    .inventory-flow-list {
+      display: grid;
+      gap: 4px;
+    }
+    .inventory-flow-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .inventory-flow-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(71, 85, 105, 0.7);
+      letter-spacing: 0.02em;
+    }
+    .inventory-flow-value {
+      font-size: 13px;
+      line-height: 1.2;
+      font-weight: 600;
+      color: #1e293b;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .kpi-report-link {
+      cursor: pointer;
+      color: #4d77ea !important;
+      text-decoration: none;
+      transition: color 0.2s ease, text-decoration-color 0.2s ease, transform 0.2s ease;
+    }
+    .kpi-report-link:hover,
+    .kpi-report-link:focus-visible {
+      color: #2f5fdf !important;
+    }
+    .kpi-report-link:focus-visible {
+      outline: 2px solid rgba(77, 119, 234, 0.28);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
     .nav-item {
       position: relative;
       transition: all 0.3s ease;
@@ -202,10 +274,12 @@
     }
     .todo-matrix-cell.is-clickable {
       cursor: pointer;
+      color: #4d77ea;
+      text-decoration: none;
       transition: color 0.2s ease, transform 0.2s ease;
     }
     .todo-matrix-cell.is-clickable:hover {
-      color: #4d77ea;
+      color: #2f5fdf;
       transform: translateY(-1px);
     }
     .todo-matrix-cell.is-empty {
@@ -242,7 +316,7 @@
     .order-list-head,
     .order-row {
       display: grid;
-      grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr) minmax(0, 1.05fr);
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.78fr) minmax(0, 1fr) minmax(0, 1.05fr);
       gap: 12px;
       align-items: center;
     }
@@ -290,18 +364,23 @@
     }
     .order-code {
       font-weight: 600;
-      color: #1e293b;
+      color: #4d77ea;
       cursor: pointer;
+      text-decoration: none;
     }
     .order-type {
-      color: rgba(51, 65, 85, 0.8);
+      color: #4d77ea;
       white-space: nowrap;
       cursor: pointer;
+      text-decoration: none;
     }
     .order-code:hover,
     .order-type:hover {
-      color: #4d77ea;
-      text-decoration: underline;
+      color: #2f5fdf;
+    }
+    .order-reason {
+      color: rgba(51, 65, 85, 0.86);
+      line-height: 1.4;
     }
     .order-time {
       color: rgba(71, 85, 105, 0.72);
@@ -1050,6 +1129,12 @@
 
       .sdms-workbench-page #kpiGrid .stat-card:not(.kpi-composite-card) .w-12 i {
         font-size: 20px !important;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .inventory-flow-grid {
+        grid-template-columns: 1fr;
       }
     }
 

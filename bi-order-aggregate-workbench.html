@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>订单聚合分析工作台</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/bi-order-aggregate-workbench.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-bar" data-sdms-sidebar data-sidebar-key="report"></aside>
+
+    <div class="page-shell">
+      <div
+        class="header-tabs"
+        data-sdms-header-tabs
+        data-tab-set="overview"
+        data-tab-key="report"
+        data-include-tools="true"
+        data-user-name="张三"></div>
+
+      <main class="content-wrap">
+        <section class="page-card aggregate-page">
+          <div class="page-card-head">
+            <div class="page-head-title">
+              <div>
+                <div class="page-title">订单聚合分析工作台</div>
+                <div class="page-title-sub">围绕客户、派送国家、仓库、承运商等维度复用一套聚合分析框架，适合快速扩展新的统计口径。</div>
+              </div>
+            </div>
+            <div class="head-actions">
+              <button id="saveViewBtn" type="button" class="btn btn-secondary"><i class="ri-bookmark-line"></i><span>保存当前视图</span></button>
+              <button id="exportBtn" type="button" class="btn btn-primary"><i class="ri-download-2-line"></i><span>导出结果</span></button>
+            </div>
+          </div>
+
+          <div class="aggregate-scroll">
+            <section class="panel capability-panel">
+              <div class="capability-head">
+                <div>
+                  <div class="section-title">聚合能力配置</div>
+                  <div class="section-sub">当前Demo重点演示“维度配置化、指标配置化、下钻路径配置化”，后续常规聚合方式只需补配置与数据字段映射。</div>
+                </div>
+                <div class="capability-meta" id="scopeMeta"></div>
+              </div>
+
+              <div class="capability-section">
+                <div class="capability-label">聚合维度</div>
+                <div class="dimension-grid" id="dimensionGrid"></div>
+              </div>
+
+              <div class="capability-row-group">
+                <div class="capability-row">
+                  <div class="capability-label">主指标</div>
+                  <div class="chip-row" id="metricChips"></div>
+                </div>
+                <div class="capability-row">
+                  <div class="capability-label">对比方式</div>
+                  <div class="chip-row" id="compareChips"></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel filter-panel" id="filterPanel">
+              <div class="section-head compact">
+                <div>
+                  <div class="section-title">查询条件</div>
+                  <div class="section-sub">默认按创建时间倒序展示，按Enter键等同点击查询，重置后回到系统默认口径。</div>
+                </div>
+              </div>
+              <div class="filter-grid">
+                <div class="filter-item">
+                  <label for="dateType">时间口径<span class="required">*</span></label>
+                  <select id="dateType" class="form-input">
+                    <option value="orderDate">下单时间</option>
+                    <option value="shipDate">发货时间</option>
+                  </select>
+                </div>
+                <div class="filter-item">
+                  <label for="startDate">开始日期<span class="required">*</span></label>
+                  <input id="startDate" class="form-input" type="date">
+                </div>
+                <div class="filter-item">
+                  <label for="endDate">结束日期<span class="required">*</span></label>
+                  <input id="endDate" class="form-input" type="date">
+                </div>
+                <div class="filter-item">
+                  <label for="warehouse">仓库</label>
+                  <select id="warehouse" class="form-input"></select>
+                </div>
+                <div class="filter-item">
+                  <label for="businessType">业务类型</label>
+                  <select id="businessType" class="form-input"></select>
+                </div>
+                <div class="filter-item">
+                  <label for="orderStage">订单阶段</label>
+                  <select id="orderStage" class="form-input"></select>
+                </div>
+                <div class="filter-item">
+                  <label for="customerFilter">客户/货主</label>
+                  <input id="customerFilter" class="form-input" type="text" list="customerOptions" placeholder="支持搜索客户/货主">
+                  <datalist id="customerOptions"></datalist>
+                </div>
+                <div class="filter-item">
+                  <label for="countryFilter">派送国家</label>
+                  <input id="countryFilter" class="form-input" type="text" list="countryOptions" placeholder="支持搜索派送国家">
+                  <datalist id="countryOptions"></datalist>
+                </div>
+                <div class="filter-item">
+                  <label for="keyword">关键词</label>
+                  <input id="keyword" class="form-input" type="text" maxlength="50" placeholder="搜索订单号、客户、国家、承运商">
+                </div>
+              </div>
+              <div class="filter-actions">
+                <div class="toolbar-group" id="filterSummaryChips"></div>
+                <div class="filter-actions-main">
+                  <button id="resetBtn" type="button" class="btn btn-secondary">重置</button>
+                  <button id="queryBtn" type="button" class="btn btn-primary">查询</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="summary-grid" id="summaryCards"></section>
+
+            <section class="panel spotlight-panel">
+              <div class="spotlight-grid">
+                <section class="narrative-card">
+                  <div class="narrative-eyebrow">口径摘要</div>
+                  <div class="narrative-title" id="narrativeTitle">--</div>
+                  <div class="narrative-body" id="narrativeBody">--</div>
+                  <div class="narrative-tags" id="narrativeTags"></div>
+                </section>
+                <section class="path-card">
+                  <div class="path-card-head">
+                    <div>
+                      <div class="section-title">下钻路径</div>
+                      <div class="section-sub">默认支持维度间下钻和商品构成下钻，适合后续继续扩展新维度。</div>
+                    </div>
+                    <span class="toolbar-tag" id="drilldownHint">--</span>
+                  </div>
+                  <div class="path-flow" id="pathFlow"></div>
+                  <div class="path-list" id="pathList"></div>
+                </section>
+              </div>
+            </section>
+
+            <section class="chart-grid">
+              <section class="panel chart-panel">
+                <div class="chart-head">
+                  <div>
+                    <div class="section-title" id="topChartTitle">--</div>
+                    <div class="section-sub" id="topChartDesc">--</div>
+                  </div>
+                  <div class="toolbar-group" id="topChartTags"></div>
+                </div>
+                <div class="chart-canvas-wrap">
+                  <canvas id="topChart"></canvas>
+                </div>
+              </section>
+
+              <section class="panel chart-panel">
+                <div class="chart-head">
+                  <div>
+                    <div class="section-title" id="compareChartTitle">--</div>
+                    <div class="section-sub" id="compareChartDesc">--</div>
+                  </div>
+                </div>
+                <div class="chart-canvas-wrap compact">
+                  <canvas id="compareChart"></canvas>
+                </div>
+              </section>
+
+              <section class="panel chart-panel">
+                <div class="chart-head">
+                  <div>
+                    <div class="section-title" id="shareChartTitle">--</div>
+                    <div class="section-sub" id="shareChartDesc">--</div>
+                  </div>
+                </div>
+                <div class="chart-canvas-wrap compact">
+                  <canvas id="shareChart"></canvas>
+                </div>
+              </section>
+            </section>
+
+            <section class="panel table-panel">
+              <div class="table-head">
+                <div class="table-head-main">
+                  <div>
+                    <div class="section-title" id="tableTitle">--</div>
+                    <div class="section-sub" id="tableDesc">--</div>
+                  </div>
+                  <div class="toolbar-group" id="tableToolbar"></div>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table" id="aggregateTable">
+                  <thead id="tableHead"></thead>
+                  <tbody id="tableBody"></tbody>
+                </table>
+              </div>
+              <div class="table-footer">
+                <div>共<span id="totalCount">0</span>条记录，当前显示第<span id="currentStart">0</span>-<span id="currentEnd">0</span>条</div>
+                <div class="pager">
+                  <button id="prevBtn" type="button" class="btn btn-secondary" disabled>上一页</button>
+                  <div id="pageNumbers" class="page-number-group"></div>
+                  <button id="nextBtn" type="button" class="btn btn-secondary" disabled>下一页</button>
+                  <select id="pageSize" class="form-input page-size-input">
+                    <option value="20" selected>20条/页</option>
+                    <option value="50">50条/页</option>
+                    <option value="100">100条/页</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div id="detailDrawer" class="drawer hidden" aria-hidden="true">
+    <div id="drawerBackdrop" class="drawer-backdrop"></div>
+    <section class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <div class="drawer-head">
+        <div>
+          <div class="drawer-eyebrow">聚合明细</div>
+          <div class="drawer-title" id="drawerTitle">--</div>
+          <div class="drawer-scope" id="drawerScope">--</div>
+        </div>
+        <div class="drawer-actions">
+          <span class="toolbar-tag" id="drawerPeriodTag">--</span>
+          <button id="closeDrawerBtn" type="button" class="btn btn-secondary"><i class="ri-close-line"></i><span>关闭</span></button>
+        </div>
+      </div>
+
+      <div class="drawer-body">
+        <div class="drawer-stats" id="drawerStats"></div>
+
+        <div class="drawer-tabs" id="drawerTabs">
+          <button type="button" class="drawer-tab active" data-tab="overview">总览</button>
+          <button type="button" class="drawer-tab" data-tab="drilldown">下钻排行</button>
+          <button type="button" class="drawer-tab" data-tab="products">商品构成</button>
+          <button type="button" class="drawer-tab" data-tab="trend">周期趋势</button>
+        </div>
+
+        <section class="drawer-section" id="drawerOverviewSection">
+          <div class="drawer-overview-grid">
+            <section class="overview-note-card">
+              <div class="section-title">分析结论</div>
+              <div class="drawer-note" id="drawerNarrative">--</div>
+              <div class="drawer-highlight-list" id="drawerHighlights"></div>
+            </section>
+            <section class="overview-note-card">
+              <div class="section-title">口径说明</div>
+              <div class="drawer-highlight-list" id="drawerDefinitions"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="drawer-section hidden" id="drawerDrilldownSection">
+          <div class="section-title" id="drawerDrilldownTitle">--</div>
+          <div class="drawer-table-wrap">
+            <table class="data-table drawer-table">
+              <thead id="drawerDrilldownHead"></thead>
+              <tbody id="drawerDrilldownBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="drawer-section hidden" id="drawerProductsSection">
+          <div class="section-title">商品构成TOP10</div>
+          <div class="drawer-table-wrap">
+            <table class="data-table drawer-table">
+              <thead>
+                <tr>
+                  <th>SKU编码</th>
+                  <th>商品名称</th>
+                  <th>商品分类</th>
+                  <th class="cell-right">订单覆盖数</th>
+                  <th>数量汇总</th>
+                </tr>
+              </thead>
+              <tbody id="drawerProductBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="drawer-section hidden" id="drawerTrendSection">
+          <div class="section-title">周期趋势</div>
+          <div class="section-sub" id="drawerTrendDesc">--</div>
+          <div class="chart-canvas-wrap drawer-trend-wrap">
+            <canvas id="drawerTrendChart"></canvas>
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <div id="toastContainer" class="toast-stack"></div>
+
+  <script src="./assets/js/sdms-header-tabs.js"></script>
+  <script src="./assets/js/sdms-sidebar.js"></script>
+  <script src="./assets/js/bi-order-aggregate-workbench.js"></script>
+</body>
+</html>

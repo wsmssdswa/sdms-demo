@@ -29,8 +29,6 @@
               </div>
             </div>
             <div class="head-actions">
-              <button id="openCustomReportBuilderBtn" type="button" class="btn btn-primary"><i class="ri-add-line"></i><span>新建聚合报表</span></button>
-              <button id="openCustomReportManagerBtn" type="button" class="btn btn-secondary"><i class="ri-folder-chart-line"></i><span>管理自定义报表</span></button>
               <div id="warehouseSelector" style="position:relative;">
                 <button id="warehouseBtn" type="button" class="btn warehouse-selector"><span id="warehouseText">全部仓库</span><i class="ri-arrow-down-s-line"></i></button>
                 <div id="warehouseDropdown" class="panel hidden" style="position:absolute;right:0;top:40px;width:272px;z-index:22;box-shadow:var(--shadow-panel);">
@@ -58,9 +56,25 @@
             <section class="report-stage">
               <section class="panel filter-panel">
                 <div class="filter-grid">
-                  <div class="filter-item" style="grid-column:span 2;">
-                    <label>时间范围<span class="required">*</span></label>
-                    <div class="date-range"><input id="startDate" class="form-input" type="date" value="2026-01-01"><span class="divider">~</span><input id="endDate" class="form-input" type="date" value="2026-03-18"></div>
+                  <div id="primaryDateFilterItem" class="filter-item" style="grid-column:span 2;">
+                    <label id="primaryDateLabel">时间筛选<span class="required">*</span></label>
+                    <div id="dateRangeCombo" class="date-range-combo">
+                      <select id="dateTypeSelect" class="form-input date-type-select">
+                        <option value="primary">下单时间</option>
+                        <option value="ship">发货时间</option>
+                      </select>
+                      <button id="dateRangeTrigger" type="button" class="form-input date-range-trigger" data-date-trigger="current" aria-haspopup="dialog" aria-expanded="false">
+                        <span class="date-range-trigger-main"><i class="ri-calendar-2-line"></i><span id="dateRangeText" class="date-range-trigger-text">请选择日期范围</span></span>
+                        <i class="ri-arrow-down-s-line"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div id="shipDateFilterItem" class="filter-item hidden" style="grid-column:span 2;">
+                    <label>发货时间</label>
+                    <button type="button" class="form-input date-range-trigger is-empty" disabled>
+                      <span class="date-range-trigger-main"><i class="ri-calendar-2-line"></i><span class="date-range-trigger-text">已合并到时间筛选</span></span>
+                      <i class="ri-arrow-down-s-line"></i>
+                    </button>
                   </div>
                   <div class="filter-item"><label>客户/货主</label><select id="customer" class="form-input"></select></div>
                   <div class="filter-item">
@@ -73,52 +87,71 @@
                       </div>
                     </div>
                   </div>
-                  <div class="filter-item"><label id="filterALabel">主题维度</label><select id="filterA" class="form-input"></select></div>
-                  <div class="filter-item"><label id="filterBLabel">状态</label><select id="filterB" class="form-input"></select></div>
+                  <div id="genericFilterAItem" class="filter-item"><label id="filterALabel">主题维度</label><select id="filterA" class="form-input"></select></div>
+                  <div id="genericFilterBItem" class="filter-item"><label id="filterBLabel">状态</label><select id="filterB" class="form-input"></select></div>
+                  <div id="orderStageFilterItem" class="filter-item hidden">
+                    <label>订单阶段</label>
+                    <div id="orderStageSelector" class="multi-select-box">
+                      <button id="orderStageBtn" type="button" class="form-input multi-select-trigger" aria-haspopup="listbox" aria-expanded="false"><span id="orderStageText">全部订单阶段</span></button>
+                      <div id="orderStageDropdown" class="multi-select-dropdown hidden">
+                        <div class="multi-select-head"><label class="multi-select-option"><input id="selectAllOrderStages" type="checkbox" checked><span>全部订单阶段</span></label></div>
+                        <div id="orderStageList" class="multi-select-option-list"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="trackStatusFilterItem" class="filter-item hidden">
+                    <label>轨迹状态</label>
+                    <div id="trackStatusSelector" class="multi-select-box">
+                      <button id="trackStatusBtn" type="button" class="form-input multi-select-trigger" aria-haspopup="listbox" aria-expanded="false"><span id="trackStatusText">全部轨迹状态</span></button>
+                      <div id="trackStatusDropdown" class="multi-select-dropdown hidden">
+                        <div class="multi-select-head"><label class="multi-select-option"><input id="selectAllTrackStatuses" type="checkbox" checked><span>全部轨迹状态</span></label></div>
+                        <div id="trackStatusList" class="multi-select-option-list"></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div class="filter-actions">
-                  <div class="quick-range-group"><span class="quick-range-label">快捷时间:</span><button type="button" class="quick-range" data-days="7">近7天</button><button type="button" class="quick-range" data-days="30">近30天</button><button type="button" class="quick-range active" data-days="90">近3个月</button><button type="button" class="quick-range" data-days="180">近半年</button></div>
-                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><button id="resetBtn" type="button" class="btn btn-secondary">重置</button><button id="queryBtn" type="button" class="btn btn-primary">查询</button></div>
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto;"><button id="resetBtn" type="button" class="btn btn-secondary">重置</button><button id="queryBtn" type="button" class="btn btn-primary">查询</button></div>
+                </div>
+                <div id="dateRangePickerPopover" class="date-picker-popover hidden" aria-hidden="true">
+                  <div class="date-picker-surface">
+                    <div class="date-picker-top">
+                      <div>
+                        <div id="datePickerTitle" class="date-picker-title">选择日期范围</div>
+                        <div id="datePickerRangeText" class="date-picker-range-text">请选择开始日期和结束日期</div>
+                      </div>
+                      <button id="closeDatePickerBtn" type="button" class="icon-btn date-picker-close" aria-label="关闭日期选择器"><i class="ri-close-line"></i></button>
+                    </div>
+                    <div id="datePickerShortcutList" class="date-picker-shortcuts"></div>
+                    <div class="date-picker-calendars">
+                      <section class="date-picker-month-panel">
+                        <div class="date-picker-month-head">
+                          <button id="datePickerPrevBtn" type="button" class="icon-btn date-picker-nav" aria-label="上一月"><i class="ri-arrow-left-s-line"></i></button>
+                          <div id="datePickerMonthLabelA" class="date-picker-month-label">--</div>
+                        </div>
+                        <div class="date-picker-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                        <div id="datePickerGridA" class="date-picker-grid"></div>
+                      </section>
+                      <section class="date-picker-month-panel">
+                        <div class="date-picker-month-head date-picker-month-head-right">
+                          <div id="datePickerMonthLabelB" class="date-picker-month-label">--</div>
+                          <button id="datePickerNextBtn" type="button" class="icon-btn date-picker-nav" aria-label="下一月"><i class="ri-arrow-right-s-line"></i></button>
+                        </div>
+                        <div class="date-picker-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                        <div id="datePickerGridB" class="date-picker-grid"></div>
+                      </section>
+                    </div>
+                    <div class="date-picker-actions">
+                      <button id="clearDatePickerBtn" type="button" class="btn btn-secondary">清空</button>
+                      <div class="date-picker-actions-main">
+                        <button id="cancelDatePickerBtn" type="button" class="btn btn-secondary">取消</button>
+                        <button id="confirmDatePickerBtn" type="button" class="btn btn-primary">确定</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </section>
               <section id="statCards" class="stats-grid"></section>
-
-              <section id="customReportOverviewSection" class="panel custom-report-overview hidden">
-                <div class="custom-report-overview-head">
-                  <div>
-                    <div id="customReportOverviewTitle" class="section-title">自定义聚合报表</div>
-                    <div id="customReportOverviewDesc" class="section-sub custom-report-overview-desc">基于订单底表配置的聚合报表，支持维度、指标、排序和TopN的轻量自助分析。</div>
-                  </div>
-                  <div class="custom-report-overview-actions">
-                    <button id="editCurrentCustomReportBtn" type="button" class="btn btn-secondary"><i class="ri-edit-line"></i><span>编辑配置</span></button>
-                    <button id="duplicateCurrentCustomReportBtn" type="button" class="btn btn-secondary"><i class="ri-file-copy-line"></i><span>另存为</span></button>
-                    <button id="deleteCurrentCustomReportBtn" type="button" class="btn btn-secondary"><i class="ri-delete-bin-line"></i><span>删除</span></button>
-                  </div>
-                </div>
-                <div id="customReportOverviewMeta" class="custom-report-meta-row"></div>
-                <div class="custom-report-overview-grid">
-                  <section class="custom-report-card">
-                    <div class="custom-report-card-head">
-                      <div>
-                        <div class="custom-report-card-title">报表配置摘要</div>
-                        <div id="customReportSummaryText" class="custom-report-card-sub">--</div>
-                      </div>
-                      <span id="customReportPrimaryMetricTag" class="toolbar-tag">--</span>
-                    </div>
-                    <div id="customReportSummaryCards" class="custom-report-summary-grid"></div>
-                  </section>
-                  <section class="custom-report-card">
-                    <div class="custom-report-card-head">
-                      <div>
-                        <div class="custom-report-card-title">头部结构预览</div>
-                        <div id="customReportVisualHint" class="custom-report-card-sub">默认展示聚合结果前5项，适合快速校验配置是否符合预期。</div>
-                      </div>
-                      <span id="customReportVisualTag" class="toolbar-tag">Top5</span>
-                    </div>
-                    <div id="customReportVisualList" class="custom-report-visual-list"></div>
-                  </section>
-                </div>
-              </section>
 
               <section id="timelinessOverviewSection" class="panel timeliness-panel hidden">
                 <div class="timeliness-panel-head">
@@ -198,6 +231,36 @@
                 </div>
               </div>
 
+              <div id="productDetailModal" class="modal hidden" aria-hidden="true">
+                <div id="productDetailBackdrop" class="modal-backdrop"></div>
+                <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="productDetailTitle">
+                  <div class="modal-panel product-detail-panel">
+                    <div class="modal-head">
+                      <div>
+                        <div class="modal-eyebrow">商品详情</div>
+                        <div id="productDetailTitle" class="modal-title">订单商品清单</div>
+                        <div id="productDetailScope" class="modal-scope">--</div>
+                      </div>
+                      <div class="modal-actions">
+                        <span id="productDetailOrderTag" class="toolbar-tag">--</span>
+                        <button id="closeProductDetailBtn" type="button" class="btn btn-secondary"><i class="ri-close-line"></i><span>关闭</span></button>
+                      </div>
+                    </div>
+                    <div class="modal-body product-detail-body">
+                      <div id="productDetailStats" class="product-detail-stats"></div>
+                      <div class="product-detail-table-wrap">
+                        <table id="productDetailTable" class="data-table product-detail-table">
+                          <thead>
+                            <tr><th>商品名称</th><th>商品编码</th><th class="cell-right">数量</th><th>商品分类</th></tr>
+                          </thead>
+                          <tbody id="productDetailBody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div id="columnConfigModal" class="modal hidden" aria-hidden="true">
                 <div id="columnConfigBackdrop" class="modal-backdrop"></div>
                 <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="columnConfigTitle">
@@ -242,67 +305,6 @@
                 </div>
               </div>
 
-              <div id="customReportManagerModal" class="modal hidden" aria-hidden="true">
-                <div id="customReportManagerBackdrop" class="modal-backdrop"></div>
-                <div class="modal-dialog modal-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="customReportManagerTitle">
-                  <div class="modal-panel custom-report-manager-panel">
-                    <div class="modal-head">
-                      <div>
-                        <div class="modal-eyebrow">自定义报表目录</div>
-                        <div id="customReportManagerTitle" class="modal-title">管理自定义报表</div>
-                        <div class="modal-scope">用于查看我的报表和共享报表，并进行编辑、复制和删除。</div>
-                      </div>
-                      <div class="modal-actions">
-                        <button id="closeCustomReportManagerBtn" type="button" class="btn btn-secondary"><i class="ri-close-line"></i><span>关闭</span></button>
-                      </div>
-                    </div>
-                    <div class="modal-body custom-report-manager-body">
-                      <section class="custom-report-manager-section">
-                        <div class="custom-report-manager-head">
-                          <div class="custom-report-manager-title">我的报表</div>
-                          <span id="customReportMineCount" class="toolbar-tag">0个</span>
-                        </div>
-                        <div id="customReportMineList" class="custom-report-manager-list"></div>
-                      </section>
-                      <section class="custom-report-manager-section">
-                        <div class="custom-report-manager-head">
-                          <div class="custom-report-manager-title">共享报表</div>
-                          <span id="customReportSharedCount" class="toolbar-tag">0个</span>
-                        </div>
-                        <div id="customReportSharedList" class="custom-report-manager-list"></div>
-                      </section>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div id="customReportDrilldownModal" class="modal hidden" aria-hidden="true">
-                <div id="customReportDrilldownBackdrop" class="modal-backdrop"></div>
-                <div class="modal-dialog modal-dialog-wide" role="dialog" aria-modal="true" aria-labelledby="customReportDrilldownTitle">
-                  <div class="modal-panel">
-                    <div class="modal-head">
-                      <div>
-                        <div class="modal-eyebrow">聚合结果下钻</div>
-                        <div id="customReportDrilldownTitle" class="modal-title">命中底层明细</div>
-                        <div id="customReportDrilldownScope" class="modal-scope">--</div>
-                      </div>
-                      <div class="modal-actions">
-                        <button id="closeCustomReportDrilldownBtn" type="button" class="btn btn-secondary"><i class="ri-close-line"></i><span>关闭</span></button>
-                      </div>
-                    </div>
-                    <div class="modal-body">
-                      <div id="customReportDrilldownStats" class="timeliness-detail-stats"></div>
-                      <div class="timeliness-detail-table-wrap" style="margin-top:14px;">
-                        <table id="customReportDrilldownTable" class="data-table">
-                          <thead id="customReportDrilldownHead"></thead>
-                          <tbody id="customReportDrilldownBody"></tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               <section class="panel table-panel">
                 <div class="table-head"><div class="table-head-main"><div id="tableTitle" class="section-title">--</div><div id="tableToolbar" class="table-toolbar table-toolbar-inline"></div></div><div class="table-head-actions"><button id="columnConfigBtn" type="button" class="btn btn-secondary"><i class="ri-settings-3-line"></i><span>字段配置</span></button><button id="exportBtn" type="button" class="btn btn-secondary"><i class="ri-download-2-line"></i><span>导出</span></button></div></div>
                 <div class="table-wrap">
@@ -323,45 +325,6 @@
   </div>
 
   <div id="toastContainer" class="toast-stack"></div>
-
-  <div id="customReportBuilderDrawer" class="drawer-shell hidden" aria-hidden="true">
-    <div id="customReportBuilderBackdrop" class="drawer-backdrop"></div>
-    <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="customReportBuilderTitle">
-      <div class="drawer-head">
-        <div>
-          <div class="drawer-eyebrow">自定义聚合报表</div>
-          <div id="customReportBuilderTitle" class="drawer-title">新建聚合报表</div>
-          <div id="customReportBuilderScope" class="drawer-scope">基于当前页面底表配置维度、指标和默认筛选，并实时预览聚合结果。</div>
-        </div>
-        <div class="drawer-actions">
-          <button id="closeCustomReportBuilderBtn" type="button" class="btn btn-secondary"><i class="ri-close-line"></i><span>关闭</span></button>
-        </div>
-      </div>
-      <div class="drawer-body">
-        <div class="drawer-layout">
-          <div id="customReportBuilderForm" class="drawer-form"></div>
-          <aside class="drawer-preview">
-            <div class="drawer-preview-head">
-              <div>
-                <div class="drawer-preview-title">预览结果</div>
-                <div id="customReportPreviewDesc" class="drawer-preview-sub">--</div>
-              </div>
-              <span id="customReportPreviewTag" class="toolbar-tag">预览</span>
-            </div>
-            <div id="customReportPreviewSummary" class="drawer-preview-summary"></div>
-            <div id="customReportPreviewTable" class="drawer-preview-table"></div>
-          </aside>
-        </div>
-      </div>
-      <div class="drawer-foot">
-        <button id="saveCustomReportDraftBtn" type="button" class="btn btn-secondary">存为草稿</button>
-        <div class="drawer-foot-actions">
-          <button id="applyCustomReportBuilderBtn" type="button" class="btn btn-secondary">仅刷新预览</button>
-          <button id="saveCustomReportBtn" type="button" class="btn btn-primary">保存并生成报表</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <script src="./assets/js/sdms-header-tabs.js"></script>
   <script src="./assets/js/sdms-sidebar.js"></script>

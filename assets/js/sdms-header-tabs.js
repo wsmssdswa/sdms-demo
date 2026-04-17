@@ -20,12 +20,23 @@
       icon: 'ri-money-cny-box-line',
       href: './operation-fee-create.html',
       labelId: 'pageTabLabel'
+    },
+    'trunk-outbound-pending': {
+      label: '干线待出库',
+      icon: 'ri-truck-line',
+      href: './trunk-outbound-pending-list.html'
+    },
+    'trunk-order-list': {
+      label: '干线订单列表',
+      icon: 'ri-file-list-3-line',
+      href: './trunk-order-list.html'
     }
   };
 
   const TAB_SETS = {
     overview: ['workbench', 'report'],
     finance: ['workbench', 'report', 'operation-fee'],
+    business: ['workbench', 'trunk-order-list', 'trunk-outbound-pending', 'report'],
     'finance-editor': ['workbench', 'report', 'operation-fee', 'operation-fee-create']
   };
 
@@ -70,6 +81,7 @@
       '<i class="ri-arrow-down-s-line"></i>',
       '</button>'
     ].join(''));
+
     return [
       '<div class="header-tabs-actions">',
       '<div class="sdms-top-tools">',
@@ -116,7 +128,7 @@
     const tabKeys = getTabKeys(container);
     const includeTools = container.dataset.includeTools === 'true';
     const includePrdEntry = container.dataset.includePrdEntry === 'true';
-    const tabsHtml = tabKeys.map(function (key) {
+    const tabsHtml = tabKeys.map((key) => {
       const item = TAB_ITEMS[key];
       if (!item) return '';
       return key === activeKey ? buildActiveTab(item) : buildLinkTab(item);

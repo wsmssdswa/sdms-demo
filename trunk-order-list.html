@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>干线订单列表</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/trunk-order-list.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-bar" data-sdms-sidebar data-sidebar-key="business"></aside>
+    <div class="page-shell">
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="business" data-tab-key="trunk-order-list" data-include-tools="true" data-user-name="杨鑫"></div>
+      <main class="content-wrap">
+        <section class="page-card">
+          <section class="filter-panel filter-panel-combined">
+            <div class="status-tabs" id="statusTabs"></div>
+            <div class="query-row">
+              <div class="search-box">
+                <input class="search-input" id="keywordInput" type="text" maxlength="50" placeholder="请输入关键字搜索">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Zm0 1.8a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4Zm8.7 11.9 1.8 1.8-1.3 1.3-1.8-1.8 1.3-1.3Z"></path>
+                </svg>
+              </div>
+              <select class="query-select" id="warehouseSelect" aria-label="仓库">
+                <option value="">仓库</option>
+                <option value="深圳兴围仓">深圳兴围仓</option>
+                <option value="广州鸿祥仓">广州鸿祥仓</option>
+                <option value="深圳九通仓">深圳九通仓</option>
+              </select>
+              <select class="query-select" id="mergeTypeSelect" aria-label="订单类型">
+                <option value="">全部订单</option>
+                <option value="normal">普通订单</option>
+                <option value="parent">拼单主单</option>
+                <option value="child">子单</option>
+              </select>
+              <button class="btn btn-primary" id="queryBtn" type="button">查询</button>
+              <button class="btn btn-default" id="resetBtn" type="button">重置</button>
+            </div>
+          </section>
+
+          <section class="list-panel">
+            <div class="list-header">
+              <div>基本信息</div>
+              <div>航班信息</div>
+              <div>货主信息</div>
+              <div>人员信息</div>
+            </div>
+            <div class="order-card-list" id="orderCardList"></div>
+            <div class="table-footer">
+              <div id="totalCountText">共0条记录</div>
+              <div class="pager">
+                <div class="pager-group" id="pageBtnGroup"></div>
+                <div class="pager-group">
+                  <select class="page-size" id="pageSizeSelect" aria-label="每页条数">
+                    <option value="20" selected>20条/页</option>
+                    <option value="50">50条/页</option>
+                    <option value="100">100条/页</option>
+                  </select>
+                </div>
+                <div class="jump-box">
+                  <span>前往</span>
+                  <input class="jump-input" id="jumpInput" type="text" inputmode="numeric" maxlength="3" value="1">
+                  <span>页</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toastStack"></div>
+
+  <script src="./assets/js/sdms-header-tabs.js"></script>
+  <script src="./assets/js/sdms-sidebar.js"></script>
+  <script src="./assets/js/trunk-order-list.js"></script>
+</body>
+</html>

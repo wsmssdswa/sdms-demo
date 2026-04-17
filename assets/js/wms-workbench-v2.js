@@ -38,7 +38,6 @@
         { key: 'inboundQty', show: true },
         { key: 'returnInventory', show: true },
         { key: 'orderQty', show: true },
-        { key: 'changeOrderQty', show: true },
         { key: 'exceptionOrder', show: false },
         { key: 'signoutQty', show: true },
         { key: 'outboundQty', show: false },
@@ -54,6 +53,12 @@
       ]
     };
     let currentKpiConfig = JSON.parse(JSON.stringify(defaultKpiConfig));
+    const BI_REPORT_NAV_STORAGE_KEY = 'sdmsBiReportNavigation';
+    const BI_REPORT_NAV_ANCHOR_DATE = new Date('2026-03-18T00:00:00');
+    const WORKBENCH_TO_BI_WAREHOUSE_MAP = {
+      WH003: '广州白云仓',
+      WH004: '深圳兴围仓'
+    };
     function moveComponentBefore(order, movingKey, beforeKey) {
       const nextOrder = [...order];
       const movingIndex = nextOrder.indexOf(movingKey);
@@ -1109,7 +1114,7 @@
       const kpiGrid = document.getElementById('kpiGrid');
       if (!kpiGrid) return;
       const visibleItems = (currentKpiConfig.items || []).filter(c => c.show);
-      const hasCompositeCards = visibleItems.some(item => ['inboundQty', 'returnInventory', 'orderQty', 'changeOrderQty', 'signoutQty'].includes(item.key));
+      const hasCompositeCards = visibleItems.some(item => ['inboundQty', 'returnInventory', 'orderQty', 'signoutQty'].includes(item.key));
       const orderedCards = [];
       // 隐藏所有卡片
       kpiGrid.querySelectorAll('[data-kpi]').forEach(card => {
@@ -1193,6 +1198,97 @@
     }
     function buildTodoListPageName(businessType, taskType) {
       return `${businessType}${taskType}列表页`;
+    }
+    function getWorkbenchSelectedWarehouses() {
+      const checkedValues = Array.from(document.querySelectorAll('.warehouse-checkbox:checked')).map(item => item.value);
+      return checkedValues.length ? checkedValues : [...selectedWarehouses];
+    }
+    function mapWorkbenchWarehousesToBi() {
+      return Array.from(new Set(getWorkbenchSelectedWarehouses().map(code => WORKBENCH_TO_BI_WAREHOUSE_MAP[code]).filter(Boolean)));
+    }
+    function formatBiNavigationDate(date) {
+      const value = new Date(date);
+      value.setHours(0, 0, 0, 0);
+      const year = value.getFullYear();
+      const month = String(value.getMonth() + 1).padStart(2, '0');
+      const day = String(value.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    function buildBiNavigationRange(rangePreset = 'today') {
+      const endDate = new Date(BI_REPORT_NAV_ANCHOR_DATE);
+      endDate.setHours(0, 0, 0, 0);
+      let startDate = new Date(endDate);
+      if (rangePreset === 'last30') {
+        startDate.setDate(endDate.getDate() - 29);
+      } else if (rangePreset === 'thisWeek') {
+        const offset = (endDate.getDay() + 6) % 7;
+        startDate.setDate(endDate.getDate() - offset);
+      } else if (rangePreset === 'thisMonth') {
+        startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+      }
+      return {
+        startDate: formatBiNavigationDate(startDate),
+        endDate: formatBiNavigationDate(endDate)
+      };
+    }
+    function parseBiNavigationList(value) {
+      return String(value || '')
+        .split(',')
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+    function buildBiOrderNavigationPayload(trigger) {
+      const range = buildBiNavigationRange(trigger.dataset.biRangePreset || 'today');
+      const dateType = trigger.dataset.biDateType || 'primary';
+      const mappedWarehouses = mapWorkbenchWarehousesToBi();
+      const filters = {
+        dateType,
+        startDate: range.startDate,
+        endDate: range.endDate,
+        orderTypes: parseBiNavigationList(trigger.dataset.biOrderTypes),
+        orderStages: parseBiNavigationList(trigger.dataset.biOrderStages),
+        trackStatuses: parseBiNavigationList(trigger.dataset.biTrackStatuses)
+      };
+      if (dateType === 'ship') {
+        filters.shipStartDate = range.startDate;
+        filters.shipEndDate = range.endDate;
+      }
+      if (mappedWarehouses.length) filters.selectedWarehouses = mappedWarehouses;
+      return {
+        createdAt: Date.now(),
+        source: 'wms-workbench-kpi',
+        sourceLabel: trigger.dataset.biNavLabel || trigger.textContent.trim(),
+        reportKey: 'order',
+        filters
+      };
+    }
+    function navigateToBiOrderReport(trigger) {
+      localStorage.setItem(BI_REPORT_NAV_STORAGE_KEY, JSON.stringify(buildBiOrderNavigationPayload(trigger)));
+      window.location.href = './bi-consolidated-report-v2.html';
+    }
+    function decorateBiOrderNavTargets() {
+      document.querySelectorAll('[data-bi-order-nav]').forEach(target => {
+        target.classList.add('kpi-report-link');
+        target.setAttribute('role', 'link');
+        target.setAttribute('tabindex', '0');
+        target.setAttribute('title', `跳转到订单报表：${target.dataset.biNavLabel || '查看明细'}`);
+        target.setAttribute('aria-label', `跳转到订单报表，查看${target.dataset.biNavLabel || '明细'}`);
+      });
+    }
+    function bindKpiOrderReportNavigation() {
+      decorateBiOrderNavTargets();
+      document.addEventListener('click', function(event) {
+        const trigger = event.target.closest('[data-bi-order-nav]');
+        if (!trigger) return;
+        event.preventDefault();
+        navigateToBiOrderReport(trigger);
+      });
+      document.addEventListener('keydown', function(event) {
+        const trigger = event.target.closest('[data-bi-order-nav]');
+        if (!trigger || !['Enter', ' '].includes(event.key)) return;
+        event.preventDefault();
+        navigateToBiOrderReport(trigger);
+      });
     }
     function bindExceptionOrderNavigation() {
       const alertModule = document.querySelector('[data-component="alert"]');
@@ -1351,6 +1447,7 @@
       
       document.getElementById('applyWarehouseBtn').addEventListener('click', function() {
         const checked = document.querySelectorAll('.warehouse-checkbox:checked');
+        selectedWarehouses = Array.from(checked).map(item => item.value);
         document.getElementById('warehouseText').textContent = checked.length === 6 ? '全部仓库' : `已选 ${checked.length} 个`;
         document.getElementById('warehouseDropdown').classList.add('hidden');
       });
@@ -1361,6 +1458,7 @@
       });
       bindExceptionOrderNavigation();
       bindTodoMatrixNavigation();
+      bindKpiOrderReportNavigation();
     });
     function openLayoutModal() {
       document.getElementById('layoutModal').classList.remove('hidden');
