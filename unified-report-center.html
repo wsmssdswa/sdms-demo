@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>统一报表中心 - 千仓SDMS</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/unified-report-center.css">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- 侧边栏 -->
+    <nav class="side-bar" id="sideBar" data-sdms-sidebar data-sidebar-key="report"></nav>
+
+    <!-- 主内容区 -->
+    <div class="page-shell">
+      <!-- 面包屑 -->
+      <div class="header-meta" id="headerMeta">
+        <i class="ri-home-4-line"></i>
+        <span>千仓SDMS</span>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>报表中心</span>
+        <i class="ri-arrow-right-s-line"></i>
+        <span id="breadcrumbCurrent">概览</span>
+      </div>
+
+      <!-- Tab栏 + 导出按钮 -->
+      <div class="header-tabs header-tabs-composed">
+        <div class="header-tabs-main" id="headerTabsMain"></div>
+        <div class="header-tabs-actions">
+          <button type="button" class="btn btn-secondary" id="btnExport" onclick="handleExport()">
+            <i class="ri-download-2-line"></i><span>导出</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 内容区 -->
+      <main class="content-wrap">
+        <div class="page-card">
+          <!-- 报表导航 -->
+          <div class="report-nav" id="reportNav"></div>
+
+          <!-- ===== 概览视图 ===== -->
+          <div class="report-view active" id="viewOverview"></div>
+
+          <!-- ===== 入库分析视图 ===== -->
+          <div class="report-view" id="viewInbound"></div>
+
+          <!-- ===== 出库分析视图 ===== -->
+          <div class="report-view" id="viewOutbound"></div>
+
+          <!-- ===== 库存分析视图 ===== -->
+          <div class="report-view" id="viewInventory"></div>
+
+          <!-- ===== 订单分析视图 ===== -->
+          <div class="report-view" id="viewOrder"></div>
+
+          <!-- ===== 自定义报表视图 ===== -->
+          <div class="report-view" id="viewCustom">
+            <div class="custom-toolbar">
+              <button type="button" class="btn btn-primary" onclick="openCreateModal()">
+                <i class="ri-add-line"></i><span>新建报表</span>
+              </button>
+              <div class="search-box" style="position:relative;flex:0 1 280px;">
+                <i class="ri-search-line" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#8fa0b3;font-size:14px;pointer-events:none;"></i>
+                <input type="text" placeholder="搜索报表名称..." style="width:100%;height:30px;padding:0 10px 0 32px;border:1px solid var(--line-deep);border-radius:3px;background:#fff;font-size:13px;outline:none;">
+              </div>
+            </div>
+            <div id="customList"></div>
+          </div>
+
+          <!-- ===== 订阅与推送视图 ===== -->
+          <div class="report-view" id="viewSubscription">
+            <div class="sub-toolbar">
+              <button type="button" class="btn btn-primary" onclick="openSubscribeModal()">
+                <i class="ri-add-line"></i><span>新建订阅</span>
+              </button>
+            </div>
+            <div class="sub-table-wrap">
+              <table class="sub-table">
+                <thead>
+                  <tr>
+                    <th style="width:60px;">序号</th>
+                    <th style="width:180px;">订阅名称</th>
+                    <th style="width:160px;">关联报表</th>
+                    <th style="width:100px;">推送频率</th>
+                    <th style="width:80px;">推送时间</th>
+                    <th style="width:100px;">推送方式</th>
+                    <th style="width:100px;">状态</th>
+                    <th style="width:140px;">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="subTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ===== 新建自定义报表弹窗 ===== -->
+  <div class="modal-overlay" id="createModal">
+    <div class="modal-backdrop" onclick="closeCreateModal()"></div>
+    <div class="modal-container">
+      <div class="modal-box" style="width:min(720px,100%);">
+        <div class="modal-header">
+          <div class="modal-header-title">新建自定义报表</div>
+          <button type="button" class="modal-header-close" onclick="closeCreateModal()"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="modal-body" id="createModalBody">
+          <!-- 步骤指示器 -->
+          <div class="wizard-steps" id="wizardSteps"></div>
+          <!-- 步骤内容 -->
+          <div id="wizardStep1" class="wizard-body"></div>
+          <div id="wizardStep2" class="wizard-body" style="display:none;"></div>
+          <div id="wizardStep3" class="wizard-body" style="display:none;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="wizardPrevBtn" onclick="prevWizardStep()" style="display:none;">
+            <i class="ri-arrow-left-s-line"></i><span>上一步</span>
+          </button>
+          <button type="button" class="btn btn-primary" id="wizardNextBtn" onclick="nextWizardStep()">
+            <span>下一步</span><i class="ri-arrow-right-s-line"></i>
+          </button>
+          <button type="button" class="btn btn-primary" id="wizardSaveBtn" onclick="closeCreateModal()" style="display:none;">
+            <i class="ri-check-line"></i><span>保存</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 新建订阅弹窗 ===== -->
+  <div class="modal-overlay" id="subscribeModal">
+    <div class="modal-backdrop" onclick="closeSubscribeModal()"></div>
+    <div class="modal-container">
+      <div class="modal-box" style="width:min(560px,100%);">
+        <div class="modal-header">
+          <div class="modal-header-title">新建订阅</div>
+          <button type="button" class="modal-header-close" onclick="closeSubscribeModal()"><i class="ri-close-line"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="sub-form">
+            <div class="form-group">
+              <label class="form-label required">订阅名称</label>
+              <input type="text" class="form-input" placeholder="请输入订阅名称" maxlength="50">
+            </div>
+            <div class="form-group">
+              <label class="form-label required">关联报表</label>
+              <select class="form-select" style="width:100%;">
+                <option value="">请选择报表</option>
+                <option value="overview">概览日报</option>
+                <option value="inbound">入库汇总分析</option>
+                <option value="outbound">出库汇总分析</option>
+                <option value="inventory">库存分析</option>
+                <option value="order">订单分析</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label required">推送频率</label>
+              <select class="form-select" style="width:100%;">
+                <option value="daily">每日</option>
+                <option value="weekly">每周</option>
+                <option value="monthly">每月</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label required">推送时间</label>
+              <input type="text" class="form-input" placeholder="如: 09:00" value="09:00">
+            </div>
+            <div class="form-group">
+              <label class="form-label required">推送方式</label>
+              <select class="form-select" style="width:100%;">
+                <option value="email">邮件</option>
+                <option value="wechat">企业微信</option>
+                <option value="dingtalk">钉钉</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeSubscribeModal()">
+            <span>取消</span>
+          </button>
+          <button type="button" class="btn btn-primary" onclick="closeSubscribeModal()">
+            <i class="ri-check-line"></i><span>确定</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 脚本引用 -->
+  <script src="./assets/js/sdms-sidebar.js"></script>
+  <script src="./assets/js/unified-report-center.js"></script>
+</body>
+</html>
