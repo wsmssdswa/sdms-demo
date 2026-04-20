@@ -1,0 +1,746 @@
+/* ============================================================
+   unified-report-center.css
+   统一报表中心共享样式 —— 依赖 sdms-design-tokens.css 变量体系
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   1. 报表中心导航Tab
+   ---------------------------------------------------------- */
+.report-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-bg);
+  padding: 0 20px;
+}
+
+.report-nav-item {
+  position: relative;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.report-nav-item:hover {
+  color: var(--brand);
+}
+
+.report-nav-item.active {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.report-nav-item.active::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: -1px;
+  height: 2px;
+  background: var(--brand);
+  border-radius: 1px 1px 0 0;
+}
+
+/* ----------------------------------------------------------
+   2. 筛选条
+   ---------------------------------------------------------- */
+.report-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: var(--panel-soft);
+  border-bottom: 1px solid var(--line);
+}
+
+.report-filter input[type="text"],
+.report-filter input[type="date"],
+.report-filter select {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 13px;
+  border: 1px solid var(--line-deep);
+  border-radius: 3px;
+  background: var(--panel-bg);
+  color: var(--text-main);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.report-filter input[type="text"]:focus,
+.report-filter input[type="date"]:focus,
+.report-filter select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px var(--brand-light);
+}
+
+/* ----------------------------------------------------------
+   3. KPI卡片
+   ---------------------------------------------------------- */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 16px 20px;
+}
+
+.kpi-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+  box-shadow: var(--shadow-panel);
+}
+
+.kpi-card-label {
+  font-size: 13px;
+  color: var(--text-sub);
+  font-weight: 400;
+}
+
+.kpi-card-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.kpi-card-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.kpi-card-change.up {
+  color: var(--success);
+}
+
+.kpi-card-change.down {
+  color: var(--danger);
+}
+
+/* ----------------------------------------------------------
+   4. 图表区
+   ---------------------------------------------------------- */
+.report-chart-section {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 0 20px 16px;
+}
+
+.report-chart-box {
+  background: var(--panel-bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.report-chart-box.full {
+  grid-column: 1 / -1;
+}
+
+.report-chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 12px;
+}
+
+.report-chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 260px;
+}
+
+/* ----------------------------------------------------------
+   5. 明细表
+   ---------------------------------------------------------- */
+.report-table-section {
+  padding: 0 20px 16px;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: var(--panel-bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.report-table thead th {
+  background: var(--panel-soft);
+  color: var(--text-sub);
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.report-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-main);
+}
+
+.report-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.report-table tbody tr:hover {
+  background: #f8fafd;
+}
+
+/* ----------------------------------------------------------
+   6. 分页
+   ---------------------------------------------------------- */
+.report-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.report-pagination .page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--line-deep);
+  border-radius: 3px;
+  background: var(--panel-bg);
+  color: var(--text-main);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.report-pagination .page-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.report-pagination .page-btn.active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.report-pagination .page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.report-pagination .page-info {
+  margin-right: auto;
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.report-pagination .page-size-select {
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--line-deep);
+  border-radius: 3px;
+  font-size: 13px;
+  outline: none;
+}
+
+/* ----------------------------------------------------------
+   7. 子Tab
+   ---------------------------------------------------------- */
+.report-sub-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-bg);
+}
+
+.report-sub-tab {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--text-sub);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  user-select: none;
+}
+
+.report-sub-tab:hover {
+  color: var(--brand);
+}
+
+.report-sub-tab.active {
+  color: var(--brand);
+  font-weight: 600;
+  border-bottom-color: var(--brand);
+}
+
+/* ----------------------------------------------------------
+   8. 状态标签
+   ---------------------------------------------------------- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.tag-success {
+  background: rgba(46, 182, 125, 0.1);
+  color: var(--success);
+}
+
+.tag-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+
+.tag-danger {
+  background: rgba(255, 90, 95, 0.1);
+  color: var(--danger);
+}
+
+.tag-info {
+  background: var(--brand-light);
+  color: var(--brand);
+}
+
+.tag-gray {
+  background: var(--panel-soft);
+  color: var(--text-sub);
+}
+
+/* ----------------------------------------------------------
+   9. 自定义报表列表
+   ---------------------------------------------------------- */
+.custom-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-bg);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.custom-list-item:hover {
+  border-color: var(--brand);
+  box-shadow: var(--shadow);
+}
+
+.custom-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.custom-item-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-item-desc {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.custom-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  margin-left: 16px;
+}
+
+.custom-item-actions .act-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line-deep);
+  border-radius: 3px;
+  background: var(--panel-bg);
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.custom-item-actions .act-btn:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.custom-item-actions .act-btn.danger:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* ----------------------------------------------------------
+   10. 空状态
+   ---------------------------------------------------------- */
+.report-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--text-sub);
+}
+
+.report-empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.3;
+}
+
+.report-empty-text {
+  font-size: 14px;
+  color: var(--text-sub);
+}
+
+.report-empty-hint {
+  font-size: 12px;
+  color: var(--text-sub);
+  opacity: 0.7;
+  margin-top: 6px;
+}
+
+/* ----------------------------------------------------------
+   11. 视图切换
+   ---------------------------------------------------------- */
+.report-view {
+  display: none;
+}
+
+.report-view.active {
+  display: block;
+}
+
+/* ----------------------------------------------------------
+   12. 弹窗
+   ---------------------------------------------------------- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  width: 560px;
+  max-width: 90vw;
+  max-height: 80vh;
+  background: var(--panel-bg);
+  border-radius: 8px;
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-header-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.modal-header-close {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  color: var(--text-sub);
+  cursor: pointer;
+  font-size: 18px;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.modal-header-close:hover {
+  background: var(--panel-soft);
+  color: var(--text-main);
+}
+
+.modal-body {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* ----------------------------------------------------------
+   13. 表单
+   ---------------------------------------------------------- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.form-label.required::before {
+  content: "*";
+  color: var(--danger);
+  margin-right: 4px;
+}
+
+.form-input,
+.form-select {
+  height: 34px;
+  padding: 0 10px;
+  font-size: 13px;
+  border: 1px solid var(--line-deep);
+  border-radius: 3px;
+  background: var(--panel-bg);
+  color: var(--text-main);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px var(--brand-light);
+}
+
+.form-input::placeholder {
+  color: var(--text-sub);
+  opacity: 0.6;
+}
+
+.form-textarea {
+  height: auto;
+  min-height: 80px;
+  padding: 8px 10px;
+  resize: vertical;
+  font-size: 13px;
+  border: 1px solid var(--line-deep);
+  border-radius: 3px;
+  background: var(--panel-bg);
+  color: var(--text-main);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 2px var(--brand-light);
+}
+
+/* ----------------------------------------------------------
+   14. 步骤指示器
+   ---------------------------------------------------------- */
+.wizard-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 24px;
+}
+
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-sub);
+  position: relative;
+}
+
+.wizard-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line-deep);
+  background: var(--panel-bg);
+  color: var(--text-sub);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.wizard-step-label {
+  font-weight: 500;
+}
+
+.wizard-step.active .wizard-step-number {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.wizard-step.active .wizard-step-label {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.wizard-step.done .wizard-step-number {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+
+.wizard-step.done .wizard-step-label {
+  color: var(--success);
+}
+
+.wizard-step-connector {
+  width: 40px;
+  height: 1px;
+  background: var(--line-deep);
+  margin: 0 8px;
+  flex: none;
+}
+
+.wizard-step.done + .wizard-step-connector,
+.wizard-step-connector.done {
+  background: var(--success);
+}
+
+/* ----------------------------------------------------------
+   15. 数据域卡片
+   ---------------------------------------------------------- */
+.domain-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-bg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.domain-card:hover {
+  border-color: var(--brand);
+  box-shadow: var(--shadow);
+}
+
+.domain-card.selected {
+  border-color: var(--brand);
+  background: var(--brand-light);
+  box-shadow: 0 0 0 2px var(--brand-light);
+}
+
+.domain-card-icon {
+  font-size: 28px;
+  color: var(--text-sub);
+  transition: color 0.2s ease;
+}
+
+.domain-card:hover .domain-card-icon,
+.domain-card.selected .domain-card-icon {
+  color: var(--brand);
+}
+
+.domain-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  text-align: center;
+}
+
+.domain-card-desc {
+  font-size: 12px;
+  color: var(--text-sub);
+  text-align: center;
+}
+
+/* ----------------------------------------------------------
+   响应式适配
+   ---------------------------------------------------------- */
+@media (max-width: 1440px) {
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .report-chart-section {
+    grid-template-columns: 1fr;
+  }
+}
