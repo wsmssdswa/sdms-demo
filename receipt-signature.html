@@ -359,7 +359,10 @@
           <div class="page-prd-head-title" id="pagePrdTitle">发送签收单页面PRD</div>
         </div>
       </div>
-      <button class="page-prd-close" id="pagePrdClose" type="button" aria-label="关闭PRD阅读器">×</button>
+      <div class="page-prd-head-actions">
+        <button class="page-prd-maximize" id="pagePrdMaximize" type="button" title="最大化"><i class="ri-fullscreen-line"></i></button>
+        <button class="page-prd-close" id="pagePrdClose" type="button" aria-label="关闭PRD阅读器"><i class="ri-close-line"></i></button>
+      </div>
     </div>
     <div class="page-prd-toolbar">
       <div class="page-prd-toolbar-row">
@@ -373,6 +376,7 @@
       <aside class="page-prd-toc" id="pagePrdToc"></aside>
       <div class="page-prd-content" id="pagePrdContent"></div>
     </div>
+    <div class="page-prd-resize"></div>
   </aside>
 
   <script>

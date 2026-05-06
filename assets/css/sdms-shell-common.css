@@ -483,9 +483,9 @@ select {
   gap: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--brand);
-  background: #f5f9ff;
-  border-color: #cfe0ff;
+  color: #ea5809;
+  background: #fff7ed;
+  border-color: #fed7aa;
 }
 
 .sdms-tool-btn {
@@ -499,7 +499,12 @@ select {
   font-size: 13px;
 }
 
-.sdms-prd-entry:hover,
+.sdms-prd-entry:hover {
+  border-color: #fdba74;
+  color: #c2410c;
+  background: #ffedd5;
+}
+
 .sdms-tool-btn:hover,
 .sdms-tool-user:hover {
   border-color: #90adff;

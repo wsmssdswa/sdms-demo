@@ -34,13 +34,121 @@
     locateMode: false,
     activeRef: '',
     toc: [],
-    dockSide: 'right'
+    maximized: false
   };
 
   if (pagePrdTitle && mapPayload && mapPayload.pageTitle) {
     pagePrdTitle.textContent = mapPayload.pageTitle;
   }
 
+  /* ---------- 弹窗尺寸与位置管理 ---------- */
+  const DIALOG_W = 820;
+  const DIALOG_H = Math.round(window.innerHeight * 0.72);
+  const MIN_W = 560;
+  const MIN_H = 400;
+
+  function centerDialog() {
+    const w = Math.min(DIALOG_W, window.innerWidth - 40);
+    const h = Math.min(DIALOG_H, window.innerHeight - 60);
+    pagePrdViewer.style.width = w + 'px';
+    pagePrdViewer.style.height = h + 'px';
+    pagePrdViewer.style.left = Math.max(0, (window.innerWidth - w) / 2) + 'px';
+    pagePrdViewer.style.top = Math.max(0, (window.innerHeight - h) / 2) + 'px';
+  }
+
+  /* ---------- 拖拽 ---------- */
+  function enableDrag() {
+    const header = pagePrdViewer.querySelector('.page-prd-head');
+    if (!header) return;
+
+    header.addEventListener('mousedown', function (e) {
+      if (e.target.closest('.page-prd-close, .page-prd-maximize')) return;
+      if (state.maximized) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startLeft = pagePrdViewer.offsetLeft;
+      const startTop = pagePrdViewer.offsetTop;
+
+      function onMove(ev) {
+        const dx = ev.clientX - startX;
+        const dy = ev.clientY - startY;
+        const newLeft = Math.max(0, Math.min(startLeft + dx, window.innerWidth - pagePrdViewer.offsetWidth));
+        const newTop = Math.max(0, Math.min(startTop + dy, window.innerHeight - pagePrdViewer.offsetHeight));
+        pagePrdViewer.style.left = newLeft + 'px';
+        pagePrdViewer.style.top = newTop + 'px';
+      }
+
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  /* ---------- 缩放 ---------- */
+  function enableResize() {
+    const handle = pagePrdViewer.querySelector('.page-prd-resize');
+    if (!handle) return;
+
+    handle.addEventListener('mousedown', function (e) {
+      if (state.maximized) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startW = pagePrdViewer.offsetWidth;
+      const startH = pagePrdViewer.offsetHeight;
+
+      function onMove(ev) {
+        const newW = Math.max(MIN_W, Math.min(window.innerWidth - pagePrdViewer.offsetLeft, startW + (ev.clientX - startX)));
+        const newH = Math.max(MIN_H, Math.min(window.innerHeight - pagePrdViewer.offsetTop, startH + (ev.clientY - startY)));
+        pagePrdViewer.style.width = newW + 'px';
+        pagePrdViewer.style.height = newH + 'px';
+      }
+
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  /* ---------- 最大化/还原 ---------- */
+  function toggleMaximize() {
+    const maxBtn = pagePrdViewer.querySelector('.page-prd-maximize');
+    if (!state.maximized) {
+      // 保存当前位置和尺寸
+      state.prevRect = {
+        width: pagePrdViewer.style.width,
+        height: pagePrdViewer.style.height,
+        left: pagePrdViewer.style.left,
+        top: pagePrdViewer.style.top
+      };
+      pagePrdViewer.classList.add('maximized');
+      state.maximized = true;
+      if (maxBtn) { maxBtn.title = '还原'; maxBtn.innerHTML = '<i class="ri-fullscreen-exit-line"></i>'; }
+    } else {
+      // 还原
+      pagePrdViewer.classList.remove('maximized');
+      if (state.prevRect) {
+        pagePrdViewer.style.width = state.prevRect.width;
+        pagePrdViewer.style.height = state.prevRect.height;
+        pagePrdViewer.style.left = state.prevRect.left;
+        pagePrdViewer.style.top = state.prevRect.top;
+      }
+      state.maximized = false;
+      if (maxBtn) { maxBtn.title = '最大化'; maxBtn.innerHTML = '<i class="ri-fullscreen-line"></i>'; }
+    }
+  }
+
+  /* ---------- Markdown渲染 ---------- */
   function escapeHtml(value) {
     return String(value ?? '')
       .replace(/&/g, '&amp;')
@@ -75,7 +183,7 @@
     const normalized = text
       .toLowerCase()
       .replace(/[【】\[\]（）()]/g, '')
-      .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
+      .replace(/[^a-z0-9一-龥]+/g, '-')
       .replace(/^-+|-+$/g, '');
     return normalized || `prd-heading-${fallbackIndex}`;
   }
@@ -248,6 +356,7 @@
     };
   }
 
+  /* ---------- 控件绑定 ---------- */
   function bindControls() {
     bindings.forEach((binding) => {
       document.querySelectorAll(binding.selector).forEach((node) => {
@@ -274,15 +383,12 @@
     pagePrdCurrent.textContent = text || '当前未定位到具体控件';
   }
 
-  function setViewerDockSide(side) {
-    const nextSide = side === 'left' ? 'left' : 'right';
-    state.dockSide = nextSide;
-    pagePrdViewer.classList.toggle('dock-left', nextSide === 'left');
-    pagePrdViewer.classList.toggle('dock-right', nextSide === 'right');
-  }
-
+  /* ---------- 开关弹窗 ---------- */
   function openViewer() {
     state.open = true;
+    if (!state.maximized && !pagePrdViewer.style.width) {
+      centerDialog();
+    }
     pagePrdViewer.classList.add('open');
     pagePrdViewer.setAttribute('aria-hidden', 'false');
     document.body.classList.add('page-prd-viewer-open');
@@ -291,11 +397,12 @@
   function closeViewer() {
     state.open = false;
     state.locateMode = false;
-    pagePrdViewer.classList.remove('open');
+    pagePrdViewer.classList.remove('open', 'maximized');
     pagePrdViewer.setAttribute('aria-hidden', 'true');
     document.body.classList.remove('page-prd-viewer-open', 'page-prd-locate-mode');
     pagePrdLocateBtn.classList.remove('active');
     pagePrdLocateBtn.textContent = '控件定位模式';
+    state.maximized = false;
   }
 
   function clearCurrentControlHighlight() {
@@ -320,14 +427,6 @@
     }, 2200);
   }
 
-  function getViewerDockSideForNode(node) {
-    if (!node) return 'right';
-    if (window.innerWidth <= 1280) return 'right';
-    const rect = node.getBoundingClientRect();
-    const nodeMidX = rect.left + (rect.width / 2);
-    return nodeMidX >= (window.innerWidth / 2) ? 'left' : 'right';
-  }
-
   function scrollControlNodeIntoView(node) {
     if (!node) return;
     node.scrollIntoView({
@@ -339,7 +438,6 @@
 
   function focusControlNode(node) {
     if (!node) return;
-    setViewerDockSide(getViewerDockSideForNode(node));
     if (!state.open) openViewer();
     window.requestAnimationFrame(() => {
       scrollControlNodeIntoView(node);
@@ -361,7 +459,7 @@
     renderToc(pagePrdSearch.value);
     const target = pagePrdContent.querySelector(`#${escapeSelector(ref)}`);
     if (!target) {
-      updateCurrentText(`未找到“${label || ref}”对应的文档位置`);
+      updateCurrentText(`未找到"${label || ref}"对应的文档位置`);
       return;
     }
     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -434,12 +532,31 @@
     return null;
   }
 
+  /* ---------- 初始化 ---------- */
   const parsed = parseMarkdown(markdownSource);
   state.toc = parsed.toc;
   pagePrdContent.innerHTML = parsed.html;
-  setViewerDockSide('right');
+  centerDialog();
   renderToc('');
   bindControls();
+
+  enableDrag();
+  enableResize();
+
+  // 双击标题栏最大化/还原
+  const header = pagePrdViewer.querySelector('.page-prd-head');
+  if (header) {
+    header.addEventListener('dblclick', function (e) {
+      if (e.target.closest('.page-prd-close, .page-prd-maximize')) return;
+      toggleMaximize();
+    });
+  }
+
+  // 最大化按钮
+  const maxBtn = pagePrdViewer.querySelector('.page-prd-maximize');
+  if (maxBtn) {
+    maxBtn.addEventListener('click', toggleMaximize);
+  }
 
   let rebindScheduled = false;
   const observer = new MutationObserver(() => {
@@ -461,7 +578,6 @@
       closeViewer();
       return;
     }
-    setViewerDockSide('right');
     openViewer();
   });
 
@@ -487,6 +603,50 @@
     const button = event.target.closest('[data-prd-jump]');
     if (!button) return;
     jumpToRef(button.dataset.prdJump, button.textContent.trim());
+  });
+
+  // 内容区滚动 → 同步目录高亮
+  let scrollSyncScheduled = false;
+  pagePrdContent.addEventListener('scroll', () => {
+    if (scrollSyncScheduled) return;
+    scrollSyncScheduled = true;
+    window.requestAnimationFrame(() => {
+      scrollSyncScheduled = false;
+      if (!state.toc.length) return;
+      const contentRect = pagePrdContent.getBoundingClientRect();
+      const headings = state.toc.map(item => {
+        const el = pagePrdContent.querySelector(`#${escapeSelector(item.id)}`);
+        if (!el) return null;
+        const rect = el.getBoundingClientRect();
+        return { id: item.id, top: rect.top - contentRect.top + pagePrdContent.scrollTop };
+      }).filter(Boolean);
+      if (!headings.length) return;
+      const scrollTop = pagePrdContent.scrollTop;
+      const threshold = 60;
+      let activeId = headings[0].id;
+      for (let i = headings.length - 1; i >= 0; i--) {
+        if (headings[i].top <= scrollTop + threshold) {
+          activeId = headings[i].id;
+          break;
+        }
+      }
+      if (state.activeRef !== activeId) {
+        state.activeRef = activeId;
+        // 只更新active样式，不重新渲染整个目录
+        pagePrdToc.querySelectorAll('[data-prd-jump]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.prdJump === activeId);
+        });
+        // 自动滚动目录使active项可见
+        const activeBtn = pagePrdToc.querySelector('[data-prd-jump].active');
+        if (activeBtn) {
+          const tocRect = pagePrdToc.getBoundingClientRect();
+          const btnRect = activeBtn.getBoundingClientRect();
+          if (btnRect.top < tocRect.top || btnRect.bottom > tocRect.bottom) {
+            activeBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }
+        }
+      }
+    });
   });
 
   document.addEventListener('click', (event) => {

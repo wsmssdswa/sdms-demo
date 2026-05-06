@@ -33,63 +33,45 @@
   border-color: #EA580C;
 }
 
-/* ---------- 2. 目标区域高亮 ---------- */
-.prd-ann-target {
-  box-shadow: inset 3px 0 0 #FDBA74 !important;
-  transition: box-shadow 0.2s ease !important;
-}
-.prd-ann-target.prd-ann-highlight {
-  box-shadow: inset 3px 0 0 #F97316, 0 0 0 1px rgba(249,115,22,0.15) !important;
-}
-
-/* ---------- 3. 标注点（左上角书签标签） ---------- */
+/* ---------- 2. 标注点 ---------- */
 .prd-ann-marker {
   position: absolute;
-  top: -11px;
-  left: -1px;
-  min-width: 22px;
+  width: 20px;
   height: 20px;
-  border-radius: 4px 4px 4px 0;
+  border-radius: 50%;
   background: #F97316;
   color: #fff;
   font-size: 11px;
-  font-weight: 600;
-  padding: 0 5px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 1px 4px rgba(249,115,22,0.3);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   z-index: 99980;
   user-select: none;
   line-height: 1;
-  white-space: nowrap;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.prd-ann-marker::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 4px 0 0 4px;
-  border-color: #C2410C transparent transparent transparent;
 }
 .prd-ann-marker:hover {
-  transform: scale(1.08);
+  transform: scale(1.2);
   box-shadow: 0 2px 8px rgba(249,115,22,0.4);
 }
 .prd-ann-marker.hidden {
   display: none;
 }
 
-/* ---------- 4. 弹窗面板 ---------- */
+/* 四角定位偏移 */
+.prd-ann-marker.pos-top-right { top: 4px; right: 4px; }
+.prd-ann-marker.pos-top-left  { top: 4px; left: 4px; }
+.prd-ann-marker.pos-bottom-right { bottom: 4px; right: 4px; }
+.prd-ann-marker.pos-bottom-left  { bottom: 4px; left: 4px; }
+
+/* ---------- 3. 弹窗面板 ---------- */
 .prd-ann-popup {
   position: fixed;
-  width: 520px;
-  height: 440px;
+  width: 480px;
+  height: 400px;
   min-width: 320px;
   min-height: 240px;
   max-width: 800px;
@@ -104,7 +86,7 @@
   overflow: hidden;
 }
 
-/* 4a. 标题栏 */
+/* 3a. 标题栏 */
 .prd-ann-popup-header {
   display: flex;
   align-items: center;
@@ -154,7 +136,7 @@
   background: #FED7AA;
 }
 
-/* 4b. 内容区域 */
+/* 3b. 内容区域 */
 .prd-ann-popup-body {
   flex: 1;
   overflow-y: auto;
@@ -164,7 +146,7 @@
   color: #374151;
 }
 
-/* 4c. 缩放手柄 */
+/* 3c. 缩放手柄 */
 .prd-ann-popup-resize {
   position: absolute;
   right: 0;
@@ -184,7 +166,7 @@
   border-bottom: 2px solid #D1D5DB;
 }
 
-/* ---------- 5. 弹窗内 Markdown 内容样式 ---------- */
+/* ---------- 4. 弹窗内 Markdown 内容样式 ---------- */
 .prd-ann-popup-body h2 {
   font-size: 15px;
   font-weight: 700;
@@ -198,12 +180,6 @@
   font-weight: 600;
   color: #374151;
   margin: 12px 0 6px 0;
-}
-.prd-ann-popup-body h4 {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6B7280;
-  margin: 10px 0 4px 0;
 }
 .prd-ann-popup-body p {
   margin: 0 0 8px 0;
