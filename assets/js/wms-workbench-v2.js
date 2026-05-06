@@ -1,6 +1,6 @@
     let selectedWarehouses = ['WH001', 'WH002', 'WH003', 'WH004', 'WH005', 'WH006'];
     const LAYOUT_STORAGE_VERSION = 4;
-    const KPI_STORAGE_VERSION = 9;
+    const KPI_STORAGE_VERSION = 10;
     const DEFAULT_COMPONENT_ORDER = ['todo', 'alert', 'shortcut', 'inventory', 'timeliness', 'trend', 'efficiency', 'operatingReport', 'message'];
     const DEFAULT_HIDDEN_KPI_KEYS = ['outboundQty', 'outboundWeight', 'outboundPieces', 'inboundWeight', 'inboundPieces', 'inventory', 'orphanOrders'];
     
@@ -49,7 +49,9 @@
         { key: 'complaintRate', show: true },
         { key: 'signRate', show: false },
         { key: 'redispatchRate', show: true },
-        { key: 'orphanOrders', show: false }
+        { key: 'orphanOrders', show: false },
+        { key: 'storageUtilization', show: true },
+        { key: 'inventoryAlert', show: true }
       ]
     };
     let currentKpiConfig = JSON.parse(JSON.stringify(defaultKpiConfig));

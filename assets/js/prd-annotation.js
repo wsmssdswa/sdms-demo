@@ -22,6 +22,7 @@
     var inTable = false;
     var inCode = false;
     var inList = false;
+    var codeLang = '';
 
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i];
@@ -32,6 +33,7 @@
           html += '</code></pre>';
           inCode = false;
         } else {
+          codeLang = line.trim().replace(/^```/, '').trim();
           inCode = true;
           html += '<pre><code>';
         }
@@ -70,25 +72,17 @@
         inTable = false;
       }
 
-      // h4
-      var h4Match = line.match(/^#### (.+)/);
-      if (h4Match) {
-        if (inList) { html += '</ul>'; inList = false; }
-        html += '<h4>' + inlineFormat(h4Match[1]) + '</h4>';
-        continue;
-      }
-      // h3
-      var h3Match = line.match(/^### (.+)/);
-      if (h3Match) {
-        if (inList) { html += '</ul>'; inList = false; }
-        html += '<h3>' + inlineFormat(h3Match[1]) + '</h3>';
-        continue;
-      }
-      // h2
+      // 标题
       var h2Match = line.match(/^## (.+)/);
       if (h2Match) {
         if (inList) { html += '</ul>'; inList = false; }
         html += '<h2>' + inlineFormat(h2Match[1]) + '</h2>';
+        continue;
+      }
+      var h3Match = line.match(/^### (.+)/);
+      if (h3Match) {
+        if (inList) { html += '</ul>'; inList = false; }
+        html += '<h3>' + inlineFormat(h3Match[1]) + '</h3>';
         continue;
       }
 
@@ -112,19 +106,22 @@
   }
 
   function inlineFormat(text) {
+    // 行内代码
     text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // 加粗
     text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     return text;
   }
 
   /* ---------- 弹窗管理 ---------- */
-  var activePopups = {};
+  var activePopups = {};  // id → popup element
 
   function createPopup(annotation, markerRect) {
     var popup = document.createElement('div');
     popup.className = 'prd-ann-popup';
     popup.dataset.annId = annotation.id;
 
+    // 标题栏
     var header = document.createElement('div');
     header.className = 'prd-ann-popup-header';
     header.innerHTML =
@@ -133,10 +130,12 @@
       '<button class="prd-ann-popup-btn prd-ann-popup-maximize" title="最大化">□</button>' +
       '<button class="prd-ann-popup-btn prd-ann-popup-close" title="关闭">✕</button>';
 
+    // 内容区域
     var body = document.createElement('div');
     body.className = 'prd-ann-popup-body';
     body.innerHTML = renderMarkdown(annotation.content);
 
+    // 缩放手柄
     var resize = document.createElement('div');
     resize.className = 'prd-ann-popup-resize';
 
@@ -145,35 +144,42 @@
     popup.appendChild(resize);
     document.body.appendChild(popup);
 
-    // 定位：标注点右侧偏下
-    var top = markerRect.bottom + 6;
-    var left = markerRect.left;
+    // 定位：标注点下方偏右
+    var top = markerRect.bottom + 8;
+    var left = markerRect.left - popup.offsetWidth / 2 + 10;
+    // 视口边界修正
     if (left + popup.offsetWidth > window.innerWidth - 12) {
       left = window.innerWidth - popup.offsetWidth - 12;
     }
     if (left < 12) left = 12;
     if (top + popup.offsetHeight > window.innerHeight - 12) {
-      top = markerRect.top - popup.offsetHeight - 6;
+      top = markerRect.top - popup.offsetHeight - 8;
     }
-    if (top < 12) top = 12;
     popup.style.top = top + 'px';
     popup.style.left = left + 'px';
 
+    // 层级
     bringToFront(popup);
 
+    // 事件：关闭
     header.querySelector('.prd-ann-popup-close').addEventListener('click', function () {
       closePopup(annotation.id);
     });
 
+    // 事件：最大化/还原
     header.querySelector('.prd-ann-popup-maximize').addEventListener('click', function () {
       toggleMaximize(popup);
     });
 
+    // 事件：点击弹窗提升层级
     popup.addEventListener('mousedown', function () {
       bringToFront(popup);
     });
 
+    // 事件：拖拽
     enableDrag(popup, header);
+
+    // 事件：缩放
     enableResize(popup, resize);
 
     activePopups[annotation.id] = popup;
@@ -195,14 +201,16 @@
 
   function toggleMaximize(popup) {
     if (popup.dataset.maximized === 'true') {
-      popup.style.width = popup.dataset.prevW || '520px';
-      popup.style.height = popup.dataset.prevH || '440px';
+      // 还原
+      popup.style.width = popup.dataset.prevW || '480px';
+      popup.style.height = popup.dataset.prevH || '400px';
       popup.style.top = popup.dataset.prevTop;
       popup.style.left = popup.dataset.prevLeft;
       popup.dataset.maximized = 'false';
     } else {
-      popup.dataset.prevW = popup.style.width || '520px';
-      popup.dataset.prevH = popup.style.height || '440px';
+      // 最大化（80%视口）
+      popup.dataset.prevW = popup.style.width || '480px';
+      popup.dataset.prevH = popup.style.height || '400px';
       popup.dataset.prevTop = popup.style.top;
       popup.dataset.prevLeft = popup.style.left;
       popup.style.width = Math.min(800, window.innerWidth * 0.8) + 'px';
@@ -230,8 +238,10 @@
     });
 
     function onMove(e) {
-      var newLeft = startLeft + (e.clientX - startX);
-      var newTop = startTop + (e.clientY - startY);
+      var dx = e.clientX - startX;
+      var dy = e.clientY - startY;
+      var newLeft = startLeft + dx;
+      var newTop = startTop + dy;
       newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - popup.offsetWidth));
       newTop = Math.max(0, Math.min(newTop, window.innerHeight - popup.offsetHeight));
       popup.style.left = newLeft + 'px';
@@ -258,8 +268,12 @@
       document.addEventListener('mouseup', onUp);
 
       function onMove(e) {
-        popup.style.width = Math.max(320, Math.min(800, startW + (e.clientX - startX))) + 'px';
-        popup.style.height = Math.max(240, Math.min(600, startH + (e.clientY - startY))) + 'px';
+        var newW = startW + (e.clientX - startX);
+        var newH = startH + (e.clientY - startY);
+        newW = Math.max(320, Math.min(800, newW));
+        newH = Math.max(240, Math.min(600, newH));
+        popup.style.width = newW + 'px';
+        popup.style.height = newH + 'px';
       }
 
       function onUp() {
@@ -270,8 +284,6 @@
   }
 
   /* ---------- 标注点渲染 ---------- */
-  var targetElements = [];
-
   function createMarker(annotation, index) {
     var target = document.querySelector(annotation.selector);
     if (!target) {
@@ -279,29 +291,16 @@
       return null;
     }
 
-    // 确保目标元素可作为定位参考
     var pos = getComputedStyle(target).position;
     if (pos === 'static') {
       target.style.position = 'relative';
     }
 
-    // 添加区域高亮类
-    target.classList.add('prd-ann-target');
-    targetElements.push(target);
-
     var marker = document.createElement('button');
-    marker.className = 'prd-ann-marker';
+    marker.className = 'prd-ann-marker pos-' + (annotation.position || 'top-right');
     marker.textContent = index + 1;
     marker.title = annotation.title;
     marker.dataset.annId = annotation.id;
-
-    // 悬停高亮
-    marker.addEventListener('mouseenter', function () {
-      target.classList.add('prd-ann-highlight');
-    });
-    marker.addEventListener('mouseleave', function () {
-      target.classList.remove('prd-ann-highlight');
-    });
 
     marker.addEventListener('click', function () {
       var id = annotation.id;
@@ -334,14 +333,6 @@
           closePopup(markers[i].dataset.annId);
         }
       }
-      // 同步切换区域高亮
-      for (var j = 0; j < targetElements.length; j++) {
-        if (isActive) {
-          targetElements[j].classList.add('prd-ann-target');
-        } else {
-          targetElements[j].classList.remove('prd-ann-target');
-        }
-      }
     });
 
     document.body.appendChild(toggle);
@@ -355,7 +346,8 @@
 
     var markers = [];
     for (var i = 0; i < config.annotations.length; i++) {
-      var marker = createMarker(config.annotations[i], i);
+      var ann = config.annotations[i];
+      var marker = createMarker(ann, i);
       if (marker) markers.push(marker);
     }
 

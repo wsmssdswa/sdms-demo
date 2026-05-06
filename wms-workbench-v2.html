@@ -184,7 +184,7 @@
             <div class="relative z-10 h-full">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <p class="text-[11px] font-medium tracking-wide text-slate-600/50">SKU库存数</p>
+                  <p class="text-[12px] font-medium tracking-wide text-slate-600/50">SKU库存数</p>
                   <p class="mt-1.5 text-[26px] font-bold text-slate-800 font-mono leading-none">45,678</p>
                 </div>
                 <div class="w-11 h-11 rounded-xl bg-stat-purple/20 flex items-center justify-center flex-shrink-0">
@@ -261,7 +261,7 @@
             <div class="relative z-10 h-full">
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                  <p class="text-[11px] font-medium tracking-wide text-slate-600/50">退件库存数</p>
+                  <p class="text-[12px] font-medium tracking-wide text-slate-600/50">退件库存数</p>
                   <p class="mt-1.5 text-[26px] font-bold text-slate-800 font-mono leading-none">6,328</p>
                 </div>
                 <div class="w-11 h-11 rounded-xl bg-orange-500/15 flex items-center justify-center flex-shrink-0">
@@ -319,7 +319,7 @@
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <div class="flex items-center gap-2">
-                    <p class="text-[11px] font-medium tracking-wide text-slate-600/50">订单总数</p>
+                    <p class="text-[12px] font-medium tracking-wide text-slate-600/50">订单总数</p>
                     <span class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600/70">今日</span>
                   </div>
                   <p class="mt-1 text-[26px] font-bold text-slate-800 font-mono leading-none" data-bi-order-nav data-bi-nav-label="今日订单总数" data-bi-range-preset="today" data-bi-order-types="备货,重派,换单">193</p>
@@ -378,7 +378,7 @@
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <div class="flex items-center gap-2">
-                    <p class="text-[11px] font-medium tracking-wide text-slate-600/50">发货订单总数</p>
+                    <p class="text-[12px] font-medium tracking-wide text-slate-600/50">发货订单总数</p>
                     <span class="inline-flex items-center rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-slate-600/70">近30天</span>
                   </div>
                   <p class="mt-1 text-[25px] font-bold text-slate-800 font-mono leading-none" data-shipment-total data-bi-order-nav data-bi-nav-label="发货订单总数-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-order-stages="已发货,已签收">--</p>
@@ -387,16 +387,16 @@
                   <i class="ri-truck-line text-2xl text-slate-500"></i>
                 </div>
               </div>
-              <div class="mt-1.5 flex items-center justify-between gap-3 rounded-md bg-emerald-50/60 px-2 py-1 text-[11px] leading-none shadow-[inset_0_0_0_1px_rgba(16,185,129,0.16)]">
+              <div class="mt-1.5 flex items-center justify-between gap-3 rounded-md bg-emerald-50/60 px-2 py-1 text-[12px] leading-none shadow-[inset_0_0_0_1px_rgba(16,185,129,0.16)]">
                 <div class="flex items-center gap-1.5 text-slate-600/75">
                   <i class="ri-checkbox-circle-line text-[14px] text-emerald-600"></i>
                   <span class="font-medium">已签收</span>
                 </div>
                 <div class="flex items-center gap-2.5 text-right">
                   <span class="text-[15px] font-semibold text-emerald-700 font-mono">
-                    <span data-shipment-metric="signed" data-value="3862" data-bi-order-nav data-bi-nav-label="已签收订单-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-order-stages="已签收" data-bi-track-statuses="已签收">--</span><span class="ml-0.5 text-[11px] font-medium text-slate-500">单</span>
+                    <span data-shipment-metric="signed" data-value="3862" data-bi-order-nav data-bi-nav-label="已签收订单-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-order-stages="已签收" data-bi-track-statuses="已签收">--</span><span class="ml-0.5 text-[12px] font-medium text-slate-500">单</span>
                   </span>
-                  <span class="text-[11px] text-slate-500">
+                  <span class="text-[12px] text-slate-500">
                     签收率<span class="ml-0.5 font-mono font-semibold text-emerald-700" data-shipment-rate data-bi-order-nav data-bi-nav-label="签收率-近30天" data-bi-date-type="ship" data-bi-range-preset="last30" data-bi-order-stages="已签收" data-bi-track-statuses="已签收">--</span>
                   </span>
                 </div>
@@ -577,6 +577,81 @@
               </div>
             </div>
           </div>
+          <!-- 标准存储区利用率 -->
+          <div class="stat-card glass-card rounded-2xl p-5 animate-slide-up" data-kpi="storageUtilization" style="--accent-color: #8b5cf6; --accent-color-light: #a78bfa; animation-delay: 0.39s;">
+            <div class="flex items-start justify-between relative z-10">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-600/60">标准存储区利用率</p>
+                <h3 class="text-3xl font-bold text-slate-800 mt-2 font-mono">78.5<span class="text-lg ml-0.5">%</span></h3>
+                <div class="mt-2.5 w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div class="h-full rounded-full bg-gradient-to-r from-violet-400 to-violet-500 transition-all duration-700" style="width: 78.5%"></div>
+                </div>
+                <div class="flex items-center mt-2 text-accent-emerald text-sm">
+                  <i class="ri-arrow-up-line mr-1"></i>
+                  <span class="font-medium">2.1%</span>
+                  <span class="text-slate-600/40 ml-1">较昨日</span>
+                </div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-violet-500/15 flex items-center justify-center flex-shrink-0 ml-3">
+                <i class="ri-building-4-line text-2xl text-violet-400"></i>
+              </div>
+            </div>
+          </div>
+          <!-- 库存预警 -->
+          <div class="stat-card kpi-composite-card glass-card rounded-2xl p-4 min-h-[170px] md:col-span-2 lg:col-span-2 xl:col-span-2 animate-slide-up" data-kpi="inventoryAlert" style="--accent-color: #d97706; --accent-color-light: #f59e0b; animation-delay: 0.41s;">
+            <div class="relative z-10 h-full">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-[12px] font-medium tracking-wide text-slate-600/50">库存预警</p>
+                </div>
+                <div class="w-9 h-9 rounded-lg bg-amber-500/15 flex items-center justify-center flex-shrink-0">
+                  <i class="ri-alarm-warning-line text-lg text-amber-500"></i>
+                </div>
+              </div>
+              <div class="inventory-flow-grid mt-2.5">
+                <section class="inventory-flow-panel">
+                  <div class="inventory-flow-head">
+                    <span class="inventory-flow-dot inventory-flow-dot-outbound" aria-hidden="true"></span>
+                    <p class="inventory-flow-title">预警</p>
+                  </div>
+                  <div class="inventory-flow-list">
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">滞销</span>
+                      <span class="inventory-flow-value text-amber-600" data-bi-order-nav data-bi-nav-label="滞销库存" data-bi-range-preset="today">124</span>
+                    </div>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">即将到期</span>
+                      <span class="inventory-flow-value text-amber-600" data-bi-order-nav data-bi-nav-label="即将到期库存" data-bi-range-preset="today">45</span>
+                    </div>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">已到期</span>
+                      <span class="inventory-flow-value text-accent-rose" data-bi-order-nav data-bi-nav-label="已到期库存" data-bi-range-preset="today">12</span>
+                    </div>
+                  </div>
+                </section>
+                <section class="inventory-flow-panel">
+                  <div class="inventory-flow-head">
+                    <span class="inventory-flow-dot inventory-flow-dot-inbound" aria-hidden="true"></span>
+                    <p class="inventory-flow-title">库龄分布</p>
+                  </div>
+                  <div class="inventory-flow-list">
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">≤30天</span>
+                      <span class="inventory-flow-value" data-bi-order-nav data-bi-nav-label="库龄≤30天" data-bi-range-preset="today">2,986</span>
+                    </div>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">31-60天</span>
+                      <span class="inventory-flow-value text-amber-600" data-bi-order-nav data-bi-nav-label="库龄31-60天" data-bi-range-preset="today">892</span>
+                    </div>
+                    <div class="inventory-flow-row">
+                      <span class="inventory-flow-label">>60天</span>
+                      <span class="inventory-flow-value text-accent-rose" data-bi-order-nav data-bi-nav-label="库龄>60天" data-bi-range-preset="today">326</span>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -593,7 +668,7 @@
                 待办任务
               </h3>
               <div class="text-right flex-shrink-0">
-                <p class="text-[11px] text-slate-600/50">总待办</p>
+                <p class="text-[12px] text-slate-600/50">总待办</p>
                 <p class="mt-1 text-2xl font-bold text-slate-800 font-mono leading-none">94</p>
               </div>
             </div>
@@ -657,7 +732,7 @@
                 异常订单
               </h3>
               <div class="text-right flex-shrink-0">
-                <p class="text-[11px] text-slate-600/50">总量</p>
+                <p class="text-[12px] text-slate-600/50">总量</p>
                 <p class="mt-1 text-2xl font-bold text-accent-rose font-mono leading-none">23</p>
               </div>
             </div>
@@ -1735,6 +1810,36 @@
             </div>
             <span class="px-2 py-1 text-xs font-medium text-accent-rose bg-accent-rose/10 rounded-md">待处理</span>
           </div>
+          <!-- 标准存储区利用率 -->
+          <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="storageUtilization">
+            <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
+              <i class="ri-draggable text-lg"></i>
+            </div>
+            <input type="checkbox" data-kpi-checkbox="storageUtilization" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <div class="w-8 h-8 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+              <i class="ri-building-4-line text-violet-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-800">标准存储区利用率</p>
+              <p class="text-xs text-slate-600/50">标准存储区已用库位占比</p>
+            </div>
+            <span class="px-2 py-1 text-xs font-medium text-accent-cyan bg-accent-cyan/10 rounded-md">实时</span>
+          </div>
+          <!-- 库存预警 -->
+          <div class="kpi-config-item glass-card-light rounded-xl p-3 border border-slate-200 flex items-center gap-3 cursor-move" data-kpi-config="inventoryAlert">
+            <div class="drag-handle-kpi text-slate-600/50 hover:text-accent-cyan p-1 rounded-lg hover:bg-slate-100 transition-colors">
+              <i class="ri-draggable text-lg"></i>
+            </div>
+            <input type="checkbox" data-kpi-checkbox="inventoryAlert" checked class="w-4 h-4 text-accent-cyan rounded border-slate-300 bg-white focus:ring-accent-cyan focus:ring-offset-0">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <i class="ri-alarm-warning-line text-amber-500"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-slate-800">库存预警</p>
+              <p class="text-xs text-slate-600/50">滞销/到期预警与库龄分布</p>
+            </div>
+            <span class="px-2 py-1 text-xs font-medium text-accent-amber bg-accent-amber/10 rounded-md">每日</span>
+          </div>
         </div>
       </div>
       <div class="p-6 border-t border-slate-200 flex items-center justify-between gap-3">
@@ -1840,7 +1945,10 @@
           <div class="page-prd-head-title" id="pagePrdTitle">WMS工作台V2页面PRD</div>
         </div>
       </div>
-      <button class="page-prd-close" id="pagePrdClose" type="button" aria-label="关闭PRD阅读器">×</button>
+      <div class="page-prd-head-actions">
+        <button class="page-prd-maximize" id="pagePrdMaximize" type="button" title="最大化"><i class="ri-fullscreen-line"></i></button>
+        <button class="page-prd-close" id="pagePrdClose" type="button" aria-label="关闭PRD阅读器"><i class="ri-close-line"></i></button>
+      </div>
     </div>
     <div class="page-prd-toolbar">
       <div class="page-prd-toolbar-row">
@@ -1854,6 +1962,7 @@
       <aside class="page-prd-toc" id="pagePrdToc"></aside>
       <div class="page-prd-content" id="pagePrdContent"></div>
     </div>
+    <div class="page-prd-resize"></div>
   </aside>
 
   <script src="./assets/js/sdms-header-tabs.js"></script>
