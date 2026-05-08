@@ -90,7 +90,7 @@
   function renderSidebar(sidebar) {
     const activeKey = sidebar.dataset.sidebarKey || '';
     sidebar.innerHTML = [
-      '<div class="logo-box">SDMS</div>',
+      '<a href="./index.html" class="logo-box">SDMS</a>',
       MENU_ITEMS.map((item) => buildMenuItem(item, activeKey)).join(''),
       '<div class="side-version">V2.0.0</div>'
     ].join('');
