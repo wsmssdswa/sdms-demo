@@ -1,28 +1,29 @@
 (function () {
-  const pageKey = window.PRD_VIEWER_PAGE_KEY;
-  const docRegistry = window.PRD_VIEWER_DOCS || {};
-  const mapRegistry = window.PRD_VIEWER_MAPS || {};
-  const docPayload = pageKey ? docRegistry[pageKey] : null;
-  const mapPayload = pageKey ? mapRegistry[pageKey] : null;
+  var pageKey = window.PRD_VIEWER_PAGE_KEY;
+  var docRegistry = window.PRD_VIEWER_DOCS || {};
+  var mapRegistry = window.PRD_VIEWER_MAPS || {};
+  var docPayload = pageKey ? docRegistry[pageKey] : null;
+  var mapPayload = pageKey ? mapRegistry[pageKey] : null;
 
-  const markdownSource = docPayload && (docPayload.markdown || docPayload.value || docPayload);
-  const bindings = mapPayload && Array.isArray(mapPayload.bindings) ? mapPayload.bindings : [];
+  var markdownSource = docPayload && docPayload.markdown ? docPayload.markdown : '';
+  var bindings = mapPayload && Array.isArray(mapPayload.bindings) ? mapPayload.bindings : [];
 
-  const pagePrdBtn = document.getElementById('pagePrdBtn');
-  const pagePrdViewer = document.getElementById('pagePrdViewer');
-  const pagePrdClose = document.getElementById('pagePrdClose');
-  const pagePrdSearch = document.getElementById('pagePrdSearch');
-  const pagePrdLocateBtn = document.getElementById('pagePrdLocateBtn');
-  const pagePrdCurrent = document.getElementById('pagePrdCurrent');
-  const pagePrdToc = document.getElementById('pagePrdToc');
-  const pagePrdContent = document.getElementById('pagePrdContent');
-  const pagePrdTitle = document.getElementById('pagePrdTitle');
+  var pagePrdBtn = document.getElementById('pagePrdBtn');
+  var pagePrdViewer = document.getElementById('pagePrdViewer');
+  var pagePrdClose = document.getElementById('pagePrdClose');
+  var pagePrdSearch = document.getElementById('pagePrdSearch');
+  var pagePrdLocateBtn = document.getElementById('pagePrdLocateBtn');
+  var pagePrdCurrent = document.getElementById('pagePrdCurrent');
+  var pagePrdToc = document.getElementById('pagePrdToc');
+  var pagePrdContent = document.getElementById('pagePrdContent');
+  var pagePrdTitle = document.getElementById('pagePrdTitle');
 
-  if (!pageKey || !markdownSource || !pagePrdBtn || !pagePrdViewer || !pagePrdClose || !pagePrdSearch || !pagePrdLocateBtn || !pagePrdCurrent || !pagePrdToc || !pagePrdContent) {
+  if (!pageKey || !pagePrdBtn || !pagePrdViewer || !pagePrdClose || !pagePrdSearch || !pagePrdLocateBtn || !pagePrdCurrent || !pagePrdToc || !pagePrdContent) {
     return;
   }
 
   const headingIdMap = {};
+  const usedHeadingIds = new Set();
   bindings.forEach((binding) => {
     if (binding.headingText && binding.targetId) {
       headingIdMap[binding.headingText] = binding.targetId;
@@ -185,10 +186,18 @@
       .replace(/[【】\[\]（）()]/g, '')
       .replace(/[^a-z0-9一-龥]+/g, '-')
       .replace(/^-+|-+$/g, '');
-    return normalized || `prd-heading-${fallbackIndex}`;
+    let id = normalized || `prd-heading-${fallbackIndex}`;
+    if (usedHeadingIds.has(id)) {
+      let counter = 2;
+      while (usedHeadingIds.has(`${id}-${counter}`)) counter++;
+      id = `${id}-${counter}`;
+    }
+    usedHeadingIds.add(id);
+    return id;
   }
 
   function parseMarkdown(markdown) {
+    usedHeadingIds.clear();
     const lines = String(markdown).replace(/\r/g, '').split('\n');
     const htmlParts = [];
     const toc = [];
@@ -201,6 +210,19 @@
     let codeLanguage = '';
     let codeLines = [];
     let headingIndex = 0;
+    const headingCounters = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    function hierarchicalNumber(level) {
+      for (let i = level + 1; i <= 9; i++) headingCounters[i] = 0;
+      headingCounters[level]++;
+      let start = 1;
+      while (start < level && headingCounters[start] === 0) start++;
+      return headingCounters.slice(start, level + 1).join('.');
+    }
+
+    function stripLeadingNumber(text) {
+      return text.replace(/^(\d+\.)*\d+\.\s*/, '');
+    }
 
     function flushParagraph() {
       if (!paragraphLines.length) return;
@@ -211,7 +233,26 @@
     function flushList() {
       if (!listItems.length) return;
       const tag = listType === 'ordered' ? 'ol' : 'ul';
-      htmlParts.push(`<${tag} class="page-prd-list">${listItems.map((item) => `<li>${renderInline(item)}</li>`).join('')}</${tag}>`);
+      function buildTree(items) {
+        const root = { children: [] };
+        const stack = [{ node: root, indent: -1 }];
+        items.forEach(function (item) {
+          const child = { text: item.text, indent: item.indent || 0, children: [] };
+          while (stack.length > 1 && stack[stack.length - 1].indent >= child.indent) {
+            stack.pop();
+          }
+          stack[stack.length - 1].node.children.push(child);
+          stack.push({ node: child, indent: child.indent });
+        });
+        return root;
+      }
+      function renderTree(nodes) {
+        if (!nodes.length) return '';
+        return '<' + tag + ' class="page-prd-list">' + nodes.map(function (n) {
+          return '<li>' + renderInline(n.text) + renderTree(n.children) + '</li>';
+        }).join('') + '</' + tag + '>';
+      }
+      htmlParts.push(renderTree(buildTree(listItems).children));
       listItems = [];
       listType = '';
     }
@@ -250,6 +291,15 @@
       htmlParts.push(`<pre class="page-prd-code-block"><code${codeAttr}>${escapeHtml(codeLines.join('\n'))}</code></pre>`);
       codeLines = [];
       codeLanguage = '';
+    }
+
+    let sectionDepth = 0;
+
+    function closeSection() {
+      if (sectionDepth > 0) {
+        htmlParts.push('</div>');
+        sectionDepth = 0;
+      }
     }
 
     function flushAll() {
@@ -292,16 +342,29 @@
         return;
       }
 
-      const headingMatch = compact.match(/^(#{1,4})\s+(.*)$/);
+      const headingMatch = compact.match(/^(#{1,9})\s+(.*)$/);
       if (headingMatch) {
         flushAll();
         headingIndex += 1;
         const level = headingMatch[1].length;
         const title = headingMatch[2].trim();
         const headingId = buildHeadingId(title, headingIndex);
-        htmlParts.push(`<h${level} class="page-prd-heading level-${level}" id="${headingId}">${renderInline(title)}</h${level}>`);
-        if (level >= 2 && level <= 4) {
-          toc.push({ id: headingId, title, level });
+        const stripped = stripLeadingNumber(title);
+        const hasNumber = stripped !== title;
+        let displayTitle;
+        if (hasNumber) {
+          const hierNum = hierarchicalNumber(level);
+          displayTitle = (level === 1 ? hierNum + '. ' : hierNum + ' ') + stripped;
+        } else {
+          for (let i = level + 1; i <= 9; i++) headingCounters[i] = 0;
+          displayTitle = title;
+        }
+        closeSection();
+        htmlParts.push(`<h${level} class="page-prd-heading level-${level}" id="${headingId}">${renderInline(displayTitle)}</h${level}>`);
+        htmlParts.push(`<div class="prd-section prd-depth-${level}">`);
+        sectionDepth = level;
+        if (level >= 1 && level <= 9 && !(headingIndex === 1 && !hasNumber)) {
+          toc.push({ id: headingId, title: displayTitle, level });
         }
         return;
       }
@@ -321,7 +384,7 @@
         flushTable();
         if (listType && listType !== 'ordered') flushList();
         listType = 'ordered';
-        listItems.push(orderedMatch[1]);
+        listItems.push({ text: orderedMatch[1], indent: trimmed.length - trimmed.trimStart().length });
         return;
       }
 
@@ -332,7 +395,7 @@
         flushTable();
         if (listType && listType !== 'unordered') flushList();
         listType = 'unordered';
-        listItems.push(bulletMatch[1]);
+        listItems.push({ text: bulletMatch[1], indent: trimmed.length - trimmed.trimStart().length });
         return;
       }
 
@@ -349,6 +412,7 @@
 
     if (inCodeBlock) flushCodeBlock();
     flushAll();
+    closeSection();
 
     return {
       html: htmlParts.join(''),
@@ -532,142 +596,166 @@
     return null;
   }
 
+  /* ---------- Mermaid流程图渲染 ---------- */
+  function renderMermaidDiagrams() {
+    var blocks = pagePrdContent.querySelectorAll('code[data-lang="mermaid"]');
+    if (!blocks.length) return;
+    if (typeof mermaid === 'undefined') return;
+    blocks.forEach(function (codeEl, i) {
+      var pre = codeEl.parentElement;
+      var source = codeEl.textContent;
+      var id = 'mermaid-prd-' + i;
+      try {
+        mermaid.render(id, source).then(function (result) {
+          var container = document.createElement('div');
+          container.className = 'page-prd-mermaid';
+          container.innerHTML = result.svg;
+          pre.replaceWith(container);
+        }).catch(function () {});
+      } catch (e) {}
+    });
+  }
+
   /* ---------- 初始化 ---------- */
-  const parsed = parseMarkdown(markdownSource);
-  state.toc = parsed.toc;
-  pagePrdContent.innerHTML = parsed.html;
-  centerDialog();
-  renderToc('');
-  bindControls();
+  function init(markdownSource) {
+    const parsed = parseMarkdown(markdownSource);
+    state.toc = parsed.toc;
+    pagePrdContent.innerHTML = parsed.html;
+    renderMermaidDiagrams();
+    centerDialog();
+    renderToc('');
+    bindControls();
 
-  enableDrag();
-  enableResize();
+    enableDrag();
+    enableResize();
 
-  // 双击标题栏最大化/还原
-  const header = pagePrdViewer.querySelector('.page-prd-head');
-  if (header) {
-    header.addEventListener('dblclick', function (e) {
-      if (e.target.closest('.page-prd-close, .page-prd-maximize')) return;
-      toggleMaximize();
-    });
-  }
-
-  // 最大化按钮
-  const maxBtn = pagePrdViewer.querySelector('.page-prd-maximize');
-  if (maxBtn) {
-    maxBtn.addEventListener('click', toggleMaximize);
-  }
-
-  let rebindScheduled = false;
-  const observer = new MutationObserver(() => {
-    if (rebindScheduled) return;
-    rebindScheduled = true;
-    window.requestAnimationFrame(() => {
-      bindControls();
-      rebindScheduled = false;
-    });
-  });
-
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
-
-  pagePrdBtn.addEventListener('click', () => {
-    if (state.open) {
-      closeViewer();
-      return;
+    // 双击标题栏最大化/还原
+    const header = pagePrdViewer.querySelector('.page-prd-head');
+    if (header) {
+      header.addEventListener('dblclick', function (e) {
+        if (e.target.closest('.page-prd-close, .page-prd-maximize')) return;
+        toggleMaximize();
+      });
     }
-    openViewer();
-  });
 
-  pagePrdClose.addEventListener('click', closeViewer);
+    // 最大化按钮
+    const maxBtn = pagePrdViewer.querySelector('.page-prd-maximize');
+    if (maxBtn) {
+      maxBtn.addEventListener('click', toggleMaximize);
+    }
 
-  pagePrdLocateBtn.addEventListener('click', () => {
-    if (!state.open) openViewer();
-    setLocateMode(!state.locateMode);
-  });
+    let rebindScheduled = false;
+    const observer = new MutationObserver(() => {
+      if (rebindScheduled) return;
+      rebindScheduled = true;
+      window.requestAnimationFrame(() => {
+        bindControls();
+        rebindScheduled = false;
+      });
+    });
 
-  pagePrdSearch.addEventListener('input', (event) => {
-    renderToc(event.target.value);
-  });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
 
-  pagePrdSearch.addEventListener('keydown', (event) => {
-    if (event.key !== 'Enter') return;
-    const firstMatch = pagePrdToc.querySelector('[data-prd-jump]');
-    if (!firstMatch) return;
-    jumpToRef(firstMatch.dataset.prdJump, firstMatch.textContent.trim());
-  });
-
-  pagePrdToc.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-prd-jump]');
-    if (!button) return;
-    jumpToRef(button.dataset.prdJump, button.textContent.trim());
-  });
-
-  // 内容区滚动 → 同步目录高亮
-  let scrollSyncScheduled = false;
-  pagePrdContent.addEventListener('scroll', () => {
-    if (scrollSyncScheduled) return;
-    scrollSyncScheduled = true;
-    window.requestAnimationFrame(() => {
-      scrollSyncScheduled = false;
-      if (!state.toc.length) return;
-      const contentRect = pagePrdContent.getBoundingClientRect();
-      const headings = state.toc.map(item => {
-        const el = pagePrdContent.querySelector(`#${escapeSelector(item.id)}`);
-        if (!el) return null;
-        const rect = el.getBoundingClientRect();
-        return { id: item.id, top: rect.top - contentRect.top + pagePrdContent.scrollTop };
-      }).filter(Boolean);
-      if (!headings.length) return;
-      const scrollTop = pagePrdContent.scrollTop;
-      const threshold = 60;
-      let activeId = headings[0].id;
-      for (let i = headings.length - 1; i >= 0; i--) {
-        if (headings[i].top <= scrollTop + threshold) {
-          activeId = headings[i].id;
-          break;
-        }
+    pagePrdBtn.addEventListener('click', () => {
+      if (state.open) {
+        closeViewer();
+        return;
       }
-      if (state.activeRef !== activeId) {
-        state.activeRef = activeId;
-        // 只更新active样式，不重新渲染整个目录
-        pagePrdToc.querySelectorAll('[data-prd-jump]').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.prdJump === activeId);
-        });
-        // 自动滚动目录使active项可见
-        const activeBtn = pagePrdToc.querySelector('[data-prd-jump].active');
-        if (activeBtn) {
-          const tocRect = pagePrdToc.getBoundingClientRect();
-          const btnRect = activeBtn.getBoundingClientRect();
-          if (btnRect.top < tocRect.top || btnRect.bottom > tocRect.bottom) {
-            activeBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      openViewer();
+    });
+
+    pagePrdClose.addEventListener('click', closeViewer);
+
+    pagePrdLocateBtn.addEventListener('click', () => {
+      if (!state.open) openViewer();
+      setLocateMode(!state.locateMode);
+    });
+
+    pagePrdSearch.addEventListener('input', (event) => {
+      renderToc(event.target.value);
+    });
+
+    pagePrdSearch.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') return;
+      const firstMatch = pagePrdToc.querySelector('[data-prd-jump]');
+      if (!firstMatch) return;
+      jumpToRef(firstMatch.dataset.prdJump, firstMatch.textContent.trim());
+    });
+
+    pagePrdToc.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-prd-jump]');
+      if (!button) return;
+      jumpToRef(button.dataset.prdJump, button.textContent.trim());
+    });
+
+    // 内容区滚动 → 同步目录高亮
+    let scrollSyncScheduled = false;
+    pagePrdContent.addEventListener('scroll', () => {
+      if (scrollSyncScheduled) return;
+      scrollSyncScheduled = true;
+      window.requestAnimationFrame(() => {
+        scrollSyncScheduled = false;
+        if (!state.toc.length) return;
+        const contentRect = pagePrdContent.getBoundingClientRect();
+        const headings = state.toc.map(item => {
+          const el = pagePrdContent.querySelector(`#${escapeSelector(item.id)}`);
+          if (!el) return null;
+          const rect = el.getBoundingClientRect();
+          return { id: item.id, top: rect.top - contentRect.top + pagePrdContent.scrollTop };
+        }).filter(Boolean);
+        if (!headings.length) return;
+        const scrollTop = pagePrdContent.scrollTop;
+        const threshold = 60;
+        let activeId = headings[0].id;
+        for (let i = headings.length - 1; i >= 0; i--) {
+          if (headings[i].top <= scrollTop + threshold) {
+            activeId = headings[i].id;
+            break;
           }
         }
+        if (state.activeRef !== activeId) {
+          state.activeRef = activeId;
+          pagePrdToc.querySelectorAll('[data-prd-jump]').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.prdJump === activeId);
+          });
+          const activeBtn = pagePrdToc.querySelector('[data-prd-jump].active');
+          if (activeBtn) {
+            const tocRect = pagePrdToc.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
+            if (btnRect.top < tocRect.top || btnRect.bottom > tocRect.bottom) {
+              activeBtn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+          }
+        }
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      if (event.target.closest('#pagePrdViewer')) return;
+      if (event.target.closest('#pagePrdBtn')) return;
+      const shouldLocate = event.altKey || state.locateMode;
+      if (state.open && !shouldLocate) {
+        closeViewer();
+        return;
+      }
+      if (!shouldLocate) return;
+      const resolved = resolveBindingFromTarget(event.target);
+      if (!resolved) return;
+      event.preventDefault();
+      event.stopPropagation();
+      jumpToBinding(resolved.binding, resolved.node);
+    }, true);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && state.open) {
+        closeViewer();
       }
     });
-  });
+  } // end init()
 
-  document.addEventListener('click', (event) => {
-    if (event.target.closest('#pagePrdViewer')) return;
-    if (event.target.closest('#pagePrdBtn')) return;
-    const shouldLocate = event.altKey || state.locateMode;
-    if (state.open && !shouldLocate) {
-      closeViewer();
-      return;
-    }
-    if (!shouldLocate) return;
-    const resolved = resolveBindingFromTarget(event.target);
-    if (!resolved) return;
-    event.preventDefault();
-    event.stopPropagation();
-    jumpToBinding(resolved.binding, resolved.node);
-  }, true);
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && state.open) {
-      closeViewer();
-    }
-  });
+  // 使用全局变量加载PRD正文
+  init(markdownSource);
 })();

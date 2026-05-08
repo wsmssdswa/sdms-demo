@@ -6,6 +6,8 @@
   <title>签收单确认 - 司机端</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/prd-viewer.css">
   <script>
     tailwind.config = {
       theme: {
@@ -217,14 +219,14 @@
         <i class="fa fa-arrow-left text-lg"></i>
       </button>
       <h1 class="text-lg font-medium text-gray-900">签收单确认</h1>
-      <div class="w-5"></div> <!-- 占位元素，保持标题居中 -->
+      <button class="text-xs px-2 py-1 bg-orange-500 text-white rounded" id="pagePrdBtn" type="button">PRD</button>
     </div>
   </header>
 
   <!-- 主要内容 -->
   <main class="px-4 py-4">
     <!-- 订单信息卡片 -->
-    <div class="bg-white rounded-lg shadow-sm mb-4 p-4">
+    <div class="bg-white rounded-lg shadow-sm mb-4 p-4" id="orderInfoCard">
       <h2 class="text-base font-medium text-gray-900 mb-3">订单信息</h2>
       <div class="space-y-2">
         <div class="flex justify-between">
@@ -247,7 +249,7 @@
     </div>
 
     <!-- 收货信息卡片 -->
-    <div class="bg-white rounded-lg shadow-sm mb-4 p-4">
+    <div class="bg-white rounded-lg shadow-sm mb-4 p-4" id="receiptInfoCard">
       <h2 class="text-base font-medium text-gray-900 mb-3">收货信息</h2>
       <div class="space-y-2">
         <div class="flex justify-between">
@@ -270,7 +272,7 @@
     </div>
 
     <!-- 异常信息卡片 -->
-    <div class="bg-white rounded-lg shadow-sm mb-6 p-4">
+    <div class="bg-white rounded-lg shadow-sm mb-6 p-4" id="exceptionInfoCard">
       <h2 class="text-base font-medium text-gray-900 mb-3">异常信息</h2>
       
       <!-- 入仓号1异常 -->
@@ -408,5 +410,41 @@
       </div>
     </div>
   </footer>
+
+  <aside class="page-prd-viewer" id="pagePrdViewer" aria-hidden="true">
+    <div class="page-prd-head">
+      <div class="page-prd-head-main">
+        <span class="page-prd-badge">PRD</span>
+        <div class="page-prd-head-copy">
+          <div class="page-prd-head-kicker">页面需求文档</div>
+          <div class="page-prd-head-title" id="pagePrdTitle">签收单确认（司机端）PRD</div>
+        </div>
+      </div>
+      <div class="page-prd-head-actions">
+        <button class="page-prd-maximize" id="pagePrdMaximize" type="button" title="最大化"><i class="ri-fullscreen-line"></i></button>
+        <button class="page-prd-close" id="pagePrdClose" type="button" aria-label="关闭PRD阅读器"><i class="ri-close-line"></i></button>
+      </div>
+    </div>
+    <div class="page-prd-toolbar">
+      <div class="page-prd-toolbar-row">
+        <input class="page-prd-search" id="pagePrdSearch" type="text" placeholder="搜索章节/控件名称">
+        <button class="page-prd-tool-btn" id="pagePrdLocateBtn" type="button">控件定位模式</button>
+      </div>
+      <div class="page-prd-toolbar-tip">查看控件说明时，可打开定位模式后点击页面控件，或直接按`Alt+点击控件`跳转到文档对应位置。</div>
+      <div class="page-prd-current" id="pagePrdCurrent">当前未定位到具体控件</div>
+    </div>
+    <div class="page-prd-body">
+      <aside class="page-prd-toc" id="pagePrdToc"></aside>
+      <div class="page-prd-content" id="pagePrdContent"></div>
+    </div>
+    <div class="page-prd-resize"></div>
+  </aside>
+
+  <script>window.PRD_VIEWER_PAGE_KEY = "driver-receipt-confirm";</script>
+  <script src="./assets/prd-data/driver-receipt-confirm.prd-content.js"></script>
+  <script src="./assets/prd-data/driver-receipt-confirm.prd-map.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:false,theme:'default'});</script>
+  <script src="./assets/js/prd-viewer-core.js"></script>
 </body>
 </html>

@@ -8,12 +8,13 @@
   <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
   <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
   <link rel="stylesheet" href="./assets/css/trunk-outbound-pending-list.css">
+  <link rel="stylesheet" href="./assets/css/prd-viewer.css">
 </head>
 <body>
   <div class="app-shell">
     <aside class="side-bar" data-sdms-sidebar data-sidebar-key="business"></aside>
     <div class="page-shell">
-      <div class="header-tabs" data-sdms-header-tabs data-tab-set="business" data-tab-key="trunk-outbound-pending" data-include-tools="true" data-user-name="杨鑫"></div>
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="business" data-tab-key="trunk-outbound-pending" data-include-tools="true" data-include-prd-entry="true" data-prd-entry-text="查看PRD" data-user-name="杨鑫"></div>
       <main class="content-wrap">
         <section class="page-card">
           <section class="filter-panel filter-panel-combined">
@@ -78,8 +79,43 @@
 
   <div class="toast-stack" id="toastStack"></div>
 
+  <aside class="page-prd-viewer" id="pagePrdViewer" aria-hidden="true">
+    <div class="page-prd-head">
+      <div class="page-prd-head-main">
+        <span class="page-prd-badge">PRD</span>
+        <div class="page-prd-head-copy">
+          <div class="page-prd-head-kicker">页面需求文档</div>
+          <div class="page-prd-head-title" id="pagePrdTitle">干线待出库列表PRD</div>
+        </div>
+      </div>
+      <div class="page-prd-head-actions">
+        <button class="page-prd-maximize" id="pagePrdMaximize" type="button" title="最大化"><i class="ri-fullscreen-line"></i></button>
+        <button class="page-prd-close" id="pagePrdClose" type="button" aria-label="关闭PRD阅读器"><i class="ri-close-line"></i></button>
+      </div>
+    </div>
+    <div class="page-prd-toolbar">
+      <div class="page-prd-toolbar-row">
+        <input class="page-prd-search" id="pagePrdSearch" type="text" placeholder="搜索章节/控件名称">
+        <button class="page-prd-tool-btn" id="pagePrdLocateBtn" type="button">控件定位模式</button>
+      </div>
+      <div class="page-prd-toolbar-tip">查看控件说明时，可打开定位模式后点击页面控件，或直接按`Alt+点击控件`跳转到文档对应位置。</div>
+      <div class="page-prd-current" id="pagePrdCurrent">当前未定位到具体控件</div>
+    </div>
+    <div class="page-prd-body">
+      <aside class="page-prd-toc" id="pagePrdToc"></aside>
+      <div class="page-prd-content" id="pagePrdContent"></div>
+    </div>
+    <div class="page-prd-resize"></div>
+  </aside>
+
   <script src="./assets/js/sdms-header-tabs.js"></script>
   <script src="./assets/js/sdms-sidebar.js"></script>
   <script src="./assets/js/trunk-outbound-pending-list.js"></script>
+  <script>window.PRD_VIEWER_PAGE_KEY = "trunk-outbound-pending-list";</script>
+  <script src="./assets/prd-data/trunk-outbound-pending-list.prd-content.js"></script>
+  <script src="./assets/prd-data/trunk-outbound-pending-list.prd-map.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:false,theme:'default'});</script>
+  <script src="./assets/js/prd-viewer-core.js"></script>
 </body>
 </html>
