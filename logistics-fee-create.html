@@ -126,13 +126,29 @@
               <div class="tab-section">
                 <div class="tab-section-head">
                   <div class="section-title">分区管理</div>
-                  <button class="btn-add" id="addZoneBtn" type="button">新增分区</button>
                 </div>
-                <div class="zone-table-wrap">
-                  <table class="zone-table">
-                    <thead><tr><th style="width:16%">分区名称</th><th style="width:18%">国家/地区</th><th style="width:18%">城市</th><th style="width:14%">起始邮编</th><th style="width:14%">结束邮编</th><th style="width:20%">操作</th></tr></thead>
-                    <tbody id="zoneTableBody"></tbody>
-                  </table>
+                <div class="zone-cascade">
+                  <div class="zone-panel">
+                    <div class="zone-panel-head">
+                      <span class="zone-panel-title">分区</span>
+                      <button class="zone-panel-add" id="addZoneBtn" type="button">+ 新增</button>
+                    </div>
+                    <div class="zone-panel-body" id="zoneList"></div>
+                  </div>
+                  <div class="zone-panel">
+                    <div class="zone-panel-head">
+                      <span class="zone-panel-title">国家/地区</span>
+                      <button class="zone-panel-add" id="addCountryBtn" type="button">+ 新增</button>
+                    </div>
+                    <div class="zone-panel-body" id="countryList"></div>
+                  </div>
+                  <div class="zone-panel">
+                    <div class="zone-panel-head">
+                      <span class="zone-panel-title">城市/邮编</span>
+                      <button class="zone-panel-add" id="addCityBtn" type="button">+ 新增</button>
+                    </div>
+                    <div class="zone-panel-body" id="cityList"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -185,64 +201,6 @@
           </div>
         </section>
       </main>
-    </div>
-  </div>
-  <div class="modal-mask" id="zoneModal" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <div class="modal-title" id="zoneModalTitle">新增分区</div>
-        <button class="modal-close" id="zoneModalClose" type="button" aria-label="关闭">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="modal-form">
-          <div class="field-group" data-field="modalZoneName">
-            <div class="field-label"><span class="required-star">*</span><span>分区名称</span></div>
-            <input class="field-control" id="modalZoneName" type="text" maxlength="50" placeholder="请输入分区名称">
-            <div class="field-tip"></div>
-          </div>
-          <div class="field-group" data-field="modalZoneCountry">
-            <div class="field-label"><span class="required-star">*</span><span>国家/地区</span></div>
-            <div class="select-wrap">
-              <select class="field-select" id="modalZoneCountry">
-                <option value="">请选择国家/地区</option>
-                <option value="波兰">波兰</option>
-                <option value="德国">德国</option>
-                <option value="法国">法国</option>
-                <option value="西班牙">西班牙</option>
-                <option value="意大利">意大利</option>
-                <option value="英国">英国</option>
-                <option value="荷兰">荷兰</option>
-                <option value="比利时">比利时</option>
-                <option value="美国">美国</option>
-                <option value="泰国">泰国</option>
-                <option value="越南">越南</option>
-                <option value="马来西亚">马来西亚</option>
-              </select>
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
-            </div>
-            <div class="field-tip"></div>
-          </div>
-          <div class="field-group" data-field="modalZoneCity">
-            <div class="field-label"><span>城市</span></div>
-            <input class="field-control" id="modalZoneCity" type="text" maxlength="50" placeholder="请输入城市">
-            <div class="field-tip"></div>
-          </div>
-          <div class="field-group" data-field="modalZoneStartZip">
-            <div class="field-label"><span>起始邮编</span></div>
-            <input class="field-control" id="modalZoneStartZip" type="text" maxlength="20" placeholder="请输入起始邮编">
-            <div class="field-tip"></div>
-          </div>
-          <div class="field-group" data-field="modalZoneEndZip">
-            <div class="field-label"><span>结束邮编</span></div>
-            <input class="field-control" id="modalZoneEndZip" type="text" maxlength="20" placeholder="请输入结束邮编">
-            <div class="field-tip"></div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline" id="zoneModalCancelBtn" type="button">取消</button>
-        <button class="btn btn-primary" id="zoneModalConfirmBtn" type="button">确定</button>
-      </div>
     </div>
   </div>
   <div class="toast-stack" id="toastStack"></div>
