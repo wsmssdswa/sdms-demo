@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增物流费</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/logistics-fee-create.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
+    <div class="page-shell">
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="logistics-fee-create"></div>
+      <main class="content-wrap">
+        <section class="page-card">
+          <div class="page-card-head">
+            <div class="page-title" id="pageTitleLabel">新增物流费</div>
+            <div class="page-actions">
+              <button class="btn btn-outline" id="backBtn" type="button">返回</button>
+              <button class="btn btn-primary" id="saveBtn" type="button">保存</button>
+            </div>
+          </div>
+          <div class="page-body">
+            <div class="form-panel">
+              <div class="section-title">基本信息</div>
+              <form id="logisticsFeeForm" novalidate>
+                <div class="section-row">
+                  <div class="field-group" data-field="quoteName">
+                    <div class="field-label"><span class="required-star">*</span><span>报价单名称</span></div>
+                    <input class="field-control" id="quoteName" name="quoteName" maxlength="50" placeholder="请输入报价单名称">
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="customer">
+                    <div class="field-label"><span class="required-star">*</span><span>客户</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="customer" name="customer">
+                        <option value="">请选择客户</option>
+                        <option value="深圳市星辰电子商务有限公司">深圳市星辰电子商务有限公司</option>
+                        <option value="杭州跨境通供应链管理有限公司">杭州跨境通供应链管理有限公司</option>
+                        <option value="广州优品国际贸易有限公司">广州优品国际贸易有限公司</option>
+                        <option value="上海锐达物流科技有限公司">上海锐达物流科技有限公司</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="channel">
+                    <div class="field-label"><span class="required-star">*</span><span>渠道</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="channel" name="channel">
+                        <option value="">请选择渠道</option>
+                        <option value="西欧专线">西欧专线</option>
+                        <option value="全渠道">全渠道</option>
+                        <option value="东南亚专线">东南亚专线</option>
+                        <option value="北美专线">北美专线</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="serviceType">
+                    <div class="field-label"><span class="required-star">*</span><span>服务类型</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="serviceType" name="serviceType">
+                        <option value="">请选择服务类型</option>
+                        <option value="快递">快递</option>
+                        <option value="标准">标准</option>
+                        <option value="经济">经济</option>
+                        <option value="小包">小包</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="currency">
+                    <div class="field-label"><span class="required-star">*</span><span>币种</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="currency" name="currency">
+                        <option value="">请选择币种</option>
+                        <option value="EUR">EUR</option>
+                        <option value="USD">USD</option>
+                        <option value="CNY">CNY</option>
+                        <option value="GBP">GBP</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="dateRange">
+                    <div class="field-label"><span class="required-star">*</span><span>适用时间</span></div>
+                    <div class="date-range-wrap">
+                      <input class="field-control date-input" id="startDate" type="date" name="startDate">
+                      <span class="date-sep">~</span>
+                      <input class="field-control date-input" id="endDate" type="date" name="endDate">
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="effectType">
+                    <div class="field-label"><span>生效方式</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="effectType" name="effectType">
+                        <option value="immediate">立即生效</option>
+                        <option value="scheduled">定时生效</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group span-2" data-field="remark">
+                    <div class="field-label"><span>备注</span></div>
+                    <input class="field-control" id="remark" name="remark" maxlength="255" placeholder="请输入备注">
+                    <div class="field-tip"></div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="tab-bar" id="tabBar">
+              <button class="tab-item active" type="button" data-tab="zone">分区</button>
+              <button class="tab-item" type="button" data-tab="freight">运费</button>
+              <button class="tab-item" type="button" data-tab="surcharge">附加费</button>
+            </div>
+            <div class="tab-content" id="tabZone" data-tab-panel="zone">
+              <div class="tab-section">
+                <div class="tab-section-head">
+                  <div class="section-title">分区管理</div>
+                  <button class="btn-add" id="addZoneBtn" type="button">新增分区</button>
+                </div>
+                <div class="zone-table-wrap">
+                  <table class="zone-table">
+                    <thead><tr><th style="width:16%">分区名称</th><th style="width:18%">国家/地区</th><th style="width:18%">城市</th><th style="width:14%">起始邮编</th><th style="width:14%">结束邮编</th><th style="width:20%">操作</th></tr></thead>
+                    <tbody id="zoneTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="tab-content" id="tabFreight" data-tab-panel="freight" style="display:none">
+              <div class="tab-section">
+                <div class="tab-section-head">
+                  <div class="section-title">配送费</div>
+                  <button class="btn-add" id="addDeliveryWeightBtn" type="button">新增重量段</button>
+                </div>
+                <div class="matrix-table-wrap"><table class="matrix-table" id="deliveryFeeTable"><thead id="deliveryFeeHead"></thead><tbody id="deliveryFeeBody"></tbody></table></div>
+              </div>
+              <div class="tab-section">
+                <div class="tab-section-head">
+                  <div class="section-title">中转费</div>
+                  <button class="btn-add" id="addTransferWeightBtn" type="button">新增重量段</button>
+                </div>
+                <div class="matrix-table-wrap"><table class="matrix-table" id="transferFeeTable"><thead id="transferFeeHead"></thead><tbody id="transferFeeBody"></tbody></table></div>
+              </div>
+              <div class="tab-section">
+                <div class="tab-section-head">
+                  <div class="section-title">代收货款服务费</div>
+                  <button class="btn-add" id="addCodWeightBtn" type="button">新增重量段</button>
+                </div>
+                <div class="matrix-table-wrap"><table class="matrix-table" id="codFeeTable"><thead id="codFeeHead"></thead><tbody id="codFeeBody"></tbody></table></div>
+              </div>
+            </div>
+            <div class="tab-content" id="tabSurcharge" data-tab-panel="surcharge" style="display:none">
+              <div class="tab-section">
+                <div class="tab-section-head">
+                  <div class="section-title">超长超重附加费</div>
+                  <button class="btn-add" id="addOversizeBtn" type="button">新增</button>
+                </div>
+                <div class="surcharge-table-wrap"><table class="surcharge-table"><thead><tr><th style="width:18%">条件类型</th><th style="width:16%">最小值</th><th style="width:16%">最大值</th><th style="width:18%">计费方式</th><th style="width:16%">费用</th><th style="width:16%">操作</th></tr></thead><tbody id="oversizeTableBody"></tbody></table></div>
+              </div>
+              <div class="tab-section">
+                <div class="tab-section-head">
+                  <div class="section-title">偏远地区附加费</div>
+                  <button class="btn-add" id="addRemoteBtn" type="button">新增</button>
+                </div>
+                <div class="surcharge-table-wrap"><table class="surcharge-table"><thead><tr><th style="width:24%">国家/地区</th><th style="width:28%">邮编范围</th><th style="width:24%">费用</th><th style="width:24%">操作</th></tr></thead><tbody id="remoteTableBody"></tbody></table></div>
+              </div>
+              <div class="tab-section">
+                <div class="tab-section-head">
+                  <div class="section-title">代收货款金额附加费</div>
+                  <button class="btn-add" id="addCodSurchargeBtn" type="button">新增</button>
+                </div>
+                <div class="surcharge-table-wrap"><table class="surcharge-table"><thead><tr><th style="width:18%">最小金额</th><th style="width:18%">最大金额</th><th style="width:18%">费用类型</th><th style="width:18%">费用/费率</th><th style="width:28%">操作</th></tr></thead><tbody id="codSurchargeTableBody"></tbody></table></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div class="modal-mask" id="zoneModal" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title" id="zoneModalTitle">新增分区</div>
+        <button class="modal-close" id="zoneModalClose" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-form">
+          <div class="field-group" data-field="modalZoneName">
+            <div class="field-label"><span class="required-star">*</span><span>分区名称</span></div>
+            <input class="field-control" id="modalZoneName" type="text" maxlength="50" placeholder="请输入分区名称">
+            <div class="field-tip"></div>
+          </div>
+          <div class="field-group" data-field="modalZoneCountry">
+            <div class="field-label"><span class="required-star">*</span><span>国家/地区</span></div>
+            <div class="select-wrap">
+              <select class="field-select" id="modalZoneCountry">
+                <option value="">请选择国家/地区</option>
+                <option value="波兰">波兰</option>
+                <option value="德国">德国</option>
+                <option value="法国">法国</option>
+                <option value="西班牙">西班牙</option>
+                <option value="意大利">意大利</option>
+                <option value="英国">英国</option>
+                <option value="荷兰">荷兰</option>
+                <option value="比利时">比利时</option>
+                <option value="美国">美国</option>
+                <option value="泰国">泰国</option>
+                <option value="越南">越南</option>
+                <option value="马来西亚">马来西亚</option>
+              </select>
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+            </div>
+            <div class="field-tip"></div>
+          </div>
+          <div class="field-group" data-field="modalZoneCity">
+            <div class="field-label"><span>城市</span></div>
+            <input class="field-control" id="modalZoneCity" type="text" maxlength="50" placeholder="请输入城市">
+            <div class="field-tip"></div>
+          </div>
+          <div class="field-group" data-field="modalZoneStartZip">
+            <div class="field-label"><span>起始邮编</span></div>
+            <input class="field-control" id="modalZoneStartZip" type="text" maxlength="20" placeholder="请输入起始邮编">
+            <div class="field-tip"></div>
+          </div>
+          <div class="field-group" data-field="modalZoneEndZip">
+            <div class="field-label"><span>结束邮编</span></div>
+            <input class="field-control" id="modalZoneEndZip" type="text" maxlength="20" placeholder="请输入结束邮编">
+            <div class="field-tip"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="zoneModalCancelBtn" type="button">取消</button>
+        <button class="btn btn-primary" id="zoneModalConfirmBtn" type="button">确定</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast-stack" id="toastStack"></div>
+  <script src="./assets/js/sdms-header-tabs.js"></script>
+  <script src="./assets/js/sdms-sidebar.js"></script>
+  <script src="./assets/js/logistics-fee-create.js"></script>
+</body>
+</html>
