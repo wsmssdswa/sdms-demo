@@ -115,6 +115,9 @@ body { margin: 0; font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",
 .weight-end-input:focus { outline: none; border-color: #7896ef; background: #fff; box-shadow: 0 0 0 3px rgba(90,116,239,0.1); }
 .matrix-delete { color: var(--danger); font-size: 12px; cursor: pointer; border: 0; background: transparent; padding: 0; transition: color 0.2s; }
 .matrix-delete:hover { color: #e0434a; }
+.matrix-ops { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.matrix-insert { color: var(--brand); font-size: 13px; font-weight: 700; cursor: pointer; border: 0; background: transparent; padding: 0; transition: color 0.2s; }
+.matrix-insert:hover { color: var(--brand-deep); }
 .renewal-check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #6f7f92; cursor: pointer; user-select: none; }
 .renewal-check input { accent-color: var(--brand); }
 .renewal-sep td { padding: 0; border: 0; }
