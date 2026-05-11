@@ -71,7 +71,7 @@ body { margin: 0; font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",
 .zone-panel-title { font-size: 12px; font-weight: 600; color: #4f6176; }
 .zone-panel-add-bottom { display: block; width: 100%; height: 32px; border: 0; border-top: 1px solid #eef2f7; background: #fafcff; color: var(--brand); font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s, color 0.2s; text-align: center; }
 .zone-panel-add-bottom:hover { background: #f0f4ff; color: var(--brand-deep); }
-.zone-panel-body { flex: 1; height: 360px; overflow-y: auto; }
+.zone-panel-body { height: 360px; overflow-y: auto; }
 .zone-item { display: flex; align-items: center; padding: 8px 12px; border-bottom: 1px solid #f2f5fa; cursor: grab; transition: background 0.15s ease; font-size: 13px; color: #3a4d63; }
 .zone-item:hover { background: #f5f8fd; }
 .zone-item.active { background: #eef3ff; color: var(--brand); font-weight: 600; }
