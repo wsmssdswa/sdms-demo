@@ -62,22 +62,29 @@ const state={
       {id:17,name:'美国',cities:[{id:29,name:'纽约',startZip:'10001',endZip:'10099'}]},
     ]},
   ],
-  weightSteps:['0-0.5kg','0.5-1kg','1-1.5kg','1.5-2kg','2-3kg','3-5kg','5-10kg','10-20kg'],
+  weightSteps:[
+    {endWeight:0.5},{endWeight:1},{endWeight:1.5},{endWeight:2},
+    {endWeight:3},{endWeight:5},{endWeight:10},{endWeight:20}
+  ],
   deliveryFees:{},transferFees:{},codFees:{},
+  deliveryRenewalEnabled:false,deliveryRenewal:{},
+  transferRenewalEnabled:false,transferRenewal:{},
   oversizeSurcharges:[],remoteSurcharges:[],codSurcharges:[],
   nextSurchargeId:1,
 };
 
 /* 初始化运费Mock */
-state.zones.forEach(z=>{
-  state.weightSteps.forEach(w=>{
-    if(!state.deliveryFees[w])state.deliveryFees[w]={};
-    state.deliveryFees[w][z.id]=(5+Math.random()*30).toFixed(2);
-    if(!state.transferFees[w])state.transferFees[w]={};
-    state.transferFees[w][z.id]=(2+Math.random()*16).toFixed(2);
-    if(!state.codFees[w])state.codFees[w]={};
-    state.codFees[w][z.id]=(1+Math.random()*7).toFixed(2);
+state.weightSteps.forEach((ws,i)=>{
+  state.deliveryFees[i]={};state.transferFees[i]={};state.codFees[i]={};
+  state.zones.forEach(z=>{
+    state.deliveryFees[i][z.id]=(5+Math.random()*30).toFixed(2);
+    state.transferFees[i][z.id]=(2+Math.random()*16).toFixed(2);
+    state.codFees[i][z.id]=(1+Math.random()*7).toFixed(2);
   });
+});
+state.zones.forEach(z=>{
+  state.deliveryRenewal[z.id]={unit:'0.5',price:(2+Math.random()*5).toFixed(2)};
+  state.transferRenewal[z.id]={unit:'0.5',price:(1+Math.random()*3).toFixed(2)};
 });
 state.oversizeSurcharges=[
   {id:state.nextSurchargeId++,type:'重量',minVal:'30',maxVal:'50',chargeType:'固定金额',fee:'15.00'},
@@ -221,6 +228,8 @@ zoneList.addEventListener('click',e=>{
     if(!window.confirm(`确认删除分区"${z.name}"？该分区下的所有国家和城市数据将被清除。`))return;
     state.zones=state.zones.filter(z=>z.id!==id);
     [state.deliveryFees,state.transferFees,state.codFees].forEach(fees=>{Object.values(fees).forEach(row=>{delete row[id];});});
+    delete state.deliveryRenewal[id];
+    delete state.transferRenewal[id];
     if(state.activeZoneId===id){state.activeZoneId=null;state.activeCountryId=null;}
     renderZoneList();
     showToast('success','已删除',`分区"${z.name}"已移除。`);
@@ -283,11 +292,13 @@ cityList.addEventListener('click',e=>{
 addZoneBtn.addEventListener('click',()=>{
   const newZone={id:nextId++,sortNo:nextSortNo++,name:'新分区',countries:[]};
   state.zones.push(newZone);
-  state.weightSteps.forEach(w=>{
-    if(!state.deliveryFees[w])state.deliveryFees[w]={};state.deliveryFees[w][newZone.id]='0.00';
-    if(!state.transferFees[w])state.transferFees[w]={};state.transferFees[w][newZone.id]='0.00';
-    if(!state.codFees[w])state.codFees[w]={};state.codFees[w][newZone.id]='0.00';
+  state.weightSteps.forEach((ws,i)=>{
+    state.deliveryFees[i][newZone.id]='0.00';
+    state.transferFees[i][newZone.id]='0.00';
+    state.codFees[i][newZone.id]='0.00';
   });
+  state.deliveryRenewal[newZone.id]={unit:'0.5',price:'0.00'};
+  state.transferRenewal[newZone.id]={unit:'0.5',price:'0.00'};
   state.activeZoneId=newZone.id;
   state.activeCountryId=null;
   renderZoneList();
@@ -313,46 +324,119 @@ addCityBtn.addEventListener('click',()=>{
 });
 
 /* ===== 运费矩阵 ===== */
+const deliveryRenewalCheck=$('deliveryRenewalCheck');
+const transferRenewalCheck=$('transferRenewalCheck');
+const deliveryTableWrap=$('deliveryTableWrap');
+const transferTableWrap=$('transferTableWrap');
+const codTableWrap=$('codTableWrap');
+const transferEnabledCheck=$('transferEnabledCheck');
+const codEnabledCheck=$('codEnabledCheck');
+
+/* 表格启用/停用开关 */
+transferEnabledCheck.addEventListener('change',()=>{transferTableWrap.style.display=transferEnabledCheck.checked?'':'none';});
+codEnabledCheck.addEventListener('change',()=>{codTableWrap.style.display=codEnabledCheck.checked?'':'none';});
+
 function buildMatrixHead(){
   const zoneCols=state.zones.map(z=>`<th style="width:${Math.max(80,Math.floor(600/Math.max(1,state.zones.length)))}px">${escapeHtml(z.name)}</th>`).join('');
-  return `<tr><th style="width:90px">重量段</th>${zoneCols}<th style="width:50px">操作</th></tr>`;
+  return `<tr><th style="width:120px">重量段</th>${zoneCols}<th style="width:50px">操作</th></tr>`;
 }
-function buildMatrixRows(feeData,prefix){
+function buildMatrixRows(feeData,prefix,renewalEnabled,renewalData){
   if(!state.zones.length){
-    return `<tr><td colspan="${state.zones.length+2}" style="padding:40px;text-align:center;color:#9aa8b8;">请先在"分区"Tab中添加分区</td></tr>`;
+    return `<tr><td colspan="3" style="padding:40px;text-align:center;color:#9aa8b8;">请先在"分区"Tab中添加分区</td></tr>`;
   }
-  return state.weightSteps.map((w,idx)=>{
+  let html='';
+  state.weightSteps.forEach((ws,idx)=>{
+    const startW=idx===0?0:state.weightSteps[idx-1].endWeight;
     const cells=state.zones.map(z=>{
-      const val=(feeData[w]&&feeData[w][z.id])||'0.00';
-      return `<td><input class="matrix-input" data-weight="${w}" data-zone="${z.id}" data-prefix="${prefix}" value="${val}"></td>`;
+      const val=(feeData[idx]&&feeData[idx][z.id])||'0.00';
+      return `<td><input class="matrix-input" data-step-index="${idx}" data-zone="${z.id}" data-prefix="${prefix}" value="${val}"></td>`;
     }).join('');
-    return `<tr><td><span class="weight-label">${w}</span></td>${cells}<td><button class="matrix-delete" data-action="delete-weight" data-index="${idx}">×</button></td></tr>`;
-  }).join('');
+    html+=`<tr><td><div class="weight-range"><span class="weight-start">${startW}</span><span class="weight-sep">~</span><input class="weight-end-input" data-action="edit-end-weight" data-index="${idx}" value="${ws.endWeight}"></div></td>${cells}<td><button class="matrix-delete" data-action="delete-weight" data-index="${idx}">×</button></td></tr>`;
+  });
+  if(renewalEnabled&&renewalData){
+    const colCount=state.zones.length+2;
+    html+=`<tr class="renewal-sep"><td colspan="${colCount}"></td></tr>`;
+    html+=`<tr class="renewal-row"><td class="renewal-label">续重单位(kg)</td>`;
+    state.zones.forEach(z=>{
+      const val=(renewalData[z.id]&&renewalData[z.id].unit)||'0.5';
+      html+=`<td><input class="renewal-input" data-action="renewal-unit" data-zone="${z.id}" data-prefix="${prefix}" value="${val}"></td>`;
+    });
+    html+=`<td></td></tr>`;
+    html+=`<tr class="renewal-row"><td class="renewal-label">续重单价</td>`;
+    state.zones.forEach(z=>{
+      const val=(renewalData[z.id]&&renewalData[z.id].price)||'0.00';
+      html+=`<td><input class="renewal-input" data-action="renewal-price" data-zone="${z.id}" data-prefix="${prefix}" value="${val}"></td>`;
+    });
+    html+=`<td></td></tr>`;
+  }
+  return html;
 }
-function renderMatrix(headEl,bodyEl,feeData,prefix){headEl.innerHTML=buildMatrixHead();bodyEl.innerHTML=buildMatrixRows(feeData,prefix);}
+function renderMatrix(headEl,bodyEl,feeData,prefix,renewalEnabled,renewalData){headEl.innerHTML=buildMatrixHead();bodyEl.innerHTML=buildMatrixRows(feeData,prefix,renewalEnabled,renewalData);}
 function renderAllMatrix(){
-  renderMatrix(deliveryFeeHead,deliveryFeeBody,state.deliveryFees,'delivery');
-  renderMatrix(transferFeeHead,transferFeeBody,state.transferFees,'transfer');
-  renderMatrix(codFeeHead,codFeeBody,state.codFees,'cod');
+  renderMatrix(deliveryFeeHead,deliveryFeeBody,state.deliveryFees,'delivery',state.deliveryRenewalEnabled,state.deliveryRenewal);
+  renderMatrix(transferFeeHead,transferFeeBody,state.transferFees,'transfer',state.transferRenewalEnabled,state.transferRenewal);
+  renderMatrix(codFeeHead,codFeeBody,state.codFees,'cod',false,null);
 }
 
+/* 复选框开关 */
+deliveryRenewalCheck.addEventListener('change',()=>{
+  state.deliveryRenewalEnabled=deliveryRenewalCheck.checked;
+  renderMatrix(deliveryFeeHead,deliveryFeeBody,state.deliveryFees,'delivery',state.deliveryRenewalEnabled,state.deliveryRenewal);
+});
+transferRenewalCheck.addEventListener('change',()=>{
+  state.transferRenewalEnabled=transferRenewalCheck.checked;
+  renderMatrix(transferFeeHead,transferFeeBody,state.transferFees,'transfer',state.transferRenewalEnabled,state.transferRenewal);
+});
+
+/* 统一输入事件（费用 + 结束重量 + 续重） */
 function handleMatrixInput(e){
-  const input=e.target.closest('.matrix-input');if(!input)return;
-  const w=input.dataset.weight;const zid=Number(input.dataset.zone);const prefix=input.dataset.prefix;
-  const feeMap=prefix==='delivery'?state.deliveryFees:prefix==='transfer'?state.transferFees:state.codFees;
-  if(!feeMap[w])feeMap[w]={};feeMap[w][zid]=input.value;
+  const mInput=e.target.closest('.matrix-input');
+  if(mInput){
+    const idx=Number(mInput.dataset.stepIndex);const zid=Number(mInput.dataset.zone);const prefix=mInput.dataset.prefix;
+    const feeMap=prefix==='delivery'?state.deliveryFees:prefix==='transfer'?state.transferFees:state.codFees;
+    if(!feeMap[idx])feeMap[idx]={};feeMap[idx][zid]=mInput.value;
+    return;
+  }
+  const endInput=e.target.closest('[data-action="edit-end-weight"]');
+  if(endInput){
+    const idx=Number(endInput.dataset.index);
+    const val=parseFloat(endInput.value);
+    if(!isNaN(val)&&val>0)state.weightSteps[idx].endWeight=val;
+    return;
+  }
+  const rUnit=e.target.closest('[data-action="renewal-unit"]');
+  if(rUnit){
+    const zid=Number(rUnit.dataset.zone);const prefix=rUnit.dataset.prefix;
+    const map=prefix==='delivery'?state.deliveryRenewal:state.transferRenewal;
+    if(!map[zid])map[zid]={};map[zid].unit=rUnit.value;
+    return;
+  }
+  const rPrice=e.target.closest('[data-action="renewal-price"]');
+  if(rPrice){
+    const zid=Number(rPrice.dataset.zone);const prefix=rPrice.dataset.prefix;
+    const map=prefix==='delivery'?state.deliveryRenewal:state.transferRenewal;
+    if(!map[zid])map[zid]={};map[zid].price=rPrice.value;
+    return;
+  }
 }
 [deliveryFeeBody,transferFeeBody,codFeeBody].forEach(el=>{el.addEventListener('input',handleMatrixInput);});
 
 function addWeightStep(){
   const last=state.weightSteps[state.weightSteps.length-1];
-  let maxKg=parseFloat(last.split('-')[1])||20;
-  const newStep=`${maxKg}-${maxKg+5}kg`;
-  state.weightSteps.push(newStep);
+  const lastEnd=last?last.endWeight:0;
+  let gap=0.5;
+  if(state.weightSteps.length>=2){
+    const prev=state.weightSteps[state.weightSteps.length-2];
+    gap=last.endWeight-prev.endWeight;
+  }
+  const newEnd=parseFloat((lastEnd+gap).toFixed(2));
+  state.weightSteps.push({endWeight:newEnd});
+  const idx=state.weightSteps.length-1;
+  state.deliveryFees[idx]={};state.transferFees[idx]={};state.codFees[idx]={};
   state.zones.forEach(z=>{
-    if(!state.deliveryFees[newStep])state.deliveryFees[newStep]={};state.deliveryFees[newStep][z.id]='0.00';
-    if(!state.transferFees[newStep])state.transferFees[newStep]={};state.transferFees[newStep][z.id]='0.00';
-    if(!state.codFees[newStep])state.codFees[newStep]={};state.codFees[newStep][z.id]='0.00';
+    state.deliveryFees[idx][z.id]='0.00';
+    state.transferFees[idx][z.id]='0.00';
+    state.codFees[idx][z.id]='0.00';
   });
   renderAllMatrix();
 }
@@ -360,12 +444,32 @@ addDeliveryWeightBtn.addEventListener('click',addWeightStep);
 addTransferWeightBtn.addEventListener('click',addWeightStep);
 addCodWeightBtn.addEventListener('click',addWeightStep);
 
+function rebuildFeeIndex(){
+  ['deliveryFees','transferFees','codFees'].forEach(key=>{
+    const old=state[key];state[key]={};
+    state.weightSteps.forEach((ws,i)=>{
+      // 旧索引需要偏移计算：保留splice后剩余的数据
+      // splice后原数组已变，直接用新索引重建
+      state[key][i]=old[i]||{};
+    });
+  });
+}
 function handleMatrixDelete(e){
   const btn=e.target.closest('[data-action="delete-weight"]');if(!btn)return;
-  const idx=Number(btn.dataset.index);const w=state.weightSteps[idx];
-  if(!window.confirm(`确认删除重量段"${w}"？`))return;
-  delete state.deliveryFees[w];delete state.transferFees[w];delete state.codFees[w];
-  state.weightSteps.splice(idx,1);renderAllMatrix();
+  const idx=Number(btn.dataset.index);
+  const startW=idx===0?0:state.weightSteps[idx-1].endWeight;
+  const endW=state.weightSteps[idx].endWeight;
+  if(!window.confirm(`确认删除重量段"${startW}~${endW}"？`))return;
+  // 先把被删索引之后的数据往前移
+  for(let i=idx+1;i<state.weightSteps.length;i++){
+    state.deliveryFees[i-1]=state.deliveryFees[i]||{};
+    state.transferFees[i-1]=state.transferFees[i]||{};
+    state.codFees[i-1]=state.codFees[i]||{};
+  }
+  const lastIdx=state.weightSteps.length-1;
+  delete state.deliveryFees[lastIdx];delete state.transferFees[lastIdx];delete state.codFees[lastIdx];
+  state.weightSteps.splice(idx,1);
+  renderAllMatrix();
 }
 [deliveryFeeBody,transferFeeBody,codFeeBody].forEach(el=>{el.addEventListener('click',handleMatrixDelete);});
 
