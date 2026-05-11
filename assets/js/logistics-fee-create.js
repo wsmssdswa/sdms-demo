@@ -402,7 +402,7 @@ function handleMatrixInput(e){
   if(endInput){
     const idx=Number(endInput.dataset.index);
     const val=parseFloat(endInput.value);
-    if(!isNaN(val)&&val>0)state.weightSteps[idx].endWeight=val;
+    if(!isNaN(val)&&val>0){state.weightSteps[idx].endWeight=val;renderAllMatrix();}
     return;
   }
   const rUnit=e.target.closest('[data-action="renewal-unit"]');
@@ -423,10 +423,6 @@ function handleMatrixInput(e){
 [deliveryFeeBody,transferFeeBody,codFeeBody].forEach(el=>{el.addEventListener('input',handleMatrixInput);});
 
 function insertWeightStep(idx){
-  const cur=state.weightSteps[idx];
-  let gap=0.5;
-  if(idx>0){gap=cur.endWeight-state.weightSteps[idx-1].endWeight;}
-  const newEnd=parseFloat((cur.endWeight+gap).toFixed(2));
   const insertIdx=idx+1;
   // 后移费用数据
   for(let i=state.weightSteps.length;i>insertIdx;i--){
@@ -434,7 +430,7 @@ function insertWeightStep(idx){
     state.transferFees[i]=state.transferFees[i-1]||{};
     state.codFees[i]=state.codFees[i-1]||{};
   }
-  state.weightSteps.splice(insertIdx,0,{endWeight:newEnd});
+  state.weightSteps.splice(insertIdx,0,{endWeight:''});
   state.deliveryFees[insertIdx]={};state.transferFees[insertIdx]={};state.codFees[insertIdx]={};
   state.zones.forEach(z=>{
     state.deliveryFees[insertIdx][z.id]='0.00';
