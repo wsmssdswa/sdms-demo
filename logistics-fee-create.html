@@ -156,24 +156,35 @@
             <div class="tab-content" id="tabFreight" data-tab-panel="freight" style="display:none">
               <div class="tab-section">
                 <div class="tab-section-head">
-                  <div class="section-title">配送费</div>
+                  <div class="tab-section-left">
+                    <div class="section-title">配送费</div>
+                    <label class="fee-toggle"><input type="checkbox" id="deliveryEnabledCheck" checked disabled>启用</label>
+                    <label class="renewal-check"><input type="checkbox" id="deliveryRenewalCheck">启用续重</label>
+                  </div>
                   <button class="btn-add" id="addDeliveryWeightBtn" type="button">新增重量段</button>
                 </div>
-                <div class="matrix-table-wrap"><table class="matrix-table" id="deliveryFeeTable"><thead id="deliveryFeeHead"></thead><tbody id="deliveryFeeBody"></tbody></table></div>
+                <div class="matrix-table-wrap" id="deliveryTableWrap"><table class="matrix-table" id="deliveryFeeTable"><thead id="deliveryFeeHead"></thead><tbody id="deliveryFeeBody"></tbody></table></div>
               </div>
               <div class="tab-section">
                 <div class="tab-section-head">
-                  <div class="section-title">中转费</div>
+                  <div class="tab-section-left">
+                    <div class="section-title">中转费</div>
+                    <label class="fee-toggle"><input type="checkbox" id="transferEnabledCheck" checked>启用</label>
+                    <label class="renewal-check"><input type="checkbox" id="transferRenewalCheck">启用续重</label>
+                  </div>
                   <button class="btn-add" id="addTransferWeightBtn" type="button">新增重量段</button>
                 </div>
-                <div class="matrix-table-wrap"><table class="matrix-table" id="transferFeeTable"><thead id="transferFeeHead"></thead><tbody id="transferFeeBody"></tbody></table></div>
+                <div class="matrix-table-wrap" id="transferTableWrap"><table class="matrix-table" id="transferFeeTable"><thead id="transferFeeHead"></thead><tbody id="transferFeeBody"></tbody></table></div>
               </div>
               <div class="tab-section">
                 <div class="tab-section-head">
-                  <div class="section-title">代收货款服务费</div>
+                  <div class="tab-section-left">
+                    <div class="section-title">代收货款服务费</div>
+                    <label class="fee-toggle"><input type="checkbox" id="codEnabledCheck" checked>启用</label>
+                  </div>
                   <button class="btn-add" id="addCodWeightBtn" type="button">新增重量段</button>
                 </div>
-                <div class="matrix-table-wrap"><table class="matrix-table" id="codFeeTable"><thead id="codFeeHead"></thead><tbody id="codFeeBody"></tbody></table></div>
+                <div class="matrix-table-wrap" id="codTableWrap"><table class="matrix-table" id="codFeeTable"><thead id="codFeeHead"></thead><tbody id="codFeeBody"></tbody></table></div>
               </div>
             </div>
             <div class="tab-content" id="tabSurcharge" data-tab-panel="surcharge" style="display:none">
