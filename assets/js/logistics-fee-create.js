@@ -37,27 +37,28 @@ const escapeHtml=(v)=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 
 /* ===== 数据模型 ===== */
 let nextId=100;
+let nextSortNo=6;
 const state={
   activeTab:'zone',
   activeZoneId:null,
   activeCountryId:null,
   zones:[
-    {id:1,name:'一区',countries:[
+    {id:1,sortNo:1,name:'一区',countries:[
       {id:10,name:'波兰',cities:[{id:20,name:'华沙',startZip:'00-001',endZip:'99-999'},{id:21,name:'克拉科夫',startZip:'30-001',endZip:'31-999'}]},
       {id:11,name:'德国',cities:[{id:22,name:'柏林',startZip:'10115',endZip:'14199'},{id:23,name:'慕尼黑',startZip:'80331',endZip:'81999'}]},
     ]},
-    {id:2,name:'二区',countries:[
+    {id:2,sortNo:2,name:'二区',countries:[
       {id:12,name:'法国',cities:[{id:24,name:'巴黎',startZip:'75001',endZip:'75999'}]},
       {id:13,name:'西班牙',cities:[{id:25,name:'马德里',startZip:'28001',endZip:'28999'}]},
     ]},
-    {id:3,name:'三区',countries:[
+    {id:3,sortNo:3,name:'三区',countries:[
       {id:14,name:'意大利',cities:[{id:26,name:'罗马',startZip:'00100',endZip:'09999'}]},
     ]},
-    {id:4,name:'四区',countries:[
+    {id:4,sortNo:4,name:'四区',countries:[
       {id:15,name:'英国',cities:[{id:27,name:'伦敦',startZip:'E1',endZip:'E99'}]},
       {id:16,name:'荷兰',cities:[{id:28,name:'阿姆斯特丹',startZip:'1000',endZip:'1099'}]},
     ]},
-    {id:5,name:'五区',countries:[
+    {id:5,sortNo:5,name:'五区',countries:[
       {id:17,name:'美国',cities:[{id:29,name:'纽约',startZip:'10001',endZip:'10099'}]},
     ]},
   ],
@@ -121,8 +122,9 @@ function renderZoneList(){
     cityList.innerHTML='<div class="zone-empty">请先选择国家/地区</div>';
     return;
   }
-  zoneList.innerHTML=state.zones.map(z=>`<div class="zone-item${state.activeZoneId===z.id?' active':''}" data-zone-id="${z.id}">
-    <span class="zone-item-name" data-action="select-zone" data-id="${z.id}">${escapeHtml(z.name)}</span>
+  zoneList.innerHTML=state.zones.map((z,idx)=>`<div class="zone-item${state.activeZoneId===z.id?' active':''}" data-zone-id="${z.id}" data-index="${idx}" draggable="true">
+    <span class="zone-sort-no">${z.sortNo}</span>
+    <input class="zone-name-input" data-action="edit-zone-name" data-id="${z.id}" value="${escapeHtml(z.name)}">
     <span class="zone-item-count">${z.countries.length}国</span>
     <button class="zone-item-del" data-action="delete-zone" data-id="${z.id}" title="删除">×</button>
   </div>`).join('');
@@ -141,8 +143,8 @@ function renderCountryList(){
     cityList.innerHTML='<div class="zone-empty">请先选择国家/地区</div>';
     return;
   }
-  countryList.innerHTML=zone.countries.map(c=>`<div class="zone-item${state.activeCountryId===c.id?' active':''}" data-country-id="${c.id}">
-    <span class="zone-item-name" data-action="select-country" data-id="${c.id}">${escapeHtml(c.name)}</span>
+  countryList.innerHTML=zone.countries.map((c,idx)=>`<div class="zone-item${state.activeCountryId===c.id?' active':''}" data-country-id="${c.id}" data-index="${idx}" draggable="true">
+    <input class="zone-name-input" data-action="edit-country-name" data-id="${c.id}" value="${escapeHtml(c.name)}">
     <span class="zone-item-count">${c.cities.length}城</span>
     <button class="zone-item-del" data-action="delete-country" data-id="${c.id}" title="删除">×</button>
   </div>`).join('');
@@ -161,24 +163,56 @@ function renderCityList(){
   }
   cityList.innerHTML=country.cities.map(c=>`<div class="city-row" data-city-id="${c.id}">
     <input placeholder="城市" value="${escapeHtml(c.name)}" data-field="city-name" data-id="${c.id}">
-    <input placeholder="起始邮编" value="${escapeHtml(c.startZip)}" data-field="city-start" data-id="${c.id}">
+    <input placeholder="开始邮编" value="${escapeHtml(c.startZip)}" data-field="city-start" data-id="${c.id}">
     <input placeholder="结束邮编" value="${escapeHtml(c.endZip)}" data-field="city-end" data-id="${c.id}">
     <button class="zone-item-del" data-action="delete-city" data-id="${c.id}" title="删除">×</button>
   </div>`).join('');
 }
 
-/* 分区列表交互 - 事件委托 */
+/* ===== 拖拽排序 ===== */
+let dragSrcIndex=null;
+function bindDragSort(containerEl,getArray,renderFn){
+  containerEl.addEventListener('dragstart',e=>{
+    const item=e.target.closest('.zone-item[draggable]');if(!item)return;
+    dragSrcIndex=Number(item.dataset.index);
+    item.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+    e.dataTransfer.setData('text/plain',dragSrcIndex);
+  });
+  containerEl.addEventListener('dragend',e=>{
+    const item=e.target.closest('.zone-item');if(!item)return;
+    item.classList.remove('dragging');
+    containerEl.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  });
+  containerEl.addEventListener('dragover',e=>{
+    e.preventDefault();e.dataTransfer.dropEffect='move';
+    const item=e.target.closest('.zone-item');if(!item)return;
+    containerEl.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+    item.classList.add('drag-over');
+  });
+  containerEl.addEventListener('dragleave',e=>{
+    const item=e.target.closest('.zone-item');if(!item)return;
+    item.classList.remove('drag-over');
+  });
+  containerEl.addEventListener('drop',e=>{
+    e.preventDefault();
+    const item=e.target.closest('.zone-item');if(!item)return;
+    item.classList.remove('drag-over');
+    const targetIdx=Number(item.dataset.index);
+    if(dragSrcIndex===null||dragSrcIndex===targetIdx)return;
+    const arr=getArray();
+    const [moved]=arr.splice(dragSrcIndex,1);
+    arr.splice(targetIdx,0,moved);
+    dragSrcIndex=null;
+    renderFn();
+  });
+}
+bindDragSort(zoneList,()=>state.zones,renderZoneList);
+bindDragSort(countryList,()=>{const z=findZone(state.activeZoneId);return z?z.countries:[];},renderCountryList);
+
+/* ===== 分区列表交互 ===== */
 zoneList.addEventListener('click',e=>{
-  /* 选择分区 */
-  const selectBtn=e.target.closest('[data-action="select-zone"]');
-  if(selectBtn){
-    const id=Number(selectBtn.dataset.id);
-    state.activeZoneId=id;
-    state.activeCountryId=null;
-    renderZoneList();
-    return;
-  }
-  /* 删除分区 */
+  if(e.target.closest('.zone-name-input'))return;
   const delBtn=e.target.closest('[data-action="delete-zone"]');
   if(delBtn){
     e.stopPropagation();
@@ -190,17 +224,19 @@ zoneList.addEventListener('click',e=>{
     if(state.activeZoneId===id){state.activeZoneId=null;state.activeCountryId=null;}
     renderZoneList();
     showToast('success','已删除',`分区"${z.name}"已移除。`);
-  }
-});
-
-/* 国家列表交互 */
-countryList.addEventListener('click',e=>{
-  const selectBtn=e.target.closest('[data-action="select-country"]');
-  if(selectBtn){
-    state.activeCountryId=Number(selectBtn.dataset.id);
-    renderCountryList();
     return;
   }
+  const item=e.target.closest('.zone-item');
+  if(item){state.activeZoneId=Number(item.dataset.zoneId);state.activeCountryId=null;renderZoneList();}
+});
+zoneList.addEventListener('input',e=>{
+  const input=e.target.closest('[data-action="edit-zone-name"]');if(!input)return;
+  const z=findZone(Number(input.dataset.id));if(z)z.name=input.value;
+});
+
+/* ===== 国家列表交互 ===== */
+countryList.addEventListener('click',e=>{
+  if(e.target.closest('.zone-name-input'))return;
   const delBtn=e.target.closest('[data-action="delete-country"]');
   if(delBtn){
     e.stopPropagation();
@@ -212,10 +248,18 @@ countryList.addEventListener('click',e=>{
     if(state.activeCountryId===id)state.activeCountryId=null;
     renderCountryList();
     showToast('success','已删除',`国家"${c.name}"已移除。`);
+    return;
   }
+  const item=e.target.closest('.zone-item');
+  if(item){state.activeCountryId=Number(item.dataset.countryId);renderCountryList();}
+});
+countryList.addEventListener('input',e=>{
+  const input=e.target.closest('[data-action="edit-country-name"]');if(!input)return;
+  const zone=findZone(state.activeZoneId);if(!zone)return;
+  const c=zone.countries.find(c=>c.id===Number(input.dataset.id));if(c)c.name=input.value;
 });
 
-/* 城市列表交互 - 编辑同步 */
+/* ===== 城市列表交互 ===== */
 cityList.addEventListener('input',e=>{
   const input=e.target.closest('input[data-field]');if(!input)return;
   const country=findCountry(state.activeZoneId,state.activeCountryId);if(!country)return;
@@ -225,7 +269,6 @@ cityList.addEventListener('input',e=>{
   else if(field==='city-start')city.startZip=input.value;
   else if(field==='city-end')city.endZip=input.value;
 });
-
 cityList.addEventListener('click',e=>{
   const delBtn=e.target.closest('[data-action="delete-city"]');
   if(delBtn){
@@ -236,9 +279,9 @@ cityList.addEventListener('click',e=>{
   }
 });
 
-/* 新增按钮 */
+/* ===== 新增按钮 ===== */
 addZoneBtn.addEventListener('click',()=>{
-  const newZone={id:nextId++,name:`${state.zones.length+1}区`,countries:[]};
+  const newZone={id:nextId++,sortNo:nextSortNo++,name:'新分区',countries:[]};
   state.zones.push(newZone);
   state.weightSteps.forEach(w=>{
     if(!state.deliveryFees[w])state.deliveryFees[w]={};state.deliveryFees[w][newZone.id]='0.00';
@@ -248,7 +291,7 @@ addZoneBtn.addEventListener('click',()=>{
   state.activeZoneId=newZone.id;
   state.activeCountryId=null;
   renderZoneList();
-  showToast('success','新增成功',`分区"${newZone.name}"已添加。`);
+  showToast('success','新增成功',`分区已添加，请修改名称。`);
 });
 
 addCountryBtn.addEventListener('click',()=>{
