@@ -47,7 +47,8 @@
       { title: '费用管理', icon: 'ri-money-cny-box-line', items: [
         { label: '操作费管理', href: './operation-fee-config.html' },
         { label: '物流费管理', href: './logistics-fee-config.html' },
-        { label: '仓储费管理', href: './storage-fee-config.html' }
+        { label: '仓储费管理', href: './storage-fee-config.html' },
+        { label: '报价方案管理', href: './quotation-scheme-config.html' }
       ]},
       { title: '账单管理', icon: 'ri-bill-line', items: [
         { label: '账单列表', href: '' },
