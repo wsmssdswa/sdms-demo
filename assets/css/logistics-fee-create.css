@@ -19,6 +19,7 @@ body { margin: 0; font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",
 .app-shell { min-width: 1280px; min-height: 100vh; display: flex; }
 
 .page-card { height: auto; flex: none; min-height: calc(100vh - 65px); border: 1px solid var(--line); background: #fff; box-shadow: 0 1px 2px rgba(24,37,56,0.04),0 6px 16px rgba(24,37,56,0.06); overflow: visible; }
+.content-wrap { overflow: visible; }
 .page-card-head { height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px 0 32px; border-bottom: 1px solid var(--line); background: #fff; }
 .page-title { font-size: 18px; line-height: 1; color: #244b87; font-weight: 700; letter-spacing: 0.1px; }
 .page-actions { display: flex; gap: 12px; }
