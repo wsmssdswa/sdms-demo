@@ -5,7 +5,10 @@ const saveDraftBtn=document.getElementById('saveDraftBtn');
 const submitBtn=document.getElementById('submitBtn');
 const pageTitleLabel=document.getElementById('pageTitleLabel');
 const schemeName=document.getElementById('schemeName');
-const customer=document.getElementById('customer');
+const customerMultiSelect=document.getElementById('customerMultiSelect');
+const customerTrigger=document.getElementById('customerTrigger');
+const customerTags=document.getElementById('customerTags');
+const customerDropdown=document.getElementById('customerDropdown');
 const warehouse=document.getElementById('warehouse');
 const startDate=document.getElementById('startDate');
 const endDate=document.getElementById('endDate');
@@ -74,12 +77,15 @@ function buildSeedFeeData(){
 
 let allFeeItems=buildSeedFeeData();
 
+const CUSTOMER_OPTIONS=['深圳ABC贸易有限公司','杭州XYZ物流','上海DEF电商','广州GHI供应链'];
+
 /* ── State ── */
 const state={
   currentBizType:'trunk',
   currentCategory:'logistics',
   searchKeyword:'',
   filterType:'all',
+  selectedCustomers:new Set(),
   selections:{},
   expandedDetails:new Set()
 };
@@ -92,7 +98,7 @@ if(isEdit||isView){
   document.title='编辑报价方案';
   if(isView){pageTitleLabel.textContent='查看报价方案';document.title='查看报价方案';}
   schemeName.value='ABC贸易-波兰仓标准报价';
-  customer.value='深圳ABC贸易有限公司';
+  state.selectedCustomers=new Set(['深圳ABC贸易有限公司','杭州XYZ物流']);
   warehouse.value='波兰海外仓';
   startDate.value='2025-01-01';
   endDate.value='2025-12-31';
@@ -121,6 +127,16 @@ function getTotalSelectedCount(){
   return total;
 }
 
+function getCategorySelectedCount(categoryKey){
+  const sel=state.selections[state.currentBizType]||new Set();
+  return allFeeItems.filter(item=>{
+    if(categoryKey.startsWith('op-')){
+      return item.category==='operation'&&item.subCategory===categoryKey;
+    }
+    return item.category===categoryKey;
+  }).filter(item=>sel.has(item.id)).length;
+}
+
 function getFilteredFeeItems(){
   const cat=state.currentCategory;
   const items=allFeeItems.filter(item=>{
@@ -129,8 +145,8 @@ function getFilteredFeeItems(){
     }else{
       if(item.category!==cat)return false;
     }
+    if(!item.enabled)return false;
     if(state.searchKeyword&&!item.name.includes(state.searchKeyword))return false;
-    if(state.filterType==='enabled'&&!item.enabled)return false;
     if(state.filterType==='selected'){
       const sel=state.selections[state.currentBizType];
       if(!sel||!sel.has(item.id))return false;
@@ -158,11 +174,15 @@ function renderCategoryTree(){
       html+=`<div class="tree-group-title">${cat.label}</div>`;
       cat.children.forEach(sub=>{
         const active=sub.key===state.currentCategory?'active':'';
-        html+=`<div class="tree-sub-item ${active}" data-category="${sub.key}">${sub.label}</div>`;
+        const cnt=getCategorySelectedCount(sub.key);
+        const badge=cnt>0?' <span style="font-size:11px;color:var(--brand)">('+cnt+')</span>':'';
+        html+=`<div class="tree-sub-item ${active}" data-category="${sub.key}">${sub.label}${badge}</div>`;
       });
     }else{
       const active=cat.key===state.currentCategory?'active':'';
-      html+=`<div class="tree-item ${active}" data-category="${cat.key}">${cat.label}</div>`;
+      const cnt=getCategorySelectedCount(cat.key);
+      const badge=cnt>0?' <span style="font-size:11px;color:var(--brand)">('+cnt+')</span>':'';
+      html+=`<div class="tree-item ${active}" data-category="${cat.key}">${cat.label}${badge}</div>`;
     }
   });
   feeCategoryTree.innerHTML=html;
@@ -177,11 +197,11 @@ function renderFeeItemList(){
   const subItem=catLabel?.children?.find(c=>c.key===state.currentCategory);
   const currentLabel=subItem?subItem.label:catName;
 
+  const categorySelCount=items.filter(i=>sel.has(i.id)).length;
   feeItemToolbar.innerHTML=`
     <input class="fee-search" id="feeSearchInput" type="text" placeholder="搜索费用项名称..." value="${escapeHtml(state.searchKeyword)}">
     <span class="filter-chip ${state.filterType==='all'?'active':''}" data-filter="all">全部</span>
-    <span class="filter-chip ${state.filterType==='enabled'?'active':''}" data-filter="enabled">启用中</span>
-    <span class="filter-chip ${state.filterType==='selected'?'active':''}" data-filter="selected">已选 ${sel.size}</span>
+    <span class="filter-chip ${state.filterType==='selected'?'active':''}" data-filter="selected">已选 ${categorySelCount}</span>
   `;
 
   const headerText=`${currentLabel} 共${items.length}项`;
@@ -195,12 +215,11 @@ function renderFeeItemList(){
       const isSelected=sel.has(item.id);
       const isExpanded=state.expandedDetails.has(item.id);
       const selCls=isSelected?'selected':'';
-      const disCls=!item.enabled?'disabled':'';
-      const checkMark=isSelected?'✓':'';
+            const checkMark=isSelected?'✓':'';
       const detailCls=isExpanded?'expanded':'';
       const toggleText=isExpanded?'▼ 收起':'▶ 展开';
 
-      listHtml+=`<div class="fee-item ${selCls} ${disCls}" data-fee-id="${item.id}">
+      listHtml+=`<div class="fee-item ${selCls}" data-fee-id="${item.id}">
         <div class="fee-item-header" data-fee-id="${item.id}">
           <div class="fee-checkbox">${checkMark}</div>
           <div class="fee-item-info">
@@ -329,11 +348,11 @@ feeItemFooter.addEventListener('click',e=>{
 
 /* ── Form validation ── */
 const requiredFields={
-  schemeName:{el:schemeName,label:'方案名称'},
-  customer:{el:customer,label:'客户名称'},
-  warehouse:{el:warehouse,label:'所属仓库'},
-  startDate:{el:startDate,label:'适用时间'},
-  endDate:{el:endDate,label:'适用时间'}
+  schemeName:{el:schemeName,label:'方案名称',check:()=>!schemeName.value.trim()},
+  customer:{el:null,label:'客户名称',check:()=>state.selectedCustomers.size===0},
+  warehouse:{el:warehouse,label:'所属仓库',check:()=>!warehouse.value.trim()},
+  startDate:{el:startDate,label:'适用时间',check:()=>!startDate.value.trim()},
+  endDate:{el:endDate,label:'适用时间',check:()=>!endDate.value.trim()}
 };
 
 function validateForm(){
@@ -341,8 +360,9 @@ function validateForm(){
   document.querySelectorAll('.field-group').forEach(g=>g.classList.remove('has-error'));
   let hasError=false;
   for(const [key,cfg] of Object.entries(requiredFields)){
-    if(!cfg.el.value.trim()){
-      const group=cfg.el.closest('.field-group');
+    if(cfg.check()){
+      const el=cfg.el||customerMultiSelect;
+      const group=el.closest('.field-group');
       const tip=group.querySelector('.field-tip');
       if(tip)tip.textContent=`请填写${cfg.label}`;
       group.classList.add('has-error');
@@ -374,6 +394,48 @@ backBtn.addEventListener('click',()=>{
 /* ── Prevent form submit ── */
 document.getElementById('schemeForm').addEventListener('submit',e=>e.preventDefault());
 
+/* ── Customer multi-select ── */
+function renderCustomerDropdown(){
+  customerDropdown.innerHTML=CUSTOMER_OPTIONS.map(opt=>{
+    const sel=state.selectedCustomers.has(opt);
+    return '<div class="multi-select-option '+(sel?'selected':'')+'" data-customer="'+escapeHtml(opt)+'"><div class="ms-checkbox">'+(sel?'\u2713':'')+'</div><span>'+escapeHtml(opt)+'</span></div>';
+  }).join('');
+}
+
+function renderCustomerTags(){
+  if(state.selectedCustomers.size===0){
+    customerTags.innerHTML='<span class="multi-select-placeholder">请选择客户</span>';
+  }else{
+    customerTags.innerHTML=[...state.selectedCustomers].map(c=>'<span class="multi-select-tag">'+escapeHtml(c)+'<span class="tag-remove" data-remove-customer="'+escapeHtml(c)+'">\u00d7</span></span>').join('');
+  }
+}
+
+customerTrigger.addEventListener('click',()=>{
+  customerDropdown.classList.toggle('open');
+  if(customerDropdown.classList.contains('open'))renderCustomerDropdown();
+});
+
+customerDropdown.addEventListener('click',e=>{
+  const opt=e.target.closest('.multi-select-option');if(!opt)return;
+  const val=opt.dataset.customer;
+  if(state.selectedCustomers.has(val))state.selectedCustomers.delete(val);
+  else state.selectedCustomers.add(val);
+  renderCustomerDropdown();
+  renderCustomerTags();
+  document.querySelectorAll('.field-group[data-field="customer"]').forEach(g=>{g.classList.remove('has-error');g.querySelector('.field-tip').textContent='';});
+});
+
+customerTags.addEventListener('click',e=>{
+  const rm=e.target.closest('[data-remove-customer]');if(!rm)return;
+  state.selectedCustomers.delete(rm.dataset.removeCustomer);
+  renderCustomerTags();
+});
+
+document.addEventListener('click',e=>{
+  if(!customerMultiSelect.contains(e.target))customerDropdown.classList.remove('open');
+});
+
 /* ── Init ── */
+renderCustomerTags();
 render();
 })();

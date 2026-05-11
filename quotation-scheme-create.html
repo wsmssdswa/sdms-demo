@@ -36,15 +36,12 @@
                   </div>
                   <div class="field-group" data-field="customer">
                     <div class="field-label"><span class="required-star">*</span><span>客户名称</span></div>
-                    <div class="select-wrap">
-                      <select class="field-select" id="customer" name="customer">
-                        <option value="">请选择客户</option>
-                        <option value="深圳ABC贸易有限公司">深圳ABC贸易有限公司</option>
-                        <option value="杭州XYZ物流">杭州XYZ物流</option>
-                        <option value="上海DEF电商">上海DEF电商</option>
-                        <option value="广州GHI供应链">广州GHI供应链</option>
-                      </select>
-                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    <div class="multi-select-wrap" id="customerMultiSelect">
+                      <div class="multi-select-trigger" id="customerTrigger">
+                        <div class="multi-select-tags" id="customerTags"><span class="multi-select-placeholder">请选择客户</span></div>
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                      </div>
+                      <div class="multi-select-dropdown" id="customerDropdown"></div>
                     </div>
                     <div class="field-tip"></div>
                   </div>
