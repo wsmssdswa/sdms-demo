@@ -127,6 +127,17 @@ body { margin: 0; font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",
 .renewal-input { width: 100%; height: 24px; padding: 0 4px; border: 1px solid transparent; border-radius: 2px; background: transparent; color: #23334d; font-size: 12px; text-align: center; transition: border-color 0.2s, box-shadow 0.2s; }
 .renewal-input:hover { border-color: #dfe5ee; }
 .renewal-input:focus { outline: none; border-color: #7896ef; background: #fff; box-shadow: 0 0 0 3px rgba(90,116,239,0.1); }
+.surcharge-toggles { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 10px 16px; background: #fff; border: 1px solid #dbe3ef; margin-bottom: 12px; }
+.surcharge-config { display: flex; align-items: center; gap: 12px; }
+.surcharge-config label { font-size: 12px; color: #6f7f92; white-space: nowrap; }
+.surcharge-rule-select { height: 28px; padding: 0 24px 0 8px; border: 1px solid #cfd8e3; border-radius: 2px; font-size: 12px; appearance: none; cursor: pointer; background: #fff; }
+.fuel-check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #6f7f92; cursor: pointer; user-select: none; }
+.fuel-check input { accent-color: var(--brand); }
+.fuel-row td { background: #fafcff; }
+.cod-currency-block { border: 1px solid #edf2f7; margin: 12px 0; }
+.cod-currency-head { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: #f7f9fc; border-bottom: 1px solid #edf2f7; font-size: 13px; font-weight: 600; color: #4f6176; }
+.cod-currency-add { display: block; width: 100%; height: 32px; border: 0; border-top: 1px solid #edf2f7; background: #fafcff; color: var(--brand); font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s; text-align: center; }
+.cod-currency-add:hover { background: #f0f4ff; }
 
 .surcharge-table-wrap { overflow: auto; }
 .surcharge-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
