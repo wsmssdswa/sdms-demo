@@ -21,6 +21,28 @@
       href: './operation-fee-create.html',
       labelId: 'pageTabLabel'
     },
+    'logistics-fee': {
+      label: '物流费管理',
+      icon: 'ri-truck-line',
+      href: './logistics-fee-config.html'
+    },
+    'logistics-fee-create': {
+      label: '新增物流费',
+      icon: 'ri-truck-line',
+      href: './logistics-fee-create.html',
+      labelId: 'pageTabLabel'
+    },
+    'storage-fee': {
+      label: '仓储费管理',
+      icon: 'ri-store-2-line',
+      href: './storage-fee-config.html'
+    },
+    'storage-fee-create': {
+      label: '新增仓储费',
+      icon: 'ri-store-2-line',
+      href: './storage-fee-create.html',
+      labelId: 'pageTabLabel'
+    },
     'trunk-outbound-pending': {
       label: '干线待出库',
       icon: 'ri-truck-line',
@@ -35,9 +57,9 @@
 
   const TAB_SETS = {
     overview: ['workbench', 'report'],
-    finance: ['workbench', 'report', 'operation-fee'],
+    finance: ['workbench', 'report', 'operation-fee', 'logistics-fee', 'storage-fee'],
     business: ['workbench', 'trunk-order-list', 'trunk-outbound-pending', 'report'],
-    'finance-editor': ['workbench', 'report', 'operation-fee', 'operation-fee-create']
+    'finance-editor': ['workbench', 'report', 'operation-fee', 'logistics-fee', 'storage-fee', 'operation-fee-create', 'logistics-fee-create', 'storage-fee-create']
   };
 
   function buildToolButton(icon, label, badge) {

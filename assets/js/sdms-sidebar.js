@@ -2,7 +2,7 @@
   const MENU_ITEMS = [
     { key: 'workbench', label: '工作台', icon: 'ri-dashboard-3-line', href: './wms-workbench-v2.html' },
     { key: 'business', label: '业务', icon: 'ri-layout-grid-fill', href: '', submenuKey: 'business' },
-    { key: 'finance', label: '财务', icon: 'ri-money-cny-box-fill', href: './operation-fee-config.html' },
+    { key: 'finance', label: '财务', icon: 'ri-money-cny-box-fill', href: '', submenuKey: 'finance' },
     { key: 'user', label: '用户', icon: 'ri-user-3-fill', href: '' },
     { key: 'report', label: '报表', icon: 'ri-bar-chart-grouped-fill', href: './bi-consolidated-report-v2.html' },
     { key: 'system', label: '系统', icon: 'ri-settings-5-fill', href: '' }
@@ -41,6 +41,17 @@
       ]},
       { title: '收货卡板', icon: 'ri-archive-drawer-line', items: [
         { label: '收货卡板', href: '' }
+      ]}
+    ],
+    finance: [
+      { title: '费用管理', icon: 'ri-money-cny-box-line', items: [
+        { label: '操作费管理', href: './operation-fee-config.html' },
+        { label: '物流费管理', href: './logistics-fee-config.html' },
+        { label: '仓储费管理', href: './storage-fee-config.html' }
+      ]},
+      { title: '账单管理', icon: 'ri-bill-line', items: [
+        { label: '账单列表', href: '' },
+        { label: '结算单', href: '' }
       ]}
     ]
   };
