@@ -330,11 +330,14 @@ const transferEnabledCheck=$('transferEnabledCheck');
 const codEnabledCheck=$('codEnabledCheck');
 
 /* 表格启用/停用开关 */
-if(transferEnabledCheck&&transferTableWrap){
-  transferEnabledCheck.addEventListener('change',()=>{transferTableWrap.style.display=transferEnabledCheck.checked?'':'none';});
+const deliverySection=$('deliverySection');
+const transferSection=$('transferSection');
+const codSection=$('codSection');
+if(transferEnabledCheck&&transferSection){
+  transferEnabledCheck.addEventListener('change',()=>{transferSection.style.display=transferEnabledCheck.checked?'':'none';});
 }
-if(codEnabledCheck&&codTableWrap){
-  codEnabledCheck.addEventListener('change',()=>{codTableWrap.style.display=codEnabledCheck.checked?'':'none';});
+if(codEnabledCheck&&codSection){
+  codEnabledCheck.addEventListener('change',()=>{codSection.style.display=codEnabledCheck.checked?'':'none';});
 }
 
 function buildMatrixHead(){
