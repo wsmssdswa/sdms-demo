@@ -43,6 +43,17 @@
       href: './storage-fee-create.html',
       labelId: 'pageTabLabel'
     },
+    'quotation-scheme': {
+      label: '报价方案',
+      icon: 'ri-file-list-3-line',
+      href: './quotation-scheme-config.html'
+    },
+    'quotation-scheme-create': {
+      label: '新增报价方案',
+      icon: 'ri-file-list-3-line',
+      href: './quotation-scheme-create.html',
+      labelId: 'pageTabLabel'
+    },
     'trunk-outbound-pending': {
       label: '干线待出库',
       icon: 'ri-truck-line',
@@ -57,9 +68,9 @@
 
   const TAB_SETS = {
     overview: ['workbench', 'report'],
-    finance: ['workbench', 'report', 'operation-fee', 'logistics-fee', 'storage-fee'],
+    finance: ['workbench', 'report', 'operation-fee', 'logistics-fee', 'storage-fee', 'quotation-scheme'],
     business: ['workbench', 'trunk-order-list', 'trunk-outbound-pending', 'report'],
-    'finance-editor': ['workbench', 'report', 'operation-fee', 'logistics-fee', 'storage-fee', 'operation-fee-create', 'logistics-fee-create', 'storage-fee-create']
+    'finance-editor': ['workbench', 'report', 'operation-fee', 'logistics-fee', 'storage-fee', 'quotation-scheme', 'operation-fee-create', 'logistics-fee-create', 'storage-fee-create', 'quotation-scheme-create']
   };
 
   function buildToolButton(icon, label, badge) {
