@@ -410,6 +410,236 @@ function renderCategoryTree(){
   feeCategoryTree.innerHTML=html;
 }
 
+/* ── Render: Logistics Detail (zone x weight matrix) ── */
+function renderLogisticsDetail(item,bizType){
+  const d=item.detail;
+  if(!d)return '';
+  const feeTypes=d.feeTypes||[];
+  const zones=d.zones||[];
+  const weightSteps=d.weightSteps||[];
+  const pricing=d.pricing||{};
+  const renewal=d.renewal||{};
+  const surcharge=d.surcharge||'';
+  const period=d.period||'';
+  const ov=getOverrides(bizType,item.id);
+  const isSimple=weightSteps.length===0;
+  const currentTabIdx=state.currentFeeTab[item.id]||0;
+  const activeFeeType=feeTypes[currentTabIdx]||feeTypes[0]||'';
+
+  let html='';
+
+  // feeType tabs
+  if(feeTypes.length>1){
+    html+='<div class="fee-type-tabs">';
+    feeTypes.forEach((ft,idx)=>{
+      const cls=idx===currentTabIdx?'fee-type-tab active':'fee-type-tab';
+      html+=`<span class="${cls}" data-fee-tab="${item.id}" data-tab-idx="${idx}">${escapeHtml(ft)}</span>`;
+    });
+    html+='</div>';
+  }
+
+  const matrix=pricing[activeFeeType]||[];
+
+  if(isSimple){
+    // simple list: one row, multiple columns
+    const row=matrix[0]||[];
+    html+='<div class="fee-detail-section">';
+    html+='<table class="fee-price-matrix"><thead><tr><th></th>';
+    zones.forEach(z=>{html+=`<th>${escapeHtml(z)}</th>`;});
+    html+='</tr></thead><tbody>';
+    let rowHasOverride=false;
+    row.forEach((price,colIdx)=>{
+      const key=activeFeeType+'_0_'+colIdx;
+      if(ov[key])rowHasOverride=true;
+    });
+    const rowCls=rowHasOverride?'has-override':'';
+    html+=`<tr class="${rowCls}"><td>${escapeHtml(activeFeeType)}</td>`;
+    row.forEach((price,colIdx)=>{
+      const key=activeFeeType+'_0_'+colIdx;
+      if(ov[key]){
+        html+=`<td><span class="price-original">${escapeHtml(price)}</span><input class="price-input" data-override="${escapeHtml(key)}" value="${escapeHtml(ov[key])}"></td>`;
+      }else{
+        html+=`<td><span class="price-readonly" data-override="${escapeHtml(key)}">${escapeHtml(price)}</span></td>`;
+      }
+    });
+    html+='</tr></tbody></table></div>';
+  }else{
+    // matrix table: rows=weightSteps, cols=zones
+    html+='<div class="fee-detail-section">';
+    html+='<table class="fee-price-matrix"><thead><tr><th></th>';
+    zones.forEach(z=>{html+=`<th>${escapeHtml(z)}</th>`;});
+    html+='</tr></thead><tbody>';
+    matrix.forEach((row,rowIdx)=>{
+      let rowHasOverride=false;
+      row.forEach((price,colIdx)=>{
+        const key=activeFeeType+'_'+rowIdx+'_'+colIdx;
+        if(ov[key])rowHasOverride=true;
+      });
+      const rowCls=rowHasOverride?'has-override':'';
+      html+=`<tr class="${rowCls}"><td>${escapeHtml(weightSteps[rowIdx]||'')}</td>`;
+      row.forEach((price,colIdx)=>{
+        const key=activeFeeType+'_'+rowIdx+'_'+colIdx;
+        if(ov[key]){
+          html+=`<td><span class="price-original">${escapeHtml(price)}</span><input class="price-input" data-override="${escapeHtml(key)}" value="${escapeHtml(ov[key])}"></td>`;
+        }else{
+          html+=`<td><span class="price-readonly" data-override="${escapeHtml(key)}">${escapeHtml(price)}</span></td>`;
+        }
+      });
+      html+='</tr>';
+    });
+    html+='</tbody></table></div>';
+  }
+
+  // renewal (readonly)
+  if(renewal.enabled&&renewal.data&&renewal.data.length){
+    html+='<div class="fee-detail-section readonly">';
+    html+='<div class="fee-detail-label">续重</div>';
+    html+='<table class="fee-price-matrix"><tbody>';
+    renewal.data.forEach(r=>{
+      html+=`<tr><td>${escapeHtml(r.zone)}</td><td>${escapeHtml(r.price)} / ${escapeHtml(r.unit)}</td></tr>`;
+    });
+    html+='</tbody></table></div>';
+  }
+
+  // surcharge (readonly)
+  if(surcharge&&surcharge!=='无'){
+    html+=`<div class="fee-detail-section readonly"><div class="fee-detail-label">附加费</div><div class="fee-detail-value">${escapeHtml(surcharge)}</div></div>`;
+  }
+
+  // period (info)
+  if(period){
+    html+=`<div class="fee-detail-section info"><div class="fee-detail-label">适用时间</div><div class="fee-detail-value">${escapeHtml(period)}</div></div>`;
+  }
+
+  // restore button
+  if(hasOverrides(bizType,item.id)){
+    html+=`<button class="fee-restore-btn" data-restore-overrides="${item.id}">恢复原价</button>`;
+  }
+
+  return html;
+}
+
+/* ── Render: Storage Detail (tier price list) ── */
+function renderStorageDetail(item,bizType){
+  const d=item.detail;
+  if(!d)return '';
+  const tiers=d.tiers||[];
+  const method=d.method||'';
+  const peakSurcharge=d.peakSurcharge||'';
+  const surcharge=d.surcharge||'';
+  const period=d.period||'';
+  const ov=getOverrides(bizType,item.id);
+
+  let html='';
+
+  // tiers
+  html+='<div class="fee-detail-section">';
+  tiers.forEach((tier,idx)=>{
+    const key='tier_'+idx;
+    const hasOv=!!ov[key];
+    const cls=hasOv?'tier-price-row has-override':'tier-price-row';
+    html+=`<div class="${cls}">`;
+    html+=`<span class="tier-label">${escapeHtml(tier.label)}</span>`;
+    if(hasOv){
+      html+=`<span class="price-original">${escapeHtml(tier.price)}</span>`;
+      html+=`<input class="price-input" data-override="${escapeHtml(key)}" value="${escapeHtml(ov[key])}">`;
+      html+=`<span class="tier-unit">${escapeHtml(method)}</span>`;
+    }else{
+      html+=`<span class="price-readonly" data-override="${escapeHtml(key)}">${escapeHtml(tier.price)}</span>`;
+      html+=`<span class="tier-unit">${escapeHtml(method)}</span>`;
+    }
+    html+='</div>';
+  });
+  html+='</div>';
+
+  // peak surcharge (readonly)
+  if(peakSurcharge){
+    html+=`<div class="fee-detail-section readonly"><div class="fee-detail-label">旺季附加费</div><div class="fee-detail-value">${escapeHtml(peakSurcharge)}</div></div>`;
+  }
+
+  // period (info)
+  if(period){
+    html+=`<div class="fee-detail-section info"><div class="fee-detail-label">适用时间</div><div class="fee-detail-value">${escapeHtml(period)}</div></div>`;
+  }
+
+  // restore button
+  if(hasOverrides(bizType,item.id)){
+    html+=`<button class="fee-restore-btn" data-restore-overrides="${item.id}">恢复原价</button>`;
+  }
+
+  return html;
+}
+
+/* ── Render: Operation Detail (rule groups) ── */
+function renderOperationDetail(item,bizType){
+  const d=item.detail;
+  if(!d)return '';
+  const ruleGroups=d.ruleGroups||[];
+  const surcharge=d.surcharge||'';
+  const period=d.period||'';
+  const ov=getOverrides(bizType,item.id);
+
+  let html='';
+
+  // rule groups
+  html+='<div class="fee-detail-section">';
+  ruleGroups.forEach((group,gIdx)=>{
+    // check if any line in this group has override
+    let groupHasOverride=false;
+    group.lines.forEach((line,lIdx)=>{
+      const key=gIdx+'_'+lIdx;
+      if(ov[key])groupHasOverride=true;
+    });
+
+    html+=`<div class="rule-group-block">`;
+    const badge=groupHasOverride?'<span class="fee-override-badge">改</span>':'';
+    html+=`<div class="rule-group-title">${escapeHtml(group.label)}${badge}</div>`;
+    html+='<div class="rule-group-lines">';
+    group.lines.forEach((line,lIdx)=>{
+      const key=gIdx+'_'+lIdx;
+      const hasOv=!!ov[key];
+      const lineCls=hasOv?'rule-line has-override':'rule-line';
+      html+=`<div class="${lineCls}">`;
+      html+=`<span class="rule-line-condition">${escapeHtml(line.condition)}</span>`;
+      if(hasOv){
+        html+=`<span class="price-original">${escapeHtml(line.unitPrice)}</span>`;
+        html+=`<input class="price-input" data-override="${escapeHtml(key)}" value="${escapeHtml(ov[key])}">`;
+      }else{
+        html+=`<span class="price-readonly" data-override="${escapeHtml(key)}">${escapeHtml(line.unitPrice)}</span>`;
+      }
+      html+=`<span class="rule-line-unit">${escapeHtml(line.unit)}</span>`;
+      html+='</div>';
+    });
+    html+='</div></div>';
+  });
+  html+='</div>';
+
+  // surcharge (readonly)
+  if(surcharge&&surcharge!=='无'){
+    html+=`<div class="fee-detail-section readonly"><div class="fee-detail-label">附加费</div><div class="fee-detail-value">${escapeHtml(surcharge)}</div></div>`;
+  }
+
+  // period (info)
+  if(period){
+    html+=`<div class="fee-detail-section info"><div class="fee-detail-label">适用时间</div><div class="fee-detail-value">${escapeHtml(period)}</div></div>`;
+  }
+
+  // restore button
+  if(hasOverrides(bizType,item.id)){
+    html+=`<button class="fee-restore-btn" data-restore-overrides="${item.id}">恢复原价</button>`;
+  }
+
+  return html;
+}
+
+/* ── Render: Fee detail router ── */
+function renderFeeDetail(item,bizType){
+  if(item.category==='logistics')return renderLogisticsDetail(item,bizType);
+  if(item.category==='storage')return renderStorageDetail(item,bizType);
+  if(item.category==='operation')return renderOperationDetail(item,bizType);
+  return '';
+}
+
 /* ── Render: Fee Item List ── */
 function renderFeeItemList(){
   const items=getFilteredFeeItems();
@@ -436,6 +666,7 @@ function renderFeeItemList(){
     items.forEach(item=>{
       const isSelected=sel.has(item.id);
       const isExpanded=state.expandedDetails.has(item.id);
+      const ovBadge=hasOverrides(state.currentBizType,item.id)?'<span class="fee-override-badge">已调价</span>':'';
       const selCls=isSelected?'selected':'';
             const checkMark=isSelected?'✓':'';
       const detailCls=isExpanded?'expanded':'';
@@ -445,19 +676,12 @@ function renderFeeItemList(){
         <div class="fee-item-header" data-fee-id="${item.id}">
           <div class="fee-checkbox">${checkMark}</div>
           <div class="fee-item-info">
-            <div class="fee-item-name">${escapeHtml(item.name)}</div>
+            <div class="fee-item-name">${escapeHtml(item.name)}${ovBadge}</div>
             <div class="fee-item-desc">${escapeHtml(item.desc)}${!item.enabled?' · 已停用':''}</div>
           </div>
           <span class="fee-detail-toggle" data-detail-toggle="${item.id}">${toggleText}</span>
         </div>
-        <div class="fee-item-detail ${detailCls}">
-          <div class="fee-detail-grid">
-            <div><div class="fee-detail-label">计费方式</div><div class="fee-detail-value">${escapeHtml(item.detail.method)}</div></div>
-            <div><div class="fee-detail-label">分区/规则</div><div class="fee-detail-value">${escapeHtml(Array.isArray(item.detail.zones)?item.detail.zones.join('、'):item.detail.tiers?item.detail.tiers.length+'个阶梯':item.detail.ruleGroups?item.detail.ruleGroups.length+'组规则':'')}</div></div>
-            <div><div class="fee-detail-label">附加费</div><div class="fee-detail-value">${escapeHtml(item.detail.surcharge)}</div></div>
-            <div><div class="fee-detail-label">适用时间</div><div class="fee-detail-value">${escapeHtml(item.detail.period)}</div></div>
-          </div>
-        </div>
+        <div class="fee-item-detail ${detailCls}">${renderFeeDetail(item,state.currentBizType)}</div>
       </div>`;
     });
   }
