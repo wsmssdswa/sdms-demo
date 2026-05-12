@@ -298,6 +298,11 @@ if(isEdit||isView){
   state.selections.trunk=new Set([1,2,7,10]);
   state.selections.fba=new Set([1,7,10]);
   state.selections.lastMileBulk=new Set([1,5,7]);
+  state.priceOverrides={
+    'trunk_1':{ '配送费_0_0':'7.50', '配送费_0_2':'16.00' },
+    'trunk_7':{ 'tier_1':'0.45' },
+    'trunk_10':{ '0_0':'280' }
+  };
 }
 
 /* ── Helpers ── */
@@ -885,13 +890,17 @@ function validateForm(){
 /* ── Save Draft ── */
 saveDraftBtn.addEventListener('click',()=>{
   if(!validateForm())return;
-  showToast('success','保存成功','报价方案已保存为草稿。');
+  const ovCount=Object.keys(state.priceOverrides).length;
+  const ovMsg=ovCount>0?`，其中${ovCount}项费用有价格调整`:'';
+  showToast('success','保存成功','报价方案已保存为草稿'+ovMsg+'。');
 });
 
 /* ── Submit ── */
 submitBtn.addEventListener('click',()=>{
   if(!validateForm())return;
-  showToast('success','提交成功','报价方案已提交审核。');
+  const ovCount=Object.keys(state.priceOverrides).length;
+  const ovMsg=ovCount>0?`，其中${ovCount}项费用有价格调整`:'';
+  showToast('success','提交成功','报价方案已提交审核'+ovMsg+'。');
 });
 
 /* ── Back ── */

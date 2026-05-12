@@ -421,6 +421,9 @@ body { margin: 0; font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",
 body.view-mode .page-actions .btn{display:none}
 body.view-mode .fee-item-header{cursor:default}
 body.view-mode .fee-checkbox{pointer-events:none}
+body.view-mode .price-input{pointer-events:none;border-color:transparent;background:transparent}
+body.view-mode .price-readonly{cursor:default}
+body.view-mode .fee-restore-btn{display:none}
 
 /* === 价格编辑 === */
 .fee-override-badge{display:inline-flex;align-items:center;padding:1px 6px;background:#e8801a;color:#fff;border-radius:3px;font-size:10px;font-weight:600;margin-left:6px}
