@@ -54,24 +54,215 @@ const FEE_CATEGORIES=[
 /* ── Seed fee data ── */
 function buildSeedFeeData(){
   return [
-    {id:1,name:'干线空运费',category:'logistics',subCategory:'',desc:'首重/续重 · 分区计价 · EUR',enabled:true,detail:{method:'首重/续重',zones:'3个分区',surcharge:'燃油附加费、偏远地区附加费、COD服务费',period:'2025-01-01 ~ 2025-12-31',preview:'一区：首重0.5kg €45，续重 €8/kg\n二区：首重0.5kg €52，续重 €9.5/kg\n三区：首重0.5kg €60，续重 €11/kg'}},
-    {id:2,name:'干线海运费',category:'logistics',subCategory:'',desc:'整柜/拼箱 · 按柜型 · EUR',enabled:true,detail:{method:'整柜/拼箱',zones:'按柜型',surcharge:'BAF、CAF',period:'2025-01-01 ~ 2025-12-31',preview:'20GP: €1800/柜\n40GP: €2800/柜\n40HQ: €3200/柜\n拼箱: €85/CBM'}},
-    {id:3,name:'干线铁路费',category:'logistics',subCategory:'',desc:'按柜型 · CNY',enabled:true,detail:{method:'按柜型',zones:'统一价',surcharge:'无',period:'2025-01-01 ~ 2025-12-31',preview:'40HQ: ¥12,000/柜'}},
-    {id:4,name:'加急空运费',category:'logistics',subCategory:'',desc:'首重/续重 · 分区计价 · EUR',enabled:false,detail:{method:'首重/续重',zones:'5个分区',surcharge:'燃油附加费',period:'2025-01-01 ~ 2025-12-31',preview:'一区：首重0.5kg €65，续重 €12/kg'}},
-    {id:5,name:'敏感货物流费',category:'logistics',subCategory:'',desc:'首重/续重 · EUR',enabled:true,detail:{method:'首重/续重',zones:'3个分区',surcharge:'敏感货处理费',period:'2025-01-01 ~ 2025-12-31',preview:'一区：首重0.5kg €55，续重 €10/kg'}},
-    {id:6,name:'超大件物流费',category:'logistics',subCategory:'',desc:'按体积重 · EUR',enabled:true,detail:{method:'按体积重',zones:'2个分区',surcharge:'超尺寸附加费',period:'2025-01-01 ~ 2025-12-31',preview:'一区：€12/kg\n二区：€15/kg'}},
-    {id:7,name:'标准仓储费',category:'storage',subCategory:'',desc:'CBM/天 · 4个阶梯 · EUR',enabled:true,detail:{method:'CBM/天',zones:'4个天数阶梯',surcharge:'旺季附加费(11-12月+20%)',period:'2025-01-01 ~ 2025-12-31',preview:'0-7天: €0.00/CBM/天\n8-30天: €0.50/CBM/天\n31-60天: €0.80/CBM/天\n61天+: €1.20/CBM/天'}},
-    {id:8,name:'长期仓储费',category:'storage',subCategory:'',desc:'CBM/天 · 3个阶梯 · EUR',enabled:true,detail:{method:'CBM/天',zones:'3个天数阶梯',surcharge:'无',period:'2025-01-01 ~ 2025-12-31',preview:'0-30天: €0.30/CBM/天\n31-90天: €0.60/CBM/天\n91天+: €1.00/CBM/天'}},
-    {id:9,name:'小件仓储费',category:'storage',subCategory:'',desc:'SKU/天 · EUR',enabled:false,detail:{method:'SKU/天',zones:'统一价',surcharge:'无',period:'2025-01-01 ~ 2025-12-31',preview:'€0.02/SKU/天'}},
-    {id:10,name:'入库操作费',category:'operation',subCategory:'op-inbound',desc:'卸货+清点+上架 · 按托 · EUR',enabled:true,detail:{method:'按托计费',zones:'统一价',surcharge:'超大件加收50%',period:'2025-01-01 ~ 2025-12-31',preview:'标准托: €15/托\n超大托: €22.5/托'}},
-    {id:11,name:'入库质检费',category:'operation',subCategory:'op-inbound',desc:'抽检/全检 · 按件 · EUR',enabled:true,detail:{method:'按件计费',zones:'抽检/全检两档',surcharge:'无',period:'2025-01-01 ~ 2025-12-31',preview:'抽检: €0.30/件\n全检: €0.80/件'}},
-    {id:12,name:'出库操作费',category:'operation',subCategory:'op-outbound',desc:'拣货+打包+贴标 · 按件 · EUR',enabled:true,detail:{method:'按件计费',zones:'标准/大件两档',surcharge:'无',period:'2025-01-01 ~ 2025-12-31',preview:'标准件: €1.20/件\n大件: €2.50/件'}},
-    {id:13,name:'出库装箱费',category:'operation',subCategory:'op-outbound',desc:'按箱 · EUR',enabled:true,detail:{method:'按箱计费',zones:'统一价',surcharge:'无',period:'2025-01-01 ~ 2025-12-31',preview:'€3.00/箱'}},
-    {id:14,name:'贴标服务费',category:'operation',subCategory:'op-valueAdded',desc:'按件 · EUR',enabled:true,detail:{method:'按件计费',zones:'统一价',surcharge:'无',period:'2025-01-01 ~ 2025-12-31',preview:'€0.15/件'}},
-    {id:15,name:'打包服务费',category:'operation',subCategory:'op-valueAdded',desc:'按箱 · EUR',enabled:true,detail:{method:'按箱计费',zones:'标准/定制两档',surcharge:'无',period:'2025-01-01 ~ 2025-12-31',preview:'标准箱: €2.00/箱\n定制箱: €4.00/箱'}},
-    {id:16,name:'拍照服务费',category:'operation',subCategory:'op-valueAdded',desc:'按次 · EUR',enabled:false,detail:{method:'按次计费',zones:'统一价',surcharge:'无',period:'2025-01-01 ~ 2025-12-31',preview:'€5.00/次'}},
-    {id:17,name:'退货处理费',category:'operation',subCategory:'op-afterSales',desc:'按件 · EUR',enabled:true,detail:{method:'按件计费',zones:'统一价',surcharge:'无',period:'2025-01-01 ~ 2025-12-31',preview:'€2.00/件'}},
-    {id:18,name:'销毁处理费',category:'operation',subCategory:'op-afterSales',desc:'按批 · EUR',enabled:true,detail:{method:'按批计费',zones:'统一价',surcharge:'危险品加收100%',period:'2025-01-01 ~ 2025-12-31',preview:'标准: €20.00/批\n危险品: €40.00/批'}},
+    // ── 物流费 (id 1-6) ──
+    {id:1,name:'干线空运费',category:'logistics',subCategory:'',desc:'首重/续重 · 分区计价 · EUR',enabled:true,detail:{
+      method:'分区×重量段',
+      feeTypes:['配送费','中转费','COD服务费'],
+      zones:['一区','二区','三区','四区'],
+      weightSteps:['0~0.5kg','0.5~1kg','1~1.5kg','1.5~2kg','2~3kg'],
+      pricing:{
+        '配送费':[['8.42','12.30','18.56','22.10'],['10.15','14.80','20.22','24.30'],['12.00','16.50','22.80','26.70'],['14.30','18.90','25.00','29.40'],['16.50','21.00','27.30','32.10']],
+        '中转费':[['3.20','4.80','6.50','8.10'],['4.00','5.60','7.20','9.00'],['4.80','6.40','8.00','10.00'],['5.60','7.20','9.00','11.20'],['6.40','8.00','10.00','12.50']],
+        'COD服务费':[['1.50','2.00','2.50','3.00'],['1.80','2.30','2.80','3.30'],['2.00','2.50','3.00','3.50'],['2.30','2.80','3.30','3.80'],['2.50','3.00','3.50','4.00']]
+      },
+      renewal:{enabled:true,data:[{zone:'一区',unit:'0.5kg',price:'3.42'},{zone:'二区',unit:'0.5kg',price:'4.10'},{zone:'三区',unit:'0.5kg',price:'5.20'},{zone:'四区',unit:'0.5kg',price:'6.00'}]},
+      surcharge:'超长附加费、超重附加费、偏远地区附加费',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:2,name:'干线海运费',category:'logistics',subCategory:'',desc:'整柜/拼箱 · 按柜型 · EUR',enabled:true,detail:{
+      method:'按柜型',
+      feeTypes:['海运费'],
+      zones:['20GP','40GP','40HQ'],
+      weightSteps:[],
+      pricing:{'海运费':[['1800','2800','3200']]},
+      renewal:{enabled:false},
+      surcharge:'BAF、CAF',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:3,name:'干线铁路费',category:'logistics',subCategory:'',desc:'按柜型 · CNY',enabled:true,detail:{
+      method:'按柜型',
+      feeTypes:['铁路费'],
+      zones:['40HQ'],
+      weightSteps:[],
+      pricing:{'铁路费':[['12000']]},
+      renewal:{enabled:false},
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:4,name:'加急空运费',category:'logistics',subCategory:'',desc:'首重/续重 · 分区计价 · EUR',enabled:false,detail:{
+      method:'分区×重量段',
+      feeTypes:['配送费'],
+      zones:['一区','二区','三区'],
+      weightSteps:['0~0.5kg','0.5~1kg','1~2kg'],
+      pricing:{'配送费':[['65','72','80'],['70','78','85'],['80','88','95']]},
+      renewal:{enabled:false},
+      surcharge:'燃油附加费',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:5,name:'敏感货物流费',category:'logistics',subCategory:'',desc:'首重/续重 · EUR',enabled:true,detail:{
+      method:'分区×重量段',
+      feeTypes:['配送费'],
+      zones:['一区','二区','三区'],
+      weightSteps:['0~0.5kg','0.5~1kg','1~2kg','2~5kg'],
+      pricing:{'配送费':[['55','62','70'],['60','68','76'],['68','75','82'],['78','85','92']]},
+      renewal:{enabled:false},
+      surcharge:'敏感货处理费',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:6,name:'超大件物流费',category:'logistics',subCategory:'',desc:'按体积重 · EUR',enabled:true,detail:{
+      method:'按体积重',
+      feeTypes:['配送费'],
+      zones:['一区','二区'],
+      weightSteps:[],
+      pricing:{'配送费':[['12','15']]},
+      renewal:{enabled:false},
+      surcharge:'超尺寸附加费',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    // ── 仓储费 (id 7-9) ──
+    {id:7,name:'标准仓储费',category:'storage',subCategory:'',desc:'CBM/天 · 4个阶梯 · EUR',enabled:true,detail:{
+      method:'CBM/天',
+      tiers:[
+        {label:'0~7天',price:'0.00'},
+        {label:'8~30天',price:'0.50'},
+        {label:'31~60天',price:'0.80'},
+        {label:'61天+',price:'1.20'}
+      ],
+      peakSurcharge:'旺季附加费(11-12月+20%)',
+      surcharge:'旺季附加费(11-12月+20%)',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:8,name:'长期仓储费',category:'storage',subCategory:'',desc:'CBM/天 · 3个阶梯 · EUR',enabled:true,detail:{
+      method:'CBM/天',
+      tiers:[
+        {label:'0~30天',price:'0.30'},
+        {label:'31~90天',price:'0.60'},
+        {label:'91天+',price:'1.00'}
+      ],
+      peakSurcharge:'',
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:9,name:'小件仓储费',category:'storage',subCategory:'',desc:'SKU/天 · EUR',enabled:false,detail:{
+      method:'SKU/天',
+      tiers:[
+        {label:'统一价',price:'0.02'}
+      ],
+      peakSurcharge:'',
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    // ── 操作费 (id 10-18) ──
+    {id:10,name:'入库操作费',category:'operation',subCategory:'op-inbound',desc:'卸货+清点+上架 · 按托 · EUR',enabled:true,detail:{
+      method:'按托计费',
+      ruleGroups:[
+        {label:'规则1：到货形式=整柜，货物类型=箱货',lines:[
+          {condition:'柜型=20GP',unit:'柜',unitPrice:'300',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'柜型=40GP',unit:'柜',unitPrice:'350',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'柜型=40HQ',unit:'柜',unitPrice:'450',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'箱数>700',unit:'箱',unitPrice:'0.30',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]},
+        {label:'规则2：到货形式=整柜，货物类型=托盘货',lines:[
+          {condition:'柜型=20GP',unit:'柜',unitPrice:'220',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'柜型=40GP',unit:'柜',unitPrice:'330',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'柜型=40HQ',unit:'柜',unitPrice:'350',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]},
+        {label:'规则3：到货形式=散货',lines:[
+          {condition:'货物类型=箱货',unit:'箱',unitPrice:'1.00',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'货物类型=托盘货',unit:'托',unitPrice:'15.00',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'单箱重量>23kg',unit:'kg',unitPrice:'0.10',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]},
+        {label:'规则4：SKU数量>20',lines:[
+          {condition:'SKU数量>20',unit:'SKU',unitPrice:'10.00',waiveAmount:'20',baseFee:'0',minFee:'',maxFee:'100'}
+        ]}
+      ],
+      surcharge:'超大件加收50%',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:11,name:'入库质检费',category:'operation',subCategory:'op-inbound',desc:'抽检/全检 · 按件 · EUR',enabled:true,detail:{
+      method:'按件计费',
+      ruleGroups:[
+        {label:'规则1：任何场景',lines:[
+          {condition:'抽检',unit:'件',unitPrice:'0.30',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'全检',unit:'件',unitPrice:'0.80',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]}
+      ],
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:12,name:'出库操作费',category:'operation',subCategory:'op-outbound',desc:'拣货+打包+贴标 · 按件 · EUR',enabled:true,detail:{
+      method:'按件计费',
+      ruleGroups:[
+        {label:'规则1：任何场景',lines:[
+          {condition:'标准件',unit:'件',unitPrice:'1.20',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'大件',unit:'件',unitPrice:'2.50',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]}
+      ],
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:13,name:'出库装箱费',category:'operation',subCategory:'op-outbound',desc:'按箱 · EUR',enabled:true,detail:{
+      method:'按箱计费',
+      ruleGroups:[
+        {label:'规则1：任何场景',lines:[
+          {condition:'标准箱',unit:'箱',unitPrice:'3.00',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]}
+      ],
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:14,name:'贴标服务费',category:'operation',subCategory:'op-valueAdded',desc:'按件 · EUR',enabled:true,detail:{
+      method:'按件计费',
+      ruleGroups:[
+        {label:'规则1：任何场景',lines:[
+          {condition:'标准',unit:'件',unitPrice:'0.15',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]}
+      ],
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:15,name:'打包服务费',category:'operation',subCategory:'op-valueAdded',desc:'按箱 · EUR',enabled:true,detail:{
+      method:'按箱计费',
+      ruleGroups:[
+        {label:'规则1：任何场景',lines:[
+          {condition:'标准箱',unit:'箱',unitPrice:'2.00',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'定制箱',unit:'箱',unitPrice:'4.00',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]}
+      ],
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:16,name:'拍照服务费',category:'operation',subCategory:'op-valueAdded',desc:'按次 · EUR',enabled:false,detail:{
+      method:'按次计费',
+      ruleGroups:[
+        {label:'规则1：任何场景',lines:[
+          {condition:'标准',unit:'次',unitPrice:'5.00',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]}
+      ],
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:17,name:'退货处理费',category:'operation',subCategory:'op-afterSales',desc:'按件 · EUR',enabled:true,detail:{
+      method:'按件计费',
+      ruleGroups:[
+        {label:'规则1：任何场景',lines:[
+          {condition:'标准',unit:'件',unitPrice:'2.00',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]}
+      ],
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:18,name:'销毁处理费',category:'operation',subCategory:'op-afterSales',desc:'按批 · EUR',enabled:true,detail:{
+      method:'按批计费',
+      ruleGroups:[
+        {label:'规则1：任何场景',lines:[
+          {condition:'标准',unit:'批',unitPrice:'20.00',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''},
+          {condition:'危险品',unit:'批',unitPrice:'40.00',waiveAmount:'0',baseFee:'0',minFee:'',maxFee:''}
+        ]}
+      ],
+      surcharge:'危险品加收100%',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
   ];
 }
 
@@ -87,7 +278,9 @@ const state={
   filterType:'all',
   selectedCustomers:new Set(),
   selections:{},
-  expandedDetails:new Set()
+  expandedDetails:new Set(),
+  priceOverrides:{},
+  currentFeeTab:{}
 };
 
 BIZ_TYPES.forEach(bt=>{state.selections[bt.key]=new Set();});
@@ -135,6 +328,35 @@ function getCategorySelectedCount(categoryKey){
     }
     return item.category===categoryKey;
   }).filter(item=>sel.has(item.id)).length;
+}
+
+function getOverrides(bizType,feeId){
+  const key=bizType+'_'+feeId;
+  return state.priceOverrides[key]||{};
+}
+
+function setOverride(bizType,feeId,priceKey,newValue){
+  const key=bizType+'_'+feeId;
+  if(!state.priceOverrides[key])state.priceOverrides[key]={};
+  state.priceOverrides[key][priceKey]=newValue;
+}
+
+function clearOverrides(bizType,feeId){
+  const key=bizType+'_'+feeId;
+  delete state.priceOverrides[key];
+}
+
+function hasOverrides(bizType,feeId){
+  const key=bizType+'_'+feeId;
+  return state.priceOverrides[key]&&Object.keys(state.priceOverrides[key]).length>0;
+}
+
+function clearOverride(bizType,feeId,priceKey){
+  const key=bizType+'_'+feeId;
+  if(state.priceOverrides[key]){
+    delete state.priceOverrides[key][priceKey];
+    if(Object.keys(state.priceOverrides[key]).length===0)delete state.priceOverrides[key];
+  }
 }
 
 function getFilteredFeeItems(){
@@ -231,11 +453,10 @@ function renderFeeItemList(){
         <div class="fee-item-detail ${detailCls}">
           <div class="fee-detail-grid">
             <div><div class="fee-detail-label">计费方式</div><div class="fee-detail-value">${escapeHtml(item.detail.method)}</div></div>
-            <div><div class="fee-detail-label">分区/规则</div><div class="fee-detail-value">${escapeHtml(item.detail.zones)}</div></div>
+            <div><div class="fee-detail-label">分区/规则</div><div class="fee-detail-value">${escapeHtml(Array.isArray(item.detail.zones)?item.detail.zones.join('、'):item.detail.tiers?item.detail.tiers.length+'个阶梯':item.detail.ruleGroups?item.detail.ruleGroups.length+'组规则':'')}</div></div>
             <div><div class="fee-detail-label">附加费</div><div class="fee-detail-value">${escapeHtml(item.detail.surcharge)}</div></div>
             <div><div class="fee-detail-label">适用时间</div><div class="fee-detail-value">${escapeHtml(item.detail.period)}</div></div>
           </div>
-          <div class="fee-detail-preview">${escapeHtml(item.detail.preview).replace(/\n/g,'<br>')}</div>
         </div>
       </div>`;
     });
