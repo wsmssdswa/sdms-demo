@@ -421,3 +421,43 @@ body { margin: 0; font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",
 body.view-mode .page-actions .btn{display:none}
 body.view-mode .fee-item-header{cursor:default}
 body.view-mode .fee-checkbox{pointer-events:none}
+
+/* === 价格编辑 === */
+.fee-override-badge{display:inline-flex;align-items:center;padding:1px 6px;background:#e8801a;color:#fff;border-radius:3px;font-size:10px;font-weight:600;margin-left:6px}
+.fee-override-badge-tree{font-size:10px;color:#e8801a;font-weight:600;margin-left:2px}
+
+.fee-price-matrix{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0}
+.fee-price-matrix th{padding:6px 8px;background:#f7f9fc;color:#7788a3;font-size:11px;font-weight:600;text-align:center;border-bottom:1px solid #edf2f7;white-space:nowrap}
+.fee-price-matrix td{padding:4px 6px;border-bottom:1px solid #f1f5f9;text-align:center;min-width:64px}
+.fee-price-matrix tr.has-override{background:#fffbe6}
+.fee-price-matrix tr.has-override td:first-child{font-weight:600}
+
+.price-original{font-size:10px;color:#aaa;text-decoration:line-through;display:block}
+.price-input{width:64px;height:24px;padding:0 4px;border:1px solid #4f8ff7;border-radius:3px;text-align:right;font-size:12px;background:#fff;outline:none;transition:border-color .15s}
+.price-input:focus{border-color:var(--brand);box-shadow:0 0 0 2px rgba(90,116,239,0.12)}
+.price-readonly{color:#666;font-size:12px;cursor:pointer;padding:2px 4px;border-radius:2px;transition:background .12s}
+.price-readonly:hover{background:#f0f4ff}
+
+.fee-type-tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:8px}
+.fee-type-tab{padding:5px 14px;font-size:12px;color:var(--text-sub);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .12s}
+.fee-type-tab:hover{color:var(--text-main)}
+.fee-type-tab.active{color:var(--brand);font-weight:600;border-bottom-color:var(--brand)}
+
+.tier-price-row{display:flex;align-items:center;gap:8px;padding:5px 8px;font-size:12px;border-bottom:1px solid #f1f5f9}
+.tier-price-row.has-override{background:#fffbe6}
+.tier-label{color:var(--text-sub);min-width:70px}
+.tier-unit{color:var(--text-sub);font-size:11px;margin-left:4px}
+
+.rule-group-block{margin-bottom:8px}
+.rule-group-title{padding:6px 10px;background:#f5f5f5;border-radius:4px;font-size:12px;font-weight:600;color:#333;display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.rule-group-lines{padding:4px 10px 4px 20px;display:flex;flex-wrap:wrap;gap:6px 20px;font-size:12px;color:#666}
+.rule-line{display:flex;align-items:center;gap:4px}
+.rule-line-condition{color:var(--text-sub)}
+.rule-line-unit{color:var(--text-sub);font-size:11px}
+
+.fee-detail-section{margin-top:8px;padding:6px 8px;border-radius:4px;font-size:12px;color:var(--text-sub)}
+.fee-detail-section.readonly{background:#fff8e6;border:1px solid #ffe4a0}
+.fee-detail-section.info{background:var(--panel-soft);border:1px solid var(--line-soft)}
+
+.fee-restore-btn{margin-top:8px;padding:3px 10px;border:1px solid var(--line);border-radius:3px;font-size:12px;background:#fff;color:var(--text-sub);cursor:pointer;transition:all .12s}
+.fee-restore-btn:hover{border-color:var(--brand);color:var(--brand)}
