@@ -330,6 +330,16 @@ function getCategorySelectedCount(categoryKey){
   }).filter(item=>sel.has(item.id)).length;
 }
 
+function getCategoryOverrideCount(categoryKey){
+  const sel=state.selections[state.currentBizType]||new Set();
+  return allFeeItems.filter(item=>{
+    if(categoryKey.startsWith('op-')){
+      return item.category==='operation'&&item.subCategory===categoryKey;
+    }
+    return item.category===categoryKey;
+  }).filter(item=>sel.has(item.id)&&hasOverrides(state.currentBizType,item.id)).length;
+}
+
 function getOverrides(bizType,feeId){
   const key=bizType+'_'+feeId;
   return state.priceOverrides[key]||{};
@@ -398,13 +408,17 @@ function renderCategoryTree(){
         const active=sub.key===state.currentCategory?'active':'';
         const cnt=getCategorySelectedCount(sub.key);
         const badge=cnt>0?' <span style="font-size:11px;color:var(--brand)">('+cnt+')</span>':'';
-        html+=`<div class="tree-sub-item ${active}" data-category="${sub.key}">${sub.label}${badge}</div>`;
+        const ovCnt=getCategoryOverrideCount(sub.key);
+        const ovBadge=ovCnt>0?' <span class="fee-override-badge-tree">改'+ovCnt+'</span>':'';
+        html+=`<div class="tree-sub-item ${active}" data-category="${sub.key}">${sub.label}${badge}${ovBadge}</div>`;
       });
     }else{
       const active=cat.key===state.currentCategory?'active':'';
       const cnt=getCategorySelectedCount(cat.key);
       const badge=cnt>0?' <span style="font-size:11px;color:var(--brand)">('+cnt+')</span>':'';
-      html+=`<div class="tree-item ${active}" data-category="${cat.key}">${cat.label}${badge}</div>`;
+      const ovCnt=getCategoryOverrideCount(cat.key);
+      const ovBadge=ovCnt>0?' <span class="fee-override-badge-tree">改'+ovCnt+'</span>':'';
+      html+=`<div class="tree-item ${active}" data-category="${cat.key}">${cat.label}${badge}${ovBadge}</div>`;
     }
   });
   feeCategoryTree.innerHTML=html;
@@ -763,8 +777,57 @@ feeItemList.addEventListener('click',e=>{
   const feeItem=allFeeItems.find(f=>f.id===feeId);
   if(!feeItem||!feeItem.enabled)return;
   const sel=state.selections[state.currentBizType];
-  if(sel.has(feeId))sel.delete(feeId);else sel.add(feeId);
+  if(sel.has(feeId)){sel.delete(feeId);clearOverrides(state.currentBizType,feeId);}else sel.add(feeId);
   render();
+});
+
+/* ── Event: FeeType Tab click ── */
+feeItemList.addEventListener('click',e=>{
+  const tab=e.target.closest('[data-fee-tab]');if(!tab)return;
+  const feeId=Number(tab.dataset.feeTab);
+  const idx=Number(tab.dataset.tabIdx);
+  state.currentFeeTab[feeId]=idx;
+  renderFeeItemList();
+});
+
+/* ── Event: Price readonly click-to-edit ── */
+feeItemList.addEventListener('click',e=>{
+  const priceEl=e.target.closest('.price-readonly');if(!priceEl)return;
+  const oKey=priceEl.dataset.override;
+  const feeId=Number(e.target.closest('.fee-item').dataset.feeId);
+  const feeItem=allFeeItems.find(f=>f.id===feeId);
+  if(!feeItem||!feeItem.enabled)return;
+  setOverride(state.currentBizType,feeId,oKey,priceEl.textContent.trim());
+  renderFeeItemList();
+});
+
+/* ── Event: Price input keydown (Enter → blur) ── */
+feeItemList.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const input=e.target.closest('.price-input');if(!input)return;
+  input.blur();
+});
+
+/* ── Event: Price input focusout (save or clear) ── */
+feeItemList.addEventListener('focusout',e=>{
+  const input=e.target.closest('.price-input');if(!input)return;
+  const oKey=input.dataset.override;
+  const feeId=Number(e.target.closest('.fee-item').dataset.feeId);
+  const newVal=input.value.trim();
+  if(!newVal||isNaN(Number(newVal))){
+    clearOverride(state.currentBizType,feeId,oKey);
+  }else{
+    setOverride(state.currentBizType,feeId,oKey,newVal);
+  }
+  renderFeeItemList();
+});
+
+/* ── Event: Restore overrides button ── */
+feeItemList.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-restore-overrides]');if(!btn)return;
+  const feeId=Number(btn.dataset.restoreOverrides);
+  clearOverrides(state.currentBizType,feeId);
+  renderFeeItemList();
 });
 
 /* ── Event: Filter chips ── */
