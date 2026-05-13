@@ -299,7 +299,7 @@ function buildTabList(){
     [...sel].forEach(id=>{
       const item=allFeeItems.find(f=>f.id===id);
       if(item&&item.category==='logistics'){
-        tabs.push({type:'logistics',bizType:bt.key,feeId:id,label:bt.label+' · '+item.name});
+        tabs.push({type:'logistics',bizType:bt.key,feeId:id,label:bt.label+item.name});
       }
     });
   });
@@ -397,7 +397,7 @@ function buildSurchargeDesc(rules){
     html+=escapeHtml(rule.hitRule);
     if(rule.type==='size'&&rule.fees){
       html+='，按分区加收：';
-      html+=rule.zones.map((z,i)=>z+' €'+rule.fees[i]).join(' / ');
+      html+=rule.zones.map((z,i)=>escapeHtml(z)+' €'+escapeHtml(rule.fees[i])).join(' / ');
       if(rule.fuelEnabled) html+='（含燃油）';
     }else if(rule.type==='remote'){
       html+='，按分区×重量段计价';
@@ -466,10 +466,52 @@ function renderBizTypeTab(tab){
   }
   if(operationItems.length){
     html+='<tr class="section-row op-section"><td colspan="11">操作费</td></tr>';
+    // Group items by subCategory for cross-item rowspan merging
+    const opGroups=[];
     operationItems.forEach(item=>{
-      const lineCount=countOpLines(item);
-      html+=renderOperationRows(item,tab.bizType,seq);
-      seq+=lineCount;
+      const cat=item.subCategory;
+      if(!opGroups.length||opGroups[opGroups.length-1].cat!==cat){
+        opGroups.push({cat,items:[item]});
+      }else{
+        opGroups[opGroups.length-1].items.push(item);
+      }
+    });
+    opGroups.forEach(group=>{
+      const catLabel='操作费-'+(SUB_CATEGORY_MAP[group.cat]||'操作费');
+      const totalGroupLines=group.items.reduce((s,it)=>s+countOpLines(it),0);
+      let isFirstInGroup=true;
+      group.items.forEach(item=>{
+        const itemLines=countOpLines(item);
+        let isFirstInItem=true;
+        const overrides=getOverrides(tab.bizType,item.id);
+        item.detail.ruleGroups.forEach((rg,gi)=>{
+          rg.lines.forEach((line,li)=>{
+            const key=gi+'_'+li;
+            const price=getPrice(overrides,key,line.unitPrice);
+            const altClass=seq%2===0?' alt-row':'';
+            html+='<tr class="'+altClass+'">';
+            html+='<td class="center">'+seq+'</td>';
+            if(isFirstInGroup){
+              html+='<td rowspan="'+totalGroupLines+'">'+escapeHtml(catLabel)+'</td>';
+              isFirstInGroup=false;
+            }
+            if(isFirstInItem){
+              html+='<td rowspan="'+itemLines+'">'+escapeHtml(item.name)+'</td>';
+              html+='<td rowspan="'+itemLines+'">EUR</td>';
+              isFirstInItem=false;
+            }
+            html+='<td>'+escapeHtml(line.condition)+'</td>';
+            html+='<td>€'+escapeHtml(price)+'/'+escapeHtml(line.unit)+'</td>';
+            html+='<td>'+(line.waiveAmount&&line.waiveAmount!=='0'?escapeHtml(line.waiveAmount):'-')+'</td>';
+            html+='<td>'+(line.baseFee&&line.baseFee!=='0'?'€'+escapeHtml(line.baseFee):'-')+'</td>';
+            html+='<td>'+(line.minFee?'€'+escapeHtml(line.minFee):'-')+'</td>';
+            html+='<td>'+(line.maxFee?'€'+escapeHtml(line.maxFee):'-')+'</td>';
+            html+='<td></td>';
+            html+='</tr>';
+            seq++;
+          });
+        });
+      });
     });
   }
   html+='</tbody></table>';
@@ -506,40 +548,6 @@ function countOpLines(item){
   return count;
 }
 
-function renderOperationRows(item,bizType,startSeq){
-  const d=item.detail;
-  const overrides=getOverrides(bizType,item.id);
-  const catLabel='操作费-'+(SUB_CATEGORY_MAP[item.subCategory]||'操作费');
-  const totalLines=countOpLines(item);
-  let html='';
-  let seq=startSeq;
-  let isFirstLine=true;
-  d.ruleGroups.forEach((rg,gi)=>{
-    rg.lines.forEach((line,li)=>{
-      const key=gi+'_'+li;
-      const price=getPrice(overrides,key,line.unitPrice);
-      const altClass=seq%2===0?' alt-row':'';
-      html+='<tr class="'+altClass+'">';
-      html+='<td class="center">'+seq+'</td>';
-      if(isFirstLine){
-        html+='<td rowspan="'+totalLines+'">'+escapeHtml(catLabel)+'</td>';
-        html+='<td rowspan="'+totalLines+'">'+escapeHtml(item.name)+'</td>';
-        html+='<td rowspan="'+totalLines+'">EUR</td>';
-        isFirstLine=false;
-      }
-      html+='<td>'+escapeHtml(line.condition)+'</td>';
-      html+='<td>€'+escapeHtml(price)+'/'+escapeHtml(line.unit)+'</td>';
-      html+='<td>'+(line.waiveAmount&&line.waiveAmount!=='0'?escapeHtml(line.waiveAmount):'-')+'</td>';
-      html+='<td>'+(line.baseFee&&line.baseFee!=='0'?'€'+escapeHtml(line.baseFee):'-')+'</td>';
-      html+='<td>'+(line.minFee?'€'+escapeHtml(line.minFee):'-')+'</td>';
-      html+='<td>'+(line.maxFee?'€'+escapeHtml(line.maxFee):'-')+'</td>';
-      html+='<td></td>';
-      html+='</tr>';
-      seq++;
-    });
-  });
-  return html;
-}
 
 function bindFoldable(root){
   root.querySelectorAll('.foldable-header').forEach(header=>{
@@ -551,4 +559,8 @@ function bindFoldable(root){
 renderHeader();
 renderTabs();
 renderContent();
+
+/* ── Button actions ── */
+document.getElementById('backBtn').addEventListener('click',()=>{if(window.history.length>1)window.history.back();else window.close();});
+document.getElementById('editBtn').addEventListener('click',()=>window.open('quotation-scheme-create.html?mode=edit','_blank'));
 })();
