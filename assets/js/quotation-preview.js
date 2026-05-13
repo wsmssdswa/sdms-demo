@@ -345,9 +345,95 @@ function renderContent(){
   bindFoldable(container);
 }
 
+function buildBillingInfo(feeItem,d){
+  const parts=[];
+  if(d.volWeightCoeff) parts.push('计重：实重与体积重取大（体积系数 '+d.volWeightCoeff+'）');
+  if(d.fuelRule) parts.push(d.fuelRule.name+'（费率 '+d.fuelRule.rate+'%）');
+  if(d.renewal&&d.renewal.enabled) parts.push('续重按每'+d.renewal.data[0].unit+'加收');
+  if(!parts.length) return '';
+  return '<div class="billing-info">'+parts.join(' | ')+'</div>';
+}
+
+function buildPriceMatrix(d,feeType,overrides){
+  const matrix=d.pricing[feeType];
+  if(!matrix) return '';
+  const isSimple=d.weightSteps.length===0;
+  let html='<table class="price-matrix"><thead><tr>';
+  html+='<th>'+(isSimple?'项目':'重量段')+'</th>';
+  d.zones.forEach(z=>html+='<th>'+escapeHtml(z)+'</th>');
+  html+='</tr></thead><tbody>';
+  if(isSimple){
+    html+='<tr><td class="row-label">'+escapeHtml(feeType)+'</td>';
+    matrix[0].forEach((price,colIdx)=>{
+      const key=feeType+'_0_'+colIdx;
+      const val=getPrice(overrides,key,price);
+      html+='<td>€'+escapeHtml(val)+'</td>';
+    });
+    html+='</tr>';
+  }else{
+    d.weightSteps.forEach((ws,rowIdx)=>{
+      html+='<tr><td class="row-label">'+escapeHtml(ws)+'</td>';
+      d.zones.forEach((_,colIdx)=>{
+        const key=feeType+'_'+rowIdx+'_'+colIdx;
+        const val=getPrice(overrides,key,matrix[rowIdx][colIdx]);
+        html+='<td>€'+escapeHtml(val)+'</td>';
+      });
+      html+='</tr>';
+    });
+    if(d.renewal&&d.renewal.enabled&&d.renewal.data&&d.renewal.data.length&&feeType!=='COD服务费'){
+      html+='<tr class="renewal-row"><td class="row-label">续重 +'+d.renewal.data[0].unit+'</td>';
+      d.renewal.data.forEach(rd=>html+='<td>€'+escapeHtml(rd.price)+'</td>');
+      html+='</tr>';
+    }
+  }
+  html+='</tbody></table>';
+  return html;
+}
+
+function buildSurchargeDesc(rules){
+  let html='<div class="surcharge-section"><h4>附加费说明</h4><div class="surcharge-grid">';
+  rules.forEach(rule=>{
+    html+='<div class="surcharge-row"><div class="label">'+escapeHtml(rule.name)+'</div><div class="value">';
+    html+=escapeHtml(rule.hitRule);
+    if(rule.type==='size'&&rule.fees){
+      html+='，按分区加收：';
+      html+=rule.zones.map((z,i)=>z+' €'+rule.fees[i]).join(' / ');
+      if(rule.fuelEnabled) html+='（含燃油）';
+    }else if(rule.type==='remote'){
+      html+='，按分区×重量段计价';
+      if(rule.renewalEnabled) html+='（含续重）';
+      html+='，详见 <a>《偏远地区表》</a>';
+    }
+    html+='</div></div>';
+  });
+  html+='</div></div>';
+  const hasRemote=rules.some(r=>r.type==='remote');
+  if(hasRemote){
+    html+='<div class="foldable"><div class="foldable-header"><span>偏远地区表</span><span class="arrow">▶</span></div>';
+    html+='<div class="foldable-body"><div style="text-align:center;color:#999;padding:12px;font-size:11px">偏远地区数据待对接</div></div></div>';
+    html+='<div class="foldable"><div class="foldable-header"><span>超偏远地区表</span><span class="arrow">▶</span></div>';
+    html+='<div class="foldable-body"><div style="text-align:center;color:#999;padding:12px;font-size:11px">超偏远地区数据待对接</div></div></div>';
+  }
+  return html;
+}
+
 function renderLogisticsTab(tab){
-  // Stub - will be implemented in Task 4
-  return '<div style="text-align:center;color:#999;padding:40px">物流费详情（待实现） - '+escapeHtml(tab.label)+'</div>';
+  const feeItem=allFeeItems.find(f=>f.id===tab.feeId);
+  if(!feeItem) return '<div style="text-align:center;color:#999;padding:40px">费用项不存在</div>';
+  const d=feeItem.detail;
+  const overrides=getOverrides(tab.bizType,tab.feeId);
+  let html='';
+  html+='<div class="logistics-header"><h3>'+escapeHtml(feeItem.name)+'</h3>';
+  html+='<div class="sub">'+escapeHtml(feeItem.channel)+' · '+escapeHtml(d.method)+' · EUR</div></div>';
+  html+=buildBillingInfo(feeItem,d);
+  d.feeTypes.forEach(ft=>{
+    html+='<div style="font-weight:500;margin-bottom:6px;font-size:12px">'+escapeHtml(ft)+'</div>';
+    html+=buildPriceMatrix(d,ft,overrides);
+  });
+  if(d.surchargeRules&&d.surchargeRules.length>0){
+    html+=buildSurchargeDesc(d.surchargeRules);
+  }
+  return html;
 }
 
 function renderBizTypeTab(tab){
