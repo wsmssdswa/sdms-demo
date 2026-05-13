@@ -1166,7 +1166,7 @@ dateRangeNext.addEventListener('click',()=>{state.dateViewBase=addMonths(state.d
   });
 });
 
-if(previewBtn)previewBtn.addEventListener('click',()=>window.open('quotation-preview.html','_blank'));
+if(previewBtn)previewBtn.addEventListener('click',()=>{QuotationPreview.open({schemeName:schemeName.value||'未命名方案',selectedCustomers:[...state.selectedCustomers],warehouse:warehouse.value,startDate:startDate.value,endDate:endDate.value,selections:state.selections,priceOverrides:state.priceOverrides},allFeeItems);});
 
 /* ── Init ── */
 renderCustomerTags();
