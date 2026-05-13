@@ -3,6 +3,7 @@
 const backBtn=document.getElementById('backBtn');
 const saveDraftBtn=document.getElementById('saveDraftBtn');
 const submitBtn=document.getElementById('submitBtn');
+const previewBtn=document.getElementById('previewBtn');
 const pageTitleLabel=document.getElementById('pageTitleLabel');
 const schemeName=document.getElementById('schemeName');
 const customerMultiSelect=document.getElementById('customerMultiSelect');
@@ -12,6 +13,20 @@ const customerDropdown=document.getElementById('customerDropdown');
 const warehouse=document.getElementById('warehouse');
 const startDate=document.getElementById('startDate');
 const endDate=document.getElementById('endDate');
+const dateRangeTrigger=document.getElementById('dateRangeTrigger');
+const dateRangeText=document.getElementById('dateRangeText');
+const dateRangePopover=document.getElementById('dateRangePopover');
+const dateRangeClose=document.getElementById('dateRangeClose');
+const dateRangeInfo=document.getElementById('dateRangeInfo');
+const dateRangeMonthA=document.getElementById('dateRangeMonthA');
+const dateRangeMonthB=document.getElementById('dateRangeMonthB');
+const dateRangeGridA=document.getElementById('dateRangeGridA');
+const dateRangeGridB=document.getElementById('dateRangeGridB');
+const dateRangePrev=document.getElementById('dateRangePrev');
+const dateRangeNext=document.getElementById('dateRangeNext');
+const dateRangeClearBtn=document.getElementById('dateRangeClearBtn');
+const dateRangeCancelBtn=document.getElementById('dateRangeCancelBtn');
+const dateRangeConfirmBtn=document.getElementById('dateRangeConfirmBtn');
 const remark=document.getElementById('remark');
 const feeConfigSection=document.getElementById('feeConfigSection');
 const bizTypeTabs=document.getElementById('bizTypeTabs');
@@ -21,8 +36,19 @@ const feeItemList=document.getElementById('feeItemList');
 const feeItemFooter=document.getElementById('feeItemFooter');
 const schemeSummary=document.getElementById('schemeSummary');
 const toastStack=document.getElementById('toastStack');
+const feeSelectModal=document.getElementById('feeSelectModal');
+const feeSelectModalTitle=document.getElementById('feeSelectModalTitle');
+const feeSelectModalCount=document.getElementById('feeSelectModalCount');
+const feeSelectSearch=document.getElementById('feeSelectSearch');
+const feeSelectBody=document.getElementById('feeSelectBody');
+const feeSelectInfo=document.getElementById('feeSelectInfo');
+const feeSelectCancelBtn=document.getElementById('feeSelectCancelBtn');
+const feeSelectConfirmBtn=document.getElementById('feeSelectConfirmBtn');
 
 const escapeHtml=(v)=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+const FEE_PAGE_MAP={logistics:'logistics-fee-create.html',storage:'storage-fee-create.html',operation:'operation-fee-create.html'};
+const getFeeItemUrl=(item)=>FEE_PAGE_MAP[item.category]+'?mode=edit&id='+item.id;
 
 /* ── Edit / View mode ── */
 const params=new URLSearchParams(window.location.search);
@@ -55,8 +81,8 @@ const FEE_CATEGORIES=[
 function buildSeedFeeData(){
   return [
     // ── 物流费 (id 1-6) ──
-    {id:1,name:'干线空运费',category:'logistics',subCategory:'',desc:'首重/续重 · 分区计价 · EUR',enabled:true,detail:{
-      method:'分区×重量段',
+    {id:1,name:'干线空运费',category:'logistics',subCategory:'',desc:'首重/续重 · 分区计价 · EUR',enabled:true,channel:'西欧专线',detail:{
+      method:'分区×重量段',weightUnit:'KG',volWeightMethod:'体积/体积系数',volWeightCoeff:6000,fuelRule:{name:'标准燃油附加',rate:15},
       feeTypes:['配送费','中转费','COD服务费'],
       zones:['一区','二区','三区','四区'],
       weightSteps:['0~0.5kg','0.5~1kg','1~1.5kg','1.5~2kg','2~3kg'],
@@ -66,57 +92,70 @@ function buildSeedFeeData(){
         'COD服务费':[['1.50','2.00','2.50','3.00'],['1.80','2.30','2.80','3.30'],['2.00','2.50','3.00','3.50'],['2.30','2.80','3.30','3.80'],['2.50','3.00','3.50','4.00']]
       },
       renewal:{enabled:true,data:[{zone:'一区',unit:'0.5kg',price:'3.42'},{zone:'二区',unit:'0.5kg',price:'4.10'},{zone:'三区',unit:'0.5kg',price:'5.20'},{zone:'四区',unit:'0.5kg',price:'6.00'}]},
-      surcharge:'超长附加费、超重附加费、偏远地区附加费',
+      surchargeRules:[
+        {type:'size',name:'超长附加费',hitRule:'规则A-单边超长',fuelEnabled:true,zones:['一区','二区','三区','四区'],fees:['15.00','18.00','20.00','22.00']},
+        {type:'size',name:'超重附加费',hitRule:'规则B-超重',fuelEnabled:false,zones:['一区','二区','三区','四区'],fees:['8.00','10.00','12.00','14.00']},
+        {type:'remote',name:'偏远附加费',hitRule:'按邮编匹配',fuelEnabled:false,renewalEnabled:true,zones:['一区','二区','三区','四区'],weightSteps:['0~0.5kg','0.5~1kg','1~2kg'],fees:[['8.00','10.00','12.00','14.00'],['10.00','12.00','14.00','16.00'],['12.00','14.00','16.00','18.00']],renewal:{unit:'0.5kg',prices:['3.00','4.00','5.00','6.00']}}
+      ],
       period:'2025-01-01 ~ 2025-12-31'
     }},
-    {id:2,name:'干线海运费',category:'logistics',subCategory:'',desc:'整柜/拼箱 · 按柜型 · EUR',enabled:true,detail:{
-      method:'按柜型',
+    {id:2,name:'干线海运费',category:'logistics',subCategory:'',desc:'整柜/拼箱 · 按柜型 · EUR',enabled:true,channel:'西欧专线',detail:{
+      method:'按柜型',weightUnit:'KG',volWeightMethod:'体积/体积系数',volWeightCoeff:6000,fuelRule:{name:'欧线燃油附加',rate:12},
       feeTypes:['海运费'],
       zones:['20GP','40GP','40HQ'],
       weightSteps:[],
       pricing:{'海运费':[['1800','2800','3200']]},
       renewal:{enabled:false},
-      surcharge:'BAF、CAF',
+      surchargeRules:[
+        {type:'size',name:'BAF(燃油调整系数)',hitRule:'按费率加收',fuelEnabled:false,zones:['20GP','40GP','40HQ'],fees:['150','200','250']},
+        {type:'size',name:'CAF(货币调整系数)',hitRule:'按费率加收',fuelEnabled:false,zones:['20GP','40GP','40HQ'],fees:['100','130','160']}
+      ],
       period:'2025-01-01 ~ 2025-12-31'
     }},
-    {id:3,name:'干线铁路费',category:'logistics',subCategory:'',desc:'按柜型 · CNY',enabled:true,detail:{
-      method:'按柜型',
+    {id:3,name:'干线铁路费',category:'logistics',subCategory:'',desc:'按柜型 · CNY',enabled:true,channel:'全渠道',detail:{
+      method:'按柜型',weightUnit:'KG',volWeightMethod:'CBM*体积系数',volWeightCoeff:6000,fuelRule:null,
       feeTypes:['铁路费'],
       zones:['40HQ'],
       weightSteps:[],
       pricing:{'铁路费':[['12000']]},
       renewal:{enabled:false},
-      surcharge:'无',
+      surchargeRules:[],
       period:'2025-01-01 ~ 2025-12-31'
     }},
-    {id:4,name:'加急空运费',category:'logistics',subCategory:'',desc:'首重/续重 · 分区计价 · EUR',enabled:false,detail:{
-      method:'分区×重量段',
+    {id:4,name:'加急空运费',category:'logistics',subCategory:'',desc:'首重/续重 · 分区计价 · EUR',enabled:false,channel:'北美专线',detail:{
+      method:'分区×重量段',weightUnit:'KG',volWeightMethod:'体积/体积系数',volWeightCoeff:6000,fuelRule:{name:'标准燃油附加',rate:15},
       feeTypes:['配送费'],
       zones:['一区','二区','三区'],
       weightSteps:['0~0.5kg','0.5~1kg','1~2kg'],
       pricing:{'配送费':[['65','72','80'],['70','78','85'],['80','88','95']]},
       renewal:{enabled:false},
-      surcharge:'燃油附加费',
+      surchargeRules:[
+        {type:'size',name:'燃油附加费',hitRule:'按燃油指数浮动',fuelEnabled:false,zones:['一区','二区','三区'],fees:['12%','15%','18%']}
+      ],
       period:'2025-01-01 ~ 2025-12-31'
     }},
-    {id:5,name:'敏感货物流费',category:'logistics',subCategory:'',desc:'首重/续重 · EUR',enabled:true,detail:{
-      method:'分区×重量段',
+    {id:5,name:'敏感货物流费',category:'logistics',subCategory:'',desc:'首重/续重 · EUR',enabled:true,channel:'东南亚专线',detail:{
+      method:'分区×重量段',weightUnit:'KG',volWeightMethod:'体积/体积系数',volWeightCoeff:6000,fuelRule:null,
       feeTypes:['配送费'],
       zones:['一区','二区','三区'],
       weightSteps:['0~0.5kg','0.5~1kg','1~2kg','2~5kg'],
       pricing:{'配送费':[['55','62','70'],['60','68','76'],['68','75','82'],['78','85','92']]},
       renewal:{enabled:false},
-      surcharge:'敏感货处理费',
+      surchargeRules:[
+        {type:'size',name:'敏感货处理费',hitRule:'含电池/液体/粉末类货物',fuelEnabled:false,zones:['一区','二区','三区'],fees:['10.00','12.00','15.00']}
+      ],
       period:'2025-01-01 ~ 2025-12-31'
     }},
-    {id:6,name:'超大件物流费',category:'logistics',subCategory:'',desc:'按体积重 · EUR',enabled:true,detail:{
-      method:'按体积重',
+    {id:6,name:'超大件物流费',category:'logistics',subCategory:'',desc:'按体积重 · EUR',enabled:true,channel:'北美专线',detail:{
+      method:'按体积重',weightUnit:'LB',volWeightMethod:'CBM*体积系数',volWeightCoeff:5000,fuelRule:{name:'北美燃油附加',rate:20},
       feeTypes:['配送费'],
       zones:['一区','二区'],
       weightSteps:[],
       pricing:{'配送费':[['12','15']]},
       renewal:{enabled:false},
-      surcharge:'超尺寸附加费',
+      surchargeRules:[
+        {type:'size',name:'超尺寸附加费',hitRule:'规则C-超尺寸',fuelEnabled:false,zones:['一区','二区'],fees:['20.00','25.00']}
+      ],
       period:'2025-01-01 ~ 2025-12-31'
     }},
     // ── 仓储费 (id 7-9) ──
@@ -274,13 +313,17 @@ const CUSTOMER_OPTIONS=['深圳ABC贸易有限公司','杭州XYZ物流','上海D
 const state={
   currentBizType:'trunk',
   currentCategory:'logistics',
-  searchKeyword:'',
-  filterType:'all',
   selectedCustomers:new Set(),
   selections:{},
   expandedDetails:new Set(),
   priceOverrides:{},
-  currentFeeTab:{}
+  currentFeeTab:{},
+  modalSearch:'',
+  modalChecks:new Set(),
+  activeEditCell:null,
+  dateDraftStart:null,
+  dateDraftEnd:null,
+  dateViewBase:null
 };
 
 BIZ_TYPES.forEach(bt=>{state.selections[bt.key]=new Set();});
@@ -295,6 +338,8 @@ if(isEdit||isView){
   warehouse.value='波兰海外仓';
   startDate.value='2025-01-01';
   endDate.value='2025-12-31';
+  dateRangeText.textContent='2025-01-01 ~ 2025-12-31';
+  dateRangeTrigger.classList.remove('is-empty');
   state.selections.trunk=new Set([1,2,7,10]);
   state.selections.fba=new Set([1,7,10]);
   state.selections.lastMileBulk=new Set([1,5,7]);
@@ -383,11 +428,6 @@ function getFilteredFeeItems(){
       if(item.category!==cat)return false;
     }
     if(!item.enabled)return false;
-    if(state.searchKeyword&&!item.name.includes(state.searchKeyword))return false;
-    if(state.filterType==='selected'){
-      const sel=state.selections[state.currentBizType];
-      if(!sel||!sel.has(item.id))return false;
-    }
     return true;
   });
   return items;
@@ -429,6 +469,33 @@ function renderCategoryTree(){
   feeCategoryTree.innerHTML=html;
 }
 
+/* ── Render: price cell helper ── */
+function renderPriceCell(feeId,key,price,ov){
+  const hasOv=!!ov[key];
+  const isActive=state.activeEditCell&&state.activeEditCell.feeId===feeId&&state.activeEditCell.key===key;
+  if(isActive){
+    const editVal=hasOv?ov[key]:price;
+    return `<td class="cell-editing"><span class="price-original">${escapeHtml(price)}</span><input class="price-input" data-override="${escapeHtml(key)}" data-orig-price="${escapeHtml(price)}" value="${escapeHtml(editVal)}"></td>`;
+  }
+  if(hasOv){
+    return `<td class="cell-modified" data-orig="原价: ${escapeHtml(price)}"><span class="price-value" data-override="${escapeHtml(key)}">${escapeHtml(ov[key])}</span></td>`;
+  }
+  return `<td><span class="price-readonly" data-override="${escapeHtml(key)}">${escapeHtml(price)}</span></td>`;
+}
+
+function renderPriceInline(feeId,key,price,ov,unitHtml){
+  const hasOv=!!ov[key];
+  const isActive=state.activeEditCell&&state.activeEditCell.feeId===feeId&&state.activeEditCell.key===key;
+  if(isActive){
+    const editVal=hasOv?ov[key]:price;
+    return `<span class="price-original">${escapeHtml(price)}</span><input class="price-input" data-override="${escapeHtml(key)}" data-orig-price="${escapeHtml(price)}" value="${escapeHtml(editVal)}">${unitHtml}`;
+  }
+  if(hasOv){
+    return `<span class="price-value" data-override="${escapeHtml(key)}" data-orig="原价: ${escapeHtml(price)}">${escapeHtml(ov[key])}</span>${unitHtml}`;
+  }
+  return `<span class="price-readonly" data-override="${escapeHtml(key)}">${escapeHtml(price)}</span>${unitHtml}`;
+}
+
 /* ── Render: Logistics Detail (zone x weight matrix) ── */
 function renderLogisticsDetail(item,bizType){
   const d=item.detail;
@@ -438,101 +505,105 @@ function renderLogisticsDetail(item,bizType){
   const weightSteps=d.weightSteps||[];
   const pricing=d.pricing||{};
   const renewal=d.renewal||{};
-  const surcharge=d.surcharge||'';
-  const period=d.period||'';
+  const surchargeRules=d.surchargeRules||[];
   const ov=getOverrides(bizType,item.id);
   const isSimple=weightSteps.length===0;
+  const hasSurcharge=surchargeRules.length>0;
   const currentTabIdx=state.currentFeeTab[item.id]||0;
+  const isSurchargeTab=hasSurcharge&&currentTabIdx===feeTypes.length;
   const activeFeeType=feeTypes[currentTabIdx]||feeTypes[0]||'';
 
   let html='';
 
-  // feeType tabs
-  if(feeTypes.length>1){
+  // feeType tabs (show when multiple feeTypes or has surcharge)
+  if(feeTypes.length>1||hasSurcharge){
     html+='<div class="fee-type-tabs">';
     feeTypes.forEach((ft,idx)=>{
       const cls=idx===currentTabIdx?'fee-type-tab active':'fee-type-tab';
       html+=`<span class="${cls}" data-fee-tab="${item.id}" data-tab-idx="${idx}">${escapeHtml(ft)}</span>`;
     });
+    // add surcharge tab
+    const surCls=isSurchargeTab?'fee-type-tab active':'fee-type-tab';
+    html+=`<span class="${surCls}" data-fee-tab="${item.id}" data-tab-idx="${feeTypes.length}">附加费</span>`;
     html+='</div>';
   }
 
-  const matrix=pricing[activeFeeType]||[];
-
-  if(isSimple){
-    // simple list: one row, multiple columns
-    const row=matrix[0]||[];
+  if(isSurchargeTab){
     html+='<div class="fee-detail-section">';
-    html+='<table class="fee-price-matrix"><thead><tr><th></th>';
-    zones.forEach(z=>{html+=`<th>${escapeHtml(z)}</th>`;});
-    html+='</tr></thead><tbody>';
-    let rowHasOverride=false;
-    row.forEach((price,colIdx)=>{
-      const key=activeFeeType+'_0_'+colIdx;
-      if(ov[key])rowHasOverride=true;
-    });
-    const rowCls=rowHasOverride?'has-override':'';
-    html+=`<tr class="${rowCls}"><td>${escapeHtml(activeFeeType)}</td>`;
-    row.forEach((price,colIdx)=>{
-      const key=activeFeeType+'_0_'+colIdx;
-      if(ov[key]){
-        html+=`<td><span class="price-original">${escapeHtml(price)}</span><input class="price-input" data-override="${escapeHtml(key)}" value="${escapeHtml(ov[key])}"></td>`;
-      }else{
-        html+=`<td><span class="price-readonly" data-override="${escapeHtml(key)}">${escapeHtml(price)}</span></td>`;
-      }
-    });
-    html+='</tr></tbody></table></div>';
-  }else{
-    // matrix table: rows=weightSteps, cols=zones
-    html+='<div class="fee-detail-section">';
-    html+='<table class="fee-price-matrix"><thead><tr><th></th>';
-    zones.forEach(z=>{html+=`<th>${escapeHtml(z)}</th>`;});
-    html+='</tr></thead><tbody>';
-    matrix.forEach((row,rowIdx)=>{
-      let rowHasOverride=false;
-      row.forEach((price,colIdx)=>{
-        const key=activeFeeType+'_'+rowIdx+'_'+colIdx;
-        if(ov[key])rowHasOverride=true;
-      });
-      const rowCls=rowHasOverride?'has-override':'';
-      html+=`<tr class="${rowCls}"><td>${escapeHtml(weightSteps[rowIdx]||'')}</td>`;
-      row.forEach((price,colIdx)=>{
-        const key=activeFeeType+'_'+rowIdx+'_'+colIdx;
-        if(ov[key]){
-          html+=`<td><span class="price-original">${escapeHtml(price)}</span><input class="price-input" data-override="${escapeHtml(key)}" value="${escapeHtml(ov[key])}"></td>`;
-        }else{
-          html+=`<td><span class="price-readonly" data-override="${escapeHtml(key)}">${escapeHtml(price)}</span></td>`;
+    surchargeRules.forEach(rule=>{
+      html+=`<div class="surcharge-rule-block">`;
+      // header: name + hitRule + tags
+      const tags=[];
+      if(rule.fuelEnabled)tags.push('<span class="surcharge-tag">含燃油</span>');
+      if(rule.type==='remote'&&rule.renewalEnabled)tags.push('<span class="surcharge-tag">含续重</span>');
+      html+=`<div class="surcharge-rule-head"><span class="surcharge-rule-name">${escapeHtml(rule.name)}</span><span class="surcharge-rule-hit">${escapeHtml(rule.hitRule)}</span>${tags.join('')}</div>`;
+      // pricing table
+      if(rule.type==='size'){
+        html+=`<table class="fee-price-matrix surcharge-table"><thead><tr>${rule.zones.map(z=>`<th>${escapeHtml(z)}</th>`).join('')}</tr></thead><tbody><tr>${rule.fees.map(f=>`<td>${escapeHtml(f)}</td>`).join('')}</tr>`;
+        html+='</tbody></table>';
+      }else if(rule.type==='remote'){
+        html+=`<table class="fee-price-matrix surcharge-table"><thead><tr><th></th>${rule.zones.map(z=>`<th>${escapeHtml(z)}</th>`).join('')}</tr></thead><tbody>`;
+        rule.fees.forEach((row,idx)=>{
+          html+=`<tr><td>${escapeHtml(rule.weightSteps[idx]||'')}</td>${row.map(f=>`<td>${escapeHtml(f)}</td>`).join('')}</tr>`;
+        });
+        if(rule.renewalEnabled&&rule.renewal){
+          html+=`<tr class="renewal-row"><td>续重(+${escapeHtml(rule.renewal.unit)})</td>${rule.renewal.prices.map(f=>`<td>${escapeHtml(f)}</td>`).join('')}</tr>`;
         }
+        html+='</tbody></table>';
+      }else if(rule.type==='cod'){
+        (rule.currencies||[]).forEach(cur=>{
+          html+=`<div class="surcharge-cod-group"><span class="surcharge-cod-cur">${escapeHtml(cur.currency)}</span><table class="fee-price-matrix surcharge-table"><thead><tr><th>金额区间</th><th>附加费</th></tr></thead><tbody>`;
+          cur.ranges.forEach(r=>{
+            const rangeText=r.max?`${r.min}~${r.max}`:`${r.min}+`;
+            html+=`<tr><td>${escapeHtml(rangeText)}</td><td>${escapeHtml(r.fee)} ${escapeHtml(cur.currency)}</td></tr>`;
+          });
+          html+='</tbody></table></div>';
+        });
+      }
+      html+='</div>';
+    });
+    html+='</div>';
+  }else{
+    // pricing matrix
+    const matrix=pricing[activeFeeType]||[];
+
+    if(isSimple){
+      const row=matrix[0]||[];
+      html+='<div class="fee-detail-section">';
+      html+='<table class="fee-price-matrix"><thead><tr><th></th>';
+      zones.forEach(z=>{html+=`<th>${escapeHtml(z)}</th>`;});
+      html+='</tr></thead><tbody>';
+      html+=`<tr><td>${escapeHtml(activeFeeType)}</td>`;
+      row.forEach((price,colIdx)=>{
+        const key=activeFeeType+'_0_'+colIdx;
+        html+=renderPriceCell(item.id,key,price,ov);
       });
-      html+='</tr>';
-    });
-    html+='</tbody></table></div>';
-  }
-
-  // renewal (readonly)
-  if(renewal.enabled&&renewal.data&&renewal.data.length){
-    html+='<div class="fee-detail-section readonly">';
-    html+='<div class="fee-detail-label">续重</div>';
-    html+='<table class="fee-price-matrix"><tbody>';
-    renewal.data.forEach(r=>{
-      html+=`<tr><td>${escapeHtml(r.zone)}</td><td>${escapeHtml(r.price)} / ${escapeHtml(r.unit)}</td></tr>`;
-    });
-    html+='</tbody></table></div>';
-  }
-
-  // surcharge (readonly)
-  if(surcharge&&surcharge!=='无'){
-    html+=`<div class="fee-detail-section readonly"><div class="fee-detail-label">附加费</div><div class="fee-detail-value">${escapeHtml(surcharge)}</div></div>`;
-  }
-
-  // period (info)
-  if(period){
-    html+=`<div class="fee-detail-section info"><div class="fee-detail-label">适用时间</div><div class="fee-detail-value">${escapeHtml(period)}</div></div>`;
-  }
-
-  // restore button
-  if(hasOverrides(bizType,item.id)){
-    html+=`<button class="fee-restore-btn" data-restore-overrides="${item.id}">恢复原价</button>`;
+      html+='</tr></tbody></table></div>';
+    }else{
+      html+='<div class="fee-detail-section">';
+      html+='<table class="fee-price-matrix"><thead><tr><th></th>';
+      zones.forEach(z=>{html+=`<th>${escapeHtml(z)}</th>`;});
+      html+='</tr></thead><tbody>';
+      matrix.forEach((row,rowIdx)=>{
+        html+=`<tr><td>${escapeHtml(weightSteps[rowIdx]||'')}</td>`;
+        row.forEach((price,colIdx)=>{
+          const key=activeFeeType+'_'+rowIdx+'_'+colIdx;
+          html+=renderPriceCell(item.id,key,price,ov);
+        });
+        html+='</tr>';
+      });
+      // renewal row inside matrix
+      if(renewal.enabled&&renewal.data&&renewal.data.length&&!isSimple&&activeFeeType!=='COD服务费'){
+        const rUnit=renewal.data[0]?renewal.data[0].unit:'';
+        html+=`<tr class="renewal-row"><td>续重(+${escapeHtml(rUnit)})</td>`;
+        zones.forEach(z=>{
+          const match=renewal.data.find(r=>r.zone===z);
+          html+=`<td>${match?escapeHtml(match.price):'-'}</td>`;
+        });
+        html+='</tr>';
+      }
+      html+='</tbody></table></div>';
+    }
   }
 
   return html;
@@ -546,7 +617,6 @@ function renderStorageDetail(item,bizType){
   const method=d.method||'';
   const peakSurcharge=d.peakSurcharge||'';
   const surcharge=d.surcharge||'';
-  const period=d.period||'';
   const ov=getOverrides(bizType,item.id);
 
   let html='';
@@ -556,17 +626,10 @@ function renderStorageDetail(item,bizType){
   tiers.forEach((tier,idx)=>{
     const key='tier_'+idx;
     const hasOv=!!ov[key];
-    const cls=hasOv?'tier-price-row has-override':'tier-price-row';
+    const cls=hasOv?'tier-price-row has-modified':'tier-price-row';
     html+=`<div class="${cls}">`;
     html+=`<span class="tier-label">${escapeHtml(tier.label)}</span>`;
-    if(hasOv){
-      html+=`<span class="price-original">${escapeHtml(tier.price)}</span>`;
-      html+=`<input class="price-input" data-override="${escapeHtml(key)}" value="${escapeHtml(ov[key])}">`;
-      html+=`<span class="tier-unit">${escapeHtml(method)}</span>`;
-    }else{
-      html+=`<span class="price-readonly" data-override="${escapeHtml(key)}">${escapeHtml(tier.price)}</span>`;
-      html+=`<span class="tier-unit">${escapeHtml(method)}</span>`;
-    }
+    html+=renderPriceInline(item.id,key,tier.price,ov,`<span class="tier-unit">${escapeHtml(method)}</span>`);
     html+='</div>';
   });
   html+='</div>';
@@ -574,16 +637,6 @@ function renderStorageDetail(item,bizType){
   // peak surcharge (readonly)
   if(peakSurcharge){
     html+=`<div class="fee-detail-section readonly"><div class="fee-detail-label">旺季附加费</div><div class="fee-detail-value">${escapeHtml(peakSurcharge)}</div></div>`;
-  }
-
-  // period (info)
-  if(period){
-    html+=`<div class="fee-detail-section info"><div class="fee-detail-label">适用时间</div><div class="fee-detail-value">${escapeHtml(period)}</div></div>`;
-  }
-
-  // restore button
-  if(hasOverrides(bizType,item.id)){
-    html+=`<button class="fee-restore-btn" data-restore-overrides="${item.id}">恢复原价</button>`;
   }
 
   return html;
@@ -594,8 +647,6 @@ function renderOperationDetail(item,bizType){
   const d=item.detail;
   if(!d)return '';
   const ruleGroups=d.ruleGroups||[];
-  const surcharge=d.surcharge||'';
-  const period=d.period||'';
   const ov=getOverrides(bizType,item.id);
 
   let html='';
@@ -617,36 +668,15 @@ function renderOperationDetail(item,bizType){
     group.lines.forEach((line,lIdx)=>{
       const key=gIdx+'_'+lIdx;
       const hasOv=!!ov[key];
-      const lineCls=hasOv?'rule-line has-override':'rule-line';
+      const lineCls=hasOv?'rule-line has-modified':'rule-line';
       html+=`<div class="${lineCls}">`;
       html+=`<span class="rule-line-condition">${escapeHtml(line.condition)}</span>`;
-      if(hasOv){
-        html+=`<span class="price-original">${escapeHtml(line.unitPrice)}</span>`;
-        html+=`<input class="price-input" data-override="${escapeHtml(key)}" value="${escapeHtml(ov[key])}">`;
-      }else{
-        html+=`<span class="price-readonly" data-override="${escapeHtml(key)}">${escapeHtml(line.unitPrice)}</span>`;
-      }
-      html+=`<span class="rule-line-unit">${escapeHtml(line.unit)}</span>`;
+      html+=renderPriceInline(item.id,key,line.unitPrice,ov,`<span class="rule-line-unit">EUR/${escapeHtml(line.unit)}</span>`);
       html+='</div>';
     });
     html+='</div></div>';
   });
   html+='</div>';
-
-  // surcharge (readonly)
-  if(surcharge&&surcharge!=='无'){
-    html+=`<div class="fee-detail-section readonly"><div class="fee-detail-label">附加费</div><div class="fee-detail-value">${escapeHtml(surcharge)}</div></div>`;
-  }
-
-  // period (info)
-  if(period){
-    html+=`<div class="fee-detail-section info"><div class="fee-detail-label">适用时间</div><div class="fee-detail-value">${escapeHtml(period)}</div></div>`;
-  }
-
-  // restore button
-  if(hasOverrides(bizType,item.id)){
-    html+=`<button class="fee-restore-btn" data-restore-overrides="${item.id}">恢复原价</button>`;
-  }
 
   return html;
 }
@@ -668,37 +698,43 @@ function renderFeeItemList(){
   const subItem=catLabel?.children?.find(c=>c.key===state.currentCategory);
   const currentLabel=subItem?subItem.label:catName;
 
-  const categorySelCount=items.filter(i=>sel.has(i.id)).length;
   feeItemToolbar.innerHTML=`
-    <input class="fee-search" id="feeSearchInput" type="text" placeholder="搜索费用项名称..." value="${escapeHtml(state.searchKeyword)}">
-    <span class="filter-chip ${state.filterType==='all'?'active':''}" data-filter="all">全部</span>
-    <span class="filter-chip ${state.filterType==='selected'?'active':''}" data-filter="selected">已选 ${categorySelCount}</span>
+    <button class="btn btn-primary" id="addFeeBtn" type="button" style="padding:4px 14px;font-size:12px">选择费用项</button>
   `;
 
-  const headerText=`${currentLabel} 共${items.length}项`;
-  const allSelected=items.length>0&&items.filter(i=>i.enabled).every(i=>sel.has(i.id));
-  let listHtml=`<div class="fee-list-header"><span>${headerText}</span><span class="fee-select-all" id="selectAllBtn">${allSelected?'取消全选':'全选'}</span></div>`;
+  const selectedItems=items.filter(i=>sel.has(i.id));
+  let listHtml='';
 
-  if(!items.length){
-    listHtml+='<div style="padding:40px;text-align:center;color:var(--text-sub);font-size:13px">暂无费用项</div>';
+  if(!selectedItems.length){
+    listHtml=`<div class="fee-empty-state">
+      <div style="color:var(--text-sub);font-size:13px;margin-bottom:12px">当前分类暂无已选费用项</div>
+      <button class="btn btn-primary" id="addFeeBtnEmpty" type="button" style="font-size:12px">选择费用项</button>
+    </div>`;
   }else{
-    items.forEach(item=>{
-      const isSelected=sel.has(item.id);
+    selectedItems.forEach(item=>{
       const isExpanded=state.expandedDetails.has(item.id);
       const ovBadge=hasOverrides(state.currentBizType,item.id)?'<span class="fee-override-badge">已调价</span>':'';
-      const selCls=isSelected?'selected':'';
-            const checkMark=isSelected?'✓':'';
       const detailCls=isExpanded?'expanded':'';
       const toggleText=isExpanded?'▼ 收起':'▶ 展开';
+      const restoreBtn=hasOverrides(state.currentBizType,item.id)&&isExpanded?`<button class="fee-restore-btn" data-restore-overrides="${item.id}">恢复原价</button>`:'';
 
-      listHtml+=`<div class="fee-item ${selCls}" data-fee-id="${item.id}">
+      let descText=item.desc||'';
+      if(item.category==='logistics'&&item.detail){
+        const d=item.detail;
+        const parts=[item.channel||'',d.weightUnit||'',d.volWeightMethod||'','系数'+(d.volWeightCoeff||'-')];
+        if(d.fuelRule)parts.push(d.fuelRule.name+'('+d.fuelRule.rate+'%)');
+        descText=parts.filter(Boolean).join(' · ');
+      }
+
+      listHtml+=`<div class="fee-item selected" data-fee-id="${item.id}">
         <div class="fee-item-header" data-fee-id="${item.id}">
-          <div class="fee-checkbox">${checkMark}</div>
           <div class="fee-item-info">
-            <div class="fee-item-name">${escapeHtml(item.name)}${ovBadge}</div>
-            <div class="fee-item-desc">${escapeHtml(item.desc)}${!item.enabled?' · 已停用':''}</div>
+            <div class="fee-item-name"><a class="fee-item-link" href="${getFeeItemUrl(item)}" target="_blank">${escapeHtml(item.name)}</a>${ovBadge}</div>
+            <div class="fee-item-desc">${escapeHtml(descText)}</div>
           </div>
+          ${restoreBtn}
           <span class="fee-detail-toggle" data-detail-toggle="${item.id}">${toggleText}</span>
+          <span class="fee-item-remove" data-remove-fee="${item.id}">×</span>
         </div>
         <div class="fee-item-detail ${detailCls}">${renderFeeDetail(item,state.currentBizType)}</div>
       </div>`;
@@ -708,20 +744,9 @@ function renderFeeItemList(){
 
   const selNames=items.filter(i=>sel.has(i.id)).map(i=>i.name);
   feeItemFooter.innerHTML=`
-    <span class="fee-footer-count">已选 ${sel.size} 项</span>
+    <span class="fee-footer-count">已选 ${selectedItems.length} 项</span>
     <span class="fee-footer-items">${escapeHtml(selNames.join('、'))||'暂未选择'}</span>
-    ${sel.size>0?'<span class="fee-footer-clear" id="clearSelBtn">清空</span>':''}
   `;
-
-  const searchInput=document.getElementById('feeSearchInput');
-  if(searchInput){
-    searchInput.addEventListener('input',e=>{
-      state.searchKeyword=e.target.value.trim();
-      renderFeeItemList();
-      const newInput=document.getElementById('feeSearchInput');
-      if(newInput){newInput.focus();newInput.selectionStart=newInput.selectionEnd=newInput.value.length;}
-    });
-  }
 }
 
 /* ── Render: Summary ── */
@@ -747,12 +772,78 @@ function render(){
   renderSummary();
 }
 
+/* ── Date Range Picker ── */
+const pad=v=>String(v).padStart(2,'0');
+const fmtDate=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const fmtMonth=d=>`${d.getFullYear()}年${d.getMonth()+1}月`;
+const parseDate=s=>s?new Date(s+'T00:00:00'):null;
+const addDays=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r;};
+const addMonths=(d,n)=>{const r=new Date(d);r.setMonth(r.getMonth()+n,1);return r;};
+const monthStart=d=>new Date(d.getFullYear(),d.getMonth(),1);
+
+function buildCalendarCells(monthText,startText,endText){
+  const md=parseDate(monthText)||monthStart(new Date());
+  const ms=monthStart(md);
+  const offset=(ms.getDay()+6)%7;
+  const gs=addDays(ms,-offset);
+  const today=fmtDate(new Date());
+  return Array.from({length:42},(_,i)=>{
+    const cur=addDays(gs,i);
+    const text=fmtDate(cur);
+    const hasRange=Boolean(startText&&endText);
+    return{text,day:cur.getDate(),inMonth:cur.getMonth()===ms.getMonth(),isToday:text===today,isStart:Boolean(startText)&&text===startText,isEnd:Boolean(endText)&&text===endText,inRange:hasRange&&text>=startText&&text<=endText};
+  });
+}
+
+function renderDateCalendar(){
+  const base=state.dateViewBase||monthStart(new Date());
+  const next=addMonths(base,1);
+  dateRangeMonthA.textContent=fmtMonth(base);
+  dateRangeMonthB.textContent=fmtMonth(next);
+  [dateRangeGridA,dateRangeGridB].forEach((grid,idx)=>{
+    const monthText=fmtDate(idx===0?base:next);
+    const cells=buildCalendarCells(monthText,state.dateDraftStart,state.dateDraftEnd);
+    grid.innerHTML=cells.map(c=>{
+      const cls=['date-range-cell',c.inRange?'is-in-range':'',c.isStart?'is-range-start':'',c.isEnd?'is-range-end':''].filter(Boolean).join(' ');
+      const dcls=['date-range-day',!c.inMonth?'is-muted':'',c.isToday?'is-today':'',c.isStart||c.isEnd?'is-selected':''].filter(Boolean).join(' ');
+      return `<div class="${cls}"><button type="button" class="${dcls}" data-dr-day="${c.text}">${c.day}</button></div>`;
+    }).join('');
+  });
+  dateRangeInfo.textContent=state.dateDraftStart&&state.dateDraftEnd
+    ?`${state.dateDraftStart} ~ ${state.dateDraftEnd}`
+    :state.dateDraftStart?`已选起始: ${state.dateDraftStart}，请选择结束日期`:'请选择开始日期和结束日期';
+}
+
+function openDateRangePicker(){
+  state.dateDraftStart=startDate.value||null;
+  state.dateDraftEnd=endDate.value||null;
+  const base=parseDate(state.dateDraftStart||state.dateDraftEnd)||new Date();
+  state.dateViewBase=monthStart(base);
+  renderDateCalendar();
+  dateRangePopover.setAttribute('aria-hidden','false');
+}
+
+function closeDateRangePicker(){
+  dateRangePopover.setAttribute('aria-hidden','true');
+  state.dateDraftStart=null;
+  state.dateDraftEnd=null;
+}
+
+function updateDateRangeTrigger(){
+  const s=startDate.value,e=endDate.value;
+  if(s&&e){
+    dateRangeText.textContent=`${s} ~ ${e}`;
+    dateRangeTrigger.classList.remove('is-empty');
+  }else{
+    dateRangeText.textContent='请选择日期范围';
+    dateRangeTrigger.classList.add('is-empty');
+  }
+}
+
 /* ── Event: Biz Type Tab click ── */
 bizTypeTabs.addEventListener('click',e=>{
   const tab=e.target.closest('.biz-type-tab');if(!tab)return;
   state.currentBizType=tab.dataset.bizType;
-  state.searchKeyword='';
-  state.filterType='all';
   render();
 });
 
@@ -760,30 +851,40 @@ bizTypeTabs.addEventListener('click',e=>{
 feeCategoryTree.addEventListener('click',e=>{
   const item=e.target.closest('[data-category]');if(!item)return;
   state.currentCategory=item.dataset.category;
-  state.searchKeyword='';
-  state.filterType='all';
   renderCategoryTree();
   renderFeeItemList();
 });
 
 /* ── Event: Fee Item List click ── */
 feeItemList.addEventListener('click',e=>{
-  const toggle=e.target.closest('[data-detail-toggle]');
-  if(toggle){
-    const id=Number(toggle.dataset.detailToggle);
-    if(state.expandedDetails.has(id))state.expandedDetails.delete(id);
-    else state.expandedDetails.add(id);
+  const removeBtn=e.target.closest('[data-remove-fee]');
+  if(removeBtn){
+    const feeId=Number(removeBtn.dataset.removeFee);
+    if(hasOverrides(state.currentBizType,feeId)){
+      if(!window.confirm('该费用项已调整价格，删除后调价数据将丢失，是否确认删除？'))return;
+    }
+    const sel=state.selections[state.currentBizType];
+    sel.delete(feeId);
+    clearOverrides(state.currentBizType,feeId);
+    state.expandedDetails.delete(feeId);
+    render();
+    return;
+  }
+  const restoreBtn=e.target.closest('[data-restore-overrides]');
+  if(restoreBtn){
+    const feeId=Number(restoreBtn.dataset.restoreOverrides);
+    clearOverrides(state.currentBizType,feeId);
     renderFeeItemList();
     return;
   }
   const header=e.target.closest('.fee-item-header');
-  if(!header)return;
-  const feeId=Number(header.dataset.feeId);
-  const feeItem=allFeeItems.find(f=>f.id===feeId);
-  if(!feeItem||!feeItem.enabled)return;
-  const sel=state.selections[state.currentBizType];
-  if(sel.has(feeId)){sel.delete(feeId);clearOverrides(state.currentBizType,feeId);}else sel.add(feeId);
-  render();
+  if(header&&!e.target.closest('.fee-item-link')){
+    const feeId=Number(header.dataset.feeId);
+    if(state.expandedDetails.has(feeId))state.expandedDetails.delete(feeId);
+    else state.expandedDetails.add(feeId);
+    renderFeeItemList();
+    return;
+  }
 });
 
 /* ── Event: FeeType Tab click ── */
@@ -795,15 +896,17 @@ feeItemList.addEventListener('click',e=>{
   renderFeeItemList();
 });
 
-/* ── Event: Price readonly click-to-edit ── */
+/* ── Event: Price click-to-edit (readonly or modified value) ── */
 feeItemList.addEventListener('click',e=>{
-  const priceEl=e.target.closest('.price-readonly');if(!priceEl)return;
+  const priceEl=e.target.closest('.price-readonly')||e.target.closest('.price-value');if(!priceEl)return;
   const oKey=priceEl.dataset.override;
   const feeId=Number(e.target.closest('.fee-item').dataset.feeId);
   const feeItem=allFeeItems.find(f=>f.id===feeId);
   if(!feeItem||!feeItem.enabled)return;
-  setOverride(state.currentBizType,feeId,oKey,priceEl.textContent.trim());
+  state.activeEditCell={feeId,key:oKey};
   renderFeeItemList();
+  const input=feeItemList.querySelector('.cell-editing .price-input')||feeItemList.querySelector('.price-input');
+  if(input)input.focus();
 });
 
 /* ── Event: Price input keydown (Enter → blur) ── */
@@ -818,45 +921,17 @@ feeItemList.addEventListener('focusout',e=>{
   const input=e.target.closest('.price-input');if(!input)return;
   const oKey=input.dataset.override;
   const feeId=Number(e.target.closest('.fee-item').dataset.feeId);
+  const origPrice=input.dataset.origPrice||'';
   const newVal=input.value.trim();
   if(!newVal||isNaN(Number(newVal))){
+    clearOverride(state.currentBizType,feeId,oKey);
+  }else if(newVal===origPrice){
     clearOverride(state.currentBizType,feeId,oKey);
   }else{
     setOverride(state.currentBizType,feeId,oKey,newVal);
   }
+  state.activeEditCell=null;
   renderFeeItemList();
-});
-
-/* ── Event: Restore overrides button ── */
-feeItemList.addEventListener('click',e=>{
-  const btn=e.target.closest('[data-restore-overrides]');if(!btn)return;
-  const feeId=Number(btn.dataset.restoreOverrides);
-  clearOverrides(state.currentBizType,feeId);
-  renderFeeItemList();
-});
-
-/* ── Event: Filter chips ── */
-feeItemToolbar.addEventListener('click',e=>{
-  const chip=e.target.closest('.filter-chip');if(!chip)return;
-  state.filterType=chip.dataset.filter;
-  renderFeeItemList();
-});
-
-/* ── Event: Select All ── */
-feeItemList.addEventListener('click',e=>{
-  const btn=e.target.closest('#selectAllBtn');if(!btn)return;
-  const items=getFilteredFeeItems().filter(i=>i.enabled);
-  const sel=state.selections[state.currentBizType];
-  const allSelected=items.length>0&&items.every(i=>sel.has(i.id));
-  if(allSelected){items.forEach(i=>sel.delete(i.id));}else{items.forEach(i=>sel.add(i.id));}
-  render();
-});
-
-/* ── Event: Clear Selection ── */
-feeItemFooter.addEventListener('click',e=>{
-  const btn=e.target.closest('#clearSelBtn');if(!btn)return;
-  state.selections[state.currentBizType]=new Set();
-  render();
 });
 
 /* ── Form validation ── */
@@ -864,8 +939,7 @@ const requiredFields={
   schemeName:{el:schemeName,label:'方案名称',check:()=>!schemeName.value.trim()},
   customer:{el:null,label:'客户名称',check:()=>state.selectedCustomers.size===0},
   warehouse:{el:warehouse,label:'所属仓库',check:()=>!warehouse.value.trim()},
-  startDate:{el:startDate,label:'适用时间',check:()=>!startDate.value.trim()},
-  endDate:{el:endDate,label:'适用时间',check:()=>!endDate.value.trim()}
+  dateRange:{el:dateRangeTrigger,label:'适用时间',check:()=>!startDate.value.trim()||!endDate.value.trim()}
 };
 
 function validateForm(){
@@ -952,7 +1026,150 @@ document.addEventListener('click',e=>{
   if(!customerMultiSelect.contains(e.target))customerDropdown.classList.remove('open');
 });
 
+/* ── Fee Select Modal ── */
+function openFeeSelectModal(){
+  const catLabel=FEE_CATEGORIES.find(c=>c.key===state.currentCategory||c.children?.some(sc=>sc.key===state.currentCategory));
+  const catName=catLabel?catLabel.label:'';
+  const subItem=catLabel?.children?.find(c=>c.key===state.currentCategory);
+  const currentLabel=subItem?subItem.label:catName;
+  feeSelectModalTitle.textContent='选择费用项 — '+currentLabel;
+  state.modalSearch='';
+  state.modalChecks=new Set();
+  feeSelectSearch.value='';
+  renderFeeSelectTable();
+  feeSelectModal.style.display='flex';
+}
+
+function closeFeeSelectModal(){
+  feeSelectModal.style.display='none';
+  state.modalChecks=new Set();
+  state.modalSearch='';
+}
+
+function getModalItems(){
+  const cat=state.currentCategory;
+  return allFeeItems.filter(item=>{
+    if(cat.startsWith('op-')){
+      if(item.category!=='operation'||item.subCategory!==cat)return false;
+    }else{
+      if(item.category!==cat)return false;
+    }
+    if(state.modalSearch&&!item.name.includes(state.modalSearch))return false;
+    return true;
+  });
+}
+
+function renderFeeSelectTable(){
+  const items=getModalItems();
+  const sel=state.selections[state.currentBizType]||new Set();
+  feeSelectModalCount.textContent='共'+items.length+'项可选';
+  if(!items.length){
+    feeSelectBody.innerHTML='<tr><td colspan="6" style="padding:30px;text-align:center;color:var(--text-sub)">暂无匹配的费用项</td></tr>';
+  }else{
+    feeSelectBody.innerHTML=items.map(item=>{
+      const isAlreadyAdded=sel.has(item.id);
+      const isDisabled=!item.enabled;
+      const rowCls=isAlreadyAdded?'modal-row-added':isDisabled?'modal-row-disabled':'';
+      const cbDisabled=isAlreadyAdded||isDisabled;
+      const cbChecked=isAlreadyAdded||state.modalChecks.has(item.id);
+      let statusHtml='';
+      if(isAlreadyAdded)statusHtml='<span class="modal-status-tag added">已添加</span>';
+      else if(isDisabled)statusHtml='<span class="modal-status-tag disabled">已停用</span>';
+      else statusHtml='<span class="modal-status-tag enabled">启用</span>';
+      const ch=item.channel||'-';
+      const wu=item.detail&&item.detail.weightUnit?item.detail.weightUnit:'-';
+      let fr='-';
+      if(item.detail&&item.detail.fuelRule)fr=item.detail.fuelRule.name+'('+item.detail.fuelRule.rate+'%)';
+      return `<tr class="${rowCls}">
+        <td><input type="checkbox" data-modal-fee-id="${item.id}" ${cbChecked?'checked':''} ${cbDisabled?'disabled':''}></td>
+        <td>${escapeHtml(item.name)}</td>
+        <td>${escapeHtml(ch)}</td>
+        <td>${escapeHtml(wu)}</td>
+        <td>${escapeHtml(fr)}</td>
+        <td>${statusHtml}</td>
+      </tr>`;
+    }).join('');
+  }
+  const newCount=state.modalChecks.size;
+  feeSelectInfo.innerHTML='已选 <b>'+newCount+'</b> 项（本次新增）';
+}
+
+/* ── Event: Add Fee button (toolbar) ── */
+feeItemToolbar.addEventListener('click',e=>{
+  if(e.target.closest('#addFeeBtn')){openFeeSelectModal();return;}
+});
+feeItemList.addEventListener('click',e=>{
+  if(e.target.closest('#addFeeBtnEmpty')){openFeeSelectModal();return;}
+});
+
+/* ── Event: Modal search ── */
+feeSelectSearch.addEventListener('input',e=>{
+  state.modalSearch=e.target.value.trim();
+  renderFeeSelectTable();
+});
+
+/* ── Event: Modal checkbox ── */
+feeSelectBody.addEventListener('change',e=>{
+  const cb=e.target.closest('[data-modal-fee-id]');if(!cb)return;
+  const feeId=Number(cb.dataset.modalFeeId);
+  if(cb.checked)state.modalChecks.add(feeId);
+  else state.modalChecks.delete(feeId);
+  renderFeeSelectTable();
+});
+
+/* ── Event: Modal cancel ── */
+feeSelectCancelBtn.addEventListener('click',closeFeeSelectModal);
+
+/* ── Event: Modal confirm ── */
+feeSelectConfirmBtn.addEventListener('click',()=>{
+  const sel=state.selections[state.currentBizType];
+  state.modalChecks.forEach(feeId=>{sel.add(feeId);});
+  closeFeeSelectModal();
+  render();
+});
+
+/* ── Event: Modal mask click to close ── */
+feeSelectModal.addEventListener('click',e=>{
+  if(e.target===feeSelectModal)closeFeeSelectModal();
+});
+
+/* ── Event: Date Range Picker ── */
+dateRangeTrigger.addEventListener('click',openDateRangePicker);
+dateRangeClose.addEventListener('click',closeDateRangePicker);
+dateRangeCancelBtn.addEventListener('click',closeDateRangePicker);
+dateRangeClearBtn.addEventListener('click',()=>{
+  state.dateDraftStart=null;state.dateDraftEnd=null;renderDateCalendar();
+});
+dateRangeConfirmBtn.addEventListener('click',()=>{
+  let s=state.dateDraftStart,e=state.dateDraftEnd;
+  if(s&&!e)e=s;if(!s&&e)s=e;
+  if(s&&e&&s>e)[s,e]=[e,s];
+  startDate.value=s||'';endDate.value=e||'';
+  updateDateRangeTrigger();
+  closeDateRangePicker();
+});
+dateRangePopover.addEventListener('click',e=>{if(e.target===dateRangePopover)closeDateRangePicker();});
+dateRangePrev.addEventListener('click',()=>{state.dateViewBase=addMonths(state.dateViewBase,-1);renderDateCalendar();});
+dateRangeNext.addEventListener('click',()=>{state.dateViewBase=addMonths(state.dateViewBase,1);renderDateCalendar();});
+[dateRangeGridA,dateRangeGridB].forEach(grid=>{
+  grid.addEventListener('click',e=>{
+    const btn=e.target.closest('[data-dr-day]');if(!btn)return;
+    const day=btn.dataset.drDay;
+    if(!state.dateDraftStart||(state.dateDraftStart&&state.dateDraftEnd)){
+      state.dateDraftStart=day;state.dateDraftEnd=null;
+    }else if(day<state.dateDraftStart){
+      state.dateDraftEnd=state.dateDraftStart;state.dateDraftStart=day;
+    }else{
+      state.dateDraftEnd=day;
+    }
+    renderDateCalendar();
+  });
+});
+
+if(previewBtn)previewBtn.addEventListener('click',()=>window.open('quotation-preview.html','_blank'));
+
 /* ── Init ── */
 renderCustomerTags();
+updateDateRangeTrigger();
 render();
 })();
