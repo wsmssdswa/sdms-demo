@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
   <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
   <link rel="stylesheet" href="./assets/css/quotation-scheme-create.css">
+  <link rel="stylesheet" href="./assets/css/quotation-preview.css">
 </head>
 <body>
   <div class="app-shell">
@@ -161,8 +162,30 @@
     </div>
   </div>
   <div class="toast-stack" id="toastStack"></div>
+  <div class="preview-modal-mask" id="previewModal">
+    <div class="preview-modal-container">
+      <div class="preview-modal-header">
+        <div class="preview-modal-header-left">
+          <button class="preview-modal-close" id="previewCloseBtn" type="button"><i class="ri-arrow-left-line"></i> 返回编辑</button>
+        </div>
+        <div class="preview-modal-header-center">
+          <h1 id="previewSchemeName" class="preview-modal-title"></h1>
+          <div id="previewMeta" class="preview-modal-meta"></div>
+        </div>
+        <div class="preview-modal-header-right">
+          <button class="btn btn-default" id="previewExportBtn" type="button"><i class="ri-file-excel-2-line"></i> 导出</button>
+          <button class="btn btn-primary" id="previewCalcBtn" type="button">运费试算</button>
+        </div>
+      </div>
+      <div class="preview-modal-body">
+        <div id="previewTabs" class="preview-modal-tabs"></div>
+        <div id="previewContent" class="preview-modal-content"></div>
+      </div>
+    </div>
+  </div>
   <script src="./assets/js/sdms-header-tabs.js"></script>
   <script src="./assets/js/sdms-sidebar.js"></script>
+  <script src="./assets/js/quotation-preview.js"></script>
   <script src="./assets/js/quotation-scheme-create.js"></script>
 </body>
 </html>
