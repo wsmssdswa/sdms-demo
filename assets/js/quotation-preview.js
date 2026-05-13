@@ -437,8 +437,108 @@ function renderLogisticsTab(tab){
 }
 
 function renderBizTypeTab(tab){
-  // Stub - will be implemented in Task 5
-  return '<div style="text-align:center;color:#999;padding:40px">仓储费 & 操作费（待实现） - '+escapeHtml(tab.label)+'</div>';
+  const sel=state.selections[tab.bizType];
+  if(!sel||sel.size===0) return '<div style="text-align:center;color:#999;padding:40px">无费用数据</div>';
+  const selectedItems=[...sel].map(id=>allFeeItems.find(f=>f.id===id)).filter(Boolean);
+  const storageItems=selectedItems.filter(f=>f.category==='storage');
+  const operationItems=selectedItems.filter(f=>f.category==='operation');
+  let html='<div class="logistics-header"><h3>'+escapeHtml(tab.label)+' — 仓储费 & 操作费</h3></div>';
+  html+='<table class="fee-table"><thead><tr>';
+  html+='<th style="width:36px;text-align:center">序号</th>';
+  html+='<th style="width:60px">费用类型</th>';
+  html+='<th style="width:90px">计费项</th>';
+  html+='<th style="width:40px">币种</th>';
+  html+='<th>收费条件</th>';
+  html+='<th style="width:70px">单价</th>';
+  html+='<th style="width:50px">减免量</th>';
+  html+='<th style="width:55px">基础收费</th>';
+  html+='<th style="width:55px">最低收费</th>';
+  html+='<th style="width:55px">最高收费</th>';
+  html+='<th style="width:100px">备注</th>';
+  html+='</tr></thead><tbody>';
+  let seq=1;
+  if(storageItems.length){
+    html+='<tr class="section-row storage-section"><td colspan="11">仓储费</td></tr>';
+    storageItems.forEach(item=>{
+      html+=renderStorageRows(item,tab.bizType,seq);
+      seq+=item.detail.tiers.length;
+    });
+  }
+  if(operationItems.length){
+    html+='<tr class="section-row op-section"><td colspan="11">操作费</td></tr>';
+    operationItems.forEach(item=>{
+      const lineCount=countOpLines(item);
+      html+=renderOperationRows(item,tab.bizType,seq);
+      seq+=lineCount;
+    });
+  }
+  html+='</tbody></table>';
+  return html;
+}
+
+function renderStorageRows(item,bizType,startSeq){
+  const d=item.detail;
+  const overrides=getOverrides(bizType,item.id);
+  let html='';
+  d.tiers.forEach((tier,i)=>{
+    const price=getPrice(overrides,'tier_'+i,tier.price);
+    const altClass=i%2===1?' alt-row':'';
+    html+='<tr class="'+altClass+'">';
+    html+='<td class="center">'+(startSeq+i)+'</td>';
+    if(i===0){
+      html+='<td rowspan="'+d.tiers.length+'">仓储费</td>';
+      html+='<td rowspan="'+d.tiers.length+'">'+escapeHtml(item.name)+'</td>';
+      html+='<td rowspan="'+d.tiers.length+'">EUR</td>';
+    }
+    html+='<td>'+escapeHtml(tier.label)+'</td>';
+    html+='<td>€'+escapeHtml(price)+'/'+escapeHtml(d.method)+'</td>';
+    html+='<td>-</td><td>-</td><td>-</td><td>-</td>';
+    const remark=(i===d.tiers.length-1&&d.surcharge&&d.surcharge!=='无')?escapeHtml(d.surcharge):'';
+    html+='<td>'+remark+'</td>';
+    html+='</tr>';
+  });
+  return html;
+}
+
+function countOpLines(item){
+  let count=0;
+  item.detail.ruleGroups.forEach(rg=>count+=rg.lines.length);
+  return count;
+}
+
+function renderOperationRows(item,bizType,startSeq){
+  const d=item.detail;
+  const overrides=getOverrides(bizType,item.id);
+  const catLabel='操作费-'+(SUB_CATEGORY_MAP[item.subCategory]||'操作费');
+  const totalLines=countOpLines(item);
+  let html='';
+  let seq=startSeq;
+  let isFirstLine=true;
+  d.ruleGroups.forEach((rg,gi)=>{
+    rg.lines.forEach((line,li)=>{
+      const key=gi+'_'+li;
+      const price=getPrice(overrides,key,line.unitPrice);
+      const altClass=seq%2===0?' alt-row':'';
+      html+='<tr class="'+altClass+'">';
+      html+='<td class="center">'+seq+'</td>';
+      if(isFirstLine){
+        html+='<td rowspan="'+totalLines+'">'+escapeHtml(catLabel)+'</td>';
+        html+='<td rowspan="'+totalLines+'">'+escapeHtml(item.name)+'</td>';
+        html+='<td rowspan="'+totalLines+'">EUR</td>';
+        isFirstLine=false;
+      }
+      html+='<td>'+escapeHtml(line.condition)+'</td>';
+      html+='<td>€'+escapeHtml(price)+'/'+escapeHtml(line.unit)+'</td>';
+      html+='<td>'+(line.waiveAmount&&line.waiveAmount!=='0'?escapeHtml(line.waiveAmount):'-')+'</td>';
+      html+='<td>'+(line.baseFee&&line.baseFee!=='0'?'€'+escapeHtml(line.baseFee):'-')+'</td>';
+      html+='<td>'+(line.minFee?'€'+escapeHtml(line.minFee):'-')+'</td>';
+      html+='<td>'+(line.maxFee?'€'+escapeHtml(line.maxFee):'-')+'</td>';
+      html+='<td></td>';
+      html+='</tr>';
+      seq++;
+    });
+  });
+  return html;
 }
 
 function bindFoldable(root){
