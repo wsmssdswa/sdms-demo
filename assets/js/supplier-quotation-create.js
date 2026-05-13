@@ -426,6 +426,44 @@ function clearOverride(bizType,feeId,priceKey){
   }
 }
 
+function getAllowedCategories(supplierType){
+  if(!supplierType)return['logistics','storage','operation'];
+  if(supplierType==='logistics')return['logistics'];
+  if(supplierType==='warehouse')return['storage'];
+  if(supplierType==='operation')return['operation'];
+  return['logistics','storage','operation'];
+}
+
+function getFilteredCategories(){
+  const type=state.selectedSupplier?state.selectedSupplier.type:null;
+  const allowed=getAllowedCategories(type);
+  return FEE_CATEGORIES.filter(cat=>allowed.includes(cat.key));
+}
+
+function pruneSelectionsByType(supplierType){
+  const allowed=getAllowedCategories(supplierType);
+  Object.keys(state.selections).forEach(bizType=>{
+    const sel=state.selections[bizType];
+    if(!sel||sel.size===0)return;
+    [...sel].forEach(feeId=>{
+      const item=allFeeItems.find(f=>f.id===feeId);
+      if(item&&!allowed.includes(item.category)){
+        sel.delete(feeId);
+      }
+    });
+  });
+  // Clean up priceOverrides for removed items
+  Object.keys(state.priceOverrides).forEach(key=>{
+    const parts=key.split('_');
+    const bizType=parts[0];
+    const feeId=parseInt(parts[1]);
+    const sel=state.selections[bizType];
+    if(!sel||!sel.has(feeId)){
+      delete state.priceOverrides[key];
+    }
+  });
+}
+
 function getFilteredFeeItems(){
   const cat=state.currentCategory;
   const items=allFeeItems.filter(item=>{
@@ -435,6 +473,8 @@ function getFilteredFeeItems(){
       if(item.category!==cat)return false;
     }
     if(!item.enabled)return false;
+    const allowed=getAllowedCategories(state.selectedSupplier?state.selectedSupplier.type:null);
+    if(!allowed.includes(item.category))return false;
     return true;
   });
   return items;
@@ -453,7 +493,7 @@ function renderBizTypeTabs(){
 /* ── Render: Category Tree ── */
 function renderCategoryTree(){
   let html='';
-  FEE_CATEGORIES.forEach(cat=>{
+  getFilteredCategories().forEach(cat=>{
     if(cat.children){
       html+=`<div class="tree-group-title">${cat.label}</div>`;
       cat.children.forEach(sub=>{
@@ -850,6 +890,24 @@ function updateDateRangeTrigger(){
   }
 }
 
+/* ── Event: Supplier Select change ── */
+supplierSelect.addEventListener('change',()=>{
+  const opt=supplierSelect.selectedOptions[0];
+  if(!opt||!opt.value){
+    state.selectedSupplier=null;
+    supplierTypeTag.style.display='none';
+    render();
+    return;
+  }
+  const supplierType=opt.dataset.type;
+  state.selectedSupplier={id:opt.value,name:opt.textContent,type:supplierType};
+  supplierTypeTag.textContent=SUPPLIER_TYPE_MAP[supplierType]||'';
+  supplierTypeTag.style.display='';
+  // Remove fee items that don't match the new supplier type
+  pruneSelectionsByType(supplierType);
+  render();
+});
+
 /* ── Event: Biz Type Tab click ── */
 bizTypeTabs.addEventListener('click',e=>{
   const tab=e.target.closest('.biz-type-tab');if(!tab)return;
@@ -1023,6 +1081,8 @@ function getModalItems(){
     }else{
       if(item.category!==cat)return false;
     }
+    const allowed=getAllowedCategories(state.selectedSupplier?state.selectedSupplier.type:null);
+    if(!allowed.includes(item.category))return false;
     if(state.modalSearch&&!item.name.includes(state.modalSearch))return false;
     return true;
   });
