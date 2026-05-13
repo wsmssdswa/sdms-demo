@@ -20,6 +20,7 @@
             <div class="page-title" id="pageTitleLabel">新增报价方案</div>
             <div class="page-actions">
               <button class="btn btn-outline" id="backBtn" type="button">返回</button>
+              <button class="btn btn-default" id="previewBtn" type="button"><i class="ri-eye-line"></i> 预览</button>
               <button class="btn btn-default" id="saveDraftBtn" type="button">保存草稿</button>
               <button class="btn btn-primary" id="submitBtn" type="button">提交审核</button>
             </div>
@@ -60,11 +61,13 @@
                   </div>
                   <div class="field-group" data-field="dateRange">
                     <div class="field-label"><span class="required-star">*</span><span>适用时间</span></div>
-                    <div class="date-range-wrap">
-                      <input class="field-control date-input" id="startDate" type="date" name="startDate">
-                      <span class="date-sep">~</span>
-                      <input class="field-control date-input" id="endDate" type="date" name="endDate">
-                    </div>
+                    <button class="date-range-trigger" id="dateRangeTrigger" type="button">
+                      <i class="ri-calendar-2-line"></i>
+                      <span id="dateRangeText">请选择日期范围</span>
+                      <i class="ri-arrow-down-s-line"></i>
+                    </button>
+                    <input type="hidden" id="startDate" name="startDate">
+                    <input type="hidden" id="endDate" name="endDate">
                     <div class="field-tip"></div>
                   </div>
                   <div class="field-group" data-field="remark">
@@ -86,10 +89,75 @@
                 </div>
               </div>
             </div>
+            <div class="modal-mask" id="feeSelectModal" style="display:none">
+              <div class="modal-dialog fee-select-dialog">
+                <div class="modal-header">
+                  <span class="modal-title" id="feeSelectModalTitle">选择费用项</span>
+                  <span class="modal-count" id="feeSelectModalCount"></span>
+                </div>
+                <div class="modal-search-bar">
+                  <input class="fee-search" id="feeSelectSearch" type="text" placeholder="搜索费用项名称...">
+                </div>
+                <div class="modal-table-wrap">
+                  <table class="modal-table">
+                    <thead>
+                      <tr>
+                        <th style="width:36px"></th>
+                        <th>费用项名称</th>
+                        <th>渠道</th>
+                        <th>计重单位</th>
+                        <th>燃油规则</th>
+                        <th>状态</th>
+                      </tr>
+                    </thead>
+                    <tbody id="feeSelectBody"></tbody>
+                  </table>
+                </div>
+                <div class="modal-footer">
+                  <span class="modal-footer-info" id="feeSelectInfo">已选 0 项（本次新增）</span>
+                  <div class="modal-footer-actions">
+                    <button class="btn btn-default" id="feeSelectCancelBtn" type="button">取消</button>
+                    <button class="btn btn-primary" id="feeSelectConfirmBtn" type="button">确认添加</button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="scheme-summary" id="schemeSummary"></div>
           </div>
         </section>
       </main>
+    </div>
+  </div>
+  <div class="date-range-popover" id="dateRangePopover" aria-hidden="true">
+    <div class="date-range-surface">
+      <div class="date-range-header">
+        <span class="date-range-title">选择日期范围</span>
+        <button class="date-range-close" id="dateRangeClose" type="button"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="date-range-info" id="dateRangeInfo">请选择开始日期和结束日期</div>
+      <div class="date-range-calendars">
+        <div class="date-range-month">
+          <div class="date-range-month-head">
+            <button class="date-range-nav" id="dateRangePrev" type="button"><i class="ri-arrow-left-s-line"></i></button>
+            <div class="date-range-month-label" id="dateRangeMonthA"></div>
+          </div>
+          <div class="date-range-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+          <div class="date-range-grid" id="dateRangeGridA"></div>
+        </div>
+        <div class="date-range-month">
+          <div class="date-range-month-head">
+            <div class="date-range-month-label" id="dateRangeMonthB"></div>
+            <button class="date-range-nav" id="dateRangeNext" type="button"><i class="ri-arrow-right-s-line"></i></button>
+          </div>
+          <div class="date-range-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+          <div class="date-range-grid" id="dateRangeGridB"></div>
+        </div>
+      </div>
+      <div class="date-range-footer">
+        <button class="btn btn-default" id="dateRangeClearBtn" type="button">清空</button>
+        <button class="btn btn-default" id="dateRangeCancelBtn" type="button">取消</button>
+        <button class="btn btn-primary" id="dateRangeConfirmBtn" type="button">确定</button>
+      </div>
     </div>
   </div>
   <div class="toast-stack" id="toastStack"></div>
