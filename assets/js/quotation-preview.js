@@ -306,7 +306,63 @@ function buildTabList(){
   return tabs;
 }
 
-/* ── Init (temporary) ── */
-const tabs=buildTabList();
-console.log('Quotation Preview - Tab list:',tabs);
+/* ── Rendering ── */
+let currentTabIndex=0;
+const tabList=buildTabList();
+
+function renderHeader(){
+  document.getElementById('previewSchemeName').textContent=state.schemeName;
+  const metaParts=[];
+  metaParts.push('有效期：'+state.startDate+' ~ '+state.endDate);
+  metaParts.push('客户：'+state.selectedCustomers.join(' / '));
+  metaParts.push('仓库：'+state.warehouse);
+  document.getElementById('previewMeta').textContent=metaParts.join(' | ');
+}
+
+function renderTabs(){
+  const container=document.getElementById('previewTabs');
+  container.innerHTML=tabList.map((tab,i)=>
+    `<div class="preview-tab${i===currentTabIndex?' active':''}" data-tab-idx="${i}">${escapeHtml(tab.label)}</div>`
+  ).join('');
+  container.querySelectorAll('.preview-tab').forEach(el=>{
+    el.addEventListener('click',()=>{
+      currentTabIndex=parseInt(el.dataset.tabIdx);
+      renderTabs();
+      renderContent();
+    });
+  });
+}
+
+function renderContent(){
+  const container=document.getElementById('previewContent');
+  const tab=tabList[currentTabIndex];
+  if(!tab){container.innerHTML='<div style="text-align:center;color:#999;padding:40px">暂无报价数据</div>';return;}
+  if(tab.type==='logistics'){
+    container.innerHTML=renderLogisticsTab(tab);
+  }else{
+    container.innerHTML=renderBizTypeTab(tab);
+  }
+  bindFoldable(container);
+}
+
+function renderLogisticsTab(tab){
+  // Stub - will be implemented in Task 4
+  return '<div style="text-align:center;color:#999;padding:40px">物流费详情（待实现） - '+escapeHtml(tab.label)+'</div>';
+}
+
+function renderBizTypeTab(tab){
+  // Stub - will be implemented in Task 5
+  return '<div style="text-align:center;color:#999;padding:40px">仓储费 & 操作费（待实现） - '+escapeHtml(tab.label)+'</div>';
+}
+
+function bindFoldable(root){
+  root.querySelectorAll('.foldable-header').forEach(header=>{
+    header.addEventListener('click',()=>header.classList.toggle('open'));
+  });
+}
+
+/* ── Init ── */
+renderHeader();
+renderTabs();
+renderContent();
 })();
