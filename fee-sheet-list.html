@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>费用单管理</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/fee-sheet-list.css">
+</head>
+<body>
+<div class="app-shell">
+<aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
+<div class="page-shell">
+<div class="header-tabs" data-sdms-header-tabs data-tab-set="finance" data-tab-key="fee-sheet" data-include-tools="true" data-user-name="张三"></div>
+<main class="content-wrap">
+<section class="page-card">
+<section class="filter-panel">
+<div class="scene-tabs" id="statusTabs"></div>
+<div class="query-row">
+  <div class="filter-control"><span class="filter-inline-label">费用大类</span><div class="select-wrap"><select class="filter-select" id="categorySelect"><option value="">全部</option><option value="logistics">物流费</option><option value="storage">仓储费</option><option value="operation">操作费</option></select><svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg></div></div>
+  <div class="filter-control"><span class="filter-inline-label">结算模式</span><div class="select-wrap"><select class="filter-select" id="settlementSelect"><option value="">全部</option><option value="realtime">余额扣款</option><option value="bill">账期结算</option></select><svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg></div></div>
+  <div class="filter-control"><span class="filter-inline-label">关键字</span><input class="filter-input" id="keywordInput" type="text" maxlength="50" placeholder="费用单号/订单号/客户"></div>
+  <button class="btn btn-primary" id="queryBtn" type="button">查询</button>
+  <button class="btn btn-default" id="resetBtn" type="button">重置</button>
+</div>
+</section>
+
+<!-- 应收费用 -->
+<section class="table-panel">
+  <div class="panel-header-row">
+    <h3 class="panel-title">应收费用<span class="panel-subtitle" id="receivableSummary"></span></h3>
+  </div>
+  <div class="table-wrap">
+    <table class="list-table">
+      <colgroup>
+        <col style="width:13%">
+        <col style="width:11%">
+        <col style="width:11%">
+        <col style="width:11%">
+        <col style="width:7%">
+        <col style="width:9%">
+        <col style="width:9%">
+        <col style="width:9%">
+        <col style="width:12%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>费用单号</th>
+          <th>订单号</th>
+          <th>客户名称</th>
+          <th>仓库</th>
+          <th>费用项数</th>
+          <th>总金额</th>
+          <th>结算模式</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="receivableBody"></tbody>
+    </table>
+  </div>
+  <div class="table-footer">
+    <span id="receivableCount"></span>
+  </div>
+</section>
+
+<!-- 应付费用 -->
+<section class="table-panel">
+  <div class="panel-header-row">
+    <h3 class="panel-title">应付费用<span class="panel-subtitle" id="payableSummary"></span></h3>
+  </div>
+  <div class="table-wrap">
+    <table class="list-table">
+      <colgroup>
+        <col style="width:13%">
+        <col style="width:11%">
+        <col style="width:11%">
+        <col style="width:11%">
+        <col style="width:7%">
+        <col style="width:9%">
+        <col style="width:9%">
+        <col style="width:9%">
+        <col style="width:12%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>费用单号</th>
+          <th>订单号</th>
+          <th>供应商名称</th>
+          <th>仓库</th>
+          <th>费用项数</th>
+          <th>总金额</th>
+          <th>结算模式</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="payableBody"></tbody>
+    </table>
+  </div>
+  <div class="table-footer">
+    <span id="payableCount"></span>
+  </div>
+</section>
+
+<!-- 费用单详情弹窗 -->
+<div class="modal-mask" id="detailModal" aria-hidden="true">
+  <div class="modal-dialog" style="max-width:700px">
+    <div class="modal-header">
+      <span class="modal-title" id="detailTitle">费用单详情</span>
+      <button type="button" class="modal-close" id="detailCloseBtn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-info-grid" id="detailInfo"></div>
+      <div class="detail-items-title">费用项明细</div>
+      <table class="detail-items-table" id="detailItemsTable">
+        <thead>
+          <tr>
+            <th>计费节点</th>
+            <th>费用大类</th>
+            <th>费用项</th>
+            <th>单价</th>
+            <th>数量</th>
+            <th>单位</th>
+            <th>金额</th>
+          </tr>
+        </thead>
+        <tbody id="detailItemsBody"></tbody>
+      </table>
+      <div class="detail-total" id="detailTotal"></div>
+      <div class="detail-remark" id="detailRemarkSection" style="display:none">
+        <label>复核备注</label>
+        <textarea id="detailRemarkInput" rows="2" placeholder="可选填写备注"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" id="detailFooter"></div>
+  </div>
+</div>
+</section>
+</main>
+</div>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script src="./assets/js/sdms-header-tabs.js"></script>
+<script src="./assets/js/sdms-sidebar.js"></script>
+<script src="./assets/js/fee-sheet-list.js"></script>
+</body>
+</html>
