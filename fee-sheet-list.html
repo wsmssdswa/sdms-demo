@@ -27,109 +27,65 @@
 </div>
 </section>
 
-<!-- 应收费用 -->
 <section class="table-panel">
-  <div class="panel-header-row">
-    <h3 class="panel-title">应收费用<span class="panel-subtitle" id="receivableSummary"></span></h3>
-  </div>
   <div class="table-wrap">
     <table class="list-table">
       <colgroup>
         <col style="width:13%">
         <col style="width:11%">
-        <col style="width:11%">
-        <col style="width:11%">
-        <col style="width:7%">
-        <col style="width:9%">
-        <col style="width:9%">
-        <col style="width:9%">
         <col style="width:12%">
+        <col style="width:11%">
+        <col style="width:9%">
+        <col style="width:9%">
+        <col style="width:9%">
+        <col style="width:9%">
+        <col style="width:11%">
       </colgroup>
       <thead>
         <tr>
           <th>费用单号</th>
           <th>订单号</th>
-          <th>客户名称</th>
+          <th>客户</th>
           <th>仓库</th>
-          <th>费用项数</th>
-          <th>总金额</th>
-          <th>结算模式</th>
+          <th>应收金额</th>
+          <th>应付金额</th>
+          <th>净额</th>
           <th>状态</th>
           <th>操作</th>
         </tr>
       </thead>
-      <tbody id="receivableBody"></tbody>
+      <tbody id="sheetBody"></tbody>
     </table>
   </div>
   <div class="table-footer">
-    <span id="receivableCount"></span>
-  </div>
-</section>
-
-<!-- 应付费用 -->
-<section class="table-panel">
-  <div class="panel-header-row">
-    <h3 class="panel-title">应付费用<span class="panel-subtitle" id="payableSummary"></span></h3>
-  </div>
-  <div class="table-wrap">
-    <table class="list-table">
-      <colgroup>
-        <col style="width:13%">
-        <col style="width:11%">
-        <col style="width:11%">
-        <col style="width:11%">
-        <col style="width:7%">
-        <col style="width:9%">
-        <col style="width:9%">
-        <col style="width:9%">
-        <col style="width:12%">
-      </colgroup>
-      <thead>
-        <tr>
-          <th>费用单号</th>
-          <th>订单号</th>
-          <th>供应商名称</th>
-          <th>仓库</th>
-          <th>费用项数</th>
-          <th>总金额</th>
-          <th>结算模式</th>
-          <th>状态</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody id="payableBody"></tbody>
-    </table>
-  </div>
-  <div class="table-footer">
-    <span id="payableCount"></span>
+    <span id="sheetCount"></span>
   </div>
 </section>
 
 <!-- 费用单详情弹窗 -->
 <div class="modal-mask" id="detailModal" aria-hidden="true">
-  <div class="modal-dialog" style="max-width:700px">
+  <div class="modal-dialog" style="max-width:900px">
     <div class="modal-header">
       <span class="modal-title" id="detailTitle">费用单详情</span>
       <button type="button" class="modal-close" id="detailCloseBtn">&times;</button>
     </div>
     <div class="modal-body">
       <div class="detail-info-grid" id="detailInfo"></div>
-      <div class="detail-items-title">费用项明细</div>
-      <table class="detail-items-table" id="detailItemsTable">
-        <thead>
-          <tr>
-            <th>计费节点</th>
-            <th>费用大类</th>
-            <th>费用项</th>
-            <th>单价</th>
-            <th>数量</th>
-            <th>单位</th>
-            <th>金额</th>
-          </tr>
-        </thead>
-        <tbody id="detailItemsBody"></tbody>
-      </table>
-      <div class="detail-total" id="detailTotal"></div>
+      <div class="detail-section">
+        <div class="detail-section-title"><span class="dir-receivable-tag">应收费用项</span> <span class="detail-section-sum" id="receivableSum"></span></div>
+        <table class="detail-items-table">
+          <thead><tr><th>计费节点</th><th>费用大类</th><th>费用项</th><th>单价</th><th>数量</th><th>单位</th><th>客户</th><th>金额</th></tr></thead>
+          <tbody id="receivableItemsBody"></tbody>
+        </table>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title"><span class="dir-payable-tag">应付费用项</span> <span class="detail-section-sum" id="payableSum"></span></div>
+        <table class="detail-items-table">
+          <thead><tr><th>计费节点</th><th>费用大类</th><th>费用项</th><th>单价</th><th>数量</th><th>单位</th><th>供应商</th><th>金额</th></tr></thead>
+          <tbody id="payableItemsBody"></tbody>
+        </table>
+      </div>
+      <div class="detail-summary" id="detailSummary"></div>
       <div class="detail-remark" id="detailRemarkSection" style="display:none">
         <label>复核备注</label>
         <textarea id="detailRemarkInput" rows="2" placeholder="可选填写备注"></textarea>
