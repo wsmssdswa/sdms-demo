@@ -161,8 +161,9 @@
       '<div><span class="info-label">结算模式：</span><span class="info-value">'+SETTLEMENT_MAP[item.settlementMode]+'</span></div>',
       '<div><span class="info-label">状态：</span><span class="info-value"><span class="status-tag '+st.cls+'">'+st.label+'</span></span></div>'
     ].join('');
-    detailItemsBody.innerHTML=item.items.map(it=>{
-      return '<tr><td>'+escapeHtml(BILLING_NODE_MAP[it.billingNode]||it.billingNode)+'</td><td>'+escapeHtml(CATEGORY_MAP[it.feeCategory]||it.feeCategory)+'</td><td>'+escapeHtml(it.feeItemName)+'</td><td>¥'+it.unitPrice+'</td><td>'+it.quantity+'</td><td>'+escapeHtml(it.unit)+'</td><td>¥'+it.amount.toLocaleString()+'</td></tr>';
+    detailItemsBody.innerHTML=item.items.map((it,idx)=>{
+      const amtCell=editable?'<td><input type="number" class="detail-edit-input" data-item-idx="'+idx+'" value="'+it.amount+'" min="0" style="width:80px;padding:4px 6px;border:1px solid var(--line);border-radius:3px;font-size:12px">':'<td>¥'+it.amount.toLocaleString();
+      return '<tr><td>'+escapeHtml(BILLING_NODE_MAP[it.billingNode]||it.billingNode)+'</td><td>'+escapeHtml(CATEGORY_MAP[it.feeCategory]||it.feeCategory)+'</td><td>'+escapeHtml(it.feeItemName)+'</td><td>¥'+it.unitPrice+'</td><td>'+it.quantity+'</td><td>'+escapeHtml(it.unit)+'</td>'+amtCell+'</td></tr>';
     }).join('');
     detailTotal.textContent='合计：¥'+item.totalAmount.toLocaleString();
     if(editable&&item.status==='pending_review'){
@@ -234,6 +235,14 @@
     const item=rows.find(r=>r.id===id);
     if(!item)return;
     if(e.target.id==='confirmBtn'){
+      detailItemsBody.querySelectorAll('.detail-edit-input').forEach(input=>{
+        const idx=parseInt(input.dataset.itemIdx);
+        if(item.items[idx]){
+          const newAmt=parseFloat(input.value);
+          if(!isNaN(newAmt)&&newAmt>=0)item.items[idx].amount=newAmt;
+        }
+      });
+      item.totalAmount=item.items.reduce((s,it)=>s+it.amount,0);
       item.status='confirmed';
       item.remark=detailRemarkInput.value.trim();
       const mode=item.settlementMode==='realtime'?'已从余额扣款':'已确认，等待出账';

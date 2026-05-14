@@ -57,7 +57,7 @@
   function renderAccounts(){
     accountBody.innerHTML=accounts.map(a=>{
       const typeLabel=a.subjectType==='customer'?'客户':'供应商';
-      const typeCls=a.subjectType==='customer'?'type-recharge':'type-deduct';
+      const typeCls=a.subjectType==='customer'?'type-customer':'type-supplier';
       return '<tr><td>'+escapeHtml(a.subjectName)+'</td><td><span class="type-tag '+typeCls+'">'+typeLabel+'</span></td><td class="amount-positive">¥'+a.balance.toLocaleString()+'</td><td>'+(a.frozenAmount?'¥'+a.frozenAmount.toLocaleString():'<span style="color:var(--text-muted)">¥0</span>')+'</td><td>¥'+a.totalRecharged.toLocaleString()+'</td><td>¥'+a.totalDeducted.toLocaleString()+'</td><td><div class="action-group"><a href="javascript:void(0)" class="action-link" data-action="recharge" data-id="'+a.id+'">充值</a></div></td></tr>';
     }).join('');
   }
