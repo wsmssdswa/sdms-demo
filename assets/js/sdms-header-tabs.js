@@ -54,6 +54,27 @@
       href: './quotation-scheme-create.html',
       labelId: 'pageTabLabel'
     },
+    'supplier-quotation': {
+      label: '供应商报价',
+      icon: 'ri-file-list-3-line',
+      href: './supplier-quotation-config.html'
+    },
+    'supplier-quotation-create': {
+      label: '新增供应商报价',
+      icon: 'ri-file-list-3-line',
+      href: './supplier-quotation-create.html',
+      labelId: 'pageTabLabel'
+    },
+    'fee-sheet': {
+      label: '费用单管理',
+      icon: 'ri-receipt-line',
+      href: './fee-sheet-list.html'
+    },
+    'account': {
+      label: '账户管理',
+      icon: 'ri-wallet-3-line',
+      href: './account-list.html'
+    },
     'trunk-outbound-pending': {
       label: '干线待出库',
       icon: 'ri-truck-line',
@@ -68,9 +89,9 @@
 
   const TAB_SETS = {
     overview: ['workbench', 'report'],
-    finance: ['workbench', 'report', 'operation-fee', 'logistics-fee', 'storage-fee', 'quotation-scheme'],
+    finance: ['workbench', 'report', 'operation-fee', 'logistics-fee', 'storage-fee', 'quotation-scheme', 'supplier-quotation', 'fee-sheet', 'account'],
     business: ['workbench', 'trunk-order-list', 'trunk-outbound-pending', 'report'],
-    'finance-editor': ['workbench', 'report', 'operation-fee', 'logistics-fee', 'storage-fee', 'quotation-scheme', 'operation-fee-create', 'logistics-fee-create', 'storage-fee-create', 'quotation-scheme-create']
+    'finance-editor': ['workbench', 'report', 'operation-fee', 'logistics-fee', 'storage-fee', 'quotation-scheme', 'operation-fee-create', 'logistics-fee-create', 'storage-fee-create', 'quotation-scheme-create', 'supplier-quotation', 'supplier-quotation-create', 'fee-sheet', 'account']
   };
 
   function buildToolButton(icon, label, badge) {

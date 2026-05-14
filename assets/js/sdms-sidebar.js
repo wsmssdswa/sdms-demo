@@ -48,7 +48,12 @@
         { label: '操作费管理', href: './operation-fee-config.html' },
         { label: '物流费管理', href: './logistics-fee-config.html' },
         { label: '仓储费管理', href: './storage-fee-config.html' },
-        { label: '报价方案管理', href: './quotation-scheme-config.html' }
+        { label: '报价方案管理', href: './quotation-scheme-config.html' },
+        { label: '供应商报价管理', href: './supplier-quotation-config.html' }
+      ]},
+      { title: '费用管理', icon: 'ri-receipt-line', items: [
+        { label: '费用单管理', href: './fee-sheet-list.html' },
+        { label: '账户管理', href: './account-list.html' }
       ]},
       { title: '账单管理', icon: 'ri-bill-line', items: [
         { label: '账单列表', href: '' },
