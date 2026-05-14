@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>账户管理</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/account-list.css">
+</head>
+<body>
+<div class="app-shell">
+<aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
+<div class="page-shell">
+<div class="header-tabs" data-sdms-header-tabs data-tab-set="finance" data-tab-key="account" data-include-tools="true" data-user-name="张三"></div>
+<main class="content-wrap">
+<section class="page-card">
+<section class="filter-panel">
+  <div class="account-tabs" id="accountTabs">
+    <button type="button" class="scene-tab active" data-account-tab="overview">账户总览</button>
+    <button type="button" class="scene-tab" data-account-tab="transactions">资金流水</button>
+  </div>
+</section>
+
+<!-- Tab 1: 账户总览 -->
+<section class="table-panel" id="overviewPanel">
+  <div class="table-wrap">
+    <table class="list-table">
+      <colgroup>
+        <col style="width:18%">
+        <col style="width:10%">
+        <col style="width:13%">
+        <col style="width:12%">
+        <col style="width:13%">
+        <col style="width:13%">
+        <col style="width:12%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>主体名称</th>
+          <th>类型</th>
+          <th>可用余额</th>
+          <th>冻结金额</th>
+          <th>累计充值</th>
+          <th>累计扣款</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="accountBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Tab 2: 资金流水 -->
+<section class="table-panel" id="transactionPanel" style="display:none">
+  <div class="query-row" style="margin-bottom:12px;padding:0 4px">
+    <div class="filter-control">
+      <span class="filter-inline-label">主体</span>
+      <div class="select-wrap">
+        <select class="filter-select" id="txSubjectSelect">
+          <option value="">全部</option>
+        </select>
+        <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg>
+      </div>
+    </div>
+    <div class="filter-control">
+      <span class="filter-inline-label">类型</span>
+      <div class="select-wrap">
+        <select class="filter-select" id="txTypeSelect">
+          <option value="">全部</option>
+          <option value="recharge">充值</option>
+          <option value="deduct">扣款</option>
+          <option value="withdraw">提现</option>
+          <option value="adjust">调整</option>
+        </select>
+        <svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table class="list-table">
+      <colgroup>
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:14%">
+        <col style="width:18%">
+        <col style="width:10%">
+        <col style="width:11%">
+        <col style="width:13%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>流水号</th>
+          <th>类型</th>
+          <th>主体名称</th>
+          <th>关联费用单</th>
+          <th>费用摘要</th>
+          <th>金额</th>
+          <th>变动后余额</th>
+          <th>时间</th>
+        </tr>
+      </thead>
+      <tbody id="transactionBody"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 充值弹窗 -->
+<div class="modal-mask" id="rechargeModal" aria-hidden="true">
+  <div class="modal-dialog" style="max-width:400px">
+    <div class="modal-header">
+      <span class="modal-title">账户充值</span>
+      <button type="button" class="modal-close" id="rechargeCloseBtn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:12px"><span id="rechargeSubject" style="font-weight:600"></span></div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:13px;color:var(--text-muted);margin-bottom:4px">充值金额</label>
+        <input type="number" id="rechargeAmount" class="filter-input" style="width:100%" placeholder="请输入充值金额" min="0">
+      </div>
+      <div>
+        <label style="display:block;font-size:13px;color:var(--text-muted);margin-bottom:4px">备注</label>
+        <textarea id="rechargeRemark" rows="2" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:4px;font-size:13px;resize:vertical" placeholder="可选填写备注"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-primary" id="rechargeConfirmBtn">确认充值</button>
+      <button type="button" class="btn btn-default" id="rechargeCancelBtn">取消</button>
+    </div>
+  </div>
+</div>
+</section>
+</main>
+</div>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script src="./assets/js/sdms-header-tabs.js"></script>
+<script src="./assets/js/sdms-sidebar.js"></script>
+<script src="./assets/js/account-list.js"></script>
+</body>
+</html>
