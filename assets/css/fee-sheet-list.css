@@ -507,41 +507,34 @@
 /* === 驳回原因图标 === */
 .reject-info-icon{color:#9d174d;font-size:14px;margin-left:4px;vertical-align:middle;cursor:help}
 
-/* 双表布局 */
-.panel-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 0 4px; }
-.panel-title { font-size: 15px; font-weight: 600; color: var(--text-main); margin: 0; }
-.panel-subtitle { font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 8px; }
-.table-panel + .table-panel { margin-top: 20px; }
-.table-panel + .table-panel .panel-header-row { padding-top: 16px; border-top: 1px solid var(--line); }
+/* 详情弹窗分区 */
+.detail-section { margin-bottom: 16px; }
+.detail-section-title { display: flex; align-items: center; gap: 8px; margin: 16px 0 8px; font-size: 14px; font-weight: 600; }
+.detail-section-sum { font-size: 13px; font-weight: 400; color: var(--text-muted); }
+.dir-receivable-tag { background: #e0e7ff; color: #4f46e5; padding: 2px 10px; border-radius: 3px; font-size: 12px; }
+.dir-payable-tag { background: #fff3e0; color: #e65100; padding: 2px 10px; border-radius: 3px; font-size: 12px; }
 
-/* 展开行 */
-.expand-row td { padding: 0 !important; background: var(--panel-bg); }
-.expand-content { padding: 8px 20px 12px 48px; }
-.expand-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.expand-table th { text-align: left; padding: 6px 10px; color: var(--text-muted); font-weight: 500; border-bottom: 1px solid var(--line); }
-.expand-table td { padding: 6px 10px; border-bottom: 1px solid var(--line); }
-.expand-trigger { cursor: pointer; user-select: none; }
-.expand-trigger:hover { background: #f8f9fa; }
-.expand-icon { display: inline-block; width: 16px; transition: transform .2s; font-size: 12px; color: #999; }
-.expand-icon.open { transform: rotate(90deg); }
+/* 汇总行 */
+.detail-summary { display: flex; justify-content: flex-end; gap: 24px; padding: 12px 0; border-top: 2px solid var(--line); font-size: 14px; }
+.detail-summary .summary-item { display: flex; gap: 4px; }
+.detail-summary .summary-label { color: var(--text-muted); }
+.detail-summary .summary-value { font-weight: 600; }
+
+/* 净额正负 */
+.net-positive { color: #059669; font-weight: 600; }
+.net-negative { color: var(--danger); font-weight: 600; }
 
 /* 费用单详情弹窗 */
-.detail-info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 16px; margin-bottom: 16px; font-size: 13px; }
+.detail-info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 16px; margin-bottom: 16px; font-size: 13px; }
 .detail-info-grid .info-label { color: var(--text-muted); }
 .detail-info-grid .info-value { font-weight: 500; }
-.detail-items-title { font-size: 14px; font-weight: 600; margin: 16px 0 8px; }
 .detail-items-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 12px; }
 .detail-items-table th { text-align: left; padding: 8px 10px; background: var(--panel-bg); color: var(--text-muted); font-weight: 500; }
 .detail-items-table td { padding: 8px 10px; border-bottom: 1px solid var(--line); }
-.detail-total { text-align: right; font-size: 15px; font-weight: 600; padding: 8px 0; border-top: 2px solid var(--text-main); }
 .detail-remark { margin-top: 12px; }
 .detail-remark label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
 .detail-remark textarea { width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: 4px; font-size: 13px; resize: vertical; }
 .detail-remark textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 2px rgba(74,108,247,.15); }
-
-/* 方向标签 */
-.dir-receivable { background: #e0e7ff; color: #4f46e5; }
-.dir-payable { background: #fff3e0; color: #e65100; }
 
 /* 结算模式标签 */
 .settle-realtime { color: #059669; }
