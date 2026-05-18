@@ -56,7 +56,7 @@
         { label: '账户管理', href: './account-list.html' }
       ]},
       { title: '账单管理', icon: 'ri-bill-line', items: [
-        { label: '账单列表', href: '' },
+        { label: '账单列表', href: './bill-list.html' },
         { label: '结算单', href: '' }
       ]}
     ]
