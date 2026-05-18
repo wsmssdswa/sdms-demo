@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>扫码挑货 — 千仓SDMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --nav-bg: #0F2B46;
+      --nav-bg-end: #1A3F66;
+      --brand: #2B6CB0;
+      --brand-bright: #3B82F6;
+      --surface: #FFFFFF;
+      --surface-alt: #F7F8FA;
+      --text-primary: #1A202C;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --divider: #E2E8F0;
+      --status-pending: #94A3B8;
+      --status-active: #3B82F6;
+      --status-done: #22C55E;
+      --status-warn: #F59E0B;
+      --danger: #EF4444;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --font-ui: 'DM Sans', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --font-mono: 'IBM Plex Mono', 'SF Mono', 'Cascadia Code', monospace;
+      --frame-max: 100%;
+      --content-pad: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: var(--font-ui);
+      background: #EDF0F4;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .pda-frame {
+      width: 100%;
+      max-width: var(--frame-max);
+      min-height: 100vh;
+      background: var(--surface-alt);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── 顶部导航栏 ── */
+    .nav-bar {
+      background: linear-gradient(135deg, var(--nav-bg) 0%, var(--nav-bg-end) 100%);
+      color: #fff;
+      padding: 0 16px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-bar .back-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 8px; transition: background 0.15s;
+    }
+    .nav-bar .back-btn:active { background: rgba(255,255,255,0.12); }
+    .nav-bar .back-btn svg { width: 20px; height: 20px; }
+    .nav-bar .title {
+      font-size: 15px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+    .nav-bar .progress-badge {
+      font-size: 13px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.15);
+    }
+
+    /* ── 内容区 ── */
+    .content {
+      flex: 1;
+      padding: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 72px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── 状态英雄区 ── */
+    .status-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px 32px;
+      text-align: center;
+      transition: opacity 0.2s;
+    }
+    .hero-icon-wrap {
+      width: 88px; height: 88px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .hero-icon-wrap svg {
+      width: 40px; height: 40px;
+      transition: fill 0.3s, stroke 0.3s;
+    }
+    .hero-main-text {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      transition: color 0.3s;
+    }
+    .hero-sub-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* 状态颜色方案 */
+    .status-hero[data-state="scan_carton"] .hero-icon-wrap {
+      background: rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.04);
+    }
+    .status-hero[data-state="scan_carton"] .hero-icon-wrap svg { fill: none; stroke: #3B82F6; }
+    .status-hero[data-state="scan_carton"] .hero-main-text { color: #3B82F6; }
+
+    .status-hero[data-state="carton_matched"] .hero-icon-wrap {
+      background: rgba(245, 158, 11, 0.1);
+      box-shadow: 0 0 0 8px rgba(245, 158, 11, 0.04);
+    }
+    .status-hero[data-state="carton_matched"] .hero-icon-wrap svg { fill: none; stroke: #F59E0B; }
+    .status-hero[data-state="carton_matched"] .hero-main-text { color: #D97706; }
+
+    .status-hero[data-state="parcel_picked"] .hero-icon-wrap {
+      background: rgba(34, 197, 94, 0.1);
+      box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.04);
+    }
+    .status-hero[data-state="parcel_picked"] .hero-icon-wrap svg { fill: none; stroke: #22C55E; }
+    .status-hero[data-state="parcel_picked"] .hero-main-text { color: #16A34A; }
+
+    .status-hero[data-state="carton_done"] .hero-icon-wrap {
+      background: rgba(34, 197, 94, 0.12);
+      box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.06);
+    }
+    .status-hero[data-state="carton_done"] .hero-icon-wrap svg { fill: #22C55E; stroke: none; }
+    .status-hero[data-state="carton_done"] .hero-main-text { color: #16A34A; }
+
+    /* ── 大箱面板 ── */
+    .carton-panel {
+      margin: 0 var(--content-pad);
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: none;
+      animation: panelIn 0.3s ease-out;
+    }
+    .carton-panel.show { display: block; }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .carton-panel-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .carton-panel-header .carton-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .carton-panel-header .carton-no {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .carton-panel-header .carton-count {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .parcel-list {
+      padding: 4px 0;
+    }
+
+    .parcel-item {
+      display: flex;
+      align-items: center;
+      padding: 11px 14px;
+      gap: 10px;
+      transition: background 0.15s;
+    }
+    .parcel-item + .parcel-item {
+      border-top: 1px solid #F1F5F9;
+    }
+    .parcel-item.picked {
+      background: #F8FAF8;
+    }
+
+    .parcel-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .parcel-dot.unpicked {
+      border: 2px solid #CBD5E1;
+      background: transparent;
+    }
+    .parcel-dot.picked-dot {
+      background: #22C55E;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+    }
+
+    .parcel-no {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      transition: color 0.2s;
+    }
+    .parcel-item.picked .parcel-no {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .parcel-item.picked .parcel-picked-tag {
+      display: inline;
+    }
+    .parcel-picked-tag {
+      display: none;
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 600;
+      color: #22C55E;
+      flex-shrink: 0;
+    }
+
+    /* ── 扫码输入栏（固定底部） ── */
+    .scan-input-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: var(--frame-max);
+      width: 100%;
+      background: var(--surface);
+      border-top: 1px solid var(--divider);
+      padding: 10px var(--content-pad);
+      padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .scan-input-wrap {
+      flex: 1;
+      position: relative;
+    }
+    .scan-input-wrap .icon-left {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px; height: 18px;
+      opacity: 0.4;
+    }
+    .scan-input {
+      width: 100%;
+      background: var(--surface-alt);
+      border: 1.5px solid var(--divider);
+      border-radius: 8px;
+      padding: 11px 40px 11px 36px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .scan-input::placeholder { color: var(--text-muted); font-family: var(--font-ui); font-size: 13px; }
+    .scan-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1); }
+
+    .scan-submit-btn {
+      width: 40px; height: 40px;
+      border: none;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-bright) 100%);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.1s;
+    }
+    .scan-submit-btn:active { transform: scale(0.92); }
+    .scan-submit-btn svg { width: 18px; height: 18px; fill: #fff; }
+
+    /* ── 错误状态 ── */
+    .error-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 20px 40px;
+      text-align: center;
+    }
+    .error-state .error-icon {
+      width: 64px; height: 64px;
+      background: rgba(239, 68, 68, 0.08);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .error-state .error-icon svg { width: 32px; height: 32px; fill: #EF4444; }
+    .error-state .error-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .error-state .error-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .error-state .error-btn {
+      padding: 10px 28px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ── Toast容器 ── */
+    .toast-container {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: var(--frame-max);
+      width: calc(100% - 32px);
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      pointer-events: none;
+    }
+    .toast {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast.success {
+      background: #ECFDF5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+    }
+    .toast.warn {
+      background: #FFFBEB;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+    }
+    .toast.info {
+      background: #EFF6FF;
+      color: #1E40AF;
+      border: 1px solid #BFDBFE;
+    }
+    .toast svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .toast.success svg { fill: #22C55E; }
+    .toast.warn svg { fill: #F59E0B; }
+    .toast.info svg { fill: #3B82F6; }
+
+    /* ── 响应式断点 ── */
+    @media (min-width: 481px) {
+      :root {
+        --frame-max: 480px;
+        --content-pad: 16px;
+      }
+      .pda-frame {
+        box-shadow: 0 0 60px rgba(15, 23, 42, 0.12);
+      }
+    }
+
+    @media (min-width: 769px) {
+      :root {
+        --frame-max: 520px;
+        --content-pad: 20px;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      :root { --frame-max: 560px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="pda-frame">
+    <!-- 顶部导航 -->
+    <div class="nav-bar">
+      <div class="back-btn" onclick="goBack()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </div>
+      <div class="title" id="navTitle">—</div>
+      <div class="progress-badge" id="navProgress">0/0</div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="content" id="mainContent">
+      <!-- 错误状态（初始隐藏） -->
+      <div class="error-state" id="errorState" style="display:none">
+        <div class="error-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" opacity="0"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <div class="error-title" id="errorTitle">任务不存在</div>
+        <div class="error-desc" id="errorDesc">请返回任务列表重试</div>
+        <button class="error-btn" onclick="goBack()">返回列表</button>
+      </div>
+
+      <!-- 状态英雄区 -->
+      <div class="status-hero" id="statusHero" data-state="scan_carton">
+        <div class="hero-icon-wrap" id="heroIconWrap">
+          <!-- 图标由JS动态填充 -->
+        </div>
+        <div class="hero-main-text" id="heroMainText">请扫大箱号</div>
+        <div class="hero-sub-text" id="heroSubText">扫描或输入大箱条码开始挑货</div>
+      </div>
+
+      <!-- 大箱面板 -->
+      <div class="carton-panel" id="cartonPanel">
+        <div class="carton-panel-header">
+          <span class="carton-label">大箱</span>
+          <span class="carton-no" id="cartonNoText">—</span>
+          <span class="carton-count" id="cartonCountText">—</span>
+        </div>
+        <div class="parcel-list" id="parcelList"></div>
+      </div>
+    </div>
+
+    <!-- 扫码输入栏（固定底部） -->
+    <div class="scan-input-bar">
+      <div class="scan-input-wrap">
+        <svg class="icon-left" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+          <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+          <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+          <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+          <line x1="7" y1="12" x2="17" y2="12"></line>
+        </svg>
+        <input class="scan-input" id="scanInput" type="text" placeholder="扫描或输入条码"
+               onkeydown="onScanKeydown(event)">
+      </div>
+      <button class="scan-submit-btn" onclick="onScan()">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast容器 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- 共享数据层 -->
+  <script src="./assets/js/pick-tool-data.js"></script>
+
+  <script>
+    /* ── 全局状态 ── */
+    var currentTask = null;
+    var currentCarton = null;
+    var scanState = 'SCAN_CARTON';
+
+    /* ── DOM引用 ── */
+    var scanInput = document.getElementById('scanInput');
+    var navTitle = document.getElementById('navTitle');
+    var navProgress = document.getElementById('navProgress');
+    var statusHero = document.getElementById('statusHero');
+    var heroIconWrap = document.getElementById('heroIconWrap');
+    var heroMainText = document.getElementById('heroMainText');
+    var heroSubText = document.getElementById('heroSubText');
+    var cartonPanel = document.getElementById('cartonPanel');
+    var cartonNoText = document.getElementById('cartonNoText');
+    var cartonCountText = document.getElementById('cartonCountText');
+    var parcelList = document.getElementById('parcelList');
+    var errorState = document.getElementById('errorState');
+    var errorTitle = document.getElementById('errorTitle');
+    var errorDesc = document.getElementById('errorDesc');
+    var toastContainer = document.getElementById('toastContainer');
+
+    /* ── 初始化 ── */
+    document.addEventListener('DOMContentLoaded', function () {
+      loadTask();
+      autoFocusInput();
+    });
+
+    /* ── 加载任务 ── */
+    function loadTask() {
+      var params = new URLSearchParams(window.location.search);
+      var taskId = params.get('taskId');
+      if (!taskId) {
+        showError('参数缺失', '缺少任务ID，请返回任务列表');
+        return;
+      }
+      var task = PickTool.getTask(taskId);
+      if (!task) {
+        showError('任务不存在', '该任务可能已被删除，请返回重试');
+        return;
+      }
+      currentTask = task;
+      navTitle.textContent = task.orderNo;
+
+      /* 如果任务已完成，仍允许查看 */
+      renderProgress();
+      renderStatusHero('scan_carton');
+      autoFocusInput();
+    }
+
+    function showError(title, desc) {
+      errorState.style.display = '';
+      statusHero.style.display = 'none';
+      cartonPanel.className = 'carton-panel';
+      errorTitle.textContent = title;
+      errorDesc.textContent = desc;
+    }
+
+    /* ── SVG图标 ── */
+    var ICONS = {
+      box: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+           '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>' +
+           '<polyline points="3.27 6.96 12 12.01 20.73 6.96"/>' +
+           '<line x1="12" y1="22.08" x2="12" y2="12"/>' +
+           '</svg>',
+      alert: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+             '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>' +
+             '<line x1="12" y1="9" x2="12" y2="13"/>' +
+             '<line x1="12" y1="17" x2="12.01" y2="17"/>' +
+             '</svg>',
+      check: '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+             '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>' +
+             '<polyline points="22 4 12 14.01 9 11.01"/>' +
+             '</svg>',
+      checkFilled: '<svg viewBox="0 0 24 24">' +
+                    '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>' +
+                    '</svg>'
+    };
+
+    /* ── 渲染状态英雄区 ── */
+    function renderStatusHero(type) {
+      var cfg = {
+        scan_carton:    { icon: 'box',         main: '请扫大箱号',   sub: '扫描或输入大箱条码开始挑货' },
+        carton_matched: { icon: 'alert',       main: '',             sub: '' },
+        parcel_picked:  { icon: 'check',       main: '请挑出此包裹', sub: '' },
+        carton_done:    { icon: 'checkFilled', main: '该箱已全部挑出', sub: '' }
+      };
+
+      statusHero.style.display = '';
+      statusHero.setAttribute('data-state', type);
+
+      var c = cfg[type];
+      heroIconWrap.innerHTML = ICONS[c.icon];
+
+      if (type === 'carton_matched') {
+        var unpicked = currentCarton.parcels.filter(function (p) { return !p.picked; }).length;
+        heroMainText.textContent = '该箱有' + unpicked + '个包裹需挑出';
+        heroSubText.textContent = '请逐个扫描包裹条码';
+      } else if (type === 'parcel_picked' && currentCarton) {
+        var remaining = currentCarton.parcels.filter(function (p) { return !p.picked; }).length;
+        heroMainText.textContent = '请挑出此包裹';
+        heroSubText.textContent = '还剩' + remaining + '个包裹待挑出';
+      } else {
+        heroMainText.textContent = c.main;
+        heroSubText.textContent = c.sub;
+      }
+
+      /* 添加短暂脉冲动画 */
+      heroIconWrap.style.transform = 'scale(0.9)';
+      heroIconWrap.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      setTimeout(function () {
+        heroIconWrap.style.transform = 'scale(1)';
+      }, 30);
+    }
+
+    /* ── 渲染大箱面板 ── */
+    function renderCartonPanel() {
+      if (!currentCarton) {
+        cartonPanel.className = 'carton-panel';
+        return;
+      }
+      cartonPanel.className = 'carton-panel show';
+      cartonNoText.textContent = currentCarton.cartonNo;
+
+      var pickedCount = currentCarton.parcels.filter(function (p) { return p.picked; }).length;
+      var totalCount = currentCarton.parcels.length;
+      cartonCountText.textContent = pickedCount + '/' + totalCount + ' 已挑';
+
+      /* 渲染包裹列表 */
+      var html = '';
+      currentCarton.parcels.forEach(function (p) {
+        var cls = p.picked ? 'parcel-item picked' : 'parcel-item';
+        var dotCls = p.picked ? 'parcel-dot picked-dot' : 'parcel-dot unpicked';
+        html +=
+          '<div class="' + cls + '">' +
+            '<div class="' + dotCls + '"></div>' +
+            '<span class="parcel-no">' + esc(p.parcelNo) + '</span>' +
+            '<span class="parcel-picked-tag">已挑</span>' +
+          '</div>';
+      });
+      parcelList.innerHTML = html;
+    }
+
+    /* ── 渲染进度 ── */
+    function renderProgress() {
+      if (!currentTask) return;
+      var stats = PickTool.getTaskStats(currentTask);
+      navProgress.textContent = stats.picked + '/' + stats.total;
+    }
+
+    /* ── 扫码处理 ── */
+    function onScanKeydown(e) {
+      if (e.key !== 'Enter') return;
+      onScan();
+    }
+
+    function onScan() {
+      var code = scanInput.value.trim().toUpperCase();
+      if (!code) return;
+      scanInput.value = '';
+
+      if (scanState === 'SCAN_CARTON') {
+        handleCartonScan(code);
+      } else {
+        handleParcelScan(code);
+      }
+      autoFocusInput();
+    }
+
+    function handleCartonScan(code) {
+      var carton = currentTask.cartons.find(function (c) { return c.cartonNo === code; });
+      if (!carton) {
+        showToast('该大箱无需挑货', 'warn');
+        return;
+      }
+
+      currentCarton = carton;
+      scanState = 'SCAN_PARCEL';
+      renderCartonPanel();
+      renderStatusHero('carton_matched');
+
+      var unpicked = carton.parcels.filter(function (p) { return !p.picked; }).length;
+      showToast('该箱有' + unpicked + '个包裹需挑出', 'info');
+    }
+
+    function handleParcelScan(code) {
+      /* 检查是否是大箱号（切换大箱） */
+      var otherCarton = currentTask.cartons.find(function (c) { return c.cartonNo === code; });
+      if (otherCarton) {
+        currentCarton = otherCarton;
+        renderCartonPanel();
+        renderStatusHero('carton_matched');
+        showToast('切换到大箱 ' + code, 'info');
+        return;
+      }
+
+      /* 检查包裹是否在当前大箱中 */
+      var parcel = currentCarton.parcels.find(function (p) { return p.parcelNo === code; });
+      if (!parcel) {
+        showToast('该包裹无需挑出', 'warn');
+        return;
+      }
+      if (parcel.picked) {
+        showToast('该包裹已挑出', 'info');
+        return;
+      }
+
+      /* 执行挑出 */
+      var updatedTask = PickTool.pickParcel(currentTask.id, currentCarton.cartonNo, code);
+      if (!updatedTask) return;
+      currentTask = updatedTask;
+      currentCarton = updatedTask.cartons.find(function (c) { return c.cartonNo === currentCarton.cartonNo; });
+
+      var allDone = currentCarton.parcels.every(function (p) { return p.picked; });
+      if (allDone) {
+        renderCartonPanel();
+        renderProgress();
+        showToast('该箱已全部挑出', 'success');
+        renderStatusHero('carton_done');
+        setTimeout(function () {
+          scanState = 'SCAN_CARTON';
+          currentCarton = null;
+          renderCartonPanel();
+          renderStatusHero('scan_carton');
+          autoFocusInput();
+        }, 1500);
+      } else {
+        showToast('请挑出此包裹', 'success');
+        renderStatusHero('parcel_picked');
+        renderCartonPanel();
+        renderProgress();
+      }
+    }
+
+    /* ── Toast ── */
+    var TOAST_ICONS = {
+      success: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>',
+      warn: '<svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>',
+      info: '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>'
+    };
+
+    function showToast(msg, type) {
+      type = type || 'info';
+      var el = document.createElement('div');
+      el.className = 'toast ' + type;
+      el.innerHTML = TOAST_ICONS[type] + '<span>' + esc(msg) + '</span>';
+      toastContainer.appendChild(el);
+
+      /* 触发动画 */
+      requestAnimationFrame(function () {
+        el.classList.add('show');
+      });
+
+      /* 自动消失 */
+      setTimeout(function () {
+        el.classList.remove('show');
+        setTimeout(function () {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        }, 300);
+      }, 2000);
+    }
+
+    /* ── 导航 ── */
+    function goBack() {
+      window.location.href = 'pick-task-list.html';
+    }
+
+    /* ── 自动聚焦 ── */
+    function autoFocusInput() {
+      setTimeout(function () { scanInput.focus(); }, 50);
+    }
+
+    /* ── 工具函数 ── */
+    function esc(s) {
+      var div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
