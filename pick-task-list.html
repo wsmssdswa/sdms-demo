@@ -458,11 +458,19 @@
           var delBtn = document.createElement('div');
           delBtn.className = 'swipe-delete';
           delBtn.textContent = '删除';
+          var deletePending = false;
           delBtn.onclick = function () {
-            if (confirmDelete()) {
-              deleteTask(task.id);
+            if (!deletePending) {
+              deletePending = true;
+              delBtn.textContent = '确认？';
+              delBtn.style.width = '90px';
+              setTimeout(function () {
+                deletePending = false;
+                delBtn.textContent = '删除';
+                delBtn.style.width = '';
+              }, 1500);
             } else {
-              resetSwipe(wrapper);
+              deleteTask(task.id);
             }
           };
 
@@ -531,10 +539,6 @@
         content.style.transition = 'transform 0.25s ease';
         content.style.transform = 'translateX(0)';
       }
-    }
-
-    function confirmDelete() {
-      return window.confirm('确认删除该任务？');
     }
 
     /* ── 扫码栏 ── */
