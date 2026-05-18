@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>账单详情</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/bill-detail.css">
+</head>
+<body>
+<div class="app-shell">
+<aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
+<div class="page-shell">
+<div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="bill-list" data-include-tools="true" data-user-name="张三"></div>
+<main class="content-wrap">
+<section class="bill-detail-page" id="billDetailPage">
+  <div class="detail-top-bar">
+    <div class="breadcrumb">账单管理 / <strong id="breadcrumbNo">—</strong></div>
+    <div class="detail-actions">
+      <button class="btn-primary" id="sendBtn" type="button">发送账单</button>
+      <button class="btn-primary" id="confirmBtn" type="button" style="background:#52c41a">确认账单</button>
+      <button class="btn-default" id="withdrawBtn" type="button">撒回</button>
+      <button class="btn-default" id="previewBtn" type="button">预览账单</button>
+      <button class="btn-default exit-preview-btn" id="exitPreviewBtn" type="button">退出预览</button>
+    </div>
+  </div>
+  <div class="status-banner" id="statusBanner"></div>
+  <div class="info-card">
+    <div class="info-card-title">基本信息</div>
+    <div class="info-grid" id="billInfo"></div>
+  </div>
+  <div class="detail-tabs" id="detailTabs"></div>
+  <div id="tabContent"></div>
+</section>
+</main>
+</div>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script src="./assets/js/sdms-header-tabs.js"></script>
+<script src="./assets/js/sdms-sidebar.js"></script>
+<script src="./assets/js/bill-detail.js"></script>
+</body>
+</html>
