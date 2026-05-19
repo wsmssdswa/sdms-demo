@@ -82,14 +82,7 @@
       font-family: var(--font-mono);
       letter-spacing: 0.5px;
     }
-    .nav-bar .progress-badge {
-      font-size: 13px;
-      font-family: var(--font-mono);
-      font-weight: 600;
-      padding: 2px 10px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.15);
-    }
+    .nav-bar .placeholder { width: 32px; }
 
     /* ── 内容区 ── */
     .content {
@@ -405,7 +398,7 @@
         </svg>
       </div>
       <div class="title" id="navTitle">—</div>
-      <div class="progress-badge" id="navProgress">0/0</div>
+      <div class="placeholder"></div>
     </div>
 
     <!-- 内容区 -->
@@ -485,7 +478,6 @@
     /* ── DOM引用 ── */
     var scanInput = document.getElementById('scanInput');
     var navTitle = document.getElementById('navTitle');
-    var navProgress = document.getElementById('navProgress');
     var heroMainText = document.getElementById('heroMainText');
     var heroSubText = document.getElementById('heroSubText');
     var cartonView = document.getElementById('cartonView');
@@ -639,7 +631,7 @@
     function renderProgress() {
       if (!currentTask) return;
       var stats = PickTool.getTaskStats(currentTask);
-      navProgress.textContent = stats.picked + '/' + stats.total;
+      heroSubText.textContent = stats.picked + '/' + stats.total + ' 已挑出';
     }
 
     /* ── 扫码处理（统一匹配） ── */
