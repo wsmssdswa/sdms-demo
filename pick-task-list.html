@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <style>
     :root {
       --nav-bg: #0F2B46;
@@ -86,21 +87,23 @@
     .nav-bar .scan-btn:active { background: rgba(255,255,255,0.12); }
     .nav-bar .scan-btn svg { width: 20px; height: 20px; fill: rgba(255,255,255,0.85); }
 
+
     /* ── 扫码输入栏 ── */
     .scan-bar {
       background: var(--surface);
       border-bottom: 1px solid var(--divider);
       padding: 8px var(--content-pad);
-      display: none;
-      animation: scanSlideIn 0.25s ease-out;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .scan-bar.show { display: block; }
     @keyframes scanSlideIn {
       from { opacity: 0; transform: translateY(-6px); }
       to { opacity: 1; transform: translateY(0); }
     }
     .scan-input {
-      width: 100%;
+      flex: 1;
+      min-width: 0;
       background: var(--surface-alt);
       border: 1.5px solid var(--divider);
       border-radius: 8px;
@@ -116,6 +119,14 @@
     }
     .scan-input::placeholder { color: var(--text-muted); font-family: var(--font-ui); font-size: 13px; }
     .scan-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1); }
+    .scan-icon-btn {
+      width: 40px; height: 40px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--brand); border: none; border-radius: 8px;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .scan-icon-btn:active { background: #1E4F8A; }
+    .scan-icon-btn svg { width: 20px; height: 20px; fill: #fff; }
 
     /* ── 内容区 ── */
     .content {
@@ -366,28 +377,32 @@
     <div class="nav-bar">
       <div class="placeholder"></div>
       <div class="title">入仓挑货</div>
-      <div class="scan-btn" onclick="toggleScanBar()">
-        <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linecap="round"/></svg>
-      </div>
+      <div class="placeholder"></div>
     </div>
 
-    <!-- 扫码输入栏（默认隐藏） -->
+    <!-- 查询栏（常驻显示） -->
     <div class="scan-bar" id="scanBar">
       <input class="scan-input" id="scanInput" type="text" placeholder="输入订单号后回车查询"
              onkeydown="onScanInput(event)">
+      <button class="scan-icon-btn" type="button">
+        <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
     </div>
 
     <!-- 内容区 -->
     <div class="content" id="taskContent"></div>
 
     <!-- 底部上传按钮 -->
-    <div class="fab-bar" onclick="goUpload()">
-      <button class="btn-fab">
+    <div class="fab-bar">
+      <button class="btn-fab" type="button" onclick="triggerFileUpload()">
         <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
         上传清单
       </button>
     </div>
   </div>
+
+  <!-- 隐藏文件输入 -->
+  <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="onFileSelected(event)">
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
@@ -403,7 +418,12 @@
     var toastEl = document.getElementById('toast');
 
     /* ── 初始化 ── */
-    document.addEventListener('DOMContentLoaded', renderTasks);
+    document.addEventListener('DOMContentLoaded', function () {
+      if (PickTool.getAllTasks().length === 0) {
+        seedMockTasks();
+      }
+      renderTasks();
+    });
 
     /* ── 渲染任务列表 ── */
     function renderTasks() {
@@ -542,14 +562,6 @@
     }
 
     /* ── 扫码栏 ── */
-    function toggleScanBar() {
-      var showing = scanBar.classList.toggle('show');
-      if (showing) {
-        scanInput.value = '';
-        setTimeout(function () { scanInput.focus(); }, 50);
-      }
-    }
-
     function onScanInput(e) {
       if (e.key !== 'Enter') return;
       var orderNo = scanInput.value.trim();
@@ -563,13 +575,103 @@
       }
     }
 
+    /* ── 模拟数据 ── */
+    function seedMockTasks() {
+      var rows = [
+        { orderNo: '999-12345678', cartonNo: 'CTN-A01', parcelNo: 'PKG-001' },
+        { orderNo: '999-12345678', cartonNo: 'CTN-A01', parcelNo: 'PKG-002' },
+        { orderNo: '999-12345678', cartonNo: 'CTN-A01', parcelNo: 'PKG-003' },
+        { orderNo: '999-12345678', cartonNo: 'CTN-A02', parcelNo: 'PKG-004' },
+        { orderNo: '999-12345678', cartonNo: 'CTN-A02', parcelNo: 'PKG-005' },
+        { orderNo: '888-23456789', cartonNo: 'CTN-B01', parcelNo: 'PKG-010' },
+        { orderNo: '888-23456789', cartonNo: 'CTN-B01', parcelNo: 'PKG-011' },
+        { orderNo: '888-23456789', cartonNo: 'CTN-B01', parcelNo: 'PKG-012' },
+        { orderNo: '777-34567890', cartonNo: 'CTN-C01', parcelNo: 'PKG-020' },
+        { orderNo: '777-34567890', cartonNo: 'CTN-C01', parcelNo: 'PKG-021' }
+      ];
+      var created = PickTool.createTasksFromRows(rows);
+      var now = new Date().toISOString();
+
+      // 任务1：进行中，已挑2个
+      var t1 = PickTool.getTaskByOrderNo('999-12345678');
+      t1.status = 'in_progress';
+      t1.cartons[0].parcels[0].picked = true;
+      t1.cartons[0].parcels[0].pickedAt = now;
+      t1.cartons[0].parcels[1].picked = true;
+      t1.cartons[0].parcels[1].pickedAt = now;
+      PickTool.updateTask(t1);
+
+      // 任务3：已完成
+      var t3 = PickTool.getTaskByOrderNo('777-34567890');
+      t3.status = 'completed';
+      t3.cartons[0].parcels[0].picked = true;
+      t3.cartons[0].parcels[0].pickedAt = now;
+      t3.cartons[0].parcels[1].picked = true;
+      t3.cartons[0].parcels[1].pickedAt = now;
+      PickTool.updateTask(t3);
+    }
+
+    /* ── 内联上传 ── */
+    function triggerFileUpload() {
+      document.getElementById('fileInput').click();
+    }
+
+    function onFileSelected(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
+      // 从文件名解析主单号
+      var match = file.name.match(/(\d{3}-\d{8})/);
+      if (!match) {
+        showToast('文件名需包含主单号（格式：999-12345678）');
+        e.target.value = '';
+        return;
+      }
+      var orderNo = match[1];
+
+      var reader = new FileReader();
+      reader.onload = function (ev) {
+        try {
+          var data = new Uint8Array(ev.target.result);
+          var workbook = XLSX.read(data, { type: 'array' });
+          var sheet = workbook.Sheets[workbook.SheetNames[0]];
+          var jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+          if (jsonData.length < 2) {
+            showToast('文件内容为空');
+            return;
+          }
+
+          // 跳过表头，第1列=大箱号，第2列=包裹号
+          var rows = [];
+          for (var i = 1; i < jsonData.length; i++) {
+            var cartonNo = String(jsonData[i][0] || '').trim();
+            var parcelNo = String(jsonData[i][1] || '').trim();
+            if (cartonNo && parcelNo) {
+              rows.push({ orderNo: orderNo, cartonNo: cartonNo, parcelNo: parcelNo });
+            }
+          }
+
+          if (!rows.length) {
+            showToast('未识别到有效数据');
+            return;
+          }
+
+          var created = PickTool.createTasksFromRows(rows);
+          if (created.length > 0) {
+            window.location.href = 'pick-scan.html?taskId=' + created[0].id;
+          }
+        } catch (err) {
+          showToast('文件解析失败: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      e.target.value = '';
+    }
+
     /* ── 导航 ── */
     function goScan(taskId) {
       window.location.href = 'pick-scan.html?taskId=' + taskId;
-    }
-
-    function goUpload() {
-      window.location.href = 'pick-upload.html';
     }
 
     function deleteTask(id) {
