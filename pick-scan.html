@@ -176,37 +176,6 @@
     }
 
     /* ── 包裹面板 ── */
-    .parcel-panel-header {
-      padding: 10px var(--content-pad);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-bottom: 1px solid var(--divider);
-      background: var(--surface);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
-    .parcel-panel-back {
-      width: 28px; height: 28px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; border-radius: 6px;
-      transition: background 0.15s;
-    }
-    .parcel-panel-back:active { background: var(--surface-alt); }
-    .parcel-panel-back svg { width: 16px; height: 16px; fill: none; stroke: var(--text-secondary); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-    .parcel-panel-title {
-      font-family: var(--font-mono);
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-    .parcel-panel-count {
-      margin-left: auto;
-      font-size: 12px;
-      font-family: var(--font-mono);
-      color: var(--text-secondary);
-    }
     .parcel-list {
       padding: 4px 0;
     }
@@ -422,7 +391,7 @@
             <line x1="12" y1="22.08" x2="12" y2="12"/>
           </svg>
         </div>
-        <div class="hero-main-text" id="heroMainText">请扫大箱号或包裹号</div>
+        <div class="hero-main-text" id="heroMainText">请扫大箱号</div>
         <div class="hero-sub-text" id="heroSubText">也可点击下方列表手动操作</div>
       </div>
 
@@ -433,13 +402,6 @@
 
       <!-- 包裹面板 -->
       <div class="panel" id="parcelView">
-        <div class="parcel-panel-header">
-          <div class="parcel-panel-back" onclick="showCartonView()">
-            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-          </div>
-          <span class="parcel-panel-title" id="parcelCartonNo">—</span>
-          <span class="parcel-panel-count" id="parcelCartonCount">—</span>
-        </div>
         <div class="parcel-list" id="parcelList"></div>
       </div>
     </div>
@@ -484,8 +446,6 @@
     var parcelView = document.getElementById('parcelView');
     var cartonList = document.getElementById('cartonList');
     var parcelList = document.getElementById('parcelList');
-    var parcelCartonNo = document.getElementById('parcelCartonNo');
-    var parcelCartonCount = document.getElementById('parcelCartonCount');
     var errorState = document.getElementById('errorState');
     var statusHero = document.getElementById('statusHero');
     var toastContainer = document.getElementById('toastContainer');
@@ -557,9 +517,9 @@
       var carton = currentTask.cartons.find(function (c) { return c.cartonNo === activeCartonNo; });
       if (!carton) return;
 
-      parcelCartonNo.textContent = carton.cartonNo;
       var picked = carton.parcels.filter(function (p) { return p.picked; }).length;
-      parcelCartonCount.textContent = picked + '/' + carton.parcels.length;
+      var total = carton.parcels.length;
+      heroSubText.textContent = carton.cartonNo + ' · ' + picked + '/' + total + ' 已挑出';
 
       var html = '';
       carton.parcels.forEach(function (p) {
@@ -582,7 +542,7 @@
       cartonView.className = 'panel';
       parcelView.className = 'panel active';
       heroMainText.textContent = '请扫包裹号';
-      heroSubText.textContent = '点击包裹可手动切换状态';
+      renderParcelView();
       renderParcelView();
       autoFocusInput();
     }
@@ -592,8 +552,7 @@
       currentView = 'carton';
       parcelView.className = 'panel';
       cartonView.className = 'panel active';
-      heroMainText.textContent = '请扫大箱号或包裹号';
-      heroSubText.textContent = '也可点击下方列表手动操作';
+      heroMainText.textContent = '请扫大箱号';
       renderCartonView();
       renderProgress();
       autoFocusInput();
