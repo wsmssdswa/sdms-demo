@@ -4,14 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>入仓挑货 — 千仓SDMS</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <style>
     :root {
-      --nav-bg: #0F2B46;
-      --nav-bg-end: #1A3F66;
       --brand: #2B6CB0;
       --brand-bright: #3B82F6;
       --surface: #FFFFFF;
@@ -27,9 +21,9 @@
       --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
       --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
       --shadow-fab: 0 6px 20px rgba(43, 108, 176, 0.45);
-      --radius: 10px;
-      --radius-sm: 6px;
-      --font-ui: 'DM Sans', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --radius: 8px;
+      --radius-sm: 4px;
+      --font-ui: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
       --font-mono: 'IBM Plex Mono', 'SF Mono', 'Cascadia Code', monospace;
       --frame-max: 100%;
       --content-pad: 12px;
@@ -59,10 +53,10 @@
 
     /* ── 顶部导航栏 ── */
     .nav-bar {
-      background: linear-gradient(135deg, var(--nav-bg) 0%, var(--nav-bg-end) 100%);
-      color: #fff;
-      padding: 0 16px;
-      height: 52px;
+      background: var(--surface-alt);
+      color: var(--text-primary);
+      padding: 0 12px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -70,22 +64,32 @@
       top: 0;
       z-index: 100;
     }
-    .nav-bar .placeholder { width: 32px; }
     .nav-bar .title {
       font-size: 17px;
       font-weight: 700;
+      color: var(--text-primary);
       letter-spacing: 0.3px;
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
     }
-    .nav-bar .scan-btn {
-      width: 32px; height: 32px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; border-radius: 8px; transition: background 0.15s;
+    /* 小程序胶囊按钮 */
+    .mp-capsule {
+      display: flex; align-items: center;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 16px; height: 32px;
+      padding: 0 8px; gap: 0;
     }
-    .nav-bar .scan-btn:active { background: rgba(255,255,255,0.12); }
-    .nav-bar .scan-btn svg { width: 20px; height: 20px; fill: rgba(255,255,255,0.85); }
+    .capsule-dot, .capsule-close {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--text-primary);
+      font-weight: 700; letter-spacing: 1px;
+    }
+    .capsule-divider {
+      width: 1px; height: 16px;
+      background: rgba(0,0,0,0.12);
+    }
 
 
     /* ── 扫码输入栏 ── */
@@ -106,7 +110,7 @@
       min-width: 0;
       background: var(--surface-alt);
       border: 1.5px solid var(--divider);
-      border-radius: 8px;
+      border-radius: 4px;
       padding: 10px 14px 10px 36px;
       font-family: var(--font-mono);
       font-size: 14px;
@@ -122,7 +126,7 @@
     .scan-icon-btn {
       width: 40px; height: 40px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
-      background: var(--brand); border: none; border-radius: 8px;
+      background: var(--brand); border: none; border-radius: 4px;
       cursor: pointer; transition: background 0.15s;
     }
     .scan-icon-btn:active { background: #1E4F8A; }
@@ -158,7 +162,7 @@
       font-size: 16px;
       font-weight: 700;
       color: var(--text-primary);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
     .empty-desc {
       font-size: 13px;
@@ -177,8 +181,6 @@
       cursor: pointer;
       transition: box-shadow 0.15s, transform 0.1s;
       animation: fadeInUp 0.35s ease-out both;
-      position: relative;
-      overflow: hidden;
     }
     .task-card:active { transform: scale(0.985); box-shadow: var(--shadow-md); }
 
@@ -229,9 +231,9 @@
     }
     .progress-track {
       flex: 1;
-      height: 6px;
+      height: 4px;
       background: var(--divider);
-      border-radius: 3px;
+      border-radius: 2px;
       overflow: hidden;
     }
     .progress-fill {
@@ -251,34 +253,6 @@
       min-width: 44px;
       text-align: right;
     }
-
-    /* ── 左滑删除 ── */
-    .swipe-wrapper {
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 10px;
-    }
-    .swipe-content {
-      position: relative;
-      z-index: 2;
-      transition: transform 0.25s ease;
-    }
-    .swipe-delete {
-      position: absolute;
-      top: 0; right: 0; bottom: 0;
-      width: 80px;
-      background: var(--danger);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 600;
-      z-index: 1;
-      border-radius: 0 var(--radius) var(--radius) 0;
-      cursor: pointer;
-    }
-    .swipe-delete:active { background: #DC2626; }
 
     /* ── 底部FAB ── */
     .fab-bar {
@@ -313,7 +287,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 8px;
       transition: transform 0.15s, box-shadow 0.15s;
     }
     .fab-bar .btn-fab:active {
@@ -325,7 +299,7 @@
     /* ── Toast ── */
     .toast {
       position: fixed;
-      top: 70px;
+      top: 56px;
       left: 50%;
       transform: translateX(-50%) translateY(-10px);
       background: rgba(26, 32, 44, 0.88);
@@ -377,13 +351,17 @@
     <div class="nav-bar">
       <div class="placeholder"></div>
       <div class="title">入仓挑货</div>
-      <div class="placeholder"></div>
+      <div class="mp-capsule">
+        <span class="capsule-dot">···</span>
+        <span class="capsule-divider"></span>
+        <span class="capsule-close"><svg viewBox="0 0 24 24" width="14" height="14"><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>
+      </div>
     </div>
 
     <!-- 查询栏（常驻显示） -->
     <div class="scan-bar" id="scanBar">
-      <input class="scan-input" id="scanInput" type="text" placeholder="输入订单号后回车查询"
-             onkeydown="onScanInput(event)">
+      <input class="scan-input" id="scanInput" type="text" placeholder="输入订单号筛选或扫码跳转"
+             oninput="onFilterInput()" onkeydown="onScanKeyDown(event)">
       <button class="scan-icon-btn" type="button">
         <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
@@ -416,6 +394,7 @@
     var scanBar = document.getElementById('scanBar');
     var scanInput = document.getElementById('scanInput');
     var toastEl = document.getElementById('toast');
+    var currentFilter = '';
 
     /* ── 初始化 ── */
     document.addEventListener('DOMContentLoaded', function () {
@@ -428,6 +407,10 @@
     /* ── 渲染任务列表 ── */
     function renderTasks() {
       var tasks = PickTool.getAllTasks();
+      if (currentFilter) {
+        var kw = currentFilter;
+        tasks = tasks.filter(function (t) { return t.orderNo.indexOf(kw) !== -1; });
+      }
       contentEl.innerHTML = '';
 
       if (!tasks.length) {
@@ -453,117 +436,41 @@
         var pct = stats.total ? Math.round(stats.picked / stats.total * 100) : 0;
         var timeStr = formatTime(task.createdAt);
 
-        if (task.status === 'completed') {
-          /* 已完成任务支持左滑删除 */
-          var wrapper = document.createElement('div');
-          wrapper.className = 'swipe-wrapper';
-          wrapper.style.animation = 'fadeInUp 0.35s ease-out both';
-          wrapper.style.animationDelay = (idx * 0.05) + 's';
+        var card = document.createElement('div');
+        card.className = 'task-card';
+        card.style.animationDelay = (idx * 0.05) + 's';
+        card.innerHTML =
+          '<div class="task-header">' +
+            '<span class="status-tag ' + statusClass + '">' + statusLabel + '</span>' +
+            '<span class="order-no">' + esc(task.orderNo) + '</span>' +
+            '<span class="task-time">' + timeStr + '</span>' +
+          '</div>' +
+          '<div class="progress-row">' +
+            '<div class="progress-track"><div class="progress-fill ' + statusClass + '" style="width:' + pct + '%"></div></div>' +
+            '<span class="progress-text">' + stats.picked + '/' + stats.total + '</span>' +
+          '</div>';
+        card.addEventListener('click', function () {
+          goScan(task.id);
+        });
 
-          var card = document.createElement('div');
-          card.className = 'task-card swipe-content';
-          card.style.marginBottom = '0';
-          card.innerHTML =
-            '<div class="task-header">' +
-              '<span class="status-tag ' + statusClass + '">' + statusLabel + '</span>' +
-              '<span class="order-no">' + esc(task.orderNo) + '</span>' +
-              '<span class="task-time">' + timeStr + '</span>' +
-            '</div>' +
-            '<div class="progress-row">' +
-              '<div class="progress-track"><div class="progress-fill ' + statusClass + '" style="width:' + pct + '%"></div></div>' +
-              '<span class="progress-text">' + stats.picked + '/' + stats.total + '</span>' +
-            '</div>';
-          card.onclick = function () { goScan(task.id); };
-
-          var delBtn = document.createElement('div');
-          delBtn.className = 'swipe-delete';
-          delBtn.textContent = '删除';
-          var deletePending = false;
-          delBtn.onclick = function () {
-            if (!deletePending) {
-              deletePending = true;
-              delBtn.textContent = '确认？';
-              delBtn.style.width = '90px';
-              setTimeout(function () {
-                deletePending = false;
-                delBtn.textContent = '删除';
-                delBtn.style.width = '';
-              }, 1500);
-            } else {
-              deleteTask(task.id);
-            }
-          };
-
-          wrapper.appendChild(delBtn);
-          wrapper.appendChild(card);
-          contentEl.appendChild(wrapper);
-          bindSwipe(wrapper);
-        } else {
-          var card = document.createElement('div');
-          card.className = 'task-card';
-          card.style.animationDelay = (idx * 0.05) + 's';
-          card.innerHTML =
-            '<div class="task-header">' +
-              '<span class="status-tag ' + statusClass + '">' + statusLabel + '</span>' +
-              '<span class="order-no">' + esc(task.orderNo) + '</span>' +
-              '<span class="task-time">' + timeStr + '</span>' +
-            '</div>' +
-            '<div class="progress-row">' +
-              '<div class="progress-track"><div class="progress-fill ' + statusClass + '" style="width:' + pct + '%"></div></div>' +
-              '<span class="progress-text">' + stats.picked + '/' + stats.total + '</span>' +
-            '</div>';
-          card.onclick = function () { goScan(task.id); };
-          contentEl.appendChild(card);
-        }
+        contentEl.appendChild(card);
       });
     }
 
-    /* ── 左滑手势 ── */
-    function bindSwipe(wrapper) {
-      var content = wrapper.querySelector('.swipe-content');
-      var startX = 0, currentX = 0, swiping = false;
-
-      content.addEventListener('touchstart', function (e) {
-        startX = e.touches[0].clientX;
-        swiping = true;
-        content.style.transition = 'none';
-      }, { passive: true });
-
-      content.addEventListener('touchmove', function (e) {
-        if (!swiping) return;
-        currentX = e.touches[0].clientX;
-        var dx = currentX - startX;
-        if (dx < 0) {
-          var offset = Math.max(dx, -80);
-          content.style.transform = 'translateX(' + offset + 'px)';
-        } else {
-          content.style.transform = 'translateX(0)';
-        }
-      }, { passive: true });
-
-      content.addEventListener('touchend', function () {
-        swiping = false;
-        content.style.transition = 'transform 0.25s ease';
-        var dx = currentX - startX;
-        if (dx < -40) {
-          content.style.transform = 'translateX(-80px)';
-        } else {
-          content.style.transform = 'translateX(0)';
-        }
-      });
+    /* ── 实时筛选 ── */
+    function onFilterInput() {
+      currentFilter = scanInput.value.trim();
+      renderTasks();
     }
 
-    function resetSwipe(wrapper) {
-      var content = wrapper.querySelector('.swipe-content');
-      if (content) {
-        content.style.transition = 'transform 0.25s ease';
-        content.style.transform = 'translateX(0)';
-      }
-    }
-
-    /* ── 扫码栏 ── */
-    function onScanInput(e) {
+    /* ── 扫码跳转（回车触发，模拟PDA扫码枪） ── */
+    function onScanKeyDown(e) {
       if (e.key !== 'Enter') return;
+      e.preventDefault();
+      onScanGo();
+    }
+
+    function onScanGo() {
       var orderNo = scanInput.value.trim();
       if (!orderNo) return;
 
@@ -616,6 +523,19 @@
       document.getElementById('fileInput').click();
     }
 
+    var _xlsxLoading = false;
+    function ensureXLSX(cb) {
+      if (window.XLSX) return cb();
+      if (_xlsxLoading) return;
+      _xlsxLoading = true;
+      showToast('正在加载解析引擎...');
+      var s = document.createElement('script');
+      s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+      s.onload = function () { _xlsxLoading = false; cb(); };
+      s.onerror = function () { _xlsxLoading = false; showToast('解析引擎加载失败，请检查网络'); };
+      document.head.appendChild(s);
+    }
+
     function onFileSelected(e) {
       var file = e.target.files[0];
       if (!file) return;
@@ -629,55 +549,61 @@
       }
       var orderNo = match[1];
 
-      var reader = new FileReader();
-      reader.onload = function (ev) {
-        try {
-          var data = new Uint8Array(ev.target.result);
-          var workbook = XLSX.read(data, { type: 'array' });
-          var sheet = workbook.Sheets[workbook.SheetNames[0]];
-          var jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+      ensureXLSX(function () {
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          try {
+            var data = new Uint8Array(ev.target.result);
+            var workbook = XLSX.read(data, { type: 'array' });
+            var sheet = workbook.Sheets[workbook.SheetNames[0]];
+            var jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
 
-          if (jsonData.length < 2) {
-            showToast('文件内容为空');
-            return;
-          }
-
-          // 跳过表头，第1列=大箱号，第2列=包裹号
-          var rows = [];
-          for (var i = 1; i < jsonData.length; i++) {
-            var cartonNo = String(jsonData[i][0] || '').trim();
-            var parcelNo = String(jsonData[i][1] || '').trim();
-            if (cartonNo && parcelNo) {
-              rows.push({ orderNo: orderNo, cartonNo: cartonNo, parcelNo: parcelNo });
+            if (jsonData.length < 2) {
+              showToast('文件内容为空');
+              return;
             }
-          }
 
-          if (!rows.length) {
-            showToast('未识别到有效数据');
-            return;
-          }
+            // 跳过表头，第1列=大箱号，第2列=包裹号
+            var rows = [];
+            for (var i = 1; i < jsonData.length; i++) {
+              var cartonNo = String(jsonData[i][0] || '').trim();
+              var parcelNo = String(jsonData[i][1] || '').trim();
+              if (cartonNo && parcelNo) {
+                rows.push({ orderNo: orderNo, cartonNo: cartonNo, parcelNo: parcelNo });
+              }
+            }
 
-          var created = PickTool.createTasksFromRows(rows);
-          if (created.length > 0) {
-            window.location.href = 'pick-scan.html?taskId=' + created[0].id;
+            if (!rows.length) {
+              showToast('未识别到有效数据');
+              return;
+            }
+
+            var isOverwrite = PickTool.orderNoExists(orderNo);
+            var created = isOverwrite
+              ? PickTool.overwriteByOrderNo(orderNo, rows)
+              : PickTool.createTasksFromRows(rows);
+            if (isOverwrite) showToast('已覆盖旧数据');
+            if (created.length > 0) {
+              navigateTo('pick-scan.html?taskId=' + created[0].id);
+            }
+          } catch (err) {
+            showToast('文件解析失败: ' + err.message);
           }
-        } catch (err) {
-          showToast('文件解析失败: ' + err.message);
-        }
-      };
-      reader.readAsArrayBuffer(file);
+        };
+        reader.readAsArrayBuffer(file);
+      });
       e.target.value = '';
+    }
+
+    function navigateTo(url) {
+      document.body.style.transition = 'opacity 0.2s';
+      document.body.style.opacity = '0';
+      setTimeout(function () { window.location.href = url; }, 220);
     }
 
     /* ── 导航 ── */
     function goScan(taskId) {
-      window.location.href = 'pick-scan.html?taskId=' + taskId;
-    }
-
-    function deleteTask(id) {
-      PickTool.deleteTask(id);
-      renderTasks();
-      showToast('已删除');
+      navigateTo('pick-scan.html?taskId=' + taskId);
     }
 
     /* ── Toast ── */
