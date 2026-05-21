@@ -4,23 +4,17 @@ const backBtn=document.getElementById('backBtn');
 const saveBtn=document.getElementById('saveBtn');
 const pageTitleLabel=document.getElementById('pageTitleLabel');
 const feeName=document.getElementById('feeName');
-const customer=document.getElementById('customer');
 const warehouse=document.getElementById('warehouse');
 const unitSelect=document.getElementById('unit');
 const currency=document.getElementById('currency');
-const startDate=document.getElementById('startDate');
-const endDate=document.getElementById('endDate');
 const effectType=document.getElementById('effectType');
 const remark=document.getElementById('remark');
 const addTierBtn=document.getElementById('addTierBtn');
 const tierHead=document.getElementById('tierHead');
 const tierBody=document.getElementById('tierBody');
-const peakEnabledCheck=document.getElementById('peakEnabledCheck');
 const addPeakBtn=document.getElementById('addPeakBtn');
-const peakTableWrap=document.getElementById('peakTableWrap');
 const peakHead=document.getElementById('peakHead');
 const peakBody=document.getElementById('peakBody');
-const tierSection=document.getElementById('tierSection');
 const toastStack=document.getElementById('toastStack');
 
 const escapeHtml=(v)=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -33,10 +27,7 @@ const state={
     {endDays:'60',unitPrice:'0.80'},
     {endDays:'',unitPrice:'1.20'}
   ],
-  peakSeason:{
-    enabled:false,
-    rules:[]
-  }
+  peakRules:[]
 };
 
 /* ── Edit mode ── */
@@ -46,14 +37,10 @@ if(isEdit){
   pageTitleLabel.textContent='编辑仓储费';
   document.title='编辑仓储费';
   feeName.value='标准仓储费';
-  customer.value='深圳市星辰电子商务有限公司';
   warehouse.value='波兰海外仓';
   unitSelect.value='CBM';
   currency.value='EUR';
-  startDate.value='2025-01-01';
-  endDate.value='2025-12-31';
-  state.peakSeason.enabled=true;
-  state.peakSeason.rules=[
+  state.peakRules=[
     {startMonth:11,endMonth:12,type:'percent',value:'20'},
     {startMonth:6,endMonth:8,type:'fixed',value:'0.10'}
   ];
@@ -84,10 +71,9 @@ function renderTierTable(){
   const cur=getCurrency();
   const u=getUnit();
   tierHead.innerHTML=`<tr>
-    <th style="width:40px">#</th>
-    <th>存储天数区间（天）</th>
-    <th style="width:160px">单价（${escapeHtml(cur)}/${escapeHtml(u)}/天）</th>
-    <th style="width:100px">操作</th>
+    <th style="width:42%">存储天数区间（天）</th>
+    <th style="width:32%">单价（${escapeHtml(cur)}/${escapeHtml(u)}/天）</th>
+    <th style="width:80px" class="cell-center">操作</th>
   </tr>`;
 
   tierBody.innerHTML=state.tiers.map((tier,idx)=>{
@@ -103,9 +89,8 @@ function renderTierTable(){
       :`<span class="action-link" data-action="insert-tier" data-idx="${idx}">插入</span>
         <span class="action-link delete" data-action="delete-tier" data-idx="${idx}">删除</span>`;
     return `<tr>
-      <td class="cell-center">${idx+1}</td>
       <td><div class="tier-days-cell">${startInput}<span style="color:#94a3b8">~</span>${endInput}</div></td>
-      <td><input class="surcharge-input" data-field="unitPrice" data-idx="${idx}" value="${escapeHtml(tier.unitPrice)}" style="width:100px"></td>
+      <td><input class="surcharge-input" data-field="unitPrice" data-idx="${idx}" value="${escapeHtml(tier.unitPrice)}"></td>
       <td class="cell-center" style="white-space:nowrap">${ops}</td>
     </tr>`;
   }).join('');
@@ -116,15 +101,14 @@ function renderPeakTable(){
   const cur=getCurrency();
   const u=getUnit();
   peakHead.innerHTML=`<tr>
-    <th style="width:36px">#</th>
-    <th>适用月份</th>
+    <th style="width:40%">适用月份</th>
     <th>加收</th>
-    <th style="width:50px">操作</th>
+    <th style="width:56px" class="cell-center">操作</th>
   </tr>`;
 
-  const rules=state.peakSeason.rules;
+  const rules=state.peakRules;
   if(!rules.length){
-    peakBody.innerHTML='<tr class="empty-row"><td colspan="4">暂无规则，点击"新增区间"添加</td></tr>';
+    peakBody.innerHTML='<tr class="empty-row"><td colspan="3">暂无规则，点击"新增区间"添加</td></tr>';
     return;
   }
   const monthOpts=Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}月</option>`).join('');
@@ -133,9 +117,7 @@ function renderPeakTable(){
     const endOpts=monthOpts.replace(`<option value="${rule.endMonth}">`,`<option value="${rule.endMonth}" selected>`);
     const typePercentSel=rule.type==='percent'?' selected':'';
     const typeFixedSel=rule.type==='fixed'?' selected':'';
-    const unitLabel=rule.type==='percent'?'%':`${escapeHtml(cur)}/${escapeHtml(u)}/天`;
     return `<tr>
-      <td class="cell-center">${idx+1}</td>
       <td><div class="peak-month-cell">
         <select class="peak-month-select" data-field="startMonth" data-idx="${idx}">${startOpts}</select>
         <span style="color:#94a3b8">~</span>
@@ -153,22 +135,6 @@ function renderPeakTable(){
   }).join('');
 }
 
-/* ── Peak toggle ── */
-function updatePeakVisibility(){
-  if(state.peakSeason.enabled){
-    peakTableWrap.style.display='';
-    tierSection.classList.remove('full-width');
-  }else{
-    peakTableWrap.style.display='none';
-    tierSection.classList.add('full-width');
-  }
-}
-
-peakEnabledCheck.addEventListener('change',()=>{
-  state.peakSeason.enabled=peakEnabledCheck.checked;
-  updatePeakVisibility();
-});
-
 /* ── Add tier ── */
 addTierBtn.addEventListener('click',()=>{
   state.tiers.push({endDays:'',unitPrice:''});
@@ -177,7 +143,7 @@ addTierBtn.addEventListener('click',()=>{
 
 /* ── Add peak rule ── */
 addPeakBtn.addEventListener('click',()=>{
-  state.peakSeason.rules.push({startMonth:1,endMonth:1,type:'percent',value:''});
+  state.peakRules.push({startMonth:1,endMonth:1,type:'percent',value:''});
   renderPeakTable();
 });
 
@@ -190,7 +156,14 @@ tierTable.addEventListener('input',e=>{
   const field=input.dataset.field;
   if(field==='endDays'){
     state.tiers[idx].endDays=input.value;
-    renderTierTable();
+    if(idx+1<state.tiers.length){
+      const nextStart=Number(input.value)?Number(input.value)+1:0;
+      const nextRow=tierBody.querySelectorAll('tr')[idx+1];
+      if(nextRow){
+        const startInput=nextRow.querySelector('.tier-days-readonly');
+        if(startInput)startInput.value=nextStart;
+      }
+    }
   }else if(field==='unitPrice'){
     state.tiers[idx].unitPrice=input.value;
   }
@@ -208,6 +181,13 @@ tierTable.addEventListener('click',e=>{
   }
 });
 
+/* ── Re-render tier table on endDays blur for consistency ── */
+tierTable.addEventListener('focusout',e=>{
+  const input=e.target.closest('[data-field="endDays"]');
+  if(!input)return;
+  renderTierTable();
+});
+
 /* ── Event delegation: peak table ── */
 const peakTable=document.getElementById('peakTable');
 peakTable.addEventListener('input',e=>{
@@ -215,7 +195,7 @@ peakTable.addEventListener('input',e=>{
   if(!input||input.dataset.idx===undefined)return;
   const idx=Number(input.dataset.idx);
   if(input.dataset.field==='peakValue'){
-    state.peakSeason.rules[idx].value=input.value;
+    state.peakRules[idx].value=input.value;
   }
 });
 
@@ -224,11 +204,11 @@ peakTable.addEventListener('change',e=>{
   if(!sel||sel.dataset.idx===undefined)return;
   const idx=Number(sel.dataset.idx);
   if(sel.dataset.field==='startMonth'){
-    state.peakSeason.rules[idx].startMonth=Number(sel.value);
+    state.peakRules[idx].startMonth=Number(sel.value);
   }else if(sel.dataset.field==='endMonth'){
-    state.peakSeason.rules[idx].endMonth=Number(sel.value);
+    state.peakRules[idx].endMonth=Number(sel.value);
   }else if(sel.dataset.field==='peakType'){
-    state.peakSeason.rules[idx].type=sel.value;
+    state.peakRules[idx].type=sel.value;
     renderPeakTable();
   }
 });
@@ -237,7 +217,7 @@ peakTable.addEventListener('click',e=>{
   const t=e.target.closest('[data-action]');if(!t)return;
   const idx=Number(t.dataset.idx);
   if(t.dataset.action==='delete-peak'){
-    state.peakSeason.rules.splice(idx,1);
+    state.peakRules.splice(idx,1);
     renderPeakTable();
   }
 });
@@ -249,12 +229,9 @@ unitSelect.addEventListener('change',()=>{renderTierTable();renderPeakTable();})
 /* ── Save ── */
 const requiredFieldMap={
   feeName:{el:feeName,label:'计费项名称'},
-  customer:{el:customer,label:'客户'},
   warehouse:{el:warehouse,label:'所属仓库'},
   unit:{el:unitSelect,label:'计费维度'},
-  currency:{el:currency,label:'币种'},
-  startDate:{el:startDate,label:'适用时间'},
-  endDate:{el:endDate,label:'适用时间'}
+  currency:{el:currency,label:'币种'}
 };
 
 saveBtn.addEventListener('click',()=>{
@@ -286,14 +263,15 @@ saveBtn.addEventListener('click',()=>{
   showToast('success','保存成功',isEdit?'仓储费配置已更新。':'仓储费配置已创建。');
 });
 
+/* ── Prevent form submit on Enter ── */
+document.getElementById('storageFeeForm').addEventListener('submit',e=>e.preventDefault());
+
 /* ── Back ── */
 backBtn.addEventListener('click',()=>{
   window.location.href='storage-fee-config.html';
 });
 
 /* ── Init ── */
-peakEnabledCheck.checked=state.peakSeason.enabled;
-updatePeakVisibility();
 renderTierTable();
 renderPeakTable();
 })();

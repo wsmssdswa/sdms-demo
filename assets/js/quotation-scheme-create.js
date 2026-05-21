@@ -34,7 +34,6 @@ const feeCategoryTree=document.getElementById('feeCategoryTree');
 const feeItemToolbar=document.getElementById('feeItemToolbar');
 const feeItemList=document.getElementById('feeItemList');
 const feeItemFooter=document.getElementById('feeItemFooter');
-const schemeSummary=document.getElementById('schemeSummary');
 const toastStack=document.getElementById('toastStack');
 const feeSelectModal=document.getElementById('feeSelectModal');
 const feeSelectModalTitle=document.getElementById('feeSelectModalTitle');
@@ -749,27 +748,11 @@ function renderFeeItemList(){
   `;
 }
 
-/* ── Render: Summary ── */
-function renderSummary(){
-  const items=BIZ_TYPES.map(bt=>{
-    const count=getSelectedCount(bt.key);
-    return count>0?`${bt.label}${count}项`:null;
-  }).filter(Boolean);
-  const total=getTotalSelectedCount();
-  schemeSummary.innerHTML=`
-    <div class="summary-items">
-      ${items.length?items.map(s=>`<span>${s}</span>`).join('<span style="color:var(--line)">|</span>'):'<span>暂未选择费用项</span>'}
-    </div>
-    <div class="summary-total">合计 ${total} 项</div>
-  `;
-}
-
 /* ── Full render ── */
 function render(){
   renderBizTypeTabs();
   renderCategoryTree();
   renderFeeItemList();
-  renderSummary();
 }
 
 /* ── Date Range Picker ── */

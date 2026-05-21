@@ -479,7 +479,7 @@
     node.classList.add('is-prd-current-target');
     window.setTimeout(() => {
       node.classList.remove('is-prd-current-target');
-    }, 2200);
+    }, 2000);
   }
 
   function highlightDocNode(node) {
@@ -488,7 +488,7 @@
     node.classList.add('is-doc-current');
     window.setTimeout(() => {
       node.classList.remove('is-doc-current');
-    }, 2200);
+    }, 2000);
   }
 
   function scrollControlNodeIntoView(node) {
@@ -516,7 +516,22 @@
     return String(value).replace(/[^a-zA-Z0-9\-_]/g, '\\$&');
   }
 
-  function jumpToRef(ref, label) {
+  /* ---------- 手动平滑滚动 ---------- */
+  function animateScrollTo(el, to, duration) {
+    var from = el.scrollTop;
+    var dist = to - from;
+    if (Math.abs(dist) < 2) return;
+    var start = performance.now();
+    function step(now) {
+      var t = Math.min((now - start) / duration, 1);
+      var ease = 1 - Math.pow(1 - t, 3);
+      el.scrollTop = from + dist * ease;
+      if (t < 1) window.requestAnimationFrame(step);
+    }
+    window.requestAnimationFrame(step);
+  }
+
+  function jumpToRef(ref, label, viewerWasOpen) {
     if (!ref) return;
     openViewer();
     state.activeRef = ref;
@@ -526,22 +541,37 @@
       updateCurrentText(`未找到"${label || ref}"对应的文档位置`);
       return;
     }
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    highlightDocNode(target);
+    var doScroll = function () {
+      var contentRect = pagePrdContent.getBoundingClientRect();
+      var targetRect = target.getBoundingClientRect();
+      var scrollTarget = pagePrdContent.scrollTop + (targetRect.top - contentRect.top) - 18;
+      animateScrollTo(pagePrdContent, Math.max(0, scrollTarget), 380);
+      highlightDocNode(target);
+    };
+    if (viewerWasOpen) {
+      doScroll();
+    } else {
+      // 弹窗刚打开，内容从 display:none 恢复，需要等布局就绪再平滑滚动
+      pagePrdContent.scrollTop = 0;
+      window.requestAnimationFrame(function () {
+        window.requestAnimationFrame(doScroll);
+      });
+    }
     updateCurrentText(`当前定位：${label || target.textContent.trim()}`);
   }
 
   function jumpToBinding(binding, node) {
     if (!binding) return;
+    const viewerWasOpen = state.open;
     focusControlNode(node);
     if (binding.targetId) {
-      jumpToRef(binding.targetId, binding.label);
+      jumpToRef(binding.targetId, binding.label, viewerWasOpen);
       return;
     }
     if (binding.headingText) {
       const tocMatch = state.toc.find((item) => item.title === binding.headingText);
       if (tocMatch) {
-        jumpToRef(tocMatch.id, binding.label);
+        jumpToRef(tocMatch.id, binding.label, viewerWasOpen);
       }
     }
   }
@@ -682,13 +712,13 @@
       if (event.key !== 'Enter') return;
       const firstMatch = pagePrdToc.querySelector('[data-prd-jump]');
       if (!firstMatch) return;
-      jumpToRef(firstMatch.dataset.prdJump, firstMatch.textContent.trim());
+      jumpToRef(firstMatch.dataset.prdJump, firstMatch.textContent.trim(), true);
     });
 
     pagePrdToc.addEventListener('click', (event) => {
       const button = event.target.closest('[data-prd-jump]');
       if (!button) return;
-      jumpToRef(button.dataset.prdJump, button.textContent.trim());
+      jumpToRef(button.dataset.prdJump, button.textContent.trim(), true);
     });
 
     // 内容区滚动 → 同步目录高亮

@@ -195,10 +195,98 @@
       '</div>',
       (includeTools || includePrdEntry) ? buildTools(container, includePrdEntry) : ''
     ].join('');
+    setupOverflow(container);
+  }
+
+  function setupOverflow(container) {
+    var mainEl = container.querySelector('.header-tabs-main');
+    if (!mainEl) return;
+    cleanupOverflow(container);
+    var chips = Array.from(mainEl.querySelectorAll('.tab-chip'));
+    if (!chips.length) return;
+    var availableWidth = mainEl.clientWidth;
+    var OVERFLOW_BTN_WIDTH = 48;
+    var usedWidth = 0;
+    var splitIndex = chips.length;
+    for (var i = 0; i < chips.length; i++) {
+      usedWidth += chips[i].offsetWidth + 1;
+      if (usedWidth > availableWidth - OVERFLOW_BTN_WIDTH) {
+        splitIndex = i;
+        break;
+      }
+    }
+    if (splitIndex >= chips.length) return;
+    var overflowChips = chips.slice(splitIndex);
+    overflowChips.forEach(function (chip) { chip.style.display = 'none'; });
+    var menuItems = overflowChips.map(function (chip) {
+      var isPrimary = chip.classList.contains('primary');
+      var icon = chip.querySelector('i');
+      var iconClass = icon ? icon.className : '';
+      var label = chip.querySelector('span');
+      var labelHtml = label ? (isPrimary && label.id ? '<span id="' + label.id + '">' + label.textContent + '</span>' : '<span>' + label.textContent + '</span>') : '';
+      if (isPrimary) {
+        return '<div class="tab-overflow-item primary">' +
+          (iconClass ? '<i class="' + iconClass + '"></i>' : '') +
+          labelHtml +
+          '</div>';
+      }
+      var href = chip.getAttribute('href') || '#';
+      return '<a href="' + href + '" class="tab-overflow-item">' +
+        (iconClass ? '<i class="' + iconClass + '"></i>' : '') +
+        labelHtml +
+        '</a>';
+    }).join('');
+    var trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'tab-overflow-trigger';
+    trigger.innerHTML = '···<div class="tab-overflow-menu">' + menuItems + '</div>';
+    var actions = container.querySelector('.header-tabs-actions');
+    if (actions) {
+      container.insertBefore(trigger, actions);
+    } else {
+      container.appendChild(trigger);
+    }
+    container._overflowTrigger = trigger;
+  }
+
+  function cleanupOverflow(container) {
+    var mainEl = container.querySelector('.header-tabs-main');
+    if (!mainEl) return;
+    var oldTrigger = container._overflowTrigger || mainEl.querySelector('.tab-overflow-trigger');
+    if (oldTrigger) oldTrigger.remove();
+    container._overflowTrigger = null;
+    mainEl.querySelectorAll('.tab-chip').forEach(function (chip) {
+      chip.style.display = '';
+    });
+  }
+
+  var resizeTimers = new WeakMap();
+
+  function handleResize(entries) {
+    entries.forEach(function (entry) {
+      var container = entry.target.closest('[data-sdms-header-tabs]');
+      if (!container) return;
+      var timer = resizeTimers.get(container);
+      if (timer) clearTimeout(timer);
+      resizeTimers.set(container, setTimeout(function () {
+        setupOverflow(container);
+      }, 150));
+    });
+  }
+
+  var resizeObserver = null;
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(handleResize);
   }
 
   function init() {
-    document.querySelectorAll('[data-sdms-header-tabs]').forEach(renderTabs);
+    document.querySelectorAll('[data-sdms-header-tabs]').forEach(function (container) {
+      renderTabs(container);
+      if (resizeObserver) {
+        var mainEl = container.querySelector('.header-tabs-main');
+        if (mainEl) resizeObserver.observe(mainEl);
+      }
+    });
   }
 
   if (document.body) {

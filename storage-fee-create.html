@@ -7,13 +7,14 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
   <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/sdms-comp-form-create.css">
   <link rel="stylesheet" href="./assets/css/storage-fee-create.css">
 </head>
 <body>
   <div class="app-shell">
     <aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
     <div class="page-shell">
-      <div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="storage-fee-create"></div>
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="storage-fee-create" data-include-tools="true" data-user-name="张三"></div>
       <main class="content-wrap">
         <section class="page-card">
           <div class="page-card-head">
@@ -31,20 +32,6 @@
                   <div class="field-group" data-field="feeName">
                     <div class="field-label"><span class="required-star">*</span><span>计费项名称</span></div>
                     <input class="field-control" id="feeName" name="feeName" maxlength="50" placeholder="请输入计费项名称">
-                    <div class="field-tip"></div>
-                  </div>
-                  <div class="field-group" data-field="customer">
-                    <div class="field-label"><span class="required-star">*</span><span>客户</span></div>
-                    <div class="select-wrap">
-                      <select class="field-select" id="customer" name="customer">
-                        <option value="">请选择客户</option>
-                        <option value="深圳市星辰电子商务有限公司">深圳市星辰电子商务有限公司</option>
-                        <option value="杭州跨境通供应链管理有限公司">杭州跨境通供应链管理有限公司</option>
-                        <option value="广州优品国际贸易有限公司">广州优品国际贸易有限公司</option>
-                        <option value="上海锐达物流科技有限公司">上海锐达物流科技有限公司</option>
-                      </select>
-                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
-                    </div>
                     <div class="field-tip"></div>
                   </div>
                   <div class="field-group" data-field="warehouse">
@@ -89,15 +76,6 @@
                     </div>
                     <div class="field-tip"></div>
                   </div>
-                  <div class="field-group" data-field="dateRange">
-                    <div class="field-label"><span class="required-star">*</span><span>适用时间</span></div>
-                    <div class="date-range-wrap">
-                      <input class="field-control date-input" id="startDate" type="date" name="startDate">
-                      <span class="date-sep">~</span>
-                      <input class="field-control date-input" id="endDate" type="date" name="endDate">
-                    </div>
-                    <div class="field-tip"></div>
-                  </div>
                   <div class="field-group" data-field="effectType">
                     <div class="field-label"><span>生效方式</span></div>
                     <div class="select-wrap">
@@ -118,24 +96,27 @@
               </form>
             </div>
             <div class="fee-layout">
-              <div class="fee-layout-left" id="tierSection">
-                <div class="tab-section-head">
-                  <div class="tab-section-left">
-                    <div class="section-title">费用阶梯</div>
+              <div class="fee-layout-left">
+                <div class="tab-section" id="tierSection">
+                  <div class="tab-section-head">
+                    <div class="tab-section-left">
+                      <div class="section-title">费用阶梯</div>
+                    </div>
+                    <button class="btn-add-tier" id="addTierBtn" type="button">+ 新增阶梯</button>
                   </div>
-                  <button class="btn-add-tier" id="addTierBtn" type="button">+ 新增阶梯</button>
+                  <div class="matrix-table-wrap"><table class="matrix-table" id="tierTable"><thead id="tierHead"></thead><tbody id="tierBody"></tbody></table></div>
                 </div>
-                <div class="matrix-table-wrap"><table class="matrix-table" id="tierTable"><thead id="tierHead"></thead><tbody id="tierBody"></tbody></table></div>
               </div>
               <div class="fee-layout-right" id="peakSection">
-                <div class="tab-section-head">
-                  <div class="tab-section-left">
-                    <div class="section-title">旺季附加费</div>
-                    <label class="fee-toggle"><input type="checkbox" id="peakEnabledCheck">启用</label>
+                <div class="tab-section">
+                  <div class="tab-section-head">
+                    <div class="tab-section-left">
+                      <div class="section-title">旺季附加费</div>
+                    </div>
+                    <button class="btn-add-tier" id="addPeakBtn" type="button">+ 新增区间</button>
                   </div>
-                  <button class="btn-add-tier" id="addPeakBtn" type="button">+ 新增区间</button>
+                  <div class="matrix-table-wrap"><table class="matrix-table" id="peakTable"><thead id="peakHead"></thead><tbody id="peakBody"></tbody></table></div>
                 </div>
-                <div class="matrix-table-wrap" id="peakTableWrap" style="display:none"><table class="matrix-table" id="peakTable"><thead id="peakHead"></thead><tbody id="peakBody"></tbody></table></div>
               </div>
             </div>
           </div>

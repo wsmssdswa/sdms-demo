@@ -41,12 +41,10 @@
         status:'confirmed',remark:'',createdBy:'Kevin.王磊',
         createdAt:'2026-05-14 10:00',sentAt:'2026-05-14 14:00',confirmedAt:'2026-05-15 09:00',
         categorySummary:[
-          {key:'logistics',amount:785,count:1},
+          {key:'inbound',amount:745.25,count:2},
           {key:'storage',amount:0,count:0},
-          {key:'operation_inbound',amount:745.25,count:2},
-          {key:'operation_outbound',amount:326,count:1},
-          {key:'operation_vas',amount:0,count:0},
-          {key:'operation_other',amount:0,count:0}
+          {key:'order',amount:1111,count:2},
+          {key:'other',amount:0,count:0}
         ],
         feeSheets:[
           {feeNo:'FS-20260510-001',sheetType:'order',sourceNo:'TRK-2026-001',warehouseName:'波兰海外仓',receivableAmount:1057.25,
@@ -69,12 +67,10 @@
         status:'sent',remark:'',createdBy:'Amy.李婷',
         createdAt:'2026-05-15 11:00',sentAt:'2026-05-16 09:00',confirmedAt:'',
         categorySummary:[
-          {key:'logistics',amount:824.25,count:1},
+          {key:'inbound',amount:0,count:0},
           {key:'storage',amount:0,count:0},
-          {key:'operation_inbound',amount:0,count:0},
-          {key:'operation_outbound',amount:196.25,count:1},
-          {key:'operation_vas',amount:0,count:0},
-          {key:'operation_other',amount:0,count:0}
+          {key:'order',amount:1020.5,count:2},
+          {key:'other',amount:0,count:0}
         ],
         feeSheets:[
           {feeNo:'FS-20260512-001',category:'operation',operationType:'outbound',sheetType:'order',sourceNo:'TRK-2026-002',warehouseName:'德国海外仓',receivableAmount:196.25,
@@ -92,12 +88,10 @@
         status:'draft',remark:'',createdBy:'Jack.陈明',
         createdAt:'2026-05-16 14:00',sentAt:'',confirmedAt:'',
         categorySummary:[
-          {key:'logistics',amount:0,count:0},
+          {key:'inbound',amount:0,count:0},
           {key:'storage',amount:0,count:0},
-          {key:'operation_inbound',amount:0,count:0},
-          {key:'operation_outbound',amount:0,count:0},
-          {key:'operation_vas',amount:235.5,count:1},
-          {key:'operation_other',amount:0,count:0}
+          {key:'order',amount:0,count:0},
+          {key:'other',amount:235.5,count:1}
         ],
         feeSheets:[
           {feeNo:'FS-20260513-002',sheetType:'order',sourceNo:'TRK-2026-003',warehouseName:'波兰海外仓',receivableAmount:235.5,
@@ -111,12 +105,10 @@
         status:'draft',remark:'含仓储费',createdBy:'Kevin.王磊',
         createdAt:'2026-05-17 08:30',sentAt:'',confirmedAt:'',
         categorySummary:[
-          {key:'logistics',amount:0,count:0},
+          {key:'inbound',amount:0,count:0},
           {key:'storage',amount:549.5,count:1},
-          {key:'operation_inbound',amount:0,count:0},
-          {key:'operation_outbound',amount:0,count:0},
-          {key:'operation_vas',amount:0,count:0},
-          {key:'operation_other',amount:0,count:0}
+          {key:'order',amount:0,count:0},
+          {key:'other',amount:0,count:0}
         ],
         feeSheets:[
           {feeNo:'FS-20260513-001',sheetType:'storage_cycle',sourceNo:'',warehouseName:'波兰海外仓',receivableAmount:549.5,
@@ -131,12 +123,10 @@
         status:'sent',remark:'',createdBy:'Amy.李婷',
         createdAt:'2026-05-18 09:30',sentAt:'2026-05-18 15:00',confirmedAt:'',
         categorySummary:[
-          {key:'logistics',amount:0,count:0},
+          {key:'inbound',amount:274.75,count:1},
           {key:'storage',amount:0,count:0},
-          {key:'operation_inbound',amount:274.75,count:1},
-          {key:'operation_outbound',amount:0,count:0},
-          {key:'operation_vas',amount:0,count:0},
-          {key:'operation_other',amount:0,count:0}
+          {key:'order',amount:0,count:0},
+          {key:'other',amount:0,count:0}
         ],
         feeSheets:[
           {feeNo:'FS-20260515-001',sheetType:'return_inbound',sourceNo:'Y202605150001E',warehouseName:'波兰海外仓',receivableAmount:274.75,
@@ -203,7 +193,7 @@
           +'<td class="amount-cell">¥'+fmtAmt(bill.receivableTotal)+'</td>'
           +'<td style="text-align:center">'+bill.feeSheetCount+'</td>'
           +'<td>'+escapeHtml(bill.createdBy)+'</td>'
-          +'<td style="color:var(--text-muted);font-size:12px">'+escapeHtml(bill.createdAt)+'</td>'
+          +'<td>'+escapeHtml(bill.createdAt)+'</td>'
           +'<td><span class="status-tag '+st.cls+'">'+st.label+'</span></td>'
           +'<td><div class="action-group">'+actions+'</div></td>'
         +'</tr>';

@@ -1,6 +1,6 @@
     let selectedWarehouses = ['WH001', 'WH002', 'WH003', 'WH004', 'WH005', 'WH006'];
     const LAYOUT_STORAGE_VERSION = 4;
-    const KPI_STORAGE_VERSION = 10;
+    const KPI_STORAGE_VERSION = 11;
     const DEFAULT_COMPONENT_ORDER = ['todo', 'alert', 'shortcut', 'inventory', 'timeliness', 'trend', 'efficiency', 'operatingReport', 'message'];
     const DEFAULT_HIDDEN_KPI_KEYS = ['outboundQty', 'outboundWeight', 'outboundPieces', 'inboundWeight', 'inboundPieces', 'inventory', 'orphanOrders'];
     
@@ -46,11 +46,11 @@
         { key: 'inboundWeight', show: false },
         { key: 'inboundPieces', show: false },
         { key: 'inventory', show: false },
-        { key: 'complaintRate', show: true },
+        { key: 'complaintRate', show: false },
         { key: 'signRate', show: false },
-        { key: 'redispatchRate', show: true },
+        { key: 'redispatchRate', show: false },
         { key: 'orphanOrders', show: false },
-        { key: 'storageUtilization', show: true },
+        { key: 'storageUtilization', show: false },
         { key: 'inventoryAlert', show: true }
       ]
     };
@@ -1116,7 +1116,7 @@
       const kpiGrid = document.getElementById('kpiGrid');
       if (!kpiGrid) return;
       const visibleItems = (currentKpiConfig.items || []).filter(c => c.show);
-      const hasCompositeCards = visibleItems.some(item => ['inboundQty', 'returnInventory', 'orderQty', 'signoutQty'].includes(item.key));
+      const hasCompositeCards = visibleItems.some(item => ['inboundQty', 'returnInventory', 'orderQty', 'signoutQty', 'inventoryAlert'].includes(item.key));
       const orderedCards = [];
       // 隐藏所有卡片
       kpiGrid.querySelectorAll('[data-kpi]').forEach(card => {

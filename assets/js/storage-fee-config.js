@@ -1,6 +1,5 @@
 (()=>{
 const keywordInput=document.getElementById('keywordInput');
-const customerSelect=document.getElementById('customerSelect');
 const warehouseSelect=document.getElementById('warehouseSelect');
 const statusSelect=document.getElementById('statusSelect');
 const queryBtn=document.getElementById('queryBtn');
@@ -20,14 +19,14 @@ const escapeHtml=(v)=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 
 function buildSeedData(){
   const base=[
-    {name:'标准仓储费',customer:'深圳市星辰电子商务有限公司',warehouse:'波兰海外仓',unit:'CBM',currency:'EUR',startDate:'2025-01-01',endDate:'2025-12-31',enabled:true,updater:'张三'},
-    {name:'小件仓储费',customer:'杭州跨境通供应链管理有限公司',warehouse:'德国海外仓',unit:'SKU',currency:'USD',startDate:'2025-03-01',endDate:'2026-02-28',enabled:true,updater:'李四'},
-    {name:'托盘仓储费',customer:'广州优品国际贸易有限公司',warehouse:'深圳保税仓',unit:'托',currency:'CNY',startDate:'2025-02-15',endDate:'2025-08-15',enabled:false,updater:'张三'},
-    {name:'大件仓储费',customer:'上海锐达物流科技有限公司',warehouse:'波兰海外仓',unit:'CBM',currency:'EUR',startDate:'2025-04-01',endDate:'2026-03-31',enabled:true,updater:'王五'},
-    {name:'经济仓储费',customer:'深圳市星辰电子商务有限公司',warehouse:'德国海外仓',unit:'件',currency:'EUR',startDate:'2025-05-01',endDate:'2025-11-30',enabled:true,updater:'张三'},
-    {name:'旺季附加仓储费',customer:'杭州跨境通供应链管理有限公司',warehouse:'波兰海外仓',unit:'CBM',currency:'EUR',startDate:'2025-06-01',endDate:'2025-12-31',enabled:true,updater:'李四'},
-    {name:'小包仓储费',customer:'广州优品国际贸易有限公司',warehouse:'德国海外仓',unit:'SKU',currency:'USD',startDate:'2025-01-15',endDate:'2025-07-15',enabled:false,updater:'王五'},
-    {name:'长期仓储费',customer:'上海锐达物流科技有限公司',warehouse:'深圳保税仓',unit:'CBM',currency:'CNY',startDate:'2025-07-01',endDate:'2026-06-30',enabled:true,updater:'张三'},
+    {name:'标准仓储费',warehouse:'波兰海外仓',unit:'CBM',currency:'EUR',enabled:true,updater:'张三'},
+    {name:'小件仓储费',warehouse:'德国海外仓',unit:'SKU',currency:'USD',enabled:true,updater:'李四'},
+    {name:'托盘仓储费',warehouse:'深圳保税仓',unit:'托',currency:'CNY',enabled:false,updater:'张三'},
+    {name:'大件仓储费',warehouse:'波兰海外仓',unit:'CBM',currency:'EUR',enabled:true,updater:'王五'},
+    {name:'经济仓储费',warehouse:'德国海外仓',unit:'件',currency:'EUR',enabled:true,updater:'张三'},
+    {name:'旺季附加仓储费',warehouse:'波兰海外仓',unit:'CBM',currency:'EUR',enabled:true,updater:'李四'},
+    {name:'小包仓储费',warehouse:'德国海外仓',unit:'SKU',currency:'USD',enabled:false,updater:'王五'},
+    {name:'长期仓储费',warehouse:'深圳保税仓',unit:'CBM',currency:'CNY',enabled:true,updater:'张三'},
   ];
   const rows=[];
   const startTime=new Date('2025-06-10T10:00:00');
@@ -39,7 +38,7 @@ function buildSeedData(){
 }
 
 let rows=buildSeedData();
-const state={keyword:'',customer:'',warehouse:'',status:'',currentPage:1,pageSize:10};
+const state={keyword:'',warehouse:'',status:'',currentPage:1,pageSize:10};
 
 function showToast(type,title,desc){
   const toast=document.createElement('div');
@@ -53,9 +52,8 @@ function showToast(type,title,desc){
 function getFilteredRows(){
   const keyword=state.keyword.trim();
   return rows.filter(item=>{
-    if(keyword&&!item.name.includes(keyword)&&!item.customer.includes(keyword))return false;
-    if(state.customer&&item.customer!==state.customer)return false;
-    if(state.warehouse&&item.warehouse!==state.warehouse)return false;
+    if(keyword&&!item.name.includes(keyword))return false;
+        if(state.warehouse&&item.warehouse!==state.warehouse)return false;
     if(state.status==='enabled'&&!item.enabled)return false;
     if(state.status==='disabled'&&item.enabled)return false;
     return true;
@@ -86,11 +84,9 @@ function renderTable(){
     tableBody.innerHTML=current.map((item,index)=>`<tr>
       <td class="cell-center">${(state.currentPage-1)*state.pageSize+index+1}</td>
       <td><a class="name-link" href="storage-fee-create.html?mode=edit&id=${item.id}">${escapeHtml(item.name)}</a></td>
-      <td>${escapeHtml(item.customer)}</td>
       <td>${escapeHtml(item.warehouse)}</td>
       <td class="cell-center">${escapeHtml(item.unit)}/天</td>
       <td class="cell-center">${escapeHtml(item.currency)}</td>
-      <td class="cell-center">${escapeHtml(item.startDate)} ~ ${escapeHtml(item.endDate)}</td>
       <td class="cell-center"><label class="switch"><input type="checkbox" data-action="toggle" data-id="${item.id}" ${item.enabled?'checked':''}><span class="slider"></span></label></td>
       <td>${escapeHtml(item.updateTime)}</td>
       <td>
@@ -121,7 +117,6 @@ function renderPagination(totalPages){
 
 function queryList(){
   state.keyword=keywordInput.value.trim();
-  state.customer=customerSelect.value;
   state.warehouse=warehouseSelect.value;
   state.status=statusSelect.value;
   state.currentPage=1;
@@ -129,9 +124,9 @@ function queryList(){
 }
 
 function resetList(){
-  state.keyword='';state.customer='';state.warehouse='';state.status='';
+  state.keyword='';state.warehouse='';state.status='';
   state.currentPage=1;state.pageSize=10;
-  keywordInput.value='';customerSelect.value='';warehouseSelect.value='';statusSelect.value='';pageSizeSelect.value='10';
+  keywordInput.value='';warehouseSelect.value='';statusSelect.value='';pageSizeSelect.value='10';
   renderTable();
   showToast('success','已重置','查询条件已恢复默认值。');
 }

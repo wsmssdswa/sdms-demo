@@ -542,6 +542,16 @@
 
     .rule-group-head {
       min-height: 36px;
+      grid-template-columns: 1fr 96px;
+      padding-left: 12px;
+    }
+
+    .rule-group-head .rule-index {
+      display: none;
+    }
+
+    .rule-item {
+      padding-left: 20px;
     }
 
     .rule-group-head:hover,

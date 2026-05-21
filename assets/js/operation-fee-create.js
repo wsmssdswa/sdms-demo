@@ -1408,7 +1408,6 @@
 
           const head = `
             <div class="rule-group-head" data-group-id="${group.id}">
-              <div class="rule-index"></div>
               <div class="rule-desc">
                 <span class="rule-badge">${escapeHtml(group.name || `规则${groupIndex + 1}`)}</span>
                 <span>${escapeHtml(group.condition)}</span>

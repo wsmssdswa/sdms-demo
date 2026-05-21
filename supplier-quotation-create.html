@@ -7,6 +7,8 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
   <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/sdms-comp-form-create.css">
+  <link rel="stylesheet" href="./assets/css/quotation-scheme-create.css">
   <link rel="stylesheet" href="./assets/css/supplier-quotation-create.css">
   <link rel="stylesheet" href="./assets/css/quotation-preview.css?v=20260513">
 </head>
@@ -14,7 +16,7 @@
   <div class="app-shell">
     <aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
     <div class="page-shell">
-      <div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="quotation-scheme-create"></div>
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="supplier-quotation-create" data-include-tools="true" data-user-name="张三"></div>
       <main class="content-wrap">
         <section class="page-card">
           <div class="page-card-head">
@@ -45,7 +47,7 @@
                       <option value="S003" data-type="warehouse">波兰本地仓</option>
                       <option value="S004" data-type="operation">欧洲操作中心</option>
                     </select>
-                    <span id="supplierTypeTag" style="display:none;margin-left:8px;font-size:11px;padding:2px 8px;background:#f0f5ff;color:#5a74ef;border:1px solid #bae6fd;border-radius:3px;"></span>
+                    <span id="supplierTypeTag" class="supplier-type-tag" style="display:none"></span>
                   </div>
                   <div class="field-group" data-field="warehouse">
                     <div class="field-label"><span class="required-star">*</span><span>所属仓库</span></div>

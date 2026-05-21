@@ -263,6 +263,8 @@
 
 .scene-tab:hover { color: #2b5aed; }
 
-.amount-cell { text-align: right; font-weight: 500; }
+.list-table th.amount-cell { text-align: right; }
+.list-table td.amount-cell { text-align: right; font-weight: 500; }
 
-.check-cell { text-align: center; }
+.list-table th.check-cell,
+.list-table td.check-cell { text-align: center; }

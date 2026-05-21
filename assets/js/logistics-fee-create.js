@@ -23,8 +23,22 @@ const codFeeHead=$('codFeeHead');
 const codFeeBody=$('codFeeBody');
 
 /* 附加费 */
+const codSurchargeContainer=$('codSurchargeContainer');
 
 const escapeHtml=(v)=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+/* 燃油规则mock数据 */
+const FUEL_RULES=[
+  {id:'FR001',name:'标准燃油附加',rate:15},
+  {id:'FR002',name:'欧线燃油附加',rate:12},
+  {id:'FR003',name:'亚线燃油附加',rate:18},
+  {id:'FR004',name:'北美燃油附加',rate:20}
+];
+function renderFuelRuleOptions(){
+  const sel=$('fuelRule');if(!sel)return;
+  sel.innerHTML='<option value="">请选择</option>'+FUEL_RULES.map(r=>`<option value="${r.id}">${r.name} (${r.rate}%)</option>`).join('');
+}
+renderFuelRuleOptions();
 
 /* ===== 数据模型 ===== */
 let nextId=100;
@@ -60,14 +74,17 @@ const state={
   deliveryFees:{},transferFees:{},codFees:{},
   deliveryRenewalEnabled:false,deliveryRenewal:{},
   transferRenewalEnabled:false,transferRenewal:{},
+  /* A类：尺寸附加费（单行固定费用 fees={[zoneId]:'5.00'}） */
   surchargeLength:{enabled:false,hitRule:'',fuelEnabled:false,fees:{},fuelFees:{}},
   surchargeWeight:{enabled:false,hitRule:'',fuelEnabled:false,fees:{},fuelFees:{}},
   surchargeDimension:{enabled:false,hitRule:'',fuelEnabled:false,fees:{},fuelFees:{}},
   surchargeVolume:{enabled:false,hitRule:'',fuelEnabled:false,fees:{},fuelFees:{}},
   surchargeLimit:{enabled:false,hitRule:'',fuelEnabled:false,fees:{},fuelFees:{}},
-  surchargeRemote:{enabled:false,hitRule:'',fuelEnabled:false,fees:{},fuelFees:{}},
-  surchargeRemotePlus:{enabled:false,hitRule:'',fuelEnabled:false,fees:{},fuelFees:{}},
-  surchargeRemoteUltra:{enabled:false,hitRule:'',fuelEnabled:false,fees:{},fuelFees:{}},
+  /* B类：偏远附加费（重量段×分区+续重+燃油 fees={[stepIdx]:{[zoneId]:'5.00'}}） */
+  surchargeRemote:{enabled:false,hitRule:'',fuelEnabled:false,renewalEnabled:false,fees:{},fuelFees:{},renewal:{}},
+  surchargeRemotePlus:{enabled:false,hitRule:'',fuelEnabled:false,renewalEnabled:false,fees:{},fuelFees:{},renewal:{}},
+  surchargeRemoteUltra:{enabled:false,hitRule:'',fuelEnabled:false,renewalEnabled:false,fees:{},fuelFees:{},renewal:{}},
+  /* C类：COD金额附加费 */
   surchargeCod:{enabled:false,currencies:[]},
 };
 
@@ -85,6 +102,31 @@ state.zones.forEach(z=>{
   state.transferRenewal[z.id]={unit:'0.5',price:(1+Math.random()*3).toFixed(2)};
 });
 
+/* 初始化附加费Mock */
+const sizeKeys=['Length','Weight','Dimension','Volume','Limit'];
+const remoteKeys=['Remote','RemotePlus','RemoteUltra'];
+sizeKeys.forEach(key=>{
+  state.zones.forEach(z=>{
+    state['surcharge'+key].fees[z.id]=(3+Math.random()*20).toFixed(2);
+    state['surcharge'+key].fuelFees[z.id]=(0.05+Math.random()*0.15).toFixed(2);
+  });
+});
+remoteKeys.forEach(key=>{
+  state.weightSteps.forEach((ws,i)=>{
+    state['surcharge'+key].fees[i]={};
+    state.zones.forEach(z=>{
+      state['surcharge'+key].fees[i][z.id]=(2+Math.random()*15).toFixed(2);
+    });
+  });
+  state.zones.forEach(z=>{
+    state['surcharge'+key].fuelFees[z.id]=(0.05+Math.random()*0.1).toFixed(2);
+    state['surcharge'+key].renewal[z.id]={unit:'0.5',price:(1+Math.random()*4).toFixed(2)};
+  });
+});
+state.surchargeCod.currencies=[
+  {currency:'EUR',ranges:[{min:'0',max:'500',fee:'2.00'},{min:'500',max:'2000',fee:'5.00'},{min:'2000',max:'',fee:'12.00'}]},
+  {currency:'USD',ranges:[{min:'0',max:'1000',fee:'3.00'},{min:'1000',max:'5000',fee:'8.00'}]},
+];
 
 /* ===== Toast ===== */
 function showToast(type,title,desc){
@@ -402,15 +444,15 @@ function handleMatrixInput(e){
   const rUnit=e.target.closest('[data-action="renewal-unit"]');
   if(rUnit){
     const zid=Number(rUnit.dataset.zone);const prefix=rUnit.dataset.prefix;
-    const map=prefix==='delivery'?state.deliveryRenewal:state.transferRenewal;
-    if(!map[zid])map[zid]={};map[zid].unit=rUnit.value;
+    const map=prefix==='delivery'?state.deliveryRenewal:prefix==='transfer'?state.transferRenewal:null;
+    if(map){if(!map[zid])map[zid]={};map[zid].unit=rUnit.value;}
     return;
   }
   const rPrice=e.target.closest('[data-action="renewal-price"]');
   if(rPrice){
     const zid=Number(rPrice.dataset.zone);const prefix=rPrice.dataset.prefix;
-    const map=prefix==='delivery'?state.deliveryRenewal:state.transferRenewal;
-    if(!map[zid])map[zid]={};map[zid].price=rPrice.value;
+    const map=prefix==='delivery'?state.deliveryRenewal:prefix==='transfer'?state.transferRenewal:null;
+    if(map){if(!map[zid])map[zid]={};map[zid].price=rPrice.value;}
     return;
   }
 }
@@ -418,7 +460,6 @@ function handleMatrixInput(e){
 
 function insertWeightStep(idx){
   const insertIdx=idx+1;
-  // 后移费用数据
   for(let i=state.weightSteps.length;i>insertIdx;i--){
     state.deliveryFees[i]=state.deliveryFees[i-1]||{};
     state.transferFees[i]=state.transferFees[i-1]||{};
@@ -445,8 +486,8 @@ function handleMatrixAction(e){
   if(!window.confirm(`确认删除重量段"${startW}~${endW}"？`))return;
   for(let i=idx+1;i<state.weightSteps.length;i++){
     state.deliveryFees[i-1]=state.deliveryFees[i]||{};
-    state.transferFees[i-1]=state.transferFees[i]||{};
-    state.codFees[i-1]=state.codFees[i]||{};
+    state.transferFees[i-1]=state.transferFees[i-1]||{};
+    state.codFees[i-1]=state.codFees[i-1]||{};
   }
   const lastIdx=state.weightSteps.length-1;
   delete state.deliveryFees[lastIdx];delete state.transferFees[lastIdx];delete state.codFees[lastIdx];
@@ -456,85 +497,128 @@ function handleMatrixAction(e){
 [deliveryFeeBody,transferFeeBody,codFeeBody].forEach(el=>{el.addEventListener('click',handleMatrixAction);});
 
 /* ===== 附加费 ===== */
-const surchargeABKeys=['Length','Weight','Dimension','Volume','Limit','Remote','RemotePlus','RemoteUltra'];
-const codSurchargeContainer=$('codSurchargeContainer');
 
-/* 简化矩阵行(无续重) */
-function buildSurchargeMatrixRows(feeData,key,fuelEnabled,fuelFees){
+/* A类：尺寸附加费 - 单行固定费用表 */
+function buildSizeSurchargeHead(){
+  if(!state.zones.length) return '';
+  return '<tr>'+state.zones.map(z=>`<th>${escapeHtml(z.name)}</th>`).join('')+'</tr>';
+}
+function buildSizeSurchargeBody(data,key){
   if(!state.zones.length){
-    return `<tr><td colspan="3" style="padding:40px;text-align:center;color:#9aa8b8;">请先在"分区"Tab中添加分区</td></tr>`;
+    return '<tr><td style="padding:40px;text-align:center;color:#9aa8b8;">请先在"分区"Tab中添加分区</td></tr>';
   }
-  let html='';
-  state.weightSteps.forEach((ws,idx)=>{
-    const startW=idx===0?0:state.weightSteps[idx-1].endWeight;
-    const cells=state.zones.map(z=>{
-      const val=(feeData[idx]&&feeData[idx][z.id])||'0.00';
-      return `<td><input class="matrix-input" data-step-index="${idx}" data-zone="${z.id}" data-prefix="surcharge" data-key="${key}" value="${val}"></td>`;
-    }).join('');
-    html+=`<tr><td><div class="weight-range"><span class="weight-start">${startW}</span><span class="weight-sep">~</span><input class="weight-end-input" data-action="edit-end-weight" data-index="${idx}" value="${ws.endWeight}"></div></td>${cells}<td class="matrix-ops"><button class="matrix-insert" data-action="insert-weight" data-index="${idx}" title="插入">+</button><button class="matrix-delete" data-action="delete-weight" data-index="${idx}" title="删除">×</button></td></tr>`;
+  let html='<tr>';
+  state.zones.forEach(z=>{
+    const val=data.fees[z.id]||'0.00';
+    html+=`<td><input class="matrix-input" data-prefix="surcharge-size" data-key="${key}" data-zone="${z.id}" value="${val}"></td>`;
   });
-  if(fuelEnabled){
-    const colCount=state.zones.length+2;
-    html+=`<tr class="renewal-sep"><td colspan="${colCount}"></td></tr>`;
-    html+=`<tr class="fuel-row"><td class="renewal-label">燃油费率</td>`;
-    state.zones.forEach(z=>{
-      const val=(fuelFees&&fuelFees[z.id])||'0.00';
-      html+=`<td><input class="renewal-input" data-action="surcharge-fuel" data-zone="${z.id}" data-key="${key}" value="${val}"></td>`;
-    });
-    html+=`<td></td></tr>`;
-  }
+  html+='</tr>';
   return html;
 }
-
-/* 渲染单个附加费矩阵 */
-function renderSurcharge(key){
+function renderSizeSurcharge(key){
   const data=state['surcharge'+key];
   const headEl=$('surcharge'+key+'Head');
   const bodyEl=$('surcharge'+key+'Body');
   if(!headEl||!bodyEl)return;
-  headEl.innerHTML=buildMatrixHead();
-  bodyEl.innerHTML=buildSurchargeMatrixRows(data.fees,key,data.fuelEnabled,data.fuelFees);
+  headEl.innerHTML=buildSizeSurchargeHead();
+  bodyEl.innerHTML=buildSizeSurchargeBody(data,key);
   const ruleEl=$('surcharge'+key+'Rule');
   if(ruleEl)ruleEl.value=data.hitRule;
   const fuelEl=$('surcharge'+key+'Fuel');
   if(fuelEl)fuelEl.checked=data.fuelEnabled;
 }
 
-/* 渲染COD附加费 */
+/* B类：偏远附加费 - 重量段×分区矩阵+续重+燃油 */
+function buildRemoteSurchargeBody(data,key){
+  if(!state.zones.length){
+    return '<tr><td colspan="3" style="padding:40px;text-align:center;color:#9aa8b8;">请先在"分区"Tab中添加分区</td></tr>';
+  }
+  let html='';
+  state.weightSteps.forEach((ws,idx)=>{
+    const startW=idx===0?0:state.weightSteps[idx-1].endWeight;
+    const cells=state.zones.map(z=>{
+      const val=(data.fees[idx]&&data.fees[idx][z.id])||'0.00';
+      return `<td><input class="matrix-input" data-step-index="${idx}" data-zone="${z.id}" data-prefix="surcharge-remote" data-key="${key}" value="${val}"></td>`;
+    }).join('');
+    html+=`<tr><td><div class="weight-range"><span class="weight-start">${startW}</span><span class="weight-sep">~</span><input class="weight-end-input" data-action="edit-end-weight" data-index="${idx}" value="${ws.endWeight}"></div></td>${cells}<td class="matrix-ops"><button class="matrix-insert" data-action="insert-weight" data-index="${idx}" title="插入">+</button><button class="matrix-delete" data-action="delete-weight" data-index="${idx}" title="删除">×</button></td></tr>`;
+  });
+  /* 续重行 */
+  if(data.renewalEnabled){
+    const colCount=state.zones.length+2;
+    html+=`<tr class="renewal-sep"><td colspan="${colCount}"></td></tr>`;
+    html+='<tr class="renewal-row"><td class="renewal-label">续重单位(kg)</td>';
+    state.zones.forEach(z=>{
+      const val=(data.renewal[z.id]&&data.renewal[z.id].unit)||'0.5';
+      html+=`<td><input class="renewal-input" data-action="surcharge-renewal-unit" data-zone="${z.id}" data-key="${key}" value="${val}"></td>`;
+    });
+    html+='<td></td></tr>';
+    html+='<tr class="renewal-row"><td class="renewal-label">续重单价</td>';
+    state.zones.forEach(z=>{
+      const val=(data.renewal[z.id]&&data.renewal[z.id].price)||'0.00';
+      html+=`<td><input class="renewal-input" data-action="surcharge-renewal-price" data-zone="${z.id}" data-key="${key}" value="${val}"></td>`;
+    });
+    html+='<td></td></tr>';
+  }
+  return html;
+}
+function renderRemoteSurcharge(key){
+  const data=state['surcharge'+key];
+  const headEl=$('surcharge'+key+'Head');
+  const bodyEl=$('surcharge'+key+'Body');
+  if(!headEl||!bodyEl)return;
+  headEl.innerHTML=buildMatrixHead();
+  bodyEl.innerHTML=buildRemoteSurchargeBody(data,key);
+  const ruleEl=$('surcharge'+key+'Rule');
+  if(ruleEl)ruleEl.value=data.hitRule;
+  const fuelEl=$('surcharge'+key+'Fuel');
+  if(fuelEl)fuelEl.checked=data.fuelEnabled;
+  const renewalEl=$('surcharge'+key+'RenewalCheck');
+  if(renewalEl)renewalEl.checked=data.renewalEnabled;
+}
+
+/* C类：COD金额附加费 - 统一表格 */
+const codCurrencyOptions=['EUR','USD','CNY','GBP'];
 function renderCodSurcharge(){
   if(!codSurchargeContainer)return;
   if(!state.surchargeCod.currencies.length){
-    codSurchargeContainer.innerHTML='<div style="padding:30px;text-align:center;color:#9aa8b8;">暂无币种，点击"新增币种"添加</div>';
+    codSurchargeContainer.innerHTML='<div style="padding:30px;text-align:center;color:#9aa8b8;">暂无币种，点击下方"新增币种"添加</div><button data-action="add-cod-currency" style="margin:12px 16px;color:#4a90d9;background:none;border:1px dashed #4a90d9;padding:6px 16px;cursor:pointer;border-radius:4px;font-size:12px;">新增币种</button>';
     return;
   }
-  codSurchargeContainer.innerHTML=state.surchargeCod.currencies.map((cur,cidx)=>`<div class="cod-currency-block">
-    <div class="cod-currency-head"><span>${escapeHtml(cur.currency)}</span><button data-action="delete-cod-currency" data-cidx="${cidx}" style="margin-left:auto;color:#e74c3c;background:none;border:none;cursor:pointer;font-size:13px;">删除币种</button></div>
-    <table class="surcharge-table"><thead><tr><th>最小金额</th><th>最大金额</th><th>固定附加费</th><th>操作</th></tr></thead><tbody>${cur.ranges.map((r,ridx)=>`<tr data-cidx="${cidx}" data-ridx="${ridx}">
-      <td>${ridx===0?'0':'<input class="surcharge-input" data-field="min" data-cidx="'+cidx+'" data-ridx="'+ridx+'" value="'+escapeHtml(r.min)+'">'}</td>
-      <td><input class="surcharge-input" data-field="max" data-cidx="${cidx}" data-ridx="${ridx}" value="${escapeHtml(r.max)}"></td>
-      <td><input class="surcharge-input" data-field="fee" data-cidx="${cidx}" data-ridx="${ridx}" value="${escapeHtml(r.fee)}"></td>
-      <td><button data-action="delete-cod-range" data-cidx="${cidx}" data-ridx="${ridx}" style="color:#e74c3c;background:none;border:none;cursor:pointer;">删除</button></td>
-    </tr>`).join('')}</tbody></table>
-    <button data-action="add-cod-range" data-cidx="${cidx}" style="margin:8px 0;color:#4a90d9;background:none;border:1px dashed #4a90d9;padding:4px 12px;cursor:pointer;border-radius:4px;font-size:12px;">新增区间</button>
-  </div>`).join('');
+  let rows='';
+  state.surchargeCod.currencies.forEach((cur,cidx)=>{
+    const opts=codCurrencyOptions.map(c=>`<option${c===cur.currency?' selected':''}>${c}</option>`).join('');
+    const span=cur.ranges.length;
+    cur.ranges.forEach((r,ridx)=>{
+      const curCell=ridx===0?`<td class="cod-currency-cell" rowspan="${span}"><div class="surcharge-select-wrap"><select class="surcharge-input surcharge-select" data-action="cod-currency" data-cidx="${cidx}"><option value="">请选择</option>${opts}</select><svg viewBox="0 0 24 24" fill="currentColor"><path d="m7 10 5 5 5-5z"></path></svg></div></td>`:'';
+      rows+=`<tr>
+        ${curCell}
+        <td class="cod-range-cell"><input class="surcharge-input" data-field="min" data-cidx="${cidx}" data-ridx="${ridx}" value="${escapeHtml(r.min)}"><span class="cod-range-sep">-</span><input class="surcharge-input" data-field="max" data-cidx="${cidx}" data-ridx="${ridx}" value="${escapeHtml(r.max)}"></td>
+        <td><input class="surcharge-input" data-field="fee" data-cidx="${cidx}" data-ridx="${ridx}" value="${escapeHtml(r.fee)}"></td>
+        <td class="surcharge-ops"><button class="matrix-insert" data-action="insert-cod-range" data-cidx="${cidx}" data-ridx="${ridx}" title="插入">+</button><button class="matrix-delete" data-action="delete-cod-range" data-cidx="${cidx}" data-ridx="${ridx}" title="删除">×</button></td>
+      </tr>`;
+    });
+  });
+  codSurchargeContainer.innerHTML=`<table class="surcharge-table"><thead><tr><th style="width:100px">币种</th><th style="width:220px">收费区间</th><th style="width:120px">固定附加费</th><th style="width:70px">操作</th></tr></thead><tbody>${rows}</tbody></table><button data-action="add-cod-currency" style="margin:12px 16px;color:#4a90d9;background:none;border:1px dashed #4a90d9;padding:6px 16px;cursor:pointer;border-radius:4px;font-size:12px;">新增币种</button>`;
 }
 
-/* 开关绑定 */
-surchargeABKeys.forEach(key=>{
+/* ===== 附加费开关绑定 ===== */
+
+/* A类开关 */
+sizeKeys.forEach(key=>{
   const check=$('surcharge'+key+'Enabled');
   const section=$('surcharge'+key+'Section');
   if(check&&section){
     check.addEventListener('change',()=>{
       state['surcharge'+key].enabled=check.checked;
       section.style.display=check.checked?'':'none';
-      if(check.checked)renderSurcharge(key);
+      if(check.checked)renderSizeSurcharge(key);
     });
   }
   const fuelEl=$('surcharge'+key+'Fuel');
   if(fuelEl){
     fuelEl.addEventListener('change',()=>{
       state['surcharge'+key].fuelEnabled=fuelEl.checked;
-      renderSurcharge(key);
+      renderSizeSurcharge(key);
     });
   }
   const ruleEl=$('surcharge'+key+'Rule');
@@ -543,55 +627,42 @@ surchargeABKeys.forEach(key=>{
       state['surcharge'+key].hitRule=ruleEl.value;
     });
   }
-  const bodyEl=$('surcharge'+key+'Body');
-  if(bodyEl){
-    bodyEl.addEventListener('input',e=>{
-      const mInput=e.target.closest('.matrix-input[data-prefix="surcharge"]');
-      if(mInput){
-        const idx=Number(mInput.dataset.stepIndex);const zid=Number(mInput.dataset.zone);const k=mInput.dataset.key;
-        const fees=state['surcharge'+k].fees;
-        if(!fees[idx])fees[idx]={};fees[idx][zid]=mInput.value;
-        return;
-      }
-      const fInput=e.target.closest('[data-action="surcharge-fuel"]');
-      if(fInput){
-        const zid=Number(fInput.dataset.zone);const k=fInput.dataset.key;
-        state['surcharge'+k].fuelFees[zid]=fInput.value;
-        return;
-      }
-      const endInput=e.target.closest('[data-action="edit-end-weight"]');
-      if(endInput){
-        const idx=Number(endInput.dataset.index);
-        const val=parseFloat(endInput.value);
-        if(!isNaN(val)&&val>0){state.weightSteps[idx].endWeight=val;renderAllMatrix();renderAllSurchargeMatrix();}
-        return;
-      }
+});
+
+/* B类开关 */
+remoteKeys.forEach(key=>{
+  const check=$('surcharge'+key+'Enabled');
+  const section=$('surcharge'+key+'Section');
+  if(check&&section){
+    check.addEventListener('change',()=>{
+      state['surcharge'+key].enabled=check.checked;
+      section.style.display=check.checked?'':'none';
+      if(check.checked)renderRemoteSurcharge(key);
     });
-    bodyEl.addEventListener('click',e=>{
-      const insertBtn=e.target.closest('[data-action="insert-weight"]');
-      if(insertBtn){insertWeightStep(Number(insertBtn.dataset.index));renderAllSurchargeMatrix();return;}
-      const delBtn=e.target.closest('[data-action="delete-weight"]');
-      if(delBtn){
-        const idx=Number(delBtn.dataset.index);
-        const startW=idx===0?0:state.weightSteps[idx-1].endWeight;
-        const endW=state.weightSteps[idx].endWeight;
-        if(!window.confirm(`确认删除重量段"${startW}~${endW}"？`))return;
-        for(let i=idx+1;i<state.weightSteps.length;i++){
-          state.deliveryFees[i-1]=state.deliveryFees[i]||{};
-          state.transferFees[i-1]=state.transferFees[i-1]||{};
-          state.codFees[i-1]=state.codFees[i-1]||{};
-        }
-        const lastIdx=state.weightSteps.length-1;
-        delete state.deliveryFees[lastIdx];delete state.transferFees[lastIdx];delete state.codFees[lastIdx];
-        state.weightSteps.splice(idx,1);
-        renderAllMatrix();
-        renderAllSurchargeMatrix();
-      }
+  }
+  const fuelEl=$('surcharge'+key+'Fuel');
+  if(fuelEl){
+    fuelEl.addEventListener('change',()=>{
+      state['surcharge'+key].fuelEnabled=fuelEl.checked;
+      renderRemoteSurcharge(key);
+    });
+  }
+  const renewalEl=$('surcharge'+key+'RenewalCheck');
+  if(renewalEl){
+    renewalEl.addEventListener('change',()=>{
+      state['surcharge'+key].renewalEnabled=renewalEl.checked;
+      renderRemoteSurcharge(key);
+    });
+  }
+  const ruleEl=$('surcharge'+key+'Rule');
+  if(ruleEl){
+    ruleEl.addEventListener('change',()=>{
+      state['surcharge'+key].hitRule=ruleEl.value;
     });
   }
 });
 
-/* COD开关 */
+/* C类开关 */
 const surchargeCodCheck=$('surchargeCodEnabled');
 const surchargeCodSection=$('surchargeCodSection');
 if(surchargeCodCheck&&surchargeCodSection){
@@ -602,24 +673,106 @@ if(surchargeCodCheck&&surchargeCodSection){
   });
 }
 
-/* 新增币种 */
-const addCodCurBtn=$('addCodSurchargeCurrencyBtn');
-if(addCodCurBtn){
-  addCodCurBtn.addEventListener('click',()=>{
-    const cur=prompt('请输入币种代码（如EUR、USD）:');
-    if(!cur||!cur.trim())return;
-    state.surchargeCod.currencies.push({currency:cur.trim().toUpperCase(),ranges:[{min:'0',max:'',fee:''}]});
-    renderCodSurcharge();
-  });
-}
+/* ===== 附加费事件处理 ===== */
 
-/* COD容器事件代理 */
+/* A类事件（单行费用表 - 在section上委托） */
+sizeKeys.forEach(key=>{
+  const section=$('surcharge'+key+'Section');
+  if(!section)return;
+  section.addEventListener('input',e=>{
+    const mInput=e.target.closest('[data-prefix="surcharge-size"]');
+    if(mInput){
+      const zid=Number(mInput.dataset.zone);const k=mInput.dataset.key;
+      state['surcharge'+k].fees[zid]=mInput.value;
+      return;
+    }
+    const fInput=e.target.closest('[data-action="surcharge-fuel"]');
+    if(fInput){
+      const zid=Number(fInput.dataset.zone);const k=fInput.dataset.key;
+      state['surcharge'+k].fuelFees[zid]=fInput.value;
+      return;
+    }
+  });
+});
+
+/* B类事件（矩阵+续重+燃油） */
+remoteKeys.forEach(key=>{
+  const section=$('surcharge'+key+'Section');
+  if(!section)return;
+  section.addEventListener('input',e=>{
+    const mInput=e.target.closest('[data-prefix="surcharge-remote"]');
+    if(mInput){
+      const idx=Number(mInput.dataset.stepIndex);const zid=Number(mInput.dataset.zone);const k=mInput.dataset.key;
+      const fees=state['surcharge'+k].fees;
+      if(!fees[idx])fees[idx]={};fees[idx][zid]=mInput.value;
+      return;
+    }
+    const fInput=e.target.closest('[data-action="surcharge-fuel"]');
+    if(fInput){
+      const zid=Number(fInput.dataset.zone);const k=fInput.dataset.key;
+      state['surcharge'+k].fuelFees[zid]=fInput.value;
+      return;
+    }
+    const rUnit=e.target.closest('[data-action="surcharge-renewal-unit"]');
+    if(rUnit){
+      const zid=Number(rUnit.dataset.zone);const k=rUnit.dataset.key;
+      const renewal=state['surcharge'+k].renewal;
+      if(!renewal[zid])renewal[zid]={};renewal[zid].unit=rUnit.value;
+      return;
+    }
+    const rPrice=e.target.closest('[data-action="surcharge-renewal-price"]');
+    if(rPrice){
+      const zid=Number(rPrice.dataset.zone);const k=rPrice.dataset.key;
+      const renewal=state['surcharge'+k].renewal;
+      if(!renewal[zid])renewal[zid]={};renewal[zid].price=rPrice.value;
+      return;
+    }
+    const endInput=e.target.closest('[data-action="edit-end-weight"]');
+    if(endInput){
+      const idx=Number(endInput.dataset.index);
+      const val=parseFloat(endInput.value);
+      if(!isNaN(val)&&val>0){state.weightSteps[idx].endWeight=val;renderAllMatrix();renderAllSurchargeMatrix();}
+      return;
+    }
+  });
+  section.addEventListener('click',e=>{
+    const insertBtn=e.target.closest('[data-action="insert-weight"]');
+    if(insertBtn){insertWeightStep(Number(insertBtn.dataset.index));renderAllSurchargeMatrix();return;}
+    const delBtn=e.target.closest('[data-action="delete-weight"]');
+    if(delBtn){
+      const idx=Number(delBtn.dataset.index);
+      const startW=idx===0?0:state.weightSteps[idx-1].endWeight;
+      const endW=state.weightSteps[idx].endWeight;
+      if(!window.confirm(`确认删除重量段"${startW}~${endW}"？`))return;
+      for(let i=idx+1;i<state.weightSteps.length;i++){
+        state.deliveryFees[i-1]=state.deliveryFees[i]||{};
+        state.transferFees[i-1]=state.transferFees[i-1]||{};
+        state.codFees[i-1]=state.codFees[i-1]||{};
+      }
+      const lastIdx=state.weightSteps.length-1;
+      delete state.deliveryFees[lastIdx];delete state.transferFees[lastIdx];delete state.codFees[lastIdx];
+      state.weightSteps.splice(idx,1);
+      renderAllMatrix();
+      renderAllSurchargeMatrix();
+    }
+  });
+});
+
+/* C类事件（COD统一表格） */
 if(codSurchargeContainer){
   codSurchargeContainer.addEventListener('click',e=>{
-    const delCur=e.target.closest('[data-action="delete-cod-currency"]');
-    if(delCur){
-      const cidx=Number(delCur.dataset.cidx);
-      state.surchargeCod.currencies.splice(cidx,1);
+    const addCur=e.target.closest('[data-action="add-cod-currency"]');
+    if(addCur){
+      state.surchargeCod.currencies.push({currency:"",ranges:[{min:"",max:"",fee:""}]});
+      renderCodSurcharge();
+      return;
+    }
+    const insertRange=e.target.closest('[data-action="insert-cod-range"]');
+    if(insertRange){
+      const cidx=Number(insertRange.dataset.cidx);const ridx=Number(insertRange.dataset.ridx);
+      const ranges=state.surchargeCod.currencies[cidx].ranges;
+      const curMax=ridx<ranges.length?ranges[ridx].max:'0';
+      ranges.splice(ridx+1,0,{min:curMax||'0',max:'',fee:''});
       renderCodSurcharge();
       return;
     }
@@ -630,30 +783,53 @@ if(codSurchargeContainer){
       renderCodSurcharge();
       return;
     }
-    const addRange=e.target.closest('[data-action="add-cod-range"]');
-    if(addRange){
-      const cidx=Number(addRange.dataset.cidx);
-      const ranges=state.surchargeCod.currencies[cidx].ranges;
-      const lastMax=ranges.length?ranges[ranges.length-1].max:'0';
-      ranges.push({min:lastMax,max:'',fee:''});
-      renderCodSurcharge();
-      return;
-    }
   });
   codSurchargeContainer.addEventListener('input',e=>{
     const input=e.target.closest('.surcharge-input[data-field]');
-    if(!input)return;
-    const cidx=Number(input.dataset.cidx);const ridx=Number(input.dataset.ridx);
-    const range=state.surchargeCod.currencies[cidx]&&state.surchargeCod.currencies[cidx].ranges[ridx];
-    if(range)range[input.dataset.field]=input.value;
+    if(input){
+      const cidx=Number(input.dataset.cidx);const ridx=Number(input.dataset.ridx);
+      const cur=state.surchargeCod.currencies[cidx];
+      const range=cur&&cur.ranges[ridx];
+      if(!range)return;
+      range[input.dataset.field]=input.value;
+      /* 校验：起始值不能大于结束值 */
+      const minVal=parseFloat(range.min);
+      const maxVal=parseFloat(range.max);
+      if(range.min!==''&&range.max!==''&&!isNaN(minVal)&&!isNaN(maxVal)&&minVal>maxVal){
+        if(input.dataset.field==='min'){range.min=range.max;input.value=range.max;}
+        else{range.max=range.min;input.value=range.min;}
+      }
+      /* max变化时联动下一行min */
+      if(input.dataset.field==='max'){
+        const ranges=cur.ranges;
+        if(ridx+1<ranges.length){
+          ranges[ridx+1].min=range.max;
+          const nextMin=codSurchargeContainer.querySelector(`.surcharge-input[data-field="min"][data-cidx="${cidx}"][data-ridx="${ridx+1}"]`);
+          if(nextMin)nextMin.value=range.max;
+        }
+      }
+      return;
+    }
+  });
+  codSurchargeContainer.addEventListener('change',e=>{
+    const sel=e.target.closest('[data-action="cod-currency"]');
+    if(sel){
+      const cidx=Number(sel.dataset.cidx);
+      if(state.surchargeCod.currencies[cidx]){
+        state.surchargeCod.currencies[cidx].currency=sel.value;
+        renderCodSurcharge();
+      }
+    }
   });
 }
 
 /* 附加费Tab切到时渲染已启用的矩阵 */
 function renderAllSurchargeMatrix(){
-  surchargeABKeys.forEach(key=>{
-    const data=state['surcharge'+key];
-    if(data.enabled)renderSurcharge(key);
+  sizeKeys.forEach(key=>{
+    if(state['surcharge'+key].enabled)renderSizeSurcharge(key);
+  });
+  remoteKeys.forEach(key=>{
+    if(state['surcharge'+key].enabled)renderRemoteSurcharge(key);
   });
   if(state.surchargeCod.enabled)renderCodSurcharge();
 }
@@ -661,18 +837,15 @@ function renderAllSurchargeMatrix(){
 /* ===== 表单验证 & 保存 ===== */
 function validateForm(){
   let valid=true;
-  const fields=[{id:'quoteName',label:'报价单名称'},{id:'customer',label:'客户'},{id:'channel',label:'渠道'},{id:'serviceType',label:'服务类型'},{id:'currency',label:'币种'}];
+  const fields=[{id:'quoteName',label:'物流费名称'},{id:'channel',label:'渠道'},{id:'currency',label:'币种'},{id:'weightUnit',label:'计重单位'},{id:'volWeightMethod',label:'体积重计算方式'},{id:'volWeightCoeff',label:'体积重系数'}];
   fields.forEach(f=>{
     const el=$(f.id);const tip=el.closest('.field-group').querySelector('.field-tip');
     if(!el.value.trim()){tip.textContent=`请${el.tagName==='SELECT'?'选择':'输入'}${f.label}`;el.classList.add('field-error');if(valid)el.focus();valid=false;}
     else{tip.textContent='';el.classList.remove('field-error');}
   });
-  const startDate=$('startDate');const endDate=$('endDate');const dateTip=startDate.closest('.field-group').querySelector('.field-tip');
-  if(!startDate.value||!endDate.value){dateTip.textContent='请选择适用时间';if(valid)startDate.focus();valid=false;}
-  else{dateTip.textContent='';}
   return valid;
 }
-saveBtn.addEventListener('click',()=>{if(!validateForm()){showToast('error','校验失败','请完善必填项。');return;}showToast('success','保存成功','报价单数据已保存。');});
+saveBtn.addEventListener('click',()=>{if(!validateForm()){showToast('error','校验失败','请完善必填项。');return;}showToast('success','保存成功','物流费数据已保存。');});
 backBtn.addEventListener('click',()=>{window.location.href='logistics-fee-config.html';});
 
 /* ===== 编辑模式 ===== */
@@ -680,13 +853,12 @@ const params=new URLSearchParams(window.location.search);
 if(params.get('mode')==='edit'){
   pageTitleLabel.textContent='编辑物流费';
   $('quoteName').value='波兰仓-西欧专线-快递服务';
-  $('customer').value='深圳市星辰电子商务有限公司';
   $('channel').value='西欧专线';
-  $('serviceType').value='快递';
   $('currency').value='EUR';
-  $('startDate').value='2025-01-01';
-  $('endDate').value='2025-12-31';
-  $('effectType').value='immediate';
+  $('weightUnit').value='KG';
+  $('volWeightMethod').value='divide';
+  $('volWeightCoeff').value='6000';
+  $('fuelRule').value='FR001';
   $('remark').value='西欧区域标准报价';
 }
 

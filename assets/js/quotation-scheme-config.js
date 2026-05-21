@@ -2,10 +2,10 @@
 const keywordInput=document.getElementById('keywordInput');
 const customerSelect=document.getElementById('customerSelect');
 const warehouseSelect=document.getElementById('warehouseSelect');
-const statusSelect=document.getElementById('statusSelect');
 const queryBtn=document.getElementById('queryBtn');
 const resetBtn=document.getElementById('resetBtn');
 const createBtn=document.getElementById('createBtn');
+const statusTabs=document.getElementById('statusTabs');
 const tableBody=document.getElementById('tableBody');
 const totalCountText=document.getElementById('totalCountText');
 const pageBtnGroup=document.getElementById('pageBtnGroup');
@@ -13,12 +13,27 @@ const pageSizeSelect=document.getElementById('pageSizeSelect');
 const jumpInput=document.getElementById('jumpInput');
 const jumpBtn=document.getElementById('jumpBtn');
 const toastStack=document.getElementById('toastStack');
+const reviewModal=document.getElementById('reviewModal');
+const reviewModalClose=document.getElementById('reviewModalClose');
+const reviewCancelBtn=document.getElementById('reviewCancelBtn');
+const reviewConfirmBtn=document.getElementById('reviewConfirmBtn');
+const reviewReasonWrap=document.getElementById('reviewReasonWrap');
+const reviewReasonInput=document.getElementById('reviewReasonInput');
 
 const pad=(n)=>String(n).padStart(2,'0');
 const formatDateTime=(date)=>`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 const escapeHtml=(v)=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
-const STATUS_MAP={draft:{label:'草稿',cls:'draft'},pending:{label:'待审核',cls:'pending'},active:{label:'生效',cls:'active'},inactive:{label:'停用',cls:'inactive'}};
+const STATUS_MAP={draft:{label:'草稿',cls:'draft'},pending:{label:'待审核',cls:'pending'},active:{label:'生效',cls:'active'},inactive:{label:'已失效',cls:'inactive'},rejected:{label:'已驳回',cls:'rejected'}};
+
+const STATUS_TABS=[
+  {key:'',label:'全部'},
+  {key:'draft',label:'草稿'},
+  {key:'pending',label:'待审核'},
+  {key:'active',label:'生效中'},
+  {key:'inactive',label:'已失效'},
+  {key:'rejected',label:'已驳回'}
+];
 
 function buildSeedData(){
   const base=[
@@ -30,6 +45,7 @@ function buildSeedData(){
     {name:'XYZ物流-波兰仓干线报价',customer:'杭州XYZ物流',warehouse:'波兰海外仓',startDate:'2025-06-01',endDate:'2025-12-31',status:'inactive',feeCount:7,updater:'李四'},
     {name:'DEF电商-德国仓增值服务报价',customer:'上海DEF电商',warehouse:'德国海外仓',startDate:'2025-01-15',endDate:'2025-07-15',status:'pending',feeCount:4,updater:'王五'},
     {name:'GHI供应链-深圳仓仓储报价',customer:'广州GHI供应链',warehouse:'深圳保税仓',startDate:'2025-07-01',endDate:'2026-06-30',status:'draft',feeCount:3,updater:'张三'},
+    {name:'DEF电商-波兰仓操作费报价',customer:'上海DEF电商',warehouse:'波兰海外仓',startDate:'2025-03-01',endDate:'2025-09-30',status:'rejected',feeCount:6,updater:'王五',rejectReason:'费率设置不合理，请调整后重新提交'},
   ];
   const rows=[];
   const startTime=new Date('2025-06-10T10:00:00');
@@ -42,7 +58,8 @@ function buildSeedData(){
 
 let rows=buildSeedData();
 let nextId=rows.length+1;
-const state={keyword:'',customer:'',warehouse:'',status:'',currentPage:1,pageSize:10};
+let reviewTargetId=null;
+const state={keyword:'',customer:'',warehouse:'',currentTab:'',currentPage:1,pageSize:10};
 
 function showToast(type,title,desc){
   const toast=document.createElement('div');
@@ -59,7 +76,7 @@ function getFilteredRows(){
     if(keyword&&!item.name.includes(keyword))return false;
     if(state.customer&&item.customer!==state.customer)return false;
     if(state.warehouse&&item.warehouse!==state.warehouse)return false;
-    if(state.status&&item.status!==state.status)return false;
+    if(state.currentTab&&item.status!==state.currentTab)return false;
     return true;
   });
 }
@@ -79,19 +96,23 @@ function buildPageList(totalPages,currentPage){
 function getActions(item){
   const s=item.status;
   const edit=`<a class="action-link" href="quotation-scheme-create.html?mode=edit&id=${item.id}">编辑</a>`;
-  const copy=`<a class="action-link" href="javascript:void(0)" data-action="copy" data-id="${item.id}">复制</a>`;
-  const view=`<a class="action-link" href="quotation-scheme-create.html?mode=view&id=${item.id}">查看</a>`;
   const del=`<a class="action-link delete" href="javascript:void(0)" data-action="delete" data-id="${item.id}">删除</a>`;
   const submit=`<a class="action-link" href="javascript:void(0)" data-action="submit" data-id="${item.id}">提交审核</a>`;
-  const approve=`<a class="action-link" href="javascript:void(0)" data-action="approve" data-id="${item.id}">审核通过</a>`;
-  const reject=`<a class="action-link" href="javascript:void(0)" data-action="reject" data-id="${item.id}">审核驳回</a>`;
-  const activate=`<a class="action-link" href="javascript:void(0)" data-action="activate" data-id="${item.id}">启用</a>`;
-  const deactivate=`<a class="action-link" href="javascript:void(0)" data-action="deactivate" data-id="${item.id}">停用</a>`;
-  if(s==='draft') return `<div class="action-group">${edit}${submit}${copy}${del}</div>`;
-  if(s==='pending') return `<div class="action-group">${approve}${reject}${view}</div>`;
-  if(s==='active') return `<div class="action-group">${deactivate}${copy}${view}</div>`;
-  if(s==='inactive') return `<div class="action-group">${activate}${copy}${view}</div>`;
+  const review=`<a class="action-link" href="javascript:void(0)" data-action="review" data-id="${item.id}">审核</a>`;
+  if(s==='draft') return `<div class="action-group">${edit}${submit}${del}</div>`;
+  if(s==='rejected') return `<div class="action-group">${edit}${submit}${del}</div>`;
+  if(s==='pending') return `<div class="action-group">${review}${edit}${del}</div>`;
+  if(s==='active') return `<div class="action-group">${edit}${del}</div>`;
+  if(s==='inactive') return `<div class="action-group">${edit}${del}</div>`;
   return '';
+}
+
+function renderStatusTabs(){
+  statusTabs.innerHTML=STATUS_TABS.map(tab=>{
+    const count=tab.key===''?rows.length:rows.filter(r=>r.status===tab.key).length;
+    const active=tab.key===state.currentTab?'active':'';
+    return `<button class="scene-tab ${active}" type="button" data-tab="${tab.key}">${tab.label}(${count})</button>`;
+  }).join('');
 }
 
 function renderTable(){
@@ -107,12 +128,12 @@ function renderTable(){
       const st=STATUS_MAP[item.status]||{label:item.status,cls:'draft'};
       return `<tr>
         <td class="cell-center">${(state.currentPage-1)*state.pageSize+index+1}</td>
-        <td><a class="name-link" href="quotation-scheme-create.html?mode=view&id=${item.id}">${escapeHtml(item.name)}</a></td>
+        <td><a class="name-link" href="quotation-scheme-create.html?mode=edit&id=${item.id}">${escapeHtml(item.name)}</a></td>
         <td>${escapeHtml(item.customer)}</td>
         <td class="cell-center">${escapeHtml(item.warehouse)}</td>
         <td class="cell-center">${escapeHtml(item.startDate)} ~ ${escapeHtml(item.endDate)}</td>
         <td class="cell-center">${item.feeCount}</td>
-        <td class="cell-center"><span class="status-tag ${st.cls}">${st.label}</span></td>
+        <td class="cell-center"><span class="status-tag ${st.cls}">${st.label}</span>${item.status==='rejected'&&item.rejectReason?`<i class="ri-information-line reject-info-icon" title="${escapeHtml(item.rejectReason)}"></i>`:''}</td>
         <td>${escapeHtml(item.updateTime)}</td>
         <td>${getActions(item)}</td>
       </tr>`;
@@ -121,6 +142,7 @@ function renderTable(){
   totalCountText.textContent=`共${total}条记录`;
   jumpInput.value=String(state.currentPage);
   renderPagination(totalPages);
+  renderStatusTabs();
 }
 
 function renderPagination(totalPages){
@@ -141,15 +163,14 @@ function queryList(){
   state.keyword=keywordInput.value.trim();
   state.customer=customerSelect.value;
   state.warehouse=warehouseSelect.value;
-  state.status=statusSelect.value;
   state.currentPage=1;
   renderTable();
 }
 
 function resetList(){
-  state.keyword='';state.customer='';state.warehouse='';state.status='';
+  state.keyword='';state.customer='';state.warehouse='';state.currentTab='';
   state.currentPage=1;state.pageSize=10;
-  keywordInput.value='';customerSelect.value='';warehouseSelect.value='';statusSelect.value='';pageSizeSelect.value='10';
+  keywordInput.value='';customerSelect.value='';warehouseSelect.value='';pageSizeSelect.value='10';
   renderTable();
   showToast('success','已重置','查询条件已恢复默认值。');
 }
@@ -175,81 +196,31 @@ function handleAction(action,id){
     return;
   }
 
-  if(action==='approve'){
-    if(!window.confirm('是否确认审核通过？审核通过后将立即生效。'))return;
-    // 自动停用同客户+同仓库的其他生效方案
-    rows.forEach(r=>{
-      if(r.id!==item.id&&r.status==='active'&&r.customer===item.customer&&r.warehouse===item.warehouse){
-        r.status='inactive';
-        r.updateTime=formatDateTime(new Date());
-      }
-    });
-    item.status='active';
-    item.updateTime=formatDateTime(new Date());
-    renderTable();
-    showToast('success','审核通过',`${item.name}已生效。`);
+  if(action==='review'){
+    reviewTargetId=id;
+    const radios=reviewModal.querySelectorAll('input[name="reviewResult"]');
+    radios[0].checked=true;
+    reviewReasonWrap.style.display='none';
+    reviewReasonInput.value='';
+    reviewReasonInput.style.borderColor='';
+    reviewModal.classList.add('open');
+    reviewModal.setAttribute('aria-hidden','false');
     return;
   }
 
-  if(action==='reject'){
-    const reason=window.prompt('请输入驳回原因：');
-    if(reason===null)return;
-    item.status='draft';
-    item.updateTime=formatDateTime(new Date());
-    renderTable();
-    showToast('warning','已驳回',`${item.name}已退回草稿状态。`);
-    return;
-  }
-
-  if(action==='activate'){
-    // 检查唯一约束：同一客户+同一仓库只能有一个生效方案
-    const conflict=rows.find(r=>r.id!==item.id&&r.status==='active'&&r.customer===item.customer&&r.warehouse===item.warehouse);
-    if(conflict){
-      showToast('error','启用失败',`该客户在${item.warehouse}下已有生效方案「${conflict.name}」，请先停用后再启用。`);
-      return;
-    }
-    if(!window.confirm('是否确认启用该方案？启用后将立即生效。'))return;
-    item.status='active';
-    item.updateTime=formatDateTime(new Date());
-    renderTable();
-    showToast('success','已启用',`${item.name}已生效。`);
-    return;
-  }
-
-  if(action==='deactivate'){
-    if(!window.confirm('是否确认停用该方案？停用后将不再生效。'))return;
-    item.status='inactive';
-    item.updateTime=formatDateTime(new Date());
-    renderTable();
-    showToast('success','已停用',`${item.name}已停用。`);
-    return;
-  }
-
-  if(action==='copy'){
-    const copyItem={
-      id:nextId++,
-      name:item.name+'(副本)',
-      customer:item.customer,
-      warehouse:item.warehouse,
-      startDate:item.startDate,
-      endDate:item.endDate,
-      status:'draft',
-      feeCount:item.feeCount,
-      updater:item.updater,
-      updateTime:formatDateTime(new Date()),
-    };
-    rows.unshift(copyItem);
-    state.currentPage=1;
-    renderTable();
-    showToast('success','已复制',`已创建「${copyItem.name}」草稿。`);
-    return;
-  }
 }
 
 queryBtn.addEventListener('click',queryList);
 resetBtn.addEventListener('click',resetList);
 keywordInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();queryList();}});
 createBtn.addEventListener('click',()=>{window.location.href='quotation-scheme-create.html';});
+
+statusTabs.addEventListener('click',e=>{
+  const tab=e.target.closest('.scene-tab');if(!tab)return;
+  state.currentTab=tab.dataset.tab;
+  state.currentPage=1;
+  renderTable();
+});
 
 tableBody.addEventListener('click',e=>{
   const t=e.target.closest('[data-action]');if(!t)return;
@@ -278,6 +249,56 @@ jumpBtn.addEventListener('click',()=>{
   state.currentPage=t;renderTable();
 });
 jumpInput.addEventListener('input',()=>{jumpInput.value=jumpInput.value.replace(/\D/g,'');});
+
+/* === 审核 Modal 事件 === */
+function closeReviewModal(){
+  reviewModal.classList.remove('open');
+  reviewModal.setAttribute('aria-hidden','true');
+  reviewTargetId=null;
+}
+
+reviewModal.addEventListener('change',e=>{
+  if(e.target.name!=='reviewResult')return;
+  reviewReasonWrap.style.display=e.target.value==='reject'?'block':'none';
+});
+
+reviewConfirmBtn.addEventListener('click',()=>{
+  const selected=reviewModal.querySelector('input[name="reviewResult"]:checked').value;
+  const item=rows.find(r=>r.id===reviewTargetId);
+  if(!item)return;
+  if(selected==='approve'){
+    rows.forEach(r=>{
+      if(r.id!==item.id&&r.status==='active'&&r.customer===item.customer&&r.warehouse===item.warehouse){
+        r.status='inactive';
+        r.updateTime=formatDateTime(new Date());
+      }
+    });
+    item.status='active';
+    delete item.rejectReason;
+    item.updateTime=formatDateTime(new Date());
+    closeReviewModal();
+    renderTable();
+    showToast('success','审核通过',`${item.name}已生效。`);
+  }else{
+    const reason=reviewReasonInput.value.trim();
+    if(!reason){
+      reviewReasonInput.focus();
+      reviewReasonInput.style.borderColor='var(--danger)';
+      setTimeout(()=>{reviewReasonInput.style.borderColor='';},2000);
+      return;
+    }
+    item.status='rejected';
+    item.rejectReason=reason;
+    item.updateTime=formatDateTime(new Date());
+    closeReviewModal();
+    renderTable();
+    showToast('warning','已驳回',`${item.name}已被驳回。`);
+  }
+});
+
+reviewCancelBtn.addEventListener('click',closeReviewModal);
+reviewModalClose.addEventListener('click',closeReviewModal);
+reviewModal.addEventListener('click',e=>{if(e.target===reviewModal)closeReviewModal();});
 
 renderTable();
 })();

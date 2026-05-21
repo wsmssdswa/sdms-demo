@@ -55,11 +55,13 @@
 .foldable-header.open+.foldable-body{display:block}
 
 /* ── Fee table (biz type tab) ── */
-.fee-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px}
-.fee-table th{padding:7px 8px;border:1px solid #d9d9d9;background:#f0f5ff;font-weight:600;text-align:left;font-size:12px}
-.fee-table td{padding:5px 8px;border:1px solid #e8e8e8}
-.fee-table .section-row td{padding:6px 8px;border:1px solid #d9d9d9;font-weight:600}
-.fee-table .storage-section{background:#f0fdf4}
-.fee-table .op-section{background:#fef9ec}
-.fee-table .alt-row{background:#fafafa}
+.section-banner{padding:8px 10px;font-weight:700;font-size:13px;letter-spacing:.3px;border:1px solid #e8e8e8;border-bottom:none;border-radius:4px 4px 0 0;text-align:left}
+.section-banner.op{background:#fef3c7;color:#92400e;border-color:#f59e0b}
+.section-banner.storage{background:#dcfce7;color:#166534;border-color:#22c55e}
+.fee-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}
+.fee-table th{padding:7px 8px;border:1px solid #d9d9d9;background:#f0f5ff;font-weight:600;text-align:left;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fee-table td{padding:5px 8px;border:1px solid #e8e8e8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fee-table .center{text-align:center}
+.fee-table .main-rule{font-size:11px;white-space:normal;line-height:1.5}
+.fee-table-header{border-bottom:none}
+.fee-table-last{margin-bottom:16px}

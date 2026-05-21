@@ -32,7 +32,8 @@ function getPrice(overrides,key,original){
 
 /* ── Tab list generation ── */
 function buildTabList(){
-  const tabs=[];
+  const bizTabs=[];
+  const logTabs=[];
   BIZ_TYPES.forEach(bt=>{
     const sel=_state.selections[bt.key];
     if(!sel||sel.size===0)return;
@@ -41,16 +42,16 @@ function buildTabList(){
       return item&&(item.category==='storage'||item.category==='operation');
     });
     if(hasStorageOrOp){
-      tabs.push({type:'bizType',bizType:bt.key,label:bt.label});
+      bizTabs.push({type:'bizType',bizType:bt.key,label:bt.label});
     }
     [...sel].forEach(id=>{
       const item=_allFeeItems.find(f=>f.id===id);
       if(item&&item.category==='logistics'){
-        tabs.push({type:'logistics',bizType:bt.key,feeId:id,label:bt.label+item.name});
+        logTabs.push({type:'logistics',bizType:bt.key,feeId:id,label:bt.label+item.name});
       }
     });
   });
-  return tabs;
+  return bizTabs.concat(logTabs);
 }
 
 /* ── Rendering ── */
@@ -191,31 +192,37 @@ function renderBizTypeTab(tab){
   const selectedItems=[...sel].map(id=>_allFeeItems.find(f=>f.id===id)).filter(Boolean);
   const storageItems=selectedItems.filter(f=>f.category==='storage');
   const operationItems=selectedItems.filter(f=>f.category==='operation');
-  let html='<div class="logistics-header"><h3>'+escapeHtml(tab.label)+' — 仓储费 & 操作费</h3></div>';
-  html+='<table class="fee-table"><thead><tr>';
-  html+='<th style="width:36px;text-align:center">序号</th>';
-  html+='<th style="width:60px">费用类型</th>';
-  html+='<th style="width:90px">计费项</th>';
-  html+='<th style="width:40px">币种</th>';
-  html+='<th>收费条件</th>';
-  html+='<th style="width:70px">单价</th>';
-  html+='<th style="width:50px">减免量</th>';
-  html+='<th style="width:55px">基础收费</th>';
-  html+='<th style="width:55px">最低收费</th>';
-  html+='<th style="width:55px">最高收费</th>';
-  html+='<th style="width:100px">备注</th>';
-  html+='</tr></thead><tbody>';
+  const colgroup='<colgroup>'
+    +'<col style="width:52px">'
+    +'<col style="width:120px">'
+    +'<col style="width:46px">'
+    +'<col style="width:200px">'
+    +'<col style="width:200px">'
+    +'<col style="width:100px">'
+    +'<col style="width:100px">'
+    +'<col style="width:100px">'
+    +'<col style="width:100px">'
+    +'<col style="width:100px">'
+    +'<col>'
+    +'</colgroup>';
+  const theadHtml='<thead><tr>'
+    +'<th>序号</th>'
+    +'<th>计费项</th>'
+    +'<th>币种</th>'
+    +'<th>主规则</th>'
+    +'<th>收费条件</th>'
+    +'<th>单价</th>'
+    +'<th>减免量</th>'
+    +'<th>基础收费</th>'
+    +'<th>最低收费</th>'
+    +'<th>最高收费</th>'
+    +'<th>备注</th>'
+    +'</tr></thead>';
+  // 0. 表头（独立table，只有thead）
+  let html='<table class="fee-table fee-table-header">'+colgroup+theadHtml+'</table>';
   let seq=1;
-  if(storageItems.length){
-    html+='<tr class="section-row storage-section"><td colspan="11">仓储费</td></tr>';
-    storageItems.forEach(item=>{
-      html+=renderStorageRows(item,tab.bizType,seq);
-      seq+=item.detail.tiers.length;
-    });
-  }
+  // 1. 操作费 — 按 subCategory 分节
   if(operationItems.length){
-    html+='<tr class="section-row op-section"><td colspan="11">操作费</td></tr>';
-    // Group items by subCategory for cross-item rowspan merging
     const opGroups=[];
     operationItems.forEach(item=>{
       const cat=item.subCategory;
@@ -225,29 +232,31 @@ function renderBizTypeTab(tab){
         opGroups[opGroups.length-1].items.push(item);
       }
     });
-    opGroups.forEach(group=>{
-      const catLabel='操作费-'+(SUB_CATEGORY_MAP[group.cat]||'操作费');
-      const totalGroupLines=group.items.reduce((s,it)=>s+countOpLines(it),0);
-      let isFirstInGroup=true;
+    opGroups.forEach((group,idx)=>{
+      const catLabel='操作费-'+(SUB_CATEGORY_MAP[group.cat]||group.cat);
+      const isLast=(idx===opGroups.length-1)&&!storageItems.length;
+      html+='<div class="section-banner op">'+escapeHtml(catLabel)+'</div>';
+      html+='<table class="fee-table'+(isLast?' fee-table-last':'')+'">'+colgroup+'<tbody>';
       group.items.forEach(item=>{
         const itemLines=countOpLines(item);
-        let isFirstInItem=true;
+        let isFirstItem=true;
         const overrides=getOverrides(tab.bizType,item.id);
         item.detail.ruleGroups.forEach((rg,gi)=>{
-          rg.lines.forEach((line,li)=>{
-            const key=gi+'_'+li;
+          const ruleLabel=rg.label.replace(/^规则\d+[：:]\s*/,'');
+          let isFirstLine=true;
+          rg.lines.forEach((line)=>{
+            const key=gi+'_'+rg.lines.indexOf(line);
             const price=getPrice(overrides,key,line.unitPrice);
-            const altClass=seq%2===0?' alt-row':'';
-            html+='<tr class="'+altClass+'">';
+            html+='<tr>';
             html+='<td class="center">'+seq+'</td>';
-            if(isFirstInGroup){
-              html+='<td rowspan="'+totalGroupLines+'">'+escapeHtml(catLabel)+'</td>';
-              isFirstInGroup=false;
-            }
-            if(isFirstInItem){
+            if(isFirstItem){
               html+='<td rowspan="'+itemLines+'">'+escapeHtml(item.name)+'</td>';
               html+='<td rowspan="'+itemLines+'">EUR</td>';
-              isFirstInItem=false;
+              isFirstItem=false;
+            }
+            if(isFirstLine){
+              html+='<td class="main-rule" rowspan="'+rg.lines.length+'">'+escapeHtml(ruleLabel)+'</td>';
+              isFirstLine=false;
             }
             html+='<td>'+escapeHtml(line.condition)+'</td>';
             html+='<td>€'+escapeHtml(price)+'/'+escapeHtml(line.unit)+'</td>';
@@ -261,9 +270,19 @@ function renderBizTypeTab(tab){
           });
         });
       });
+      html+='</tbody></table>';
     });
   }
-  html+='</tbody></table>';
+  // 2. 仓储费
+  if(storageItems.length){
+    html+='<div class="section-banner storage">仓储费</div>';
+    html+='<table class="fee-table fee-table-last">'+colgroup+'<tbody>';
+    storageItems.forEach(item=>{
+      html+=renderStorageRows(item,tab.bizType,seq);
+      seq+=item.detail.tiers.length;
+    });
+    html+='</tbody></table>';
+  }
   return html;
 }
 
@@ -273,13 +292,12 @@ function renderStorageRows(item,bizType,startSeq){
   let html='';
   d.tiers.forEach((tier,i)=>{
     const price=getPrice(overrides,'tier_'+i,tier.price);
-    const altClass=i%2===1?' alt-row':'';
-    html+='<tr class="'+altClass+'">';
+    html+='<tr>';
     html+='<td class="center">'+(startSeq+i)+'</td>';
     if(i===0){
-      html+='<td rowspan="'+d.tiers.length+'">仓储费</td>';
       html+='<td rowspan="'+d.tiers.length+'">'+escapeHtml(item.name)+'</td>';
       html+='<td rowspan="'+d.tiers.length+'">EUR</td>';
+      html+='<td rowspan="'+d.tiers.length+'">-</td>';
     }
     html+='<td>'+escapeHtml(tier.label)+'</td>';
     html+='<td>€'+escapeHtml(price)+'/'+escapeHtml(d.method)+'</td>';

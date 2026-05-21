@@ -1,0 +1,801 @@
+/**
+ * SDMS Config List — Shared Component Styles
+ * ============================================
+ * Used by: logistics-fee-config, storage-fee-config, quotation-scheme-config,
+ *          supplier-quotation-config, fee-sheet-list (and any future config-list pages).
+ *
+ * Depends on: sdms-design-tokens.css (must be loaded first).
+ *
+ * MasterGo specs:
+ *   Button   — height 28px, padding 0 14px, border-radius 4px, font-size 13px
+ *   Input    — height 30px, border-radius 4px
+ *   Table    — header 12px/600, body 12-13px, cell padding 11px 12px
+ */
+
+/* ================================================================
+   1. Page Card
+   ================================================================ */
+
+.page-card {
+  min-height: calc(100vh - 65px);
+  padding: 10px;
+}
+
+/* ================================================================
+   2. Filter Panel & Table Panel Containers
+   ================================================================ */
+
+.filter-panel,
+.table-panel {
+  border: 1px solid var(--line);
+  background: var(--panel-bg);
+}
+
+.filter-panel {
+  padding: 16px 16px 12px;
+}
+
+.table-panel {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 250px);
+}
+
+/* ================================================================
+   3. Filter Controls
+   ================================================================ */
+
+.query-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.filter-control {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background: var(--panel-bg);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-control:focus-within {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.filter-inline-label {
+  flex-shrink: 0;
+  padding: 0 6px 0 10px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  line-height: 30px;
+}
+
+.filter-control .filter-input {
+  width: 140px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 0;
+  font-size: 13px;
+  color: var(--text-main);
+  background: transparent;
+}
+
+.filter-control .filter-input::placeholder {
+  color: var(--placeholder-color);
+}
+
+.filter-control .filter-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.filter-control .select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filter-control .filter-select {
+  width: 150px;
+  height: 28px;
+  padding: 0 28px 0 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 13px;
+  appearance: none;
+  cursor: pointer;
+}
+
+.filter-control .filter-select:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.filter-control .select-wrap svg {
+  position: absolute;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+
+/* ================================================================
+   4. Buttons (MasterGo unified: 28px height, 4px radius, 13px font)
+   ================================================================ */
+
+.btn-primary {
+  height: 28px;
+  min-width: 62px;
+  padding: 0 14px;
+  font-size: 13px;
+  border-radius: 4px;
+  background: var(--color-primary);
+  color: var(--color-n0);
+  border: 1px solid var(--color-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.btn-default {
+  height: 28px;
+  min-width: 62px;
+  padding: 0 14px;
+  font-size: 13px;
+  border-radius: 4px;
+  background: var(--panel-bg);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--input-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-default:hover {
+  border-color: var(--color-primary-hover);
+  color: var(--color-primary);
+}
+
+/* btn-new = alias of btn-primary */
+.btn-new {
+  height: 28px;
+  min-width: 62px;
+  padding: 0 14px;
+  font-size: 13px;
+  border-radius: 4px;
+  background: var(--color-primary);
+  color: var(--color-n0);
+  border: 1px solid var(--color-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-new:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+/* btn-export = alias of btn-default */
+.btn-export {
+  height: 28px;
+  min-width: 62px;
+  padding: 0 14px;
+  font-size: 13px;
+  border-radius: 4px;
+  background: var(--panel-bg);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--input-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-export:hover {
+  border-color: var(--color-primary-hover);
+  color: var(--color-primary);
+}
+
+/* ================================================================
+   5. Panel Action Row
+   ================================================================ */
+
+.panel-action-row {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--table-border);
+  display: flex;
+  gap: 10px;
+}
+
+/* ================================================================
+   6. Data Table
+   ================================================================ */
+
+.table-wrap {
+  flex: 1;
+  overflow: auto;
+}
+
+.list-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.list-table thead tr {
+  background: #f7f9fc;
+}
+
+.list-table th,
+.list-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-table th {
+  color: #7788a3;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.list-table td {
+  color: var(--table-body-text);
+}
+
+.list-table tbody tr:hover {
+  background: var(--table-row-hover);
+}
+
+.cell-center {
+  text-align: center !important;
+}
+
+/* ================================================================
+   7. Status Tags (semantic token-based)
+   ================================================================ */
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.status-tag.draft {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+}
+
+.status-tag.pending {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.status-tag.active {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.status-tag.inactive {
+  background: var(--color-error-light);
+  color: var(--color-error);
+}
+
+.status-tag.rejected {
+  background: #fce7f3;
+  color: var(--color-error);
+}
+
+/* ================================================================
+   8. Scene Tabs
+   ================================================================ */
+
+.scene-tabs {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  margin-bottom: 14px;
+  padding: 0 2px;
+}
+
+.scene-tabs .scene-tab {
+  position: relative;
+  border: 0;
+  padding: 0 0 8px;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scene-tabs .scene-tab:hover {
+  color: var(--color-primary);
+}
+
+.scene-tabs .scene-tab.active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.scene-tabs .scene-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 1px;
+}
+
+.scene-tabs .tab-count {
+  font-size: 11px;
+  font-weight: 500;
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  padding: 0 5px;
+}
+
+.scene-tabs .scene-tab:not(.active) .tab-count {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-tertiary);
+}
+
+.scene-tabs .scene-tab.active .tab-count {
+  background: var(--color-primary);
+  color: var(--color-n0);
+}
+
+/* ================================================================
+   9. Action Links & Action Group
+   ================================================================ */
+
+.name-link,
+.action-link {
+  color: var(--color-primary);
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.name-link:hover,
+.action-link:hover {
+  color: var(--color-primary-hover);
+}
+
+.action-link + .action-link {
+  margin-left: 12px;
+}
+
+.action-link.delete {
+  color: var(--danger);
+}
+
+.action-link.delete:hover {
+  color: var(--color-error);
+}
+
+.action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.action-group .action-link {
+  white-space: nowrap;
+}
+
+/* ================================================================
+   10. Empty Row
+   ================================================================ */
+
+.empty-row td {
+  padding: 52px 0;
+  color: var(--color-text-disabled);
+  text-align: center !important;
+}
+
+/* ================================================================
+   11. Switch / Toggle
+   ================================================================ */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(--line-deep);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-n0);
+  box-shadow: 0 1px 2px rgba(15, 39, 74, 0.24);
+  transition: transform 0.2s ease;
+}
+
+.switch input:checked + .slider {
+  background: var(--color-primary);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(16px);
+}
+
+/* ================================================================
+   12. Table Footer & Pagination
+   ================================================================ */
+
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 16px 14px 18px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pager-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-btn,
+.jump-btn,
+.page-size {
+  height: 30px;
+  border: 1px solid var(--line-deep);
+  background: var(--panel-bg);
+  color: var(--text-main);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.page-btn {
+  min-width: 30px;
+  padding: 0 10px;
+}
+
+.page-btn:hover,
+.jump-btn:hover,
+.page-size:hover {
+  border-color: var(--color-primary-hover);
+  color: var(--color-primary);
+}
+
+.page-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-n0);
+}
+
+.page-btn.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.page-ellipsis {
+  width: 24px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.page-size {
+  padding: 0 8px;
+  min-width: 80px;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-text-tertiary) 50%),
+                    linear-gradient(135deg, var(--color-text-tertiary) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 12px, calc(100% - 9px) 12px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.jump-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.jump-input {
+  width: 44px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--line-deep);
+  border-radius: 4px;
+  color: var(--text-main);
+  text-align: center;
+}
+
+.jump-input:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.jump-btn {
+  min-width: 44px;
+  padding: 0 12px;
+}
+
+/* ================================================================
+   13. Modal
+   ================================================================ */
+
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(21, 31, 46, 0.34);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 80;
+  backdrop-filter: blur(1.5px);
+}
+
+.modal-mask.open {
+  display: flex;
+}
+
+.modal-dialog {
+  width: min(480px, calc(100vw - 32px));
+  background: var(--panel-bg);
+  border: 1px solid var(--line);
+  box-shadow: 0 24px 48px rgba(28, 39, 56, 0.18);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--panel-soft);
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.modal-close {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  color: var(--color-text-secondary);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  background: var(--panel-soft);
+}
+
+/* ================================================================
+   14. Toast Notifications
+   ================================================================ */
+
+.toast-stack {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  min-width: 240px;
+  max-width: 320px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(28, 29, 30, 0.92);
+  color: var(--color-n0);
+  box-shadow: 0 12px 28px rgba(17, 30, 50, 0.22);
+  transform: translateX(20px);
+  opacity: 0;
+  transition: all 0.25s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast.success {
+  background: rgba(22, 132, 252, 0.92);
+}
+
+.toast.warning {
+  background: rgba(255, 130, 37, 0.92);
+}
+
+.toast.error {
+  background: rgba(237, 4, 4, 0.92);
+}
+
+/* Structure A: title + desc */
+.toast-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.toast-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.92;
+}
+
+/* Structure B: icon + title + text (used by some pages) */
+.toast .toast-icon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.toast .toast-text {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* ================================================================
+   15. Review / Approval Helpers (shared by review modals)
+   ================================================================ */
+
+.review-choice {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.review-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.review-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.review-reason-wrap {
+  margin-top: 4px;
+}
+
+.review-reason-label {
+  display: block;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.required-star {
+  color: var(--danger);
+}
+
+.review-reason-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-main);
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.review-reason-input:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.review-reason-input::placeholder {
+  color: var(--placeholder-color);
+}
+
+.reject-info-icon {
+  color: var(--color-error);
+  font-size: 14px;
+  margin-left: 4px;
+  vertical-align: middle;
+  cursor: help;
+}
