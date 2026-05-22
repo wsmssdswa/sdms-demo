@@ -9,11 +9,18 @@
   const withdrawBtn=document.getElementById('withdrawBtn');
   const previewBtn=document.getElementById('previewBtn');
   const exitPreviewBtn=document.getElementById('exitPreviewBtn');
+  const withdrawModal=document.getElementById('withdrawModal');
+  const withdrawBillInfo=document.getElementById('withdrawBillInfo');
+  const withdrawReason=document.getElementById('withdrawReason');
+  const withdrawCancelBtn=document.getElementById('withdrawCancelBtn');
+  const withdrawConfirmBtn=document.getElementById('withdrawConfirmBtn');
+  let pendingWithdrawBill=null;
 
   const STATUS_MAP={
     draft:{label:'草稿',cls:'draft'},
     sent:{label:'已发送',cls:'sent'},
-    confirmed:{label:'已确认',cls:'confirmed'}
+    confirmed:{label:'已确认',cls:'confirmed'},
+    cancelled:{label:'已作废',cls:'cancelled'}
   };
   const CAT_CARDS=[
     {key:'all',label:'全部'},
@@ -40,102 +47,107 @@
     return [
       {id:1,billNo:'BL-20260514-001',customerName:'深圳ABC贸易',customerId:1,
         periodStart:'2026-04-01',periodEnd:'2026-04-30',periodLabel:'2026年4月',
-        currency:'CNY',receivableTotal:1856.25,feeSheetCount:2,
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:1856.25,receivableTotal:14571.56,receivedAmount:0,cancelReason:'',
+        feeSheetCount:2,
         status:'confirmed',remark:'',createdBy:'Kevin.王磊',
         createdAt:'2026-05-14 10:00',sentAt:'2026-05-14 14:00',confirmedAt:'2026-05-15 09:00',
         categorySummary:[
-          {key:'inbound',amount:745.25,count:2},
+          {key:'inbound',amount:5850.06,count:2},
           {key:'storage',amount:0,count:0},
-          {key:'order',amount:1111,count:2},
+          {key:'order',amount:8721.50,count:2},
           {key:'other',amount:0,count:0}
         ],
         feeSheets:[
-          {feeNo:'FS-20260510-001',category:'operation',operationType:'inbound',sheetType:'order',sourceNo:'TRK-2026-001',warehouseName:'波兰海外仓',receivableAmount:1057.25,
+          {feeNo:'FS-20260510-001',category:'operation',operationType:'inbound',sheetType:'order',sourceNo:'TRK-2026-001',warehouseName:'波兰海外仓',receivableAmount:8299.41,
             items:[
-              {feeItemName:'卸货费',currency:'EUR',amount:314,billingTime:'05-10 14:35'},
-              {feeItemName:'清点费',currency:'EUR',amount:39.25,billingTime:'05-10 14:36'},
-              {feeItemName:'上架费',currency:'EUR',amount:392.5,billingTime:'05-10 14:38'},
-              {feeItemName:'干线物流费',currency:'EUR',amount:785,billingTime:'05-11 09:30'}
+              {feeItemName:'卸货费',currency:'EUR',originalAmount:314,amount:2464.90,billingTime:'05-10 14:35'},
+              {feeItemName:'清点费',currency:'EUR',originalAmount:39.25,amount:308.11,billingTime:'05-10 14:36'},
+              {feeItemName:'上架费',currency:'EUR',originalAmount:392.5,amount:3081.13,billingTime:'05-10 14:38'},
+              {feeItemName:'干线物流费',currency:'EUR',originalAmount:785,amount:6162.25,billingTime:'05-11 09:30'}
             ]},
-          {feeNo:'FS-20260514-002',category:'operation',operationType:'inbound',sheetType:'stock_inbound',sourceNo:'STK-IN-20260514-001',warehouseName:'波兰海外仓',receivableAmount:510.25,
+          {feeNo:'FS-20260514-002',category:'operation',operationType:'inbound',sheetType:'stock_inbound',sourceNo:'STK-IN-20260514-001',warehouseName:'波兰海外仓',receivableAmount:4005.46,
             items:[
-              {feeItemName:'卸货费',currency:'EUR',amount:235.5,billingTime:'05-14 10:20'},
-              {feeItemName:'清点费',currency:'EUR',amount:117.75,billingTime:'05-14 10:22'},
-              {feeItemName:'上架费',currency:'EUR',amount:157,billingTime:'05-14 10:35'}
+              {feeItemName:'卸货费',currency:'EUR',originalAmount:235.5,amount:1848.68,billingTime:'05-14 10:20'},
+              {feeItemName:'清点费',currency:'EUR',originalAmount:117.75,amount:924.34,billingTime:'05-14 10:22'},
+              {feeItemName:'上架费',currency:'EUR',originalAmount:157,amount:1232.45,billingTime:'05-14 10:35'}
             ]}
         ]},
       {id:2,billNo:'BL-20260515-001',customerName:'杭州XYZ物流',customerId:2,
         periodStart:'2026-04-01',periodEnd:'2026-04-30',periodLabel:'2026年4月',
-        currency:'CNY',receivableTotal:1020.5,feeSheetCount:2,
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:1020.5,receivableTotal:8010.93,receivedAmount:8010.93,cancelReason:'',
+        feeSheetCount:2,
         status:'sent',remark:'',createdBy:'Amy.李婷',
         createdAt:'2026-05-15 11:00',sentAt:'2026-05-16 09:00',confirmedAt:'',
         categorySummary:[
           {key:'inbound',amount:0,count:0},
           {key:'storage',amount:0,count:0},
-          {key:'order',amount:1020.5,count:2},
+          {key:'order',amount:8010.93,count:2},
           {key:'other',amount:0,count:0}
         ],
         feeSheets:[
-          {feeNo:'FS-20260512-001',category:'operation',operationType:'outbound',sheetType:'order',sourceNo:'TRK-2026-002',warehouseName:'德国海外仓',receivableAmount:196.25,
+          {feeNo:'FS-20260512-001',category:'operation',operationType:'outbound',sheetType:'order',sourceNo:'TRK-2026-002',warehouseName:'德国海外仓',receivableAmount:1540.56,
             items:[
-              {feeItemName:'出库操作费',currency:'EUR',amount:196.25,billingTime:'05-12 10:20'}
+              {feeItemName:'出库操作费',currency:'EUR',originalAmount:196.25,amount:1540.56,billingTime:'05-12 10:20'}
             ]},
-          {feeNo:'FS-20260512-001-L',category:'logistics',operationType:'',sheetType:'order',sourceNo:'TRK-2026-002',warehouseName:'德国海外仓',receivableAmount:824.25,
+          {feeNo:'FS-20260512-001-L',category:'logistics',operationType:'',sheetType:'order',sourceNo:'TRK-2026-002',warehouseName:'德国海外仓',receivableAmount:6470.36,
             items:[
-              {feeItemName:'干线物流费',currency:'EUR',amount:824.25,billingTime:'05-12 10:25'}
+              {feeItemName:'干线物流费',currency:'EUR',originalAmount:824.25,amount:6470.36,billingTime:'05-12 10:25'}
             ]}
         ]},
       {id:3,billNo:'BL-20260516-001',customerName:'上海DEF电商',customerId:3,
         periodStart:'2026-05-01',periodEnd:'2026-05-31',periodLabel:'2026年5月',
-        currency:'CNY',receivableTotal:235.5,feeSheetCount:1,
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:235.5,receivableTotal:1848.68,receivedAmount:0,cancelReason:'',
+        feeSheetCount:1,
         status:'draft',remark:'',createdBy:'Jack.陈明',
         createdAt:'2026-05-16 14:00',sentAt:'',confirmedAt:'',
         categorySummary:[
           {key:'inbound',amount:0,count:0},
           {key:'storage',amount:0,count:0},
           {key:'order',amount:0,count:0},
-          {key:'other',amount:235.5,count:1}
+          {key:'other',amount:1848.68,count:1}
         ],
         feeSheets:[
-          {feeNo:'FS-20260513-002',category:'operation',operationType:'vas',sheetType:'order',sourceNo:'TRK-2026-003',warehouseName:'波兰海外仓',receivableAmount:235.5,
+          {feeNo:'FS-20260513-002',category:'operation',operationType:'vas',sheetType:'order',sourceNo:'TRK-2026-003',warehouseName:'波兰海外仓',receivableAmount:1848.68,
             items:[
-              {feeItemName:'质检服务费',currency:'EUR',amount:235.5,billingTime:'05-13 11:35'}
+              {feeItemName:'质检服务费',currency:'EUR',originalAmount:235.5,amount:1848.68,billingTime:'05-13 11:35'}
             ]}
         ]},
       {id:4,billNo:'BL-20260517-001',customerName:'深圳ABC贸易',customerId:1,
         periodStart:'2026-05-01',periodEnd:'2026-05-31',periodLabel:'2026年5月',
-        currency:'CNY',receivableTotal:549.5,feeSheetCount:1,
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:549.5,receivableTotal:4313.58,receivedAmount:0,cancelReason:'',
+        feeSheetCount:1,
         status:'draft',remark:'含仓储费',createdBy:'Kevin.王磊',
         createdAt:'2026-05-17 08:30',sentAt:'',confirmedAt:'',
         categorySummary:[
           {key:'inbound',amount:0,count:0},
-          {key:'storage',amount:549.5,count:1},
+          {key:'storage',amount:4313.58,count:1},
           {key:'order',amount:0,count:0},
           {key:'other',amount:0,count:0}
         ],
         feeSheets:[
-          {feeNo:'FS-20260513-001',category:'storage',operationType:'',sheetType:'storage_cycle',sourceNo:'',warehouseName:'波兰海外仓',receivableAmount:549.5,
+          {feeNo:'FS-20260513-001',category:'storage',operationType:'',sheetType:'storage_cycle',sourceNo:'',warehouseName:'波兰海外仓',receivableAmount:4313.58,
             items:[
-              {feeItemName:'基础仓储费',currency:'EUR',amount:392.5,billingTime:'05-13 16:50'},
-              {feeItemName:'旺季附加费',currency:'EUR',amount:157,billingTime:'05-13 16:52'}
+              {feeItemName:'基础仓储费',currency:'EUR',originalAmount:392.5,amount:3081.13,billingTime:'05-13 16:50'},
+              {feeItemName:'旺季附加费',currency:'EUR',originalAmount:157,amount:1232.45,billingTime:'05-13 16:52'}
             ]}
         ]},
       {id:5,billNo:'BL-20260518-001',customerName:'杭州XYZ物流',customerId:2,
         periodStart:'2026-05-01',periodEnd:'2026-05-31',periodLabel:'2026年5月',
-        currency:'CNY',receivableTotal:274.75,feeSheetCount:1,
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:274.75,receivableTotal:2156.79,receivedAmount:0,cancelReason:'',
+        feeSheetCount:1,
         status:'sent',remark:'',createdBy:'Amy.李婷',
         createdAt:'2026-05-18 09:30',sentAt:'2026-05-18 15:00',confirmedAt:'',
         categorySummary:[
-          {key:'inbound',amount:274.75,count:1},
+          {key:'inbound',amount:2156.79,count:1},
           {key:'storage',amount:0,count:0},
           {key:'order',amount:0,count:0},
           {key:'other',amount:0,count:0}
         ],
         feeSheets:[
-          {feeNo:'FS-20260515-001',category:'operation',operationType:'inbound',sheetType:'return_inbound',sourceNo:'Y202605150001E',warehouseName:'波兰海外仓',receivableAmount:274.75,
+          {feeNo:'FS-20260515-001',category:'operation',operationType:'inbound',sheetType:'return_inbound',sourceNo:'Y202605150001E',warehouseName:'波兰海外仓',receivableAmount:2156.79,
             items:[
-              {feeItemName:'入库操作费',currency:'EUR',amount:196.25,billingTime:'05-15 09:35'},
-              {feeItemName:'检验费',currency:'EUR',amount:78.5,billingTime:'05-15 09:40'}
+              {feeItemName:'入库操作费',currency:'EUR',originalAmount:196.25,amount:1540.56,billingTime:'05-15 09:35'},
+              {feeItemName:'检验费',currency:'EUR',originalAmount:78.5,amount:616.23,billingTime:'05-15 09:40'}
             ]}
         ]}
     ];
@@ -176,10 +188,11 @@
   function renderTopBar(){
     if(!currentBill)return;
     breadcrumbNo.textContent=currentBill.billNo;
+    const isCancelled=currentBill.status==='cancelled';
     sendBtn.style.display=currentBill.status==='draft'?'':'none';
     confirmBtn.style.display=currentBill.status==='sent'?'':'none';
-    withdrawBtn.style.display=currentBill.status!=='confirmed'?'':'none';
-    previewBtn.style.display=isPreview?'none':'';
+    withdrawBtn.style.display=(currentBill.status==='draft'||currentBill.status==='sent')?'':'none';
+    previewBtn.style.display=(isPreview||isCancelled)?'none':'';
     exitPreviewBtn.style.display=isPreview?'':'none';
   }
 
@@ -201,6 +214,19 @@
       '<div><div class="info-label">账期</div><div class="info-value">'+escapeHtml(currentBill.periodLabel)+'</div></div>',
       '<div><div class="info-label">费用单数</div><div class="info-value">'+currentBill.feeSheetCount+'条</div></div>'
     ].join('');
+  }
+
+  function renderCurrencyCard(){
+    if(!currentBill)return;
+    const el=document.getElementById('currencyCard');
+    if(!el)return;
+    el.innerHTML='<div class="info-card-title">币种与汇率</div>'
+      +'<div class="info-grid">'
+      +'<div><div class="info-label">结算币种</div><div class="info-value">'+escapeHtml(currentBill.settlementCurrency)+'</div></div>'
+      +'<div><div class="info-label">汇率</div><div class="info-value">'+currentBill.exchangeRate.toFixed(4)+'</div></div>'
+      +'<div><div class="info-label">原币总额</div><div class="info-value">€'+fmtAmt(currentBill.originalTotal)+'</div></div>'
+      +'<div><div class="info-label">折算金额</div><div class="info-value">¥'+fmtAmt(currentBill.receivableTotal)+'</div></div>'
+      +'</div>';
   }
 
   function renderCatTabs(){
@@ -284,6 +310,7 @@
     renderTopBar();
     renderStatusBanner();
     renderBillInfo();
+    renderCurrencyCard();
     renderContent();
     if(isPreview){
       billDetailPage.classList.add('preview-mode');
@@ -331,12 +358,10 @@
 
   withdrawBtn.addEventListener('click',()=>{
     if(!currentBill)return;
-    if(!confirm('确定撒回账单'+currentBill.billNo+'吗？'))return;
-    currentBill.status='draft';
-    currentBill.sentAt='';
-    currentBill.confirmedAt='';
-    renderAll();
-    showToast('success','已撒回','账单已撒回');
+    pendingWithdrawBill=currentBill;
+    withdrawBillInfo.textContent='账单号：'+currentBill.billNo;
+    withdrawReason.value='';
+    withdrawModal.style.display='flex';
   });
 
   previewBtn.addEventListener('click',()=>{
@@ -347,6 +372,22 @@
   exitPreviewBtn.addEventListener('click',()=>{
     isPreview=false;
     renderAll();
+  });
+
+  withdrawCancelBtn.addEventListener('click',()=>{
+    withdrawModal.style.display='none';
+    pendingWithdrawBill=null;
+  });
+  withdrawConfirmBtn.addEventListener('click',()=>{
+    if(!withdrawReason.value.trim()){showToast('warning','请填写原因','撒回原因为必填项');return;}
+    if(pendingWithdrawBill){
+      pendingWithdrawBill.status='cancelled';
+      pendingWithdrawBill.cancelReason=withdrawReason.value.trim();
+      renderAll();
+      showToast('success','已作废','账单已作废');
+    }
+    withdrawModal.style.display='none';
+    pendingWithdrawBill=null;
   });
 
   renderAll();
