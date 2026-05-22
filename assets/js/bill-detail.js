@@ -279,12 +279,12 @@
     html+='<span class="sheet-no">'+escapeHtml(fs.feeNo)+'</span>';
     html+='<span class="sheet-desc">'+(fs.sourceNo?escapeHtml(fs.sourceNo)+' · ':'')+escapeHtml(fs.warehouseName)+'</span>';
     html+='</div>';
-    html+='<span class="fee-sheet-amount">¥'+fmtAmt(fs.receivableAmount)+'</span>';
+    html+='<span class="fee-sheet-amount">€'+fmtAmt(fs.receivableAmount/currentBill.exchangeRate)+' / ¥'+fmtAmt(fs.receivableAmount)+'</span>';
     html+='</div>';
     html+='<div class="fee-sheet-body" id="sheetBody-'+prefix+'-'+idx+'" style="display:none">';
-    html+='<table class="fee-items-table"><thead><tr><th>费用项</th><th style="width:60px">币种</th><th style="width:90px" class="amount-right">金额</th><th style="width:80px">计费时间</th><th style="width:100px">备注</th></tr></thead><tbody>';
+    html+='<table class="fee-items-table"><thead><tr><th>费用项</th><th style="width:60px">币种</th><th style="width:90px" class="amount-right">原币金额</th><th style="width:90px" class="amount-right">折算金额</th><th style="width:80px">计费时间</th><th style="width:100px">备注</th></tr></thead><tbody>';
     fs.items.forEach(it=>{
-      html+='<tr><td>'+escapeHtml(it.feeItemName)+'</td><td>'+escapeHtml(it.currency)+'</td><td class="amount-right">¥'+fmtAmt(it.amount)+'</td><td>'+escapeHtml(it.billingTime)+'</td><td style="color:#999">'+escapeHtml(it.remark||'—')+'</td></tr>';
+      html+='<tr><td>'+escapeHtml(it.feeItemName)+'</td><td>'+escapeHtml(it.currency)+'</td><td class="amount-right">'+(it.originalAmount!=null?fmtAmt(it.originalAmount):'—')+'</td><td class="amount-right">¥'+fmtAmt(it.amount)+'</td><td>'+escapeHtml(it.billingTime)+'</td><td style="color:var(--color-text-tertiary)">'+escapeHtml(it.remark||'—')+'</td></tr>';
     });
     html+='</tbody></table></div></div>';
     return html;
