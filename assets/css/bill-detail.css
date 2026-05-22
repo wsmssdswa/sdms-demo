@@ -262,3 +262,38 @@ body.preview-active .app-shell {
 body.preview-active .side-bar {
   display: none;
 }
+
+.status-banner.cancelled {
+  background: var(--color-bg-secondary);
+  border-left-color: var(--color-text-disabled);
+  color: var(--color-text-disabled);
+}
+
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45); z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-box {
+  background: var(--color-bg-primary); border-radius: 8px;
+  width: 420px; box-shadow: var(--shadow-md);
+}
+.modal-title {
+  font-size: 15px; font-weight: 600; padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.modal-body { padding: 16px 20px; font-size: 13px; }
+.modal-body p { margin: 0 0 8px; }
+.modal-warning { color: var(--color-warning); font-size: 12px; }
+.modal-field { margin-top: 12px; }
+.modal-field label { display: block; font-size: 12px; margin-bottom: 4px; color: var(--color-text-secondary); }
+.modal-field .required { color: var(--color-error); }
+.modal-field textarea {
+  width: 100%; border: 1px solid var(--color-border-strong); border-radius: 4px;
+  padding: 8px; font-size: 12px; resize: vertical; font-family: inherit;
+}
+.modal-field textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: var(--input-focus-shadow); }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 12px 20px; border-top: 1px solid var(--color-border);
+}

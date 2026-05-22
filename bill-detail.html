@@ -31,7 +31,22 @@
     <div class="info-card-title">基本信息</div>
     <div class="info-grid" id="billInfo"></div>
   </div>
+  <div class="info-card" id="currencyCard"></div>
   <div id="tabContent"></div>
+  <div class="modal-overlay" id="withdrawModal" style="display:none">
+    <div class="modal-box">
+      <div class="modal-title">确认撒回账单</div>
+      <div class="modal-body">
+        <p id="withdrawBillInfo"></p>
+        <p class="modal-warning">撒回后账单将作废，关联费用单将释放回未出账状态</p>
+        <div class="modal-field"><label>撒回原因<span class="required">*</span></label><textarea id="withdrawReason" rows="3" maxlength="200" placeholder="请输入撒回原因"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" id="withdrawCancelBtn" type="button">取消</button>
+        <button class="btn btn-primary" id="withdrawConfirmBtn" type="button" style="background:var(--color-error)">确认撒回</button>
+      </div>
+    </div>
+  </div>
 </section>
 </main>
 </div>
