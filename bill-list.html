@@ -19,7 +19,7 @@
 <section class="filter-panel">
 <div class="scene-tabs" id="statusTabs"></div>
 <div class="query-row">
-  <div class="filter-control"><span class="filter-inline-label">账单状态</span><div class="select-wrap"><select class="filter-select" id="statusSelect"><option value="">全部</option><option value="draft">草稿</option><option value="sent">已发送</option><option value="confirmed">已确认</option></select><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg></div></div>
+  <div class="filter-control"><span class="filter-inline-label">账单状态</span><div class="select-wrap"><select class="filter-select" id="statusSelect"><option value="">全部</option><option value="draft">草稿</option><option value="sent">已发送</option><option value="confirmed">已确认</option><option value="cancelled">已作废</option></select><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg></div></div>
   <div class="filter-control"><span class="filter-inline-label">客户</span><div class="select-wrap"><select class="filter-select" id="customerSelect"><option value="">全部</option><option value="深圳ABC贸易">深圳ABC贸易</option><option value="杭州XYZ物流">杭州XYZ物流</option><option value="上海DEF电商">上海DEF电商</option></select><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg></div></div>
   <div class="filter-control"><span class="filter-inline-label">账期</span><div class="select-wrap"><select class="filter-select" id="periodSelect"><option value="">全部</option><option value="2026-05">2026年5月</option><option value="2026-04">2026年4月</option><option value="2026-03">2026年3月</option></select><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg></div></div>
   <div class="filter-control"><span class="filter-inline-label">关键字</span><input class="filter-input" id="keywordInput" type="text" maxlength="50" placeholder="账单号/客户名"></div>
@@ -35,12 +35,15 @@
     <span id="selectedHint" style="font-size:12px;color:var(--text-muted)"></span>
   </div>
   <div class="table-wrap">
-    <table class="list-table" style="min-width:1100px">
+    <table class="list-table" style="min-width:1400px">
       <colgroup>
         <col style="width:36px">
         <col style="width:12%">
         <col style="width:10%">
         <col style="width:8%">
+        <col style="width:10%">
+        <col style="width:60px">
+        <col style="width:70px">
         <col style="width:10%">
         <col style="width:7%">
         <col style="width:8%">
@@ -55,6 +58,9 @@
           <th>客户</th>
           <th>账期</th>
           <th class="amount-cell">应收金额</th>
+          <th>币种</th>
+          <th class="amount-cell">汇率</th>
+          <th class="amount-cell">未收金额</th>
           <th>费用单数</th>
           <th>创建人</th>
           <th>创建时间</th>
@@ -69,6 +75,20 @@
     <span id="billCount"></span>
   </div>
 </section>
+<div class="modal-overlay" id="withdrawModal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">确认撒回账单</div>
+    <div class="modal-body">
+      <p id="withdrawBillInfo"></p>
+      <p class="modal-warning">撒回后账单将作废，关联费用单将释放回未出账状态</p>
+      <div class="modal-field"><label>撒回原因<span class="required">*</span></label><textarea id="withdrawReason" rows="3" maxlength="200" placeholder="请输入撒回原因"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" id="withdrawCancelBtn" type="button">取消</button>
+      <button class="btn btn-primary" id="withdrawConfirmBtn" type="button" style="background:var(--color-error)">确认撒回</button>
+    </div>
+  </div>
+</div>
 </section>
 </main>
 </div>
