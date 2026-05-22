@@ -16,9 +16,10 @@
   const STATUS_MAP={
     draft:{label:'草稿',cls:'pending'},
     sent:{label:'已发送',cls:'active'},
-    confirmed:{label:'已确认',cls:'success'}
+    confirmed:{label:'已确认',cls:'success'},
+    cancelled:{label:'已作废',cls:'inactive'}
   };
-  const STATUS_TABS=[{key:'',label:'全部'},{key:'draft',label:'草稿'},{key:'sent',label:'已发送'},{key:'confirmed',label:'已确认'}];
+  const STATUS_TABS=[{key:'',label:'全部'},{key:'draft',label:'草稿'},{key:'sent',label:'已发送'},{key:'confirmed',label:'已确认'},{key:'cancelled',label:'已作废'}];
 
   function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function fmtAmt(n){return n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
@@ -37,13 +38,13 @@
     return [
       {id:1,billNo:'BL-20260514-001',customerName:'深圳ABC贸易',customerId:1,
         periodStart:'2026-04-01',periodEnd:'2026-04-30',periodLabel:'2026年4月',
-        currency:'CNY',receivableTotal:1856.25,feeSheetCount:2,
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:1856.25,receivableTotal:14571.56,receivedAmount:0,cancelReason:'',feeSheetCount:2,
         status:'confirmed',remark:'',createdBy:'Kevin.王磊',
         createdAt:'2026-05-14 10:00',sentAt:'2026-05-14 14:00',confirmedAt:'2026-05-15 09:00',
         categorySummary:[
-          {key:'inbound',amount:745.25,count:2},
+          {key:'inbound',amount:5850.21,count:2},
           {key:'storage',amount:0,count:0},
-          {key:'order',amount:1111,count:2},
+          {key:'order',amount:8721.35,count:2},
           {key:'other',amount:0,count:0}
         ],
         feeSheets:[
@@ -63,13 +64,13 @@
         ]},
       {id:2,billNo:'BL-20260515-001',customerName:'杭州XYZ物流',customerId:2,
         periodStart:'2026-04-01',periodEnd:'2026-04-30',periodLabel:'2026年4月',
-        currency:'CNY',receivableTotal:1020.5,feeSheetCount:1,
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:1020.5,receivableTotal:8010.93,receivedAmount:8010.93,cancelReason:'',feeSheetCount:2,
         status:'sent',remark:'',createdBy:'Amy.李婷',
         createdAt:'2026-05-15 11:00',sentAt:'2026-05-16 09:00',confirmedAt:'',
         categorySummary:[
           {key:'inbound',amount:0,count:0},
           {key:'storage',amount:0,count:0},
-          {key:'order',amount:1020.5,count:2},
+          {key:'order',amount:8010.93,count:2},
           {key:'other',amount:0,count:0}
         ],
         feeSheets:[
@@ -84,14 +85,14 @@
         ]},
       {id:3,billNo:'BL-20260516-001',customerName:'上海DEF电商',customerId:3,
         periodStart:'2026-05-01',periodEnd:'2026-05-31',periodLabel:'2026年5月',
-        currency:'CNY',receivableTotal:235.5,feeSheetCount:1,
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:235.5,receivableTotal:1848.68,receivedAmount:0,cancelReason:'',feeSheetCount:1,
         status:'draft',remark:'',createdBy:'Jack.陈明',
         createdAt:'2026-05-16 14:00',sentAt:'',confirmedAt:'',
         categorySummary:[
           {key:'inbound',amount:0,count:0},
           {key:'storage',amount:0,count:0},
           {key:'order',amount:0,count:0},
-          {key:'other',amount:235.5,count:1}
+          {key:'other',amount:1848.68,count:1}
         ],
         feeSheets:[
           {feeNo:'FS-20260513-002',sheetType:'order',sourceNo:'TRK-2026-003',warehouseName:'波兰海外仓',receivableAmount:235.5,
@@ -101,12 +102,12 @@
         ]},
       {id:4,billNo:'BL-20260517-001',customerName:'深圳ABC贸易',customerId:1,
         periodStart:'2026-05-01',periodEnd:'2026-05-31',periodLabel:'2026年5月',
-        currency:'CNY',receivableTotal:549.5,feeSheetCount:1,
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:549.5,receivableTotal:4313.58,receivedAmount:0,cancelReason:'',feeSheetCount:1,
         status:'draft',remark:'含仓储费',createdBy:'Kevin.王磊',
         createdAt:'2026-05-17 08:30',sentAt:'',confirmedAt:'',
         categorySummary:[
           {key:'inbound',amount:0,count:0},
-          {key:'storage',amount:549.5,count:1},
+          {key:'storage',amount:4313.58,count:1},
           {key:'order',amount:0,count:0},
           {key:'other',amount:0,count:0}
         ],
@@ -119,11 +120,11 @@
         ]},
       {id:5,billNo:'BL-20260518-001',customerName:'杭州XYZ物流',customerId:2,
         periodStart:'2026-05-01',periodEnd:'2026-05-31',periodLabel:'2026年5月',
-        currency:'CNY',receivableTotal:274.75,feeSheetCount:1,
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:274.75,receivableTotal:2156.79,receivedAmount:0,cancelReason:'',feeSheetCount:1,
         status:'sent',remark:'',createdBy:'Amy.李婷',
         createdAt:'2026-05-18 09:30',sentAt:'2026-05-18 15:00',confirmedAt:'',
         categorySummary:[
-          {key:'inbound',amount:274.75,count:1},
+          {key:'inbound',amount:2156.79,count:1},
           {key:'storage',amount:0,count:0},
           {key:'order',amount:0,count:0},
           {key:'other',amount:0,count:0}
