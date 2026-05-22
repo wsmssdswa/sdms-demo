@@ -12,6 +12,12 @@
   const batchSendBtn=document.getElementById('batchSendBtn');
   const exportBtn=document.getElementById('exportBtn');
   const selectedHint=document.getElementById('selectedHint');
+  const withdrawModal=document.getElementById('withdrawModal');
+  const withdrawBillInfo=document.getElementById('withdrawBillInfo');
+  const withdrawReason=document.getElementById('withdrawReason');
+  const withdrawCancelBtn=document.getElementById('withdrawCancelBtn');
+  const withdrawConfirmBtn=document.getElementById('withdrawConfirmBtn');
+  let pendingWithdrawId=null;
 
   const STATUS_MAP={
     draft:{label:'草稿',cls:'pending'},
@@ -174,7 +180,7 @@
   function render(){
     const filtered=getFilteredBills();
     if(!filtered.length){
-      billBody.innerHTML='<tr class="empty-row"><td colspan="10" style="text-align:center;padding:40px;color:var(--text-muted)">暂无账单</td></tr>';
+      billBody.innerHTML='<tr class="empty-row"><td colspan="13" style="text-align:center;padding:40px;color:var(--text-muted)">暂无账单</td></tr>';
       billCount.textContent='';
     }else{
       billBody.innerHTML=filtered.map((bill)=>{
@@ -185,13 +191,17 @@
         let actions='<a href="javascript:void(0)" class="action-link" data-action="view" data-id="'+bill.id+'">查看</a>';
         if(bill.status==='draft') actions+=' <a href="javascript:void(0)" class="action-link" data-action="send" data-id="'+bill.id+'">发送</a>';
         if(bill.status==='sent') actions+=' <a href="javascript:void(0)" class="action-link" data-action="confirm" data-id="'+bill.id+'">确认</a>';
-        if(bill.status!=='confirmed') actions+=' <a href="javascript:void(0)" class="action-link danger" data-action="withdraw" data-id="'+bill.id+'">撒回</a>';
+        if(bill.status==='draft'||bill.status==='sent') actions+=' <a href="javascript:void(0)" class="action-link danger" data-action="withdraw" data-id="'+bill.id+'">撒回</a>';
+        const unpaid=bill.receivableTotal-bill.receivedAmount;
         return '<tr>'
           +'<td class="check-cell"><input type="checkbox" data-check-id="'+bill.id+'" '+checked+' '+disabled+'></td>'
           +'<td><a class="name-link" href="./bill-detail.html?id='+bill.id+'">'+escapeHtml(bill.billNo)+'</a></td>'
           +'<td>'+escapeHtml(bill.customerName)+'</td>'
           +'<td>'+escapeHtml(bill.periodLabel)+'</td>'
           +'<td class="amount-cell">¥'+fmtAmt(bill.receivableTotal)+'</td>'
+          +'<td style="text-align:center">'+escapeHtml(bill.settlementCurrency)+'</td>'
+          +'<td class="amount-cell">'+bill.exchangeRate.toFixed(2)+'</td>'
+          +'<td class="amount-unpaid'+(unpaid<=0?' settled':'')+'">¥'+fmtAmt(unpaid)+'</td>'
           +'<td style="text-align:center">'+bill.feeSheetCount+'</td>'
           +'<td>'+escapeHtml(bill.createdBy)+'</td>'
           +'<td>'+escapeHtml(bill.createdAt)+'</td>'
@@ -261,13 +271,12 @@
       const bill=bills.find(b=>b.id===id);
       if(bill){bill.status='confirmed';bill.confirmedAt=new Date().toISOString().replace('T',' ').substring(0,16);state.selectedIds.delete(id);render();showToast('success','已确认','账单'+bill.billNo+'客户已确认');}
     }else if(action==='withdraw'){
+      pendingWithdrawId=id;
       const bill=bills.find(b=>b.id===id);
       if(!bill)return;
-      if(!confirm('确定撒回账单'+bill.billNo+'吗？关联费用单将回到未出账状态。'))return;
-      bill.status='draft';bill.sentAt='';bill.confirmedAt='';
-      state.selectedIds.delete(id);
-      render();
-      showToast('success','已撒回','账单'+bill.billNo+'已撒回');
+      withdrawBillInfo.textContent='账单号：'+bill.billNo;
+      withdrawReason.value='';
+      withdrawModal.style.display='flex';
     }
   });
 
@@ -286,6 +295,25 @@
   /* 导出（模拟） */
   exportBtn.addEventListener('click',()=>{
     showToast('info','导出','导出功能开发中');
+  });
+
+  /* 撒回弹窗 */
+  withdrawCancelBtn.addEventListener('click',()=>{
+    withdrawModal.style.display='none';
+    pendingWithdrawId=null;
+  });
+  withdrawConfirmBtn.addEventListener('click',()=>{
+    if(!withdrawReason.value.trim()){showToast('warning','请填写原因','撒回原因为必填项');return;}
+    const bill=bills.find(b=>b.id===pendingWithdrawId);
+    if(bill){
+      bill.status='cancelled';
+      bill.cancelReason=withdrawReason.value.trim();
+      state.selectedIds.delete(bill.id);
+      render();
+      showToast('success','已作废','账单'+bill.billNo+'已作废');
+    }
+    withdrawModal.style.display='none';
+    pendingWithdrawId=null;
   });
 
   render();
