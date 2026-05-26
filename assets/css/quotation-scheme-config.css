@@ -1,0 +1,31 @@
+/* quotation-scheme-config: uses shared sdms-comp-config-list.css */
+
+/* 默认报价徽章 */
+.default-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  background: #e8f4ff;
+  color: #2b5aed;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* 客户列"—"灰色 */
+.cell-muted {
+  color: #999;
+}
+
+/* 长期有效文字 */
+.date-longterm {
+  color: #2b5aed;
+  font-weight: 500;
+}
+
+/* 费用项数为0时橙色警示 */
+.fee-count-warning {
+  color: #e6a23c;
+  font-weight: 600;
+}

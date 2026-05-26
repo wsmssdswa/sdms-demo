@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>费用单管理</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/sdms-comp-config-list.css">
+  <link rel="stylesheet" href="./assets/css/fee-sheet-list.css">
+</head>
+<body>
+<div class="app-shell">
+<aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
+<div class="page-shell">
+<div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="fee-sheet" data-include-tools="true" data-user-name="张三"></div>
+<main class="content-wrap">
+<section class="page-card">
+<section class="filter-panel">
+<div class="scene-tabs" id="statusTabs"></div>
+<div class="query-row">
+  <div class="filter-control"><span class="filter-inline-label">单据类型</span><div class="select-wrap"><select class="filter-select" id="sheetTypeSelect"><option value="">全部</option><option value="order">订单费用</option><option value="stock_inbound">备货入库费用</option><option value="return_inbound">退货入库费用</option><option value="storage_cycle">仓储费用</option></select><svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg></div></div>
+  <div class="filter-control"><span class="filter-inline-label">费用大类</span><div class="select-wrap"><select class="filter-select" id="categorySelect"><option value="">全部</option><option value="logistics">物流费</option><option value="storage">仓储费</option><option value="operation">操作费</option></select><svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg></div></div>
+  <div class="filter-control"><span class="filter-inline-label">结算模式</span><div class="select-wrap"><select class="filter-select" id="settlementSelect"><option value="">全部</option><option value="realtime">余额扣款</option><option value="bill">账期结算</option></select><svg class="select-arrow" width="10" height="6" viewBox="0 0 10 6"><path d="M0 0l5 6 5-6z" fill="currentColor"/></svg></div></div>
+  <div class="filter-control"><span class="filter-inline-label">关键字</span><input class="filter-input" id="keywordInput" type="text" maxlength="50" placeholder="费用单号/关联单号/客户"></div>
+  <button class="btn btn-primary" id="queryBtn" type="button">查询</button>
+  <button class="btn btn-default" id="resetBtn" type="button">重置</button>
+</div>
+</section>
+
+<section class="table-panel">
+  <div class="panel-action-row">
+    <button class="btn-default" id="batchRebillBtn" type="button">重新计费</button>
+    <button class="btn-new" id="generateBillBtn" type="button">生成账单</button>
+    <span id="selectedHint" style="font-size:12px;color:var(--text-muted)"></span>
+  </div>
+  <div class="table-wrap">
+    <table class="list-table" style="min-width:1500px">
+      <colgroup>
+        <col style="width:36px">
+        <col style="width:52px">
+        <col style="width:12%">
+        <col style="width:7%">
+        <col style="width:9%">
+        <col style="width:7%">
+        <col style="width:10%">
+        <col style="width:9%">
+        <col style="width:8%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:10%">
+        <col style="width:9%">
+        <col style="width:6%">
+        <col style="width:100px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="checkAll"></th>
+          <th style="padding:11px 4px;text-align:center">序号</th>
+          <th>费用单号</th>
+          <th>单据类型</th>
+          <th>关联单号</th>
+          <th>结算模式</th>
+          <th>客户</th>
+          <th>仓库</th>
+          <th>业务员</th>
+          <th>应收金额</th>
+          <th>应付金额</th>
+          <th>净额</th>
+          <th>关联账单</th>
+          <th>创建时间</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="sheetBody"></tbody>
+    </table>
+  </div>
+  <div class="table-footer">
+    <span id="sheetCount"></span>
+  </div>
+</section>
+
+<!-- 费用单详情弹窗 -->
+<div class="modal-mask" id="detailModal" aria-hidden="true">
+  <div class="modal-dialog" style="width:min(1100px,calc(100vw - 32px))">
+    <div class="modal-header">
+      <span class="modal-title" id="detailTitle">费用单详情</span>
+      <button type="button" class="modal-close" id="detailCloseBtn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-info-card"><div class="detail-info-grid" id="detailInfo"></div></div>
+      <div class="detail-summary" id="detailSummary"></div>
+      <div class="detail-section">
+        <div class="detail-section-title"><span class="dir-receivable-tag">应收费用项</span> <span class="detail-section-sum" id="receivableSum"></span></div>
+        <table class="detail-items-table">
+          <thead><tr><th style="width:40px;white-space:nowrap">序号</th><th style="white-space:nowrap">费用项</th><th style="width:64px;white-space:nowrap">原币币种</th><th class="amount-header" style="width:100px;white-space:nowrap">原币总价</th><th class="amount-header" style="width:78px;white-space:nowrap">本位币汇率</th><th class="amount-header" style="width:100px;white-space:nowrap">本位币总价</th><th class="amount-header" style="width:78px;white-space:nowrap">CNY汇率</th><th class="amount-header" style="width:100px;white-space:nowrap">CNY总价</th><th style="width:90px;white-space:nowrap">计费时间</th><th style="width:100px;white-space:nowrap">备注</th><th style="width:50px;white-space:nowrap">操作</th></tr></thead>
+          <tbody id="receivableItemsBody"></tbody>
+        </table>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title"><span class="dir-payable-tag">应付费用项</span> <span class="detail-section-sum" id="payableSum"></span></div>
+        <table class="detail-items-table">
+          <thead><tr><th style="width:40px;white-space:nowrap">序号</th><th style="white-space:nowrap">费用项</th><th style="width:64px;white-space:nowrap">原币币种</th><th class="amount-header" style="width:100px;white-space:nowrap">原币总价</th><th class="amount-header" style="width:78px;white-space:nowrap">本位币汇率</th><th class="amount-header" style="width:100px;white-space:nowrap">本位币总价</th><th class="amount-header" style="width:78px;white-space:nowrap">CNY汇率</th><th class="amount-header" style="width:100px;white-space:nowrap">CNY总价</th><th style="width:90px;white-space:nowrap">计费时间</th><th style="width:100px;white-space:nowrap">备注</th><th style="width:50px;white-space:nowrap">操作</th></tr></thead>
+          <tbody id="payableItemsBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer" id="detailFooter"></div>
+  </div>
+</div>
+</section>
+</main>
+</div>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script src="./assets/js/sdms-header-tabs.js"></script>
+<script src="./assets/js/sdms-sidebar.js"></script>
+<script src="./assets/js/fee-sheet-list.js"></script>
+</body>
+</html>

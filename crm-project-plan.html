@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>医美智能CRM系统 — 项目规划</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #faf8f5;
+  --bg-deep: #f0ece6;
+  --fg: #1a1a2e;
+  --fg-light: #6b6b80;
+  --accent: #c4935a;
+  --accent-light: #e8d5b8;
+  --accent-glow: rgba(196, 147, 90, 0.15);
+  --card: #ffffff;
+  --card-hover: #fffdfb;
+  --border: #e8e2d9;
+  --shadow: 0 2px 20px rgba(26, 26, 46, 0.06);
+  --shadow-hover: 0 8px 40px rgba(26, 26, 46, 0.12);
+  --radius: 16px;
+  --navy: #1a1a2e;
+  --teal: #4a8c7f;
+  --rose: #c47a7a;
+  --blue: #5a7cc4;
+  --purple: #8a6abf;
+  --orange: #c4855a;
+  --green: #5aab7e;
+  --gold: #bfa24e;
+  --pink: #c46a8a;
+  --cyan: #5a9cbf;
+  --red: #bf5a5a;
+  --indigo: #6a5acd;
+}
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--accent-light); border-radius: 3px; }
+
+/* ===== HEADER ===== */
+.header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 16px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(250, 248, 245, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(232, 226, 217, 0.5);
+  transition: all 0.3s;
+}
+.header.scrolled {
+  padding: 10px 40px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+}
+.logo {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--accent), #d4a574);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+}
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  text-decoration: none;
+  color: var(--fg-light);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: color 0.3s;
+}
+.nav-links a:hover { color: var(--accent); }
+
+/* ===== HERO ===== */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 40px 80px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -200px; right: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -100px; left: -150px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(74, 140, 127, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px;
+  border: 1px solid var(--accent-light);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 1px;
+  margin-bottom: 32px;
+  background: rgba(196, 147, 90, 0.05);
+}
+.hero-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.hero h1 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  position: relative;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--accent), #d4a574);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-desc {
+  font-size: 17px;
+  color: var(--fg-light);
+  max-width: 600px;
+  line-height: 1.8;
+  margin-bottom: 48px;
+}
+.hero-stats {
+  display: flex;
+  gap: 48px;
+  margin-top: 20px;
+}
+.hero-stat {
+  text-align: center;
+}
+.hero-stat-num {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+.hero-stat-label {
+  font-size: 12px;
+  color: var(--fg-light);
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+.scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--fg-light);
+  font-size: 11px;
+  letter-spacing: 2px;
+  animation: float 3s ease-in-out infinite;
+}
+.scroll-hint-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ===== SECTIONS ===== */
+.section {
+  padding: 100px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: clamp(28px, 3.5vw, 40px);
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+.section-desc {
+  font-size: 15px;
+  color: var(--fg-light);
+  max-width: 640px;
+  line-height: 1.8;
+}
+
+/* ===== ARCHITECTURE ===== */
+.arch-section {
+  padding: 100px 40px;
+  background: var(--navy);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.arch-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(196, 147, 90, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(74, 140, 127, 0.08) 0%, transparent 50%);
+}
+.arch-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.arch-section .section-label { color: var(--accent-light); }
+.arch-section .section-title { color: #fff; }
+.arch-section .section-desc { color: rgba(255,255,255,0.6); }
+
+.arch-flow {
+  margin-top: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+}
+.arch-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 160px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.arch-node:hover { transform: translateY(-4px); }
+.arch-icon {
+  width: 64px; height: 64px;
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s;
+}
+.arch-node:hover .arch-icon {
+  background: rgba(196, 147, 90, 0.2);
+  border-color: var(--accent);
+  box-shadow: 0 0 30px rgba(196, 147, 90, 0.2);
+}
+.arch-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+}
+.arch-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.5;
+}
+.arch-arrow {
+  font-size: 20px;
+  color: rgba(255,255,255,0.2);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* ===== AI FLOW ===== */
+.ai-flow {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 20px;
+  align-items: center;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.ai-step {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  text-align: center;
+  transition: all 0.3s;
+}
+.ai-step:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: var(--accent);
+}
+.ai-step-icon { font-size: 32px; margin-bottom: 8px; }
+.ai-step-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 4px;
+}
+.ai-step-desc {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+}
+.ai-arrow {
+  color: var(--accent);
+  font-size: 24px;
+  text-align: center;
+}
+
+/* ===== MODULES GRID ===== */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 48px;
+}
+.module-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  transition: all 0.4s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.module-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.module-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: transparent;
+}
+.module-card:hover::before { opacity: 1; }
+.module-card-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.module-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.module-code {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+.module-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+.module-desc {
+  font-size: 13px;
+  color: var(--fg-light);
+  line-height: 1.7;
+  margin-bottom: 18px;
+}
+.module-features {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.module-features li {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: var(--bg);
+  color: var(--fg-light);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+/* Card accent colors */
+.module-card[data-color="teal"]::before { background: var(--teal); }
+.module-card[data-color="teal"] .module-icon { background: rgba(74,140,127,0.1); }
+.module-card[data-color="teal"] .module-code { color: var(--teal); }
+
+.module-card[data-color="rose"]::before { background: var(--rose); }
+.module-card[data-color="rose"] .module-icon { background: rgba(196,122,122,0.1); }
+.module-card[data-color="rose"] .module-code { color: var(--rose); }
+
+.module-card[data-color="blue"]::before { background: var(--blue); }
+.module-card[data-color="blue"] .module-icon { background: rgba(90,124,196,0.1); }
+.module-card[data-color="blue"] .module-code { color: var(--blue); }
+
+.module-card[data-color="purple"]::before { background: var(--purple); }
+.module-card[data-color="purple"] .module-icon { background: rgba(138,106,191,0.1); }
+.module-card[data-color="purple"] .module-code { color: var(--purple); }
+
+.module-card[data-color="accent"]::before { background: var(--accent); }
+.module-card[data-color="accent"] .module-icon { background: var(--accent-glow); }
+.module-card[data-color="accent"] .module-code { color: var(--accent); }
+
+.module-card[data-color="orange"]::before { background: var(--orange); }
+.module-card[data-color="orange"] .module-icon { background: rgba(196,133,90,0.1); }
+.module-card[data-color="orange"] .module-code { color: var(--orange); }
+
+.module-card[data-color="green"]::before { background: var(--green); }
+.module-card[data-color="green"] .module-icon { background: rgba(90,171,126,0.1); }
+.module-card[data-color="green"] .module-code { color: var(--green); }
+
+.module-card[data-color="gold"]::before { background: var(--gold); }
+.module-card[data-color="gold"] .module-icon { background: rgba(191,162,78,0.1); }
+.module-card[data-color="gold"] .module-code { color: var(--gold); }
+
+.module-card[data-color="pink"]::before { background: var(--pink); }
+.module-card[data-color="pink"] .module-icon { background: rgba(196,106,138,0.1); }
+.module-card[data-color="pink"] .module-code { color: var(--pink); }
+
+.module-card[data-color="cyan"]::before { background: var(--cyan); }
+.module-card[data-color="cyan"] .module-icon { background: rgba(90,156,191,0.1); }
+.module-card[data-color="cyan"] .module-code { color: var(--cyan); }
+
+.module-card[data-color="red"]::before { background: var(--red); }
+.module-card[data-color="red"] .module-icon { background: rgba(191,90,90,0.1); }
+.module-card[data-color="red"] .module-code { color: var(--red); }
+
+.module-card[data-color="indigo"]::before { background: var(--indigo); }
+.module-card[data-color="indigo"] .module-icon { background: rgba(106,90,205,0.1); }
+.module-card[data-color="indigo"] .module-code { color: var(--indigo); }
+
+/* ===== AI SHOWCASE ===== */
+.ai-showcase {
+  padding: 100px 40px;
+  background: linear-gradient(180deg, var(--bg-deep) 0%, var(--bg) 100%);
+}
+.ai-showcase-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.ai-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 48px;
+}
+.ai-panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.ai-panel-header {
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ai-panel-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.ai-panel-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 16px;
+  font-weight: 700;
+}
+.ai-panel-body {
+  padding: 24px 28px;
+}
+.ai-insight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--bg);
+}
+.ai-insight-item:last-child { border-bottom: none; }
+.ai-insight-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+.ai-insight-label {
+  font-size: 12px;
+  color: var(--fg-light);
+  margin-bottom: 2px;
+}
+.ai-insight-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fg);
+}
+
+/* ===== KNOWLEDGE BASE SECTION ===== */
+.kb-section {
+  padding: 100px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.kb-flow {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+.kb-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px 20px;
+  text-align: center;
+  transition: all 0.3s;
+}
+.kb-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.kb-icon { font-size: 28px; margin-bottom: 10px; }
+.kb-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.kb-desc { font-size: 11px; color: var(--fg-light); line-height: 1.5; }
+
+/* ===== AI ASSISTANT DEMO ===== */
+.assistant-section {
+  padding: 100px 40px;
+  background: var(--navy);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.assistant-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 30% 80%, rgba(106,90,205,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 20%, rgba(196,147,90,0.08) 0%, transparent 50%);
+}
+.assistant-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.assistant-section .section-label { color: var(--accent-light); }
+.assistant-section .section-title { color: #fff; }
+.assistant-section .section-desc { color: rgba(255,255,255,0.6); }
+
+.assistant-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 48px;
+  align-items: start;
+}
+
+/* Chat Window */
+.chat-window {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  overflow: hidden;
+  max-width: 540px;
+}
+.chat-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chat-avatar {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--indigo), #8a7aed);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.chat-header-info {
+  flex: 1;
+}
+.chat-header-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+}
+.chat-header-status {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+}
+.chat-context-badge {
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  background: rgba(106,90,205,0.2);
+  border: 1px solid rgba(106,90,205,0.3);
+  color: #a99ef0;
+}
+
+.chat-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 380px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.chat-msg {
+  display: flex;
+  gap: 10px;
+  max-width: 85%;
+  opacity: 0;
+  transform: translateY(12px);
+  animation: msgIn 0.4s ease forwards;
+}
+.chat-msg.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+.chat-msg-avatar {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.chat-msg.ai .chat-msg-avatar {
+  background: linear-gradient(135deg, var(--indigo), #8a7aed);
+}
+.chat-msg.user .chat-msg-avatar {
+  background: rgba(255,255,255,0.1);
+}
+.chat-msg-bubble {
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.chat-msg.ai .chat-msg-bubble {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.85);
+}
+.chat-msg.user .chat-msg-bubble {
+  background: linear-gradient(135deg, var(--indigo), #7a6aed);
+  color: #fff;
+  border: none;
+  border-bottom-right-radius: 4px;
+}
+.chat-msg.ai .chat-msg-bubble {
+  border-bottom-left-radius: 4px;
+}
+
+@keyframes msgIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-quick-actions {
+  padding: 12px 20px 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chat-quick-btn {
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+.chat-quick-btn:hover {
+  background: rgba(106,90,205,0.2);
+  border-color: rgba(106,90,205,0.4);
+  color: #a99ef0;
+}
+
+/* Right side: Feature list */
+.assistant-features {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 8px;
+}
+.assistant-feature {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.assistant-feature-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.assistant-feature-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 4px;
+}
+.assistant-feature-desc {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.6;
+}
+.chat-input-bar {
+  padding: 12px 20px 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  gap: 8px;
+}
+.chat-input {
+  flex: 1;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+.chat-input::placeholder { color: rgba(255,255,255,0.25); }
+.chat-input:focus { border-color: var(--indigo); }
+.chat-send {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--indigo), #7a6aed);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.3s;
+}
+.chat-send:hover { opacity: 0.85; }
+
+/* ===== SUMMARY ===== */
+.summary-section {
+  padding: 100px 40px;
+  background: var(--navy);
+  color: #fff;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.summary-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(196,147,90,0.15) 0%, transparent 60%);
+}
+.summary-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.summary-section .section-title { color: #fff; }
+.summary-section .section-desc { color: rgba(255,255,255,0.6); margin: 0 auto; }
+.summary-stats {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  margin-top: 48px;
+  padding-top: 48px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.summary-stat-num {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+.summary-stat-label {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  margin-top: 8px;
+}
+
+/* ===== ANIMATIONS ===== */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .modules-grid { grid-template-columns: repeat(2, 1fr); }
+  .ai-panels { grid-template-columns: 1fr; }
+  .kb-flow { grid-template-columns: repeat(3, 1fr); }
+  .arch-flow { flex-direction: column; gap: 16px; }
+  .arch-arrow { transform: rotate(90deg); }
+  .ai-flow { grid-template-columns: 1fr; }
+  .ai-arrow { transform: rotate(90deg); }
+  .hero-stats { gap: 24px; }
+  .summary-stats { gap: 24px; flex-wrap: wrap; }
+  .assistant-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .modules-grid { grid-template-columns: 1fr; }
+  .kb-flow { grid-template-columns: repeat(2, 1fr); }
+  .nav-links { display: none; }
+  .section { padding: 60px 20px; }
+  .hero { padding: 100px 20px 60px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header" id="header">
+  <div class="logo">
+    <div class="logo-icon">M</div>
+    MedCRM
+  </div>
+  <ul class="nav-links">
+    <li><a href="#overview">系统全景</a></li>
+    <li><a href="#modules">功能模块</a></li>
+    <li><a href="#ai">AI分析</a></li>
+    <li><a href="#assistant">AI助手</a></li>
+    <li><a href="#summary">项目总览</a></li>
+  </ul>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">PROJECT BLUEPRINT</div>
+  <h1>医美智能<em>CRM</em>系统</h1>
+  <p class="hero-desc">
+    以AI语音分析为核心的医美客户关系管理系统，<br>
+    通过智能录音分析驱动客户洞察与咨询师能力提升
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">12</div>
+      <div class="hero-stat-label">功能模块</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">65+</div>
+      <div class="hero-stat-label">功能点</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">AI</div>
+      <div class="hero-stat-label">核心驱动</div>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <div class="scroll-hint-line"></div>
+  </div>
+</section>
+
+<!-- System Architecture -->
+<section class="arch-section" id="overview">
+  <div class="arch-inner">
+    <div class="section-label">SYSTEM OVERVIEW</div>
+    <div class="section-title" style="color:#fff">系统全景</div>
+    <div class="section-desc" style="color:rgba(255,255,255,0.6)">从线索获取到AI分析，完整覆盖医美机构客户管理全链路</div>
+
+    <div class="arch-flow">
+      <div class="arch-node">
+        <div class="arch-icon">📢</div>
+        <div class="arch-name">多渠道获客</div>
+        <div class="arch-sub">美团/新氧/抖音<br>公众号/线下</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-icon">📋</div>
+        <div class="arch-name">线索管理</div>
+        <div class="arch-sub">分配/跟进<br>线索→客户</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-icon">📅</div>
+        <div class="arch-name">预约面诊</div>
+        <div class="arch-sub">日程/签到<br>面诊管理</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-icon">🎙️</div>
+        <div class="arch-name">录音采集</div>
+        <div class="arch-sub">自动/手动上传<br>设备同步</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node" style="transform:scale(1.1)">
+        <div class="arch-icon" style="border-color:var(--accent);background:rgba(196,147,90,0.15)">🧠</div>
+        <div class="arch-name" style="color:var(--accent)">AI智能分析</div>
+        <div class="arch-sub">客户画像+<br>咨询师评估</div>
+      </div>
+    </div>
+
+    <!-- AI Flow Detail -->
+    <div class="ai-flow" style="margin-top:64px">
+      <div class="ai-step">
+        <div class="ai-step-icon">🎙️</div>
+        <div class="ai-step-title">录音文件</div>
+        <div class="ai-step-desc">mp3/wav/m4a</div>
+      </div>
+      <div class="ai-arrow">→</div>
+      <div class="ai-step">
+        <div class="ai-step-icon">📝</div>
+        <div class="ai-step-title">语音转文字</div>
+        <div class="ai-step-desc">ASR+说话人识别</div>
+      </div>
+      <div class="ai-arrow">→</div>
+      <div class="ai-step">
+        <div class="ai-step-icon" style="font-size:36px">🧠</div>
+        <div class="ai-step-title">大模型分析</div>
+        <div class="ai-step-desc">结合知识库RAG</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:40px;margin-top:40px;flex-wrap:wrap">
+      <div style="text-align:center;padding:16px 24px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.08)">
+        <div style="font-size:24px;margin-bottom:4px">👤</div>
+        <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.9)">客户洞察</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4)">画像·需求·情绪·成交信号</div>
+      </div>
+      <div style="text-align:center;padding:16px 24px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.08)">
+        <div style="font-size:24px;margin-bottom:4px">💼</div>
+        <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.9)">咨询师评估</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4)">话术·沟通·专业度·评分</div>
+      </div>
+      <div style="text-align:center;padding:16px 24px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.08)">
+        <div style="font-size:24px;margin-bottom:4px">💡</div>
+        <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.9)">后续建议</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4)">跟进策略·促成建议·风险预警</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modules -->
+<section class="section" id="modules">
+  <div class="section-label">FEATURE MODULES</div>
+  <div class="section-title">12大功能模块</div>
+  <div class="section-desc">覆盖客户全生命周期管理，AI智能分析贯穿核心业务场景</div>
+
+  <div class="modules-grid">
+    <!-- M1 -->
+    <div class="module-card reveal" data-color="teal">
+      <div class="module-card-head">
+        <div class="module-icon">👤</div>
+        <div>
+          <div class="module-code">M01</div>
+          <div class="module-title">客户管理</div>
+        </div>
+      </div>
+      <div class="module-desc">客户全生命周期档案管理，从线索到成交的完整记录</div>
+      <ul class="module-features">
+        <li>客户档案</li>
+        <li>客户等级</li>
+        <li>标签体系</li>
+        <li>客户合并</li>
+        <li>客户转移</li>
+        <li>导入/导出</li>
+      </ul>
+    </div>
+
+    <!-- M2 -->
+    <div class="module-card reveal" data-color="rose">
+      <div class="module-card-head">
+        <div class="module-icon">📢</div>
+        <div>
+          <div class="module-code">M02</div>
+          <div class="module-title">线索管理</div>
+        </div>
+      </div>
+      <div class="module-desc">多渠道线索汇聚，智能分配与跟进，线索到客户的全流程转化</div>
+      <ul class="module-features">
+        <li>线索录入</li>
+        <li>渠道对接</li>
+        <li>线索分配</li>
+        <li>跟进记录</li>
+        <li>线索转客户</li>
+        <li>线索公海</li>
+        <li>自动回收</li>
+      </ul>
+    </div>
+
+    <!-- M3 -->
+    <div class="module-card reveal" data-color="accent">
+      <div class="module-card-head">
+        <div class="module-icon">🎙️</div>
+        <div>
+          <div class="module-code">M03</div>
+          <div class="module-title">录音采集与管理</div>
+        </div>
+      </div>
+      <div class="module-desc">支持手动上传和设备自动同步，录音与客户面诊自动关联</div>
+      <ul class="module-features">
+        <li>手动上传</li>
+        <li>自动同步</li>
+        <li>设备管理</li>
+        <li>录音关联</li>
+        <li>在线播放</li>
+        <li>状态追踪</li>
+      </ul>
+    </div>
+
+    <!-- M4 -->
+    <div class="module-card reveal" data-color="purple">
+      <div class="module-card-head">
+        <div class="module-icon">🧠</div>
+        <div>
+          <div class="module-code">M04</div>
+          <div class="module-title">AI智能分析</div>
+        </div>
+      </div>
+      <div class="module-desc">系统核心——语音转文字、客户洞察分析、咨询师能力评估、后续建议</div>
+      <ul class="module-features">
+        <li>ASR转写</li>
+        <li>说话人识别</li>
+        <li>客户画像</li>
+        <li>需求识别</li>
+        <li>情绪分析</li>
+        <li>成交信号</li>
+        <li>话术评估</li>
+        <li>综合评分</li>
+        <li>跟进建议</li>
+      </ul>
+    </div>
+
+    <!-- M5 -->
+    <div class="module-card reveal" data-color="blue">
+      <div class="module-card-head">
+        <div class="module-icon">📅</div>
+        <div>
+          <div class="module-code">M05</div>
+          <div class="module-title">预约与日程</div>
+        </div>
+      </div>
+      <div class="module-desc">面诊预约管理，日程视图，到店签到与提醒</div>
+      <ul class="module-features">
+        <li>预约创建</li>
+        <li>日/周/月视图</li>
+        <li>预约提醒</li>
+        <li>到店签到</li>
+        <li>冲突检测</li>
+        <li>状态管理</li>
+      </ul>
+    </div>
+
+    <!-- M6 -->
+    <div class="module-card reveal" data-color="orange">
+      <div class="module-card-head">
+        <div class="module-icon">💊</div>
+        <div>
+          <div class="module-code">M06</div>
+          <div class="module-title">项目与产品管理</div>
+        </div>
+      </div>
+      <div class="module-desc">医美项目目录、套餐组合、定价管理</div>
+      <ul class="module-features">
+        <li>项目目录</li>
+        <li>分类管理</li>
+        <li>项目详情</li>
+        <li>套餐管理</li>
+        <li>库存管理</li>
+      </ul>
+    </div>
+
+    <!-- M7 -->
+    <div class="module-card reveal" data-color="green">
+      <div class="module-card-head">
+        <div class="module-icon">💰</div>
+        <div>
+          <div class="module-code">M07</div>
+          <div class="module-title">消费与订单</div>
+        </div>
+      </div>
+      <div class="module-desc">订单全流程管理，业绩归属与客户价值统计</div>
+      <ul class="module-features">
+        <li>订单创建</li>
+        <li>状态管理</li>
+        <li>消费记录</li>
+        <li>退款处理</li>
+        <li>业绩归属</li>
+        <li>客户价值</li>
+      </ul>
+    </div>
+
+    <!-- M8 -->
+    <div class="module-card reveal" data-color="gold">
+      <div class="module-card-head">
+        <div class="module-icon">📊</div>
+        <div>
+          <div class="module-code">M08</div>
+          <div class="module-title">数据看板与报表</div>
+        </div>
+      </div>
+      <div class="module-desc">管理层全局视角，转化漏斗、咨询师排行、客户分析、自定义报表</div>
+      <ul class="module-features">
+        <li>核心指标</li>
+        <li>转化漏斗</li>
+        <li>趋势分析</li>
+        <li>咨询师排行</li>
+        <li>能力看板</li>
+        <li>流失预警</li>
+        <li>自定义报表</li>
+      </ul>
+    </div>
+
+    <!-- M9 -->
+    <div class="module-card reveal" data-color="cyan">
+      <div class="module-card-head">
+        <div class="module-icon">⚙️</div>
+        <div>
+          <div class="module-code">M09</div>
+          <div class="module-title">系统管理</div>
+        </div>
+      </div>
+      <div class="module-desc">组织架构、员工账号、角色权限、渠道配置、系统参数</div>
+      <ul class="module-features">
+        <li>组织架构</li>
+        <li>员工管理</li>
+        <li>角色权限</li>
+        <li>渠道配置</li>
+        <li>AI参数</li>
+        <li>数据字典</li>
+        <li>操作日志</li>
+      </ul>
+    </div>
+
+    <!-- M10 -->
+    <div class="module-card reveal" data-color="pink">
+      <div class="module-card-head">
+        <div class="module-icon">🔔</div>
+        <div>
+          <div class="module-code">M10</div>
+          <div class="module-title">消息与通知</div>
+        </div>
+      </div>
+      <div class="module-desc">站内消息、跟进提醒、AI分析通知、流失预警推送</div>
+      <ul class="module-features">
+        <li>站内消息</li>
+        <li>跟进提醒</li>
+        <li>AI完成通知</li>
+        <li>流失预警</li>
+        <li>微信/短信</li>
+      </ul>
+    </div>
+
+    <!-- M11 -->
+    <div class="module-card reveal" data-color="red">
+      <div class="module-card-head">
+        <div class="module-icon">📚</div>
+        <div>
+          <div class="module-code">M11</div>
+          <div class="module-title">知识库管理</div>
+        </div>
+      </div>
+      <div class="module-desc">医美领域知识沉淀，为AI分析提供专业基准，支持RAG检索增强</div>
+      <ul class="module-features">
+        <li>项目知识库</li>
+        <li>话术模板库</li>
+        <li>最佳实践库</li>
+        <li>竞品知识库</li>
+        <li>自定义规则</li>
+        <li>知识索引</li>
+      </ul>
+    </div>
+
+    <!-- M12 -->
+    <div class="module-card reveal" data-color="indigo">
+      <div class="module-card-head">
+        <div class="module-icon">💬</div>
+        <div>
+          <div class="module-code">M12</div>
+          <div class="module-title">AI助手</div>
+        </div>
+      </div>
+      <div class="module-desc">随时对话，基于客户资料与录音分析实时回答咨询师问题，提供策略建议</div>
+      <ul class="module-features">
+        <li>客户关联对话</li>
+        <li>快捷提问</li>
+        <li>录音问答</li>
+        <li>策略建议</li>
+        <li>历史对话</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- AI Showcase -->
+<section class="ai-showcase" id="ai">
+  <div class="ai-showcase-inner">
+    <div class="section-label">AI ANALYSIS</div>
+    <div class="section-title">AI分析输出示例</div>
+    <div class="section-desc">每一段面诊录音都将产出两层分析报告：客户洞察与咨询师评估</div>
+
+    <div class="ai-panels">
+      <!-- Customer Insight -->
+      <div class="ai-panel reveal">
+        <div class="ai-panel-header">
+          <div class="ai-panel-icon" style="background:rgba(74,140,127,0.1)">👤</div>
+          <div class="ai-panel-title">客户洞察报告</div>
+        </div>
+        <div class="ai-panel-body">
+          <div class="ai-insight-item">
+            <div class="ai-insight-dot" style="background:var(--teal)"></div>
+            <div>
+              <div class="ai-insight-label">客户画像</div>
+              <div class="ai-insight-value">28岁女性，中高消费能力，决策谨慎型，偏好自然风格，通过小红书了解项目</div>
+            </div>
+          </div>
+          <div class="ai-insight-item">
+            <div class="ai-insight-dot" style="background:var(--teal)"></div>
+            <div>
+              <div class="ai-insight-label">核心需求</div>
+              <div class="ai-insight-value">面部轮廓优化（下颌线+苹果肌），隐含对术后恢复期的担忧</div>
+            </div>
+          </div>
+          <div class="ai-insight-item">
+            <div class="ai-insight-dot" style="background:var(--teal)"></div>
+            <div>
+              <div class="ai-insight-label">情绪曲线</div>
+              <div class="ai-insight-value">开场兴致一般 → 项目介绍时兴趣上升 → 价格环节出现犹豫 → 结束时态度回升</div>
+            </div>
+          </div>
+          <div class="ai-insight-item">
+            <div class="ai-insight-dot" style="background:var(--accent)"></div>
+            <div>
+              <div class="ai-insight-label">成交信号</div>
+              <div class="ai-insight-value">购买意向 7/10 —— 多次追问恢复周期和效果持久性，属于高意向但需消除顾虑</div>
+            </div>
+          </div>
+          <div class="ai-insight-item">
+            <div class="ai-insight-dot" style="background:var(--teal)"></div>
+            <div>
+              <div class="ai-insight-label">后续建议</div>
+              <div class="ai-insight-value">3天内微信跟进，重点解答恢复期问题，可发送类似案例的术后对比照</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consultant Assessment -->
+      <div class="ai-panel reveal">
+        <div class="ai-panel-header">
+          <div class="ai-panel-icon" style="background:rgba(196,147,90,0.1)">💼</div>
+          <div class="ai-panel-title">咨询师能力评估</div>
+        </div>
+        <div class="ai-panel-body">
+          <div class="ai-insight-item">
+            <div class="ai-insight-dot" style="background:var(--accent)"></div>
+            <div>
+              <div class="ai-insight-label">综合评分</div>
+              <div class="ai-insight-value">78 / 100</div>
+            </div>
+          </div>
+          <div class="ai-insight-item">
+            <div class="ai-insight-dot" style="background:var(--green)"></div>
+            <div>
+              <div class="ai-insight-label">亮点</div>
+              <div class="ai-insight-value">需求挖掘深入，准确识别了客户对恢复期的隐性担忧；案例展示有说服力</div>
+            </div>
+          </div>
+          <div class="ai-insight-item">
+            <div class="ai-insight-dot" style="background:var(--rose)"></div>
+            <div>
+              <div class="ai-insight-label">待改进</div>
+              <div class="ai-insight-value">价格环节缺乏拆分策略，一次性报价导致客户犹豫；促单时机偏早，应先解决顾虑</div>
+            </div>
+          </div>
+          <div class="ai-insight-item">
+            <div class="ai-insight-dot" style="background:var(--accent)"></div>
+            <div>
+              <div class="ai-insight-label">倾听比例</div>
+              <div class="ai-insight-value">咨询师 42% / 客户 58% —— 黄金比例，继续保持</div>
+            </div>
+          </div>
+          <div class="ai-insight-item">
+            <div class="ai-insight-dot" style="background:var(--accent)"></div>
+            <div>
+              <div class="ai-insight-label">专业度</div>
+              <div class="ai-insight-value">项目介绍准确，但未主动告知术后风险，存在合规隐患</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Knowledge Base -->
+<section class="kb-section">
+  <div class="section-label">KNOWLEDGE BASE</div>
+  <div class="section-title">AI知识库体系</div>
+  <div class="section-desc">让AI基于机构自身的专业知识做出判断，而非通用的泛泛分析</div>
+
+  <div class="kb-flow">
+    <div class="kb-card reveal">
+      <div class="kb-icon">💊</div>
+      <div class="kb-name">项目知识库</div>
+      <div class="kb-desc">适应症·禁忌症<br>效果周期·价格区间</div>
+    </div>
+    <div class="kb-card reveal">
+      <div class="kb-icon">💬</div>
+      <div class="kb-name">话术模板库</div>
+      <div class="kb-desc">开场白·需求挖掘<br>异议处理·促单话术</div>
+    </div>
+    <div class="kb-card reveal">
+      <div class="kb-icon">🏆</div>
+      <div class="kb-name">最佳实践库</div>
+      <div class="kb-desc">优秀面诊录音<br>标杆案例参考</div>
+    </div>
+    <div class="kb-card reveal">
+      <div class="kb-icon">🔍</div>
+      <div class="kb-name">竞品知识库</div>
+      <div class="kb-desc">竞品项目对比<br>差异化话术参考</div>
+    </div>
+    <div class="kb-card reveal">
+      <div class="kb-icon">📜</div>
+      <div class="kb-name">自定义规则</div>
+      <div class="kb-desc">合规要求·品牌规范<br>机构自定义规则</div>
+    </div>
+  </div>
+</section>
+
+<!-- AI Assistant Demo -->
+<section class="assistant-section" id="assistant">
+  <div class="assistant-inner">
+    <div class="section-label">AI ASSISTANT</div>
+    <div class="section-title">AI助手</div>
+    <div class="section-desc">咨询师随时与AI对话，针对特定客户快速获取洞察和建议</div>
+
+    <div class="assistant-layout">
+      <!-- Chat Demo -->
+      <div class="chat-window reveal">
+        <div class="chat-header">
+          <div class="chat-avatar">💬</div>
+          <div class="chat-header-info">
+            <div class="chat-header-name">AI咨询助手</div>
+            <div class="chat-header-status">基于客户档案与录音分析</div>
+          </div>
+          <div class="chat-context-badge">👤 李女士</div>
+        </div>
+        <div class="chat-body" id="chatBody">
+          <!-- Messages will be injected by JS -->
+        </div>
+        <div class="chat-input-bar">
+          <input type="text" class="chat-input" placeholder="输入你的问题..." id="chatInput">
+          <button class="chat-send" id="chatSend">↑</button>
+        </div>
+        <div class="chat-quick-actions" id="quickActions">
+          <button class="chat-quick-btn" data-q="这个客户最大的顾虑是什么？">最大的顾虑是什么？</button>
+          <button class="chat-quick-btn" data-q="帮我制定下次跟进策略">下次跟进策略</button>
+          <button class="chat-quick-btn" data-q="她在意价格还是效果？">价格还是效果？</button>
+          <button class="chat-quick-btn" data-q="对比上次面诊有什么变化？">对比上次变化</button>
+          <button class="chat-quick-btn" data-q="推荐什么项目组合？">推荐项目组合</button>
+        </div>
+      </div>
+
+      <!-- Feature List -->
+      <div class="assistant-features reveal">
+        <div class="assistant-feature">
+          <div class="assistant-feature-icon" style="background:rgba(106,90,205,0.15)">🔗</div>
+          <div>
+            <div class="assistant-feature-title">客户关联对话</div>
+            <div class="assistant-feature-desc">自动加载当前客户的基本信息、历史录音、AI分析报告作为对话上下文，无需手动描述背景</div>
+          </div>
+        </div>
+        <div class="assistant-feature">
+          <div class="assistant-feature-icon" style="background:rgba(196,147,90,0.15)">⚡</div>
+          <div>
+            <div class="assistant-feature-title">快捷提问</div>
+            <div class="assistant-feature-desc">预置高频问题（顾虑分析、跟进策略、项目推荐、变化对比），一键提问，无需组织语言</div>
+          </div>
+        </div>
+        <div class="assistant-feature">
+          <div class="assistant-feature-icon" style="background:rgba(74,140,127,0.15)">🎙️</div>
+          <div>
+            <div class="assistant-feature-title">录音深度问答</div>
+            <div class="assistant-feature-desc">基于该客户的全部录音转写文本回答问题，可追问面诊中的具体细节和原话引用</div>
+          </div>
+        </div>
+        <div class="assistant-feature">
+          <div class="assistant-feature-icon" style="background:rgba(196,122,122,0.15)">💡</div>
+          <div>
+            <div class="assistant-feature-title">策略建议</div>
+            <div class="assistant-feature-desc">结合客户画像和成交信号，给出个性化的跟进话术、项目推荐和促成策略</div>
+          </div>
+        </div>
+        <div class="assistant-feature">
+          <div class="assistant-feature-icon" style="background:rgba(191,162,78,0.15)">📝</div>
+          <div>
+            <div class="assistant-feature-title">历史对话</div>
+            <div class="assistant-feature-desc">按客户维度保存所有AI对话记录，新同事接手客户时可快速了解历史分析</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Summary -->
+<section class="summary-section" id="summary">
+  <div class="summary-inner">
+    <div class="section-label">PROJECT SUMMARY</div>
+    <div class="section-title">项目总览</div>
+    <div class="section-desc">
+      一个以AI为核心的医美客户关系管理系统<br>
+      让每一次面诊都产生数据价值，让每一位咨询师都能持续进步
+    </div>
+
+    <div class="summary-stats">
+      <div>
+        <div class="summary-stat-num">12</div>
+        <div class="summary-stat-label">功能模块</div>
+      </div>
+      <div>
+        <div class="summary-stat-num">65+</div>
+        <div class="summary-stat-label">功能点</div>
+      </div>
+      <div>
+        <div class="summary-stat-num">2</div>
+        <div class="summary-stat-label">核心角色</div>
+      </div>
+      <div>
+        <div class="summary-stat-num">5</div>
+        <div class="summary-stat-label">知识库类型</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+      }, i * 80);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+reveals.forEach(el => observer.observe(el));
+
+// Header scroll
+window.addEventListener('scroll', () => {
+  document.getElementById('header').classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// AI Assistant Chat Demo
+const chatBody = document.getElementById('chatBody');
+const chatInput = document.getElementById('chatInput');
+const chatSend = document.getElementById('chatSend');
+
+const demoConversations = {
+  '这个客户最大的顾虑是什么？': '根据3次面诊录音分析，李女士最大的顾虑是<strong style="color:#a99ef0">术后恢复期</strong>。她在第一次面诊时问过"多久能恢复正常生活"，第二次又追问了"会不会肿胀很明显"。但她对项目效果本身是认可的。\n\n建议下次沟通时主动展示恢复周期的时间线，配合类似案例的恢复过程照片。',
+  '帮我制定下次跟进策略': '基于李女士的画像分析，建议如下：\n\n<strong style="color:#a99ef0">跟进时机</strong>：上次面诊后第3天（即明天）\n<strong style="color:#a99ef0">沟通渠道</strong>：微信（她更习惯图文消息）\n<strong style="color:#a99ef0">核心话术</strong>：先发2-3张类似条件的术后恢复对比照，然后说"姐，这是跟您情况类似的客人恢复过程，第5天就基本自然了"\n<strong style="color:#a99ef0">促单策略</strong>：不直接催单，先消除恢复期顾虑，再提到本月有活动',
+  '她在意价格还是效果？': '从对话分析来看，李女士<strong style="color:#a99ef0">更在意效果和安全性，价格是次要因素</strong>。\n\n证据：她在3次面诊中从未主动砍价，但每次都会详细询问"能维持多久""有没有副作用""做过的客人反馈怎么样"这类问题。\n\n她的消费能力评估为中高，预算不是瓶颈，重点是让她对效果有充分信心。',
+  '对比上次面诊有什么变化？': '对比最近两次面诊录音：\n\n<strong style="color:#a99ef0">积极变化</strong>：\n• 成交信号从 5/10 提升到 7/10\n• 对比上次，她不再问"是不是不适合我"，说明已接受方案\n• 开始讨论具体时间（"下个月初有空"）\n\n<strong style="color:#a99ef0">仍存在的顾虑</strong>：\n• 恢复期问题仍未完全解决\n• 上次提到"想再对比一下隔壁机构"——可能需要突出我们的差异化优势',
+  '推荐什么项目组合？': '基于李女士的需求和预算，推荐以下组合：\n\n<strong style="color:#a99ef0">核心方案</strong>：下颌线塑形 + 苹果肌填充\n<strong style="color:#a99ef0">可选升级</strong>：配合水光针提升整体肤质（首次成交客户可享8折）\n\n理由：她在面诊中多次摸下颌线部位，且提到"觉得脸有点垮了"，说明这两个部位是她的核心痛点。组合方案总价约2.8万，在她可接受范围内。'
+};
+
+const initialMessages = [
+  { role: 'ai', text: '你好！我是AI咨询助手。当前关联客户：<strong style="color:#a99ef0">李女士</strong>（28岁，3次面诊，意向项目：面部轮廓优化）\n\n你可以问我关于这个客户的任何问题，或点击下方的快捷按钮快速提问。' },
+];
+
+function addMessage(role, text) {
+  const msg = document.createElement('div');
+  msg.className = `chat-msg ${role}`;
+  msg.innerHTML = `
+    <div class="chat-msg-avatar">${role === 'ai' ? '✨' : '👤'}</div>
+    <div class="chat-msg-bubble">${text.replace(/\n/g, '<br>')}</div>
+  `;
+  chatBody.appendChild(msg);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// Init
+setTimeout(() => addMessage('ai', initialMessages[0].text), 600);
+
+function handleSend(text) {
+  if (!text.trim()) return;
+  addMessage('user', text);
+  chatInput.value = '';
+
+  const reply = demoConversations[text];
+  setTimeout(() => {
+    if (reply) {
+      addMessage('ai', reply);
+    } else {
+      addMessage('ai', `关于"${text}"，我需要结合李女士的完整档案和录音数据来分析。正式系统中我会基于她的全部资料给出详细回答。`);
+    }
+  }, 800);
+}
+
+chatSend.addEventListener('click', () => handleSend(chatInput.value));
+chatInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleSend(chatInput.value);
+});
+
+document.querySelectorAll('.chat-quick-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    handleSend(btn.dataset.q);
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>上传清单 — 千仓SDMS</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --nav-bg: #0F2B46;
+      --nav-bg-end: #1A3F66;
+      --brand: #2B6CB0;
+      --brand-bright: #3B82F6;
+      --surface: #FFFFFF;
+      --surface-alt: #F7F8FA;
+      --text-primary: #1A202C;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --divider: #E2E8F0;
+      --danger: #EF4444;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+      --shadow-fab: 0 6px 20px rgba(43, 108, 176, 0.45);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --font-ui: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --font-mono: 'IBM Plex Mono', 'SF Mono', 'Cascadia Code', monospace;
+      --frame-max: 100%;
+      --content-pad: 12px;
+      --upload-border: #CBD5E1;
+      --upload-bg: #F8FAFC;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: var(--font-ui);
+      background: #EDF0F4;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .pda-frame {
+      width: 100%;
+      max-width: var(--frame-max);
+      min-height: 100vh;
+      background: var(--surface-alt);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── 导航栏 ── */
+    .nav-bar {
+      background: linear-gradient(135deg, var(--nav-bg) 0%, var(--nav-bg-end) 100%);
+      color: #fff;
+      padding: 0 16px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-bar .back-btn {
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 8px; transition: background 0.15s;
+      text-decoration: none;
+    }
+    .nav-bar .back-btn:active { background: rgba(255,255,255,0.12); }
+    .nav-bar .back-btn svg { width: 20px; height: 20px; fill: none; stroke: rgba(255,255,255,0.85); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-bar .title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .nav-bar .placeholder { width: 32px; }
+
+    /* ── 内容区 ── */
+    .content {
+      flex: 1;
+      padding: 16px var(--content-pad) 100px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── 上传区域 ── */
+    .upload-zone {
+      border: 2px dashed var(--upload-border);
+      border-radius: var(--radius);
+      background: var(--upload-bg);
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      animation: fadeInUp 0.35s ease-out both;
+    }
+    .upload-zone:hover { border-color: var(--brand); background: #EFF6FF; }
+    .upload-zone:active { border-color: var(--brand-bright); }
+    .upload-zone.dragover {
+      border-color: var(--brand-bright);
+      background: #DBEAFE;
+      transform: scale(1.01);
+    }
+    .upload-zone .upload-icon {
+      width: 56px; height: 56px;
+      margin: 0 auto 16px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface);
+      border-radius: 50%;
+      box-shadow: var(--shadow-md);
+    }
+    .upload-zone .upload-icon svg { width: 28px; height: 28px; fill: var(--brand); }
+    .upload-zone .upload-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .upload-zone .upload-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .upload-zone input[type="file"] { display: none; }
+
+    /* ── 文件信息条 ── */
+    .file-info {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      margin-top: 12px;
+      box-shadow: var(--shadow-sm);
+      animation: fadeInUp 0.3s ease-out both;
+    }
+    .file-info .file-icon {
+      width: 36px; height: 36px;
+      background: #DBEAFE;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+    .file-info .file-icon svg { width: 20px; height: 20px; fill: var(--brand); }
+    .file-info .file-detail { flex: 1; min-width: 0; }
+    .file-info .file-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-info .file-size {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .file-info .file-remove {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 6px;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .file-info .file-remove:active { background: #FEE2E2; }
+    .file-info .file-remove svg { width: 16px; height: 16px; fill: var(--text-muted); }
+
+    /* ── 列映射区 ── */
+    .mapping-section {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-sm);
+      animation: fadeInUp 0.3s ease-out both;
+    }
+    .mapping-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mapping-title svg { width: 16px; height: 16px; fill: var(--brand); }
+    .mapping-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .mapping-row:last-child { margin-bottom: 0; }
+    .mapping-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      width: 60px;
+      flex-shrink: 0;
+    }
+    .mapping-select {
+      flex: 1;
+      height: 36px;
+      background: var(--surface-alt);
+      border: 1.5px solid var(--divider);
+      border-radius: var(--radius-sm);
+      padding: 0 10px;
+      font-family: var(--font-ui);
+      font-size: 13px;
+      color: var(--text-primary);
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .mapping-select:focus { border-color: var(--brand); }
+    .mapping-select.mapped { border-color: var(--brand-bright); background-color: #EFF6FF; }
+
+    /* ── 预览表格 ── */
+    .preview-section {
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 12px;
+      animation: fadeInUp 0.35s ease-out 0.1s both;
+    }
+    .preview-header {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid var(--divider);
+    }
+    .preview-header svg { width: 16px; height: 16px; fill: var(--brand); }
+    .preview-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .preview-table th {
+      background: var(--surface-alt);
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      border-bottom: 1px solid var(--divider);
+      position: sticky;
+      top: 0;
+    }
+    .preview-table td {
+      padding: 8px 10px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      border-bottom: 1px solid #F1F5F9;
+      white-space: nowrap;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preview-table tr:last-child td { border-bottom: none; }
+    .preview-table .row-num {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      width: 36px;
+      text-align: center;
+    }
+
+    /* ── 统计条 ── */
+    .stats-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      animation: fadeInUp 0.35s ease-out 0.15s both;
+    }
+    .stat-chip {
+      flex: 1;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .stat-chip .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--brand);
+      line-height: 1.2;
+    }
+    .stat-chip .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── FAB底栏 ── */
+    .fab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: var(--frame-max);
+      width: 100%;
+      padding: 12px var(--content-pad);
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(transparent, var(--surface-alt) 20%);
+      z-index: 100;
+      animation: fabIn 0.5s ease-out 0.3s both;
+    }
+    .fab-bar .btn-fab {
+      width: 100%;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-bright) 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 14px 24px;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-fab);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .fab-bar .btn-fab:active {
+      transform: scale(0.97);
+      box-shadow: 0 3px 12px rgba(43, 108, 176, 0.35);
+    }
+    .fab-bar .btn-fab svg { width: 18px; height: 18px; fill: #fff; }
+    .fab-bar .btn-fab:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── 重复订单弹窗 ── */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.5);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-panel {
+      width: 100%;
+      max-width: var(--frame-max);
+      max-height: 70vh;
+      background: var(--surface);
+      border-radius: var(--radius) var(--radius) 0 0;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+    }
+    .modal-overlay.show .modal-panel {
+      transform: translateY(0);
+    }
+    .modal-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-header .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .modal-header .modal-close {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 6px;
+    }
+    .modal-header .modal-close:active { background: var(--surface-alt); }
+    .modal-header .modal-close svg { width: 18px; height: 18px; fill: var(--text-muted); }
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .modal-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .dup-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--surface-alt);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+    }
+    .dup-item:last-child { margin-bottom: 0; }
+    .dup-item .dup-order {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+    .dup-item .dup-badge {
+      font-size: 11px;
+      color: #D97706;
+      background: #FEF3C7;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-right: 10px;
+    }
+    .dup-item .dup-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .dup-item .btn-sm {
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      transition: opacity 0.15s;
+    }
+    .dup-item .btn-sm:active { opacity: 0.7; }
+    .dup-item .btn-overwrite {
+      background: var(--brand);
+      color: #fff;
+    }
+    .dup-item .btn-skip {
+      background: var(--surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--divider);
+    }
+    .modal-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--divider);
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .modal-footer .btn-modal {
+      flex: 1;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-ui);
+      transition: opacity 0.15s;
+    }
+    .modal-footer .btn-modal:active { opacity: 0.7; }
+    .modal-footer .btn-cancel {
+      background: var(--surface-alt);
+      color: var(--text-secondary);
+    }
+    .modal-footer .btn-confirm {
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-bright) 100%);
+      color: #fff;
+    }
+
+    /* ── 通用动画 ── */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fabIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .hidden { display: none !important; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: rgba(26, 32, 44, 0.88);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 300;
+      opacity: 0;
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── 响应式 ── */
+    @media (min-width: 481px) {
+      :root {
+        --frame-max: 480px;
+        --content-pad: 16px;
+      }
+      .pda-frame {
+        box-shadow: 0 0 60px rgba(15, 23, 42, 0.12);
+      }
+    }
+    @media (min-width: 769px) {
+      :root {
+        --frame-max: 520px;
+        --content-pad: 20px;
+      }
+    }
+    @media (min-width: 1200px) {
+      :root { --frame-max: 560px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="pda-frame">
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+      <a class="back-btn" href="pick-task-list.html">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </a>
+      <div class="title" id="navTitle">上传清单</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="content">
+      <!-- Stage 1: 上传视图 -->
+      <div id="uploadView">
+        <div class="upload-zone" id="uploadZone" onclick="triggerFileInput()">
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+          </div>
+          <div class="upload-title">点击或拖拽上传</div>
+          <div class="upload-desc">支持 .xlsx .xls .csv 格式</div>
+          <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="onFileSelected(event)">
+        </div>
+      </div>
+
+      <!-- Stage 2: 预览视图（默认隐藏） -->
+      <div id="previewView" class="hidden">
+        <!-- 文件信息 -->
+        <div class="file-info" id="fileInfo">
+          <div class="file-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm2-6h8v2H8v-2zm0-4h8v2H8v-2z"/></svg>
+          </div>
+          <div class="file-detail">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+          </div>
+          <div class="file-remove" onclick="resetUpload()">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </div>
+        </div>
+
+        <!-- 列映射 -->
+        <div class="mapping-section">
+          <div class="mapping-title">
+            <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+            列映射
+          </div>
+          <div class="mapping-row">
+            <span class="mapping-label">订单号</span>
+            <select class="mapping-select" id="mapOrder" onchange="onMappingChange()"></select>
+          </div>
+          <div class="mapping-row">
+            <span class="mapping-label">大箱号</span>
+            <select class="mapping-select" id="mapCarton" onchange="onMappingChange()"></select>
+          </div>
+          <div class="mapping-row">
+            <span class="mapping-label">包裹号</span>
+            <select class="mapping-select" id="mapParcel" onchange="onMappingChange()"></select>
+          </div>
+        </div>
+
+        <!-- 预览表格 -->
+        <div class="preview-section">
+          <div class="preview-header">
+            <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 3h10v2H7V8zm0 4h7v2H7v-2z"/></svg>
+            数据预览（前10行）
+          </div>
+          <div class="preview-scroll">
+            <table class="preview-table" id="previewTable"></table>
+          </div>
+        </div>
+
+        <!-- 统计条 -->
+        <div class="stats-bar">
+          <div class="stat-chip">
+            <div class="stat-value" id="statOrders">0</div>
+            <div class="stat-label">订单数</div>
+          </div>
+          <div class="stat-chip">
+            <div class="stat-value" id="statParcels">0</div>
+            <div class="stat-label">包裹数</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB（仅Stage 2可见） -->
+    <div class="fab-bar hidden" id="fabBar">
+      <button class="btn-fab" id="btnImport" onclick="confirmImport()" disabled>
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+        确认导入
+      </button>
+    </div>
+
+    <!-- 重复订单弹窗 -->
+    <div class="modal-overlay" id="dupModal">
+      <div class="modal-panel">
+        <div class="modal-header">
+          <div class="modal-title">发现重复订单</div>
+          <div class="modal-close" onclick="closeDupModal()">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div class="modal-desc" id="dupDesc"></div>
+          <div id="dupList"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-modal btn-cancel" onclick="closeDupModal()">全部取消</button>
+          <button class="btn-modal btn-confirm" onclick="overwriteAll()">全部覆盖</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 共享数据层 -->
+  <script src="./assets/js/pick-tool-data.js"></script>
+
+  <script>
+    /* ── 全局状态 ── */
+    var rawHeaders = [];
+    var rawData = [];
+    var mappedOrderCol = -1;
+    var mappedCartonCol = -1;
+    var mappedParcelCol = -1;
+    var currentFileName = '';
+
+    /* ── DOM引用 ── */
+    var uploadView = document.getElementById('uploadView');
+    var previewView = document.getElementById('previewView');
+    var fabBar = document.getElementById('fabBar');
+    var navTitle = document.getElementById('navTitle');
+    var uploadZone = document.getElementById('uploadZone');
+    var fileInput = document.getElementById('fileInput');
+    var mapOrderSel = document.getElementById('mapOrder');
+    var mapCartonSel = document.getElementById('mapCarton');
+    var mapParcelSel = document.getElementById('mapParcel');
+    var previewTable = document.getElementById('previewTable');
+    var btnImport = document.getElementById('btnImport');
+    var dupModal = document.getElementById('dupModal');
+    var toastEl = document.getElementById('toast');
+
+    /* ── 初始化拖拽 ── */
+    (function initDragDrop() {
+      uploadZone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadZone.classList.add('dragover');
+      });
+      uploadZone.addEventListener('dragleave', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadZone.classList.remove('dragover');
+      });
+      uploadZone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadZone.classList.remove('dragover');
+        var files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFile(files[0]);
+        }
+      });
+    })();
+
+    /* ── 文件选择 ── */
+    function triggerFileInput() {
+      fileInput.click();
+    }
+
+    function onFileSelected(e) {
+      var files = e.target.files;
+      if (files.length > 0) {
+        handleFile(files[0]);
+      }
+    }
+
+    /* ── 文件处理（SheetJS解析） ── */
+    function handleFile(file) {
+      var ext = file.name.split('.').pop().toLowerCase();
+      if (['xlsx', 'xls', 'csv'].indexOf(ext) === -1) {
+        showToast('不支持的文件格式');
+        return;
+      }
+
+      currentFileName = file.name;
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileSize').textContent = formatFileSize(file.size);
+
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          var data = new Uint8Array(e.target.result);
+          var workbook = XLSX.read(data, { type: 'array' });
+          var firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          var jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+
+          if (!jsonData.length) {
+            showToast('文件内容为空');
+            return;
+          }
+
+          /* 第一行为表头 */
+          rawHeaders = jsonData[0].map(function (h) { return String(h).trim(); });
+          rawData = jsonData.slice(1).filter(function (row) {
+            /* 过滤空行 */
+            return row.some(function (cell) { return cell !== '' && cell != null; });
+          });
+
+          if (!rawHeaders.length || !rawData.length) {
+            showToast('未识别到有效数据');
+            return;
+          }
+
+          autoMapColumns(rawHeaders);
+          renderMapping(rawHeaders);
+          renderPreview();
+          switchToPreview();
+
+        } catch (err) {
+          showToast('文件解析失败: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    /* ── 自动映射列 ── */
+    function autoMapColumns(headers) {
+      mappedOrderCol = -1;
+      mappedCartonCol = -1;
+      mappedParcelCol = -1;
+
+      headers.forEach(function (h, i) {
+        var lower = h.toLowerCase();
+        if (mappedOrderCol === -1 && lower.indexOf('订单') !== -1) {
+          mappedOrderCol = i;
+        } else if (mappedCartonCol === -1 && (lower.indexOf('大箱') !== -1 || lower.indexOf('箱号') !== -1)) {
+          mappedCartonCol = i;
+        } else if (mappedParcelCol === -1 && (lower.indexOf('包裹') !== -1 || lower.indexOf('包裹号') !== -1)) {
+          mappedParcelCol = i;
+        }
+      });
+    }
+
+    /* ── 渲染映射下拉 ── */
+    function renderMapping(headers) {
+      var optionsHtml = '<option value="-1">-- 请选择 --</option>';
+      headers.forEach(function (h, i) {
+        optionsHtml += '<option value="' + i + '">' + esc(h) + '</option>';
+      });
+
+      mapOrderSel.innerHTML = optionsHtml;
+      mapCartonSel.innerHTML = optionsHtml;
+      mapParcelSel.innerHTML = optionsHtml;
+
+      /* 预选自动匹配结果 */
+      if (mappedOrderCol !== -1) {
+        mapOrderSel.value = mappedOrderCol;
+        mapOrderSel.classList.add('mapped');
+      }
+      if (mappedCartonCol !== -1) {
+        mapCartonSel.value = mappedCartonCol;
+        mapCartonSel.classList.add('mapped');
+      }
+      if (mappedParcelCol !== -1) {
+        mapParcelSel.value = mappedParcelCol;
+        mapParcelSel.classList.add('mapped');
+      }
+    }
+
+    /* ── 映射变更 ── */
+    function onMappingChange() {
+      mappedOrderCol = parseInt(mapOrderSel.value, 10);
+      mappedCartonCol = parseInt(mapCartonSel.value, 10);
+      mappedParcelCol = parseInt(mapParcelSel.value, 10);
+
+      /* 标记已映射的下拉 */
+      mapOrderSel.classList.toggle('mapped', mappedOrderCol !== -1);
+      mapCartonSel.classList.toggle('mapped', mappedCartonCol !== -1);
+      mapParcelSel.classList.toggle('mapped', mappedParcelCol !== -1);
+
+      renderPreview();
+      validateMapping();
+    }
+
+    /* ── 验证映射完整性 ── */
+    function validateMapping() {
+      var valid = mappedOrderCol !== -1 && mappedCartonCol !== -1 && mappedParcelCol !== -1;
+      btnImport.disabled = !valid;
+      return valid;
+    }
+
+    /* ── 渲染预览表格 ── */
+    function renderPreview() {
+      if (mappedOrderCol === -1 && mappedCartonCol === -1 && mappedParcelCol === -1) {
+        previewTable.innerHTML = '<tr><td style="padding:20px;text-align:center;color:var(--text-muted);">请选择列映射</td></tr>';
+        updateStats([], []);
+        return;
+      }
+
+      var orderLabel = mappedOrderCol !== -1 ? rawHeaders[mappedOrderCol] : '订单号';
+      var cartonLabel = mappedCartonCol !== -1 ? rawHeaders[mappedCartonCol] : '大箱号';
+      var parcelLabel = mappedParcelCol !== -1 ? rawHeaders[mappedParcelCol] : '包裹号';
+
+      var html = '<thead><tr>' +
+        '<th class="row-num">#</th>' +
+        '<th>' + esc(orderLabel) + '</th>' +
+        '<th>' + esc(cartonLabel) + '</th>' +
+        '<th>' + esc(parcelLabel) + '</th>' +
+        '</tr></thead><tbody>';
+
+      var previewRows = rawData.slice(0, 10);
+      previewRows.forEach(function (row, i) {
+        var orderVal = mappedOrderCol !== -1 ? (row[mappedOrderCol] || '') : '';
+        var cartonVal = mappedCartonCol !== -1 ? (row[mappedCartonCol] || '') : '';
+        var parcelVal = mappedParcelCol !== -1 ? (row[mappedParcelCol] || '') : '';
+        html += '<tr>' +
+          '<td class="row-num">' + (i + 1) + '</td>' +
+          '<td>' + esc(String(orderVal)) + '</td>' +
+          '<td>' + esc(String(cartonVal)) + '</td>' +
+          '<td>' + esc(String(parcelVal)) + '</td>' +
+          '</tr>';
+      });
+
+      if (rawData.length > 10) {
+        html += '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:10px;font-size:12px;">... 共 ' + rawData.length + ' 行</td></tr>';
+      }
+
+      html += '</tbody>';
+      previewTable.innerHTML = html;
+
+      /* 计算统计 */
+      var parsedAll = parseAllRows();
+      updateStats(parsedAll.orderNos, parsedAll.parcels);
+      validateMapping();
+    }
+
+    /* ── 解析所有行 ── */
+    function parseAllRows() {
+      var orderNos = {};
+      var parcels = [];
+      rawData.forEach(function (row) {
+        var orderNo = mappedOrderCol !== -1 ? String(row[mappedOrderCol] || '').trim() : '';
+        var cartonNo = mappedCartonCol !== -1 ? String(row[mappedCartonCol] || '').trim() : '';
+        var parcelNo = mappedParcelCol !== -1 ? String(row[mappedParcelCol] || '').trim() : '';
+        if (orderNo) orderNos[orderNo] = true;
+        if (parcelNo) parcels.push(parcelNo);
+      });
+      return { orderNos: Object.keys(orderNos), parcels: parcels };
+    }
+
+    /* ── 更新统计条 ── */
+    function updateStats(orderNos, parcels) {
+      document.getElementById('statOrders').textContent = orderNos.length;
+      document.getElementById('statParcels').textContent = parcels.length;
+    }
+
+    /* ── 视图切换 ── */
+    function switchToPreview() {
+      uploadView.classList.add('hidden');
+      previewView.classList.remove('hidden');
+      fabBar.classList.remove('hidden');
+      navTitle.textContent = '确认导入';
+    }
+
+    function switchToUpload() {
+      previewView.classList.add('hidden');
+      uploadView.classList.remove('hidden');
+      fabBar.classList.add('hidden');
+      navTitle.textContent = '上传清单';
+    }
+
+    /* ── 重置上传 ── */
+    function resetUpload() {
+      rawHeaders = [];
+      rawData = [];
+      mappedOrderCol = -1;
+      mappedCartonCol = -1;
+      mappedParcelCol = -1;
+      currentFileName = '';
+      fileInput.value = '';
+      switchToUpload();
+    }
+
+    /* ── 确认导入 ── */
+    function confirmImport() {
+      if (!validateMapping()) {
+        showToast('请完成列映射');
+        return;
+      }
+
+      /* 构建行数据 */
+      var rows = [];
+      rawData.forEach(function (row) {
+        var orderNo = String(row[mappedOrderCol] || '').trim();
+        var cartonNo = String(row[mappedCartonCol] || '').trim();
+        var parcelNo = String(row[mappedParcelCol] || '').trim();
+        if (orderNo && parcelNo) {
+          rows.push({ orderNo: orderNo, cartonNo: cartonNo, parcelNo: parcelNo });
+        }
+      });
+
+      if (!rows.length) {
+        showToast('无有效数据可导入');
+        return;
+      }
+
+      /* 检测重复订单 */
+      var dupOrderNos = [];
+      var seenOrders = {};
+      rows.forEach(function (r) {
+        if (!seenOrders[r.orderNo] && PickTool.orderNoExists(r.orderNo)) {
+          dupOrderNos.push(r.orderNo);
+          seenOrders[r.orderNo] = true;
+        }
+      });
+
+      if (dupOrderNos.length > 0) {
+        /* 有重复，弹窗处理 */
+        showDupModal(dupOrderNos, rows);
+      } else {
+        /* 无重复，直接导入 */
+        PickTool.createTasksFromRows(rows);
+        showToast('导入成功');
+        setTimeout(function () {
+          window.location.href = 'pick-task-list.html';
+        }, 800);
+      }
+    }
+
+    /* ── 重复订单弹窗 ── */
+    var pendingDupOrders = [];
+    var pendingRows = [];
+    var skipOrders = {};
+
+    function showDupModal(dupOrderNos, rows) {
+      pendingDupOrders = dupOrderNos;
+      pendingRows = rows;
+      skipOrders = {};
+
+      document.getElementById('dupDesc').textContent =
+        '以下 ' + dupOrderNos.length + ' 个订单已存在于任务列表中：';
+
+      var listHtml = '';
+      dupOrderNos.forEach(function (orderNo) {
+        listHtml +=
+          '<div class="dup-item" id="dup_' + orderNo + '">' +
+            '<span class="dup-order">' + esc(orderNo) + '</span>' +
+            '<span class="dup-badge">已存在</span>' +
+            '<div class="dup-actions">' +
+              '<button class="btn-sm btn-overwrite" onclick="markOverwrite(\'' + escAttr(orderNo) + '\')">覆盖</button>' +
+              '<button class="btn-sm btn-skip" onclick="markSkip(\'' + escAttr(orderNo) + '\')">取消</button>' +
+            '</div>' +
+          '</div>';
+      });
+      document.getElementById('dupList').innerHTML = listHtml;
+
+      dupModal.classList.add('show');
+    }
+
+    function markOverwrite(orderNo) {
+      var el = document.getElementById('dup_' + orderNo);
+      if (el) {
+        el.querySelector('.dup-actions').innerHTML =
+          '<span style="font-size:12px;color:var(--brand);font-weight:600;">将覆盖</span>';
+      }
+      delete skipOrders[orderNo];
+    }
+
+    function markSkip(orderNo) {
+      skipOrders[orderNo] = true;
+      var el = document.getElementById('dup_' + orderNo);
+      if (el) {
+        el.querySelector('.dup-actions').innerHTML =
+          '<span style="font-size:12px;color:var(--text-muted);font-weight:600;">已跳过</span>';
+      }
+    }
+
+    function closeDupModal() {
+      dupModal.classList.remove('show');
+    }
+
+    function overwriteAll() {
+      /* 全部标记为覆盖 */
+      pendingDupOrders.forEach(function (orderNo) {
+        delete skipOrders[orderNo];
+      });
+      executeImport();
+    }
+
+    function executeImport() {
+      var newRows = [];
+      var overwriteOrderNos = [];
+
+      pendingRows.forEach(function (r) {
+        if (pendingDupOrders.indexOf(r.orderNo) === -1) {
+          /* 新订单 */
+          newRows.push(r);
+        } else if (!skipOrders[r.orderNo]) {
+          /* 需覆盖的订单 */
+          overwriteOrderNos.push(r.orderNo);
+        }
+        /* skipOrders中的直接跳过 */
+      });
+
+      /* 去重覆盖订单号 */
+      var uniqueOverwrite = [];
+      var seen = {};
+      overwriteOrderNos.forEach(function (no) {
+        if (!seen[no]) { uniqueOverwrite.push(no); seen[no] = true; }
+      });
+
+      /* 覆盖已有订单 */
+      uniqueOverwrite.forEach(function (orderNo) {
+        var orderRows = pendingRows.filter(function (r) { return r.orderNo === orderNo; });
+        PickTool.overwriteByOrderNo(orderNo, orderRows);
+      });
+
+      /* 创建新订单 */
+      if (newRows.length) {
+        PickTool.createTasksFromRows(newRows);
+      }
+
+      closeDupModal();
+      showToast('导入成功');
+      setTimeout(function () {
+        window.location.href = 'pick-task-list.html';
+      }, 800);
+    }
+
+    /* ── 工具函数 ── */
+    var toastTimer = null;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2000);
+    }
+
+    function esc(s) {
+      var div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function escAttr(s) {
+      return s.replace(/'/g, "\\'").replace(/"/g, '\\"');
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+  </script>
+</body>
+</html>

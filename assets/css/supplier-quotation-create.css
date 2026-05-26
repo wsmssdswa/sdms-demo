@@ -1,0 +1,24 @@
+/**
+ * Supplier Quotation Create — Page-specific styles
+ *
+ * Inherits all quotation-scheme-create styles via the same CSS link order.
+ * Shared component styles live in sdms-comp-form-create.css.
+ * Quotation-specific styles live in quotation-scheme-create.css.
+ *
+ * This file ONLY contains supplier-quotation–specific overrides.
+ */
+
+/* ================================================================
+   1. Supplier Type Tag
+   ================================================================ */
+
+.supplier-type-tag {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 11px;
+  padding: 2px 8px;
+  background: #f0f5ff;
+  color: var(--color-primary);
+  border: 1px solid #bae6fd;
+  border-radius: 3px;
+}

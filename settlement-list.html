@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>结算单管理</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/bill-list.css">
+</head>
+<body>
+<div class="app-shell">
+<aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
+<div class="page-shell">
+<div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="settlement-list" data-include-tools="true" data-user-name="张三"></div>
+<main class="content-wrap">
+<section class="page-card">
+<section class="filter-panel">
+<div class="scene-tabs" id="statusTabs"></div>
+<div class="query-row">
+  <div class="filter-control"><span class="filter-inline-label">客户</span><div class="select-wrap"><select class="filter-select" id="customerSelect"><option value="">全部</option><option value="深圳ABC贸易">深圳ABC贸易</option><option value="杭州XYZ物流">杭州XYZ物流</option><option value="上海DEF电商">上海DEF电商</option></select><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg></div></div>
+  <div class="filter-control"><span class="filter-inline-label">收款日期从</span><input class="filter-input" id="dateFrom" type="date" style="width:130px"></div>
+  <div class="filter-control"><span class="filter-inline-label">到</span><input class="filter-input" id="dateTo" type="date" style="width:130px"></div>
+  <div class="filter-control"><span class="filter-inline-label">关键字</span><input class="filter-input" id="keywordInput" type="text" maxlength="50" placeholder="结算单号/客户名"></div>
+  <button class="btn btn-primary" id="queryBtn" type="button">查询</button>
+  <button class="btn btn-default" id="resetBtn" type="button">重置</button>
+</div>
+</section>
+
+<section class="table-panel">
+  <div class="panel-action-row">
+    <button class="btn-primary" id="newSettlementBtn" type="button">新建结算单</button>
+    <button class="btn-default" id="batchCancelBtn" type="button">批量取消</button>
+    <span id="selectedHint" style="font-size:12px;color:var(--text-muted)"></span>
+  </div>
+  <div class="table-wrap">
+    <table class="list-table" style="min-width:1300px">
+      <colgroup>
+        <col style="width:36px">
+        <col style="width:14%">
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:12%">
+        <col style="width:8%">
+        <col style="width:8%">
+        <col style="width:10%">
+        <col style="width:7%">
+        <col style="width:100px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="check-cell"><input type="checkbox" id="checkAll"></th>
+          <th>结算单号</th>
+          <th>客户</th>
+          <th class="amount-cell">收款金额(CNY)</th>
+          <th>原始币种/金额</th>
+          <th>收款方式</th>
+          <th>收款日期</th>
+          <th class="amount-cell">未分配金额</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="settlementBody"></tbody>
+    </table>
+  </div>
+  <div class="table-footer">
+    <span id="settlementCount"></span>
+  </div>
+</section>
+
+<!-- 取消弹窗 -->
+<div class="modal-overlay" id="cancelModal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">确认取消结算单</div>
+    <div class="modal-body">
+      <p id="cancelInfo"></p>
+      <p class="modal-warning">取消后结算单将作废，已分配的金额将释放回未分配状态</p>
+      <div class="modal-field"><label>取消原因<span class="required">*</span></label><textarea id="cancelReason" rows="3" maxlength="200" placeholder="请输入取消原因"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" id="cancelCancelBtn" type="button">取消</button>
+      <button class="btn btn-primary" id="cancelConfirmBtn" type="button" style="background:var(--color-error)">确认取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新建结算单弹窗 -->
+<div class="modal-overlay" id="newModal" style="display:none">
+  <div class="modal-box" style="width:520px">
+    <div class="modal-title">新建结算单</div>
+    <div class="modal-body">
+      <div class="modal-field"><label>客户<span class="required">*</span></label><select id="newCustomer" style="width:100%;height:32px;border:1px solid var(--color-border-strong);border-radius:4px;padding:0 8px;font-size:12px;appearance:auto"><option value="">请选择客户</option><option value="深圳ABC贸易">深圳ABC贸易</option><option value="杭州XYZ物流">杭州XYZ物流</option><option value="上海DEF电商">上海DEF电商</option></select></div>
+      <div style="display:flex;gap:12px">
+        <div class="modal-field" style="flex:1"><label>收款金额(CNY)<span class="required">*</span></label><input id="newAmount" type="number" step="0.01" min="0" style="width:100%;height:32px;border:1px solid var(--color-border-strong);border-radius:4px;padding:0 8px;font-size:12px" placeholder="0.00"></div>
+        <div class="modal-field" style="flex:1"><label>原始付款币种<span class="required">*</span></label><select id="newCurrency" style="width:100%;height:32px;border:1px solid var(--color-border-strong);border-radius:4px;padding:0 8px;font-size:12px;appearance:auto"><option value="EUR">EUR 欧元</option><option value="USD">USD 美元</option><option value="CNY">CNY 人民币</option><option value="GBP">GBP 英镑</option></select></div>
+      </div>
+      <div class="modal-field"><label>原始付款金额<span class="required">*</span></label><input id="newOrigAmount" type="number" step="0.01" min="0" style="width:100%;height:32px;border:1px solid var(--color-border-strong);border-radius:4px;padding:0 8px;font-size:12px" placeholder="0.00"></div>
+      <div style="display:flex;gap:12px">
+        <div class="modal-field" style="flex:1"><label>收款日期<span class="required">*</span></label><input id="newDate" type="date" style="width:100%;height:32px;border:1px solid var(--color-border-strong);border-radius:4px;padding:0 8px;font-size:12px"></div>
+        <div class="modal-field" style="flex:1"><label>收款方式<span class="required">*</span></label><select id="newPayMethod" style="width:100%;height:32px;border:1px solid var(--color-border-strong);border-radius:4px;padding:0 8px;font-size:12px;appearance:auto"><option value="tt">TT电汇</option><option value="transfer">银行转账</option><option value="cheque">支票</option><option value="cash">现金</option><option value="lc">信用证</option><option value="online">在线支付</option></select></div>
+      </div>
+      <div class="modal-field"><label>我方收款账户</label><input id="newAccount" type="text" maxlength="100" style="width:100%;height:32px;border:1px solid var(--color-border-strong);border-radius:4px;padding:0 8px;font-size:12px" placeholder="如：中行深圳 EUR 6225****8801"></div>
+      <div class="modal-field"><label>备注</label><textarea id="newRemark" rows="2" maxlength="200" style="width:100%;border:1px solid var(--color-border-strong);border-radius:4px;padding:8px;font-size:12px;resize:vertical;font-family:inherit" placeholder="可选"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" id="newCancelBtn" type="button">取消</button>
+      <button class="btn btn-primary" id="newConfirmBtn" type="button">保存</button>
+    </div>
+  </div>
+</div>
+</section>
+</main>
+</div>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script src="./assets/js/sdms-header-tabs.js"></script>
+<script src="./assets/js/sdms-sidebar.js"></script>
+<script src="./assets/js/settlement-list.js"></script>
+</body>
+</html>

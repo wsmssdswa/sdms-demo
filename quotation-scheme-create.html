@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增报价方案</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/sdms-comp-form-create.css">
+  <link rel="stylesheet" href="./assets/css/quotation-scheme-create.css">
+  <link rel="stylesheet" href="./assets/css/quotation-preview.css?v=20260513">
+  <link rel="stylesheet" href="./assets/css/quotation-trial-calc.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
+    <div class="page-shell">
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="quotation-scheme-create" data-include-tools="true" data-user-name="张三"></div>
+      <main class="content-wrap">
+        <section class="page-card">
+          <div class="page-card-head">
+            <div class="page-title" id="pageTitleLabel">新增报价方案</div>
+            <div class="page-actions">
+              <button class="btn btn-outline" id="backBtn" type="button">返回</button>
+              <button class="btn btn-default" id="previewBtn" type="button"><i class="ri-eye-line"></i> 预览</button>
+              <button class="btn btn-default" id="trialCalcBtn" type="button"><i class="ri-calculator-line"></i> 费用试算</button>
+              <button class="btn btn-default" id="saveDraftBtn" type="button">保存草稿</button>
+              <button class="btn btn-primary" id="submitBtn" type="button">提交审核</button>
+            </div>
+          </div>
+          <div class="page-body">
+            <div class="form-panel">
+              <div class="section-title">基本信息</div>
+              <form id="schemeForm" novalidate>
+                <div class="section-row">
+                  <div class="field-group" data-field="schemeName">
+                    <div class="field-label"><span class="required-star">*</span><span>方案名称</span></div>
+                    <input class="field-control" id="schemeName" name="schemeName" maxlength="100" placeholder="请输入方案名称">
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="customer">
+                    <div class="field-label"><span class="required-star">*</span><span>客户名称</span></div>
+                    <div class="multi-select-wrap" id="customerMultiSelect">
+                      <div class="multi-select-trigger" id="customerTrigger">
+                        <div class="multi-select-tags" id="customerTags"><span class="multi-select-placeholder">请选择客户</span></div>
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                      </div>
+                      <div class="multi-select-dropdown" id="customerDropdown"></div>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="warehouse">
+                    <div class="field-label"><span class="required-star">*</span><span>所属仓库</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="warehouse" name="warehouse">
+                        <option value="">请选择仓库</option>
+                        <option value="波兰海外仓">波兰海外仓</option>
+                        <option value="德国海外仓">德国海外仓</option>
+                        <option value="深圳保税仓">深圳保税仓</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="dateRange">
+                    <div class="field-label"><span class="required-star">*</span><span>适用时间</span></div>
+                    <button class="date-range-trigger" id="dateRangeTrigger" type="button">
+                      <i class="ri-calendar-2-line"></i>
+                      <span id="dateRangeText">请选择日期范围</span>
+                      <i class="ri-arrow-down-s-line"></i>
+                    </button>
+                    <input type="hidden" id="startDate" name="startDate">
+                    <input type="hidden" id="endDate" name="endDate">
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="remark">
+                    <div class="field-label"><span>备注</span></div>
+                    <input class="field-control" id="remark" name="remark" maxlength="255" placeholder="请输入备注">
+                    <div class="field-tip"></div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="fee-config-section" id="feeConfigSection">
+              <div class="biz-type-tabs" id="bizTypeTabs"></div>
+              <div class="fee-layout">
+                <div class="fee-category-tree" id="feeCategoryTree"></div>
+                <div class="fee-item-panel">
+                  <div class="fee-item-toolbar" id="feeItemToolbar"></div>
+                  <div class="fee-item-list" id="feeItemList"></div>
+                  <div class="fee-item-footer" id="feeItemFooter"></div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-mask" id="feeSelectModal" style="display:none">
+              <div class="modal-dialog fee-select-dialog">
+                <div class="modal-header">
+                  <span class="modal-title" id="feeSelectModalTitle">选择费用项</span>
+                  <span class="modal-count" id="feeSelectModalCount"></span>
+                </div>
+                <div class="modal-search-bar">
+                  <input class="fee-search" id="feeSelectSearch" type="text" placeholder="搜索费用项名称...">
+                </div>
+                <div class="modal-table-wrap">
+                  <table class="modal-table">
+                    <thead>
+                      <tr>
+                        <th style="width:36px"></th>
+                        <th>费用项名称</th>
+                        <th>渠道</th>
+                        <th>计重单位</th>
+                        <th>燃油规则</th>
+                        <th>状态</th>
+                      </tr>
+                    </thead>
+                    <tbody id="feeSelectBody"></tbody>
+                  </table>
+                </div>
+                <div class="modal-footer">
+                  <span class="modal-footer-info" id="feeSelectInfo">已选 0 项（本次新增）</span>
+                  <div class="modal-footer-actions">
+                    <button class="btn btn-default" id="feeSelectCancelBtn" type="button">取消</button>
+                    <button class="btn btn-primary" id="feeSelectConfirmBtn" type="button">确认添加</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div class="date-range-popover" id="dateRangePopover" aria-hidden="true">
+    <div class="date-range-surface">
+      <div class="date-range-header">
+        <span class="date-range-title">选择日期范围</span>
+        <button class="date-range-close" id="dateRangeClose" type="button"><i class="ri-close-line"></i></button>
+      </div>
+      <div class="date-range-info" id="dateRangeInfo">请选择开始日期和结束日期</div>
+      <div class="date-range-calendars">
+        <div class="date-range-month">
+          <div class="date-range-month-head">
+            <button class="date-range-nav" id="dateRangePrev" type="button"><i class="ri-arrow-left-s-line"></i></button>
+            <div class="date-range-month-label" id="dateRangeMonthA"></div>
+          </div>
+          <div class="date-range-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+          <div class="date-range-grid" id="dateRangeGridA"></div>
+        </div>
+        <div class="date-range-month">
+          <div class="date-range-month-head">
+            <div class="date-range-month-label" id="dateRangeMonthB"></div>
+            <button class="date-range-nav" id="dateRangeNext" type="button"><i class="ri-arrow-right-s-line"></i></button>
+          </div>
+          <div class="date-range-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+          <div class="date-range-grid" id="dateRangeGridB"></div>
+        </div>
+      </div>
+      <div class="date-range-footer">
+        <button class="btn btn-default" id="dateRangeClearBtn" type="button">清空</button>
+        <button class="btn btn-default" id="dateRangeCancelBtn" type="button">取消</button>
+        <button class="btn btn-primary" id="dateRangeConfirmBtn" type="button">确定</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast-stack" id="toastStack"></div>
+  <div class="preview-modal-mask" id="previewModal">
+    <div class="preview-modal-container">
+      <div class="preview-modal-header">
+        <div class="preview-modal-header-left">
+          <button class="preview-modal-close" id="previewCloseBtn" type="button"><i class="ri-arrow-left-line"></i> 返回编辑</button>
+        </div>
+        <div class="preview-modal-header-center">
+          <h1 id="previewSchemeName" class="preview-modal-title"></h1>
+          <div id="previewMeta" class="preview-modal-meta"></div>
+        </div>
+        <div class="preview-modal-header-right">
+          <button class="btn btn-default" id="previewExportBtn" type="button"><i class="ri-file-excel-2-line"></i> 导出</button>
+          <button class="btn btn-primary" id="previewCalcBtn" type="button">运费试算</button>
+        </div>
+      </div>
+      <div class="preview-modal-body">
+        <div id="previewTabs" class="preview-modal-tabs"></div>
+        <div id="previewContent" class="preview-modal-content"></div>
+      </div>
+    </div>
+  </div>
+  <script src="./assets/js/sdms-header-tabs.js"></script>
+  <script src="./assets/js/sdms-sidebar.js"></script>
+  <script src="./assets/js/quotation-preview.js"></script>
+  <script src="./assets/js/quotation-trial-calc.js"></script>
+  <script src="./assets/js/quotation-scheme-create.js"></script>
+</body>
+</html>

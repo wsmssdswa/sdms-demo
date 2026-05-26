@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>账单详情</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/sdms-comp-config-list.css">
+  <link rel="stylesheet" href="./assets/css/sdms-comp-fee-sheet-list.css">
+  <link rel="stylesheet" href="./assets/css/bill-detail.css">
+</head>
+<body>
+<div class="app-shell">
+<aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
+<div class="page-shell">
+<div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="bill-list" data-include-tools="true" data-user-name="张三"></div>
+<main class="content-wrap">
+<section class="bill-detail-page" id="billDetailPage">
+  <div class="detail-top-bar">
+    <div class="breadcrumb">账单管理 / <strong id="breadcrumbNo">—</strong></div>
+    <div class="detail-actions">
+      <button class="btn btn-primary" id="sendBtn" type="button">发送账单</button>
+      <button class="btn btn-primary" id="confirmBtn" type="button" style="background:var(--color-success)">确认账单</button>
+      <button class="btn btn-default" id="withdrawBtn" type="button">撒回</button>
+      <button class="btn btn-default" id="previewBtn" type="button">预览账单</button>
+      <button class="btn btn-default exit-preview-btn" id="exitPreviewBtn" type="button">退出预览</button>
+    </div>
+  </div>
+  <div class="status-banner" id="statusBanner"></div>
+  <div class="info-card">
+    <div class="info-card-title">基本信息</div>
+    <div class="info-grid" id="billInfo"></div>
+  </div>
+  <div class="info-card" id="currencyCard"></div>
+  <div id="receiptSection" style="display:none"></div>
+  <div id="tabContent"></div>
+  <div class="modal-mask" id="feeDetailModal" aria-hidden="true">
+    <div class="modal-dialog" style="width:min(1100px,calc(100vw - 32px))">
+      <div class="modal-header">
+        <span class="modal-title" id="feeDetailTitle">费用单详情</span>
+        <button type="button" class="modal-close" id="feeDetailCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="feeDetailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-default" id="feeDetailOkBtn" type="button">关闭</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="withdrawModal" style="display:none">
+    <div class="modal-box">
+      <div class="modal-title">确认撒回账单</div>
+      <div class="modal-body">
+        <p id="withdrawBillInfo"></p>
+        <p class="modal-warning">撒回后账单将作废，关联费用单将释放回未出账状态</p>
+        <div class="modal-field"><label>撒回原因<span class="required">*</span></label><textarea id="withdrawReason" rows="3" maxlength="200" placeholder="请输入撒回原因"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" id="withdrawCancelBtn" type="button">取消</button>
+        <button class="btn btn-primary" id="withdrawConfirmBtn" type="button" style="background:var(--color-error)">确认撒回</button>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+</div>
+</div>
+<div class="toast-stack" id="toastStack"></div>
+<script src="./assets/js/sdms-header-tabs.js"></script>
+<script src="./assets/js/sdms-sidebar.js"></script>
+<script src="./assets/js/bill-detail.js"></script>
+</body>
+</html>

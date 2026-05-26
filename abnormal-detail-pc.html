@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>异常信息详情 - PC端</title>
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3b82f6',
+            danger: '#ef4444',
+            success: '#10b981',
+            warning: '#f59e0b',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .shadow-card {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .border-card {
+        border: 1px solid #e5e7eb;
+      }
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 编辑模式切换
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const warehouseId = this.getAttribute('data-warehouse');
+          const viewMode = document.getElementById(`view-mode-${warehouseId}`);
+          const editMode = document.getElementById(`edit-mode-${warehouseId}`);
+          
+          viewMode.classList.add('hidden');
+          editMode.classList.remove('hidden');
+        });
+      });
+
+      // 取消编辑
+      document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const warehouseId = this.getAttribute('data-warehouse');
+          const viewMode = document.getElementById(`view-mode-${warehouseId}`);
+          const editMode = document.getElementById(`edit-mode-${warehouseId}`);
+          
+          editMode.classList.add('hidden');
+          viewMode.classList.remove('hidden');
+        });
+      });
+
+      // 保存编辑
+      document.querySelectorAll('.save-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const warehouseId = this.getAttribute('data-warehouse');
+          const viewMode = document.getElementById(`view-mode-${warehouseId}`);
+          const editMode = document.getElementById(`edit-mode-${warehouseId}`);
+          
+          // 模拟保存操作
+          alert(`入仓号${warehouseId}的异常信息已保存`);
+          
+          editMode.classList.add('hidden');
+          viewMode.classList.remove('hidden');
+        });
+      });
+
+      // 照片上传预览
+      document.querySelectorAll('.photo-upload-input').forEach(input => {
+        input.addEventListener('change', function(e) {
+          const files = e.target.files;
+          const previewContainer = this.closest('.photo-upload-section').querySelector('.photo-preview-container');
+          
+          if (files.length > 0) {
+            for (let i = 0; i < files.length; i++) {
+              if (previewContainer.children.length >= 6) {
+                alert('最多只能上传6张照片');
+                break;
+              }
+              
+              const file = files[i];
+              if (file.size > 5 * 1024 * 1024) {
+                alert('单张照片大小不能超过5MB');
+                continue;
+              }
+              
+              const reader = new FileReader();
+              reader.onload = function(e) {
+                const preview = document.createElement('div');
+                preview.className = 'relative';
+                preview.innerHTML = `
+                  <img src="${e.target.result}" alt="照片" class="w-full h-24 object-cover rounded-md">
+                  <button type="button" class="absolute top-1 right-1 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600">
+                    <i class="fa fa-times"></i>
+                  </button>
+                `;
+                previewContainer.appendChild(preview);
+              };
+              reader.readAsDataURL(file);
+            }
+            
+            // 重置input，允许重复选择同一文件
+            this.value = '';
+          }
+        });
+      });
+
+      // 移除照片
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.photo-preview-container button')) {
+          e.target.closest('.relative').remove();
+        }
+      });
+
+      // 其他选项控制备注显示
+      document.querySelectorAll('.other-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const warehouseId = this.getAttribute('data-warehouse');
+          const remarkSection = document.getElementById(`remark-section-${warehouseId}`);
+          
+          if (this.checked) {
+            remarkSection.classList.remove('hidden');
+          } else {
+            remarkSection.classList.add('hidden');
+          }
+        });
+      });
+
+      // 分类切换功能
+      window.toggleCategory = function(categoryId) {
+        const category = document.getElementById(categoryId);
+        const icon = document.getElementById(`${categoryId.split('-')[0]}-icon-${categoryId.split('-')[1]}`);
+        
+        if (category.classList.contains('hidden')) {
+          category.classList.remove('hidden');
+          icon.classList.add('rotate-180');
+        } else {
+          category.classList.add('hidden');
+          icon.classList.remove('rotate-180');
+        }
+      };
+
+      // 异常类型搜索功能
+      document.querySelectorAll('[id^="search-abnormal-"]').forEach(input => {
+        input.addEventListener('input', function() {
+          const warehouseId = this.id.split('-')[2];
+          const searchTerm = this.value.toLowerCase();
+          
+          // 搜索所有异常类型选项
+          document.querySelectorAll(`#edit-mode-${warehouseId} label`).forEach(label => {
+            const text = label.querySelector('span').textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+              label.style.display = 'flex';
+            } else {
+              label.style.display = 'none';
+            }
+          });
+        });
+      });
+
+      // 包装异常开关控制
+      document.querySelectorAll('[id^="packagingAbnormal-"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const warehouseId = this.id.split('-')[1];
+          const editSection = document.getElementById(`abnormalEditSection-${warehouseId}`);
+          
+          if (this.checked) {
+            editSection.classList.remove('hidden');
+          } else {
+            editSection.classList.add('hidden');
+          }
+        });
+      });
+    });
+  </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- 页面标题 -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-semibold text-gray-900">异常信息详情</h1>
+      <p class="mt-1 text-sm text-gray-600">展示和编辑收货过程中发现的包装异常信息</p>
+    </div>
+
+    <!-- 订单基本信息 -->
+    <div class="bg-white rounded-lg shadow-card p-6 mb-6">
+      <h2 class="text-lg font-medium text-gray-900 mb-4">订单信息</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <p class="text-sm text-gray-500">订单编号</p>
+          <p class="text-sm font-medium text-gray-900">ORD-20260304-001</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">供应商</p>
+          <p class="text-sm font-medium text-gray-900">XX贸易有限公司</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">收货时间</p>
+          <p class="text-sm font-medium text-gray-900">2026-03-04 14:30:25</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 异常信息概览 -->
+    <div class="bg-white rounded-lg shadow-card p-6 mb-6">
+      <h2 class="text-lg font-medium text-gray-900 mb-4">异常概览</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="border-card rounded-lg p-4 bg-red-50">
+          <p class="text-sm text-gray-500">异常入仓号数量</p>
+          <p class="text-xl font-semibold text-danger">2</p>
+        </div>
+        <div class="border-card rounded-lg p-4 bg-yellow-50">
+          <p class="text-sm text-gray-500">异常类型数量</p>
+          <p class="text-xl font-semibold text-warning">5</p>
+        </div>
+        <div class="border-card rounded-lg p-4 bg-blue-50">
+          <p class="text-sm text-gray-500">上传照片数量</p>
+          <p class="text-xl font-semibold text-primary">8</p>
+        </div>
+        <div class="border-card rounded-lg p-4 bg-green-50">
+          <p class="text-sm text-gray-500">处理状态</p>
+          <p class="text-xl font-semibold text-success">待处理</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 异常详情列表 -->
+    <div class="bg-white rounded-lg shadow-card p-6 mb-6">
+      <h2 class="text-lg font-medium text-gray-900 mb-4">异常详情</h2>
+      
+      <!-- 入仓号1异常 -->
+      <div class="border-card rounded-lg mb-4">
+        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-lg flex justify-between items-center">
+          <h3 class="text-md font-medium text-gray-900">入仓号1</h3>
+          <button class="edit-btn px-3 py-1 text-sm font-medium text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors" data-warehouse="1">
+            <i class="fa fa-pencil mr-1"></i> 编辑
+          </button>
+        </div>
+        
+        <!-- 查看模式 -->
+        <div id="view-mode-1" class="p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">异常类型</p>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full">外箱破损</span>
+                <span class="px-2 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full">变形</span>
+                <span class="px-2 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full">标签破损</span>
+              </div>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500 mb-1">异常备注</p>
+              <p class="text-sm text-gray-900">入仓号1：外箱多处破损，部分货物变形，标签脱落</p>
+            </div>
+          </div>
+          <div class="mb-4">
+            <p class="text-sm text-gray-500 mb-2">现场照片</p>
+            <div class="grid grid-cols-4 gap-3">
+              <div class="relative">
+                <img src="https://picsum.photos/seed/box1/200/200" alt="外箱破损" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                  1/4
+                </div>
+              </div>
+              <div class="relative">
+                <img src="https://picsum.photos/seed/box2/200/200" alt="变形" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                  2/4
+                </div>
+              </div>
+              <div class="relative">
+                <img src="https://picsum.photos/seed/box3/200/200" alt="标签破损" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                  3/4
+                </div>
+              </div>
+              <div class="relative">
+                <img src="https://picsum.photos/seed/box4/200/200" alt="整体情况" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                  4/4
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 编辑模式 -->
+        <div id="edit-mode-1" class="p-4 hidden">
+          <!-- 包装异常开关 -->
+          <div class="flex items-center justify-between mb-4">
+            <label class="block text-sm font-medium text-gray-700">包装异常</label>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="packagingAbnormal-1" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+          
+          <!-- 异常信息编辑区域 -->
+          <div id="abnormalEditSection-1">
+            <div class="mb-4">
+              <!-- 异常类型搜索 -->
+              <div class="mb-4">
+                <p class="text-sm text-gray-500 mb-2">异常类型</p>
+                <div class="relative">
+                  <input type="text" id="search-abnormal-1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary" placeholder="搜索异常类型...">
+                  <i class="fa fa-search absolute right-3 top-3 text-gray-400"></i>
+                </div>
+              </div>
+              
+              <!-- 异常类型分类 -->
+              <div class="border border-gray-200 rounded-md overflow-hidden">
+                <!-- 包装问题 -->
+                <div class="bg-gray-50 border-b border-gray-200">
+                  <button type="button" class="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 flex justify-between items-center" onclick="toggleCategory('packaging-1')">
+                    包装问题
+                    <i class="fa fa-chevron-down transition-transform" id="packaging-icon-1"></i>
+                  </button>
+                </div>
+                <div id="packaging-1" class="p-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary" checked>
+                      <span class="text-sm text-gray-700">外箱破损</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">内箱破损</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary" checked>
+                      <span class="text-sm text-gray-700">变形</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">撕裂</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">胶带重新封装</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary" checked>
+                      <span class="text-sm text-gray-700">标签破损</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">标签缺失</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">外包装脏污</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">包装松散</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- 运输问题 -->
+                <div class="bg-gray-50 border-b border-gray-200">
+                  <button type="button" class="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 flex justify-between items-center" onclick="toggleCategory('transport-1')">
+                    运输问题
+                    <i class="fa fa-chevron-down transition-transform" id="transport-icon-1"></i>
+                  </button>
+                </div>
+                <div id="transport-1" class="p-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary" checked>
+                      <span class="text-sm text-gray-700">渗水/受潮</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">淋雨</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">暴晒</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">碰撞损伤</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- 托盘问题 -->
+                <div class="bg-gray-50 border-b border-gray-200">
+                  <button type="button" class="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 flex justify-between items-center" onclick="toggleCategory('pallet-1')">
+                    托盘问题
+                    <i class="fa fa-chevron-down transition-transform" id="pallet-icon-1"></i>
+                  </button>
+                </div>
+                <div id="pallet-1" class="p-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">托盘断裂</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">托盘倾斜</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">托盘污染</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- 其他问题 -->
+                <div class="bg-gray-50">
+                  <button type="button" class="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 flex justify-between items-center" onclick="toggleCategory('other-1')">
+                    其他问题
+                    <i class="fa fa-chevron-down transition-transform" id="other-icon-1"></i>
+                  </button>
+                </div>
+                <div id="other-1" class="p-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" class="other-checkbox mr-2 text-primary" data-warehouse="1">
+                      <span class="text-sm text-gray-700">其他</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div id="remark-section-1" class="hidden">
+                <p class="text-sm text-gray-500 mb-2">异常备注</p>
+                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary" rows="3" placeholder="请描述异常情况">入仓号1：外箱多处破损，部分货物变形，标签脱落</textarea>
+                <p class="mt-1 text-xs text-gray-500">最多200字</p>
+              </div>
+            </div>
+            <div class="mb-4">
+              <p class="text-sm text-gray-500 mb-2">现场照片</p>
+              <div class="photo-upload-section">
+                <div class="grid grid-cols-4 gap-3 photo-preview-container">
+                  <div class="relative">
+                    <img src="https://picsum.photos/seed/box1/200/200" alt="外箱破损" class="w-full h-24 object-cover rounded-md">
+                    <button type="button" class="absolute top-1 right-1 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="relative">
+                    <img src="https://picsum.photos/seed/box2/200/200" alt="变形" class="w-full h-24 object-cover rounded-md">
+                    <button type="button" class="absolute top-1 right-1 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="relative">
+                    <img src="https://picsum.photos/seed/box3/200/200" alt="标签破损" class="w-full h-24 object-cover rounded-md">
+                    <button type="button" class="absolute top-1 right-1 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="flex items-center justify-center h-24 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
+                    <label class="flex flex-col items-center justify-center cursor-pointer">
+                      <i class="fa fa-camera text-gray-400 text-xl mb-1"></i>
+                      <span class="text-xs text-gray-500">添加照片</span>
+                      <input type="file" class="photo-upload-input hidden" accept="image/*" multiple>
+                    </label>
+                  </div>
+                </div>
+                <p class="mt-2 text-xs text-gray-500">最多上传6张照片，单张不超过5MB</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button class="cancel-edit-btn px-3 py-1 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors" data-warehouse="1">
+              取消
+            </button>
+            <button class="save-edit-btn px-3 py-1 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors" data-warehouse="1">
+              保存
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 入仓号2异常 -->
+      <div class="border-card rounded-lg">
+        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-lg flex justify-between items-center">
+          <h3 class="text-md font-medium text-gray-900">入仓号2</h3>
+          <button class="edit-btn px-3 py-1 text-sm font-medium text-primary border border-primary rounded-md hover:bg-primary hover:text-white transition-colors" data-warehouse="2">
+            <i class="fa fa-pencil mr-1"></i> 编辑
+          </button>
+        </div>
+        
+        <!-- 查看模式 -->
+        <div id="view-mode-2" class="p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">异常类型</p>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full">渗水/受潮</span>
+                <span class="px-2 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-full">其他</span>
+              </div>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500 mb-1">异常备注</p>
+              <p class="text-sm text-gray-900">入仓号2：部分货物包装渗水，疑似运输过程中淋雨</p>
+            </div>
+          </div>
+          <div class="mb-4">
+            <p class="text-sm text-gray-500 mb-2">现场照片</p>
+            <div class="grid grid-cols-4 gap-3">
+              <div class="relative">
+                <img src="https://picsum.photos/seed/water1/200/200" alt="渗水" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                  1/4
+                </div>
+              </div>
+              <div class="relative">
+                <img src="https://picsum.photos/seed/water2/200/200" alt="受潮" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                  2/4
+                </div>
+              </div>
+              <div class="relative">
+                <img src="https://picsum.photos/seed/water3/200/200" alt="包装情况" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                  3/4
+                </div>
+              </div>
+              <div class="relative">
+                <img src="https://picsum.photos/seed/water4/200/200" alt="标签情况" class="w-full h-24 object-cover rounded-md">
+                <div class="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                  4/4
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 编辑模式 -->
+        <div id="edit-mode-2" class="p-4 hidden">
+          <!-- 包装异常开关 -->
+          <div class="flex items-center justify-between mb-4">
+            <label class="block text-sm font-medium text-gray-700">包装异常</label>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="packagingAbnormal-2" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+          
+          <!-- 异常信息编辑区域 -->
+          <div id="abnormalEditSection-2">
+            <div class="mb-4">
+              <!-- 异常类型搜索 -->
+              <div class="mb-4">
+                <p class="text-sm text-gray-500 mb-2">异常类型</p>
+                <div class="relative">
+                  <input type="text" id="search-abnormal-2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary" placeholder="搜索异常类型...">
+                  <i class="fa fa-search absolute right-3 top-3 text-gray-400"></i>
+                </div>
+              </div>
+              
+              <!-- 异常类型分类 -->
+              <div class="border border-gray-200 rounded-md overflow-hidden">
+                <!-- 包装问题 -->
+                <div class="bg-gray-50 border-b border-gray-200">
+                  <button type="button" class="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 flex justify-between items-center" onclick="toggleCategory('packaging-2')">
+                    包装问题
+                    <i class="fa fa-chevron-down transition-transform" id="packaging-icon-2"></i>
+                  </button>
+                </div>
+                <div id="packaging-2" class="p-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">外箱破损</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">内箱破损</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">变形</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">撕裂</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">胶带重新封装</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">标签破损</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">标签缺失</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">外包装脏污</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">包装松散</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- 运输问题 -->
+                <div class="bg-gray-50 border-b border-gray-200">
+                  <button type="button" class="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 flex justify-between items-center" onclick="toggleCategory('transport-2')">
+                    运输问题
+                    <i class="fa fa-chevron-down transition-transform" id="transport-icon-2"></i>
+                  </button>
+                </div>
+                <div id="transport-2" class="p-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary" checked>
+                      <span class="text-sm text-gray-700">渗水/受潮</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary" checked>
+                      <span class="text-sm text-gray-700">淋雨</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">暴晒</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">碰撞损伤</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- 托盘问题 -->
+                <div class="bg-gray-50 border-b border-gray-200">
+                  <button type="button" class="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 flex justify-between items-center" onclick="toggleCategory('pallet-2')">
+                    托盘问题
+                    <i class="fa fa-chevron-down transition-transform" id="pallet-icon-2"></i>
+                  </button>
+                </div>
+                <div id="pallet-2" class="p-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">托盘断裂</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">托盘倾斜</span>
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" class="mr-2 text-primary">
+                      <span class="text-sm text-gray-700">托盘污染</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- 其他问题 -->
+                <div class="bg-gray-50">
+                  <button type="button" class="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 flex justify-between items-center" onclick="toggleCategory('other-2')">
+                    其他问题
+                    <i class="fa fa-chevron-down transition-transform" id="other-icon-2"></i>
+                  </button>
+                </div>
+                <div id="other-2" class="p-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    <label class="flex items-center">
+                      <input type="checkbox" class="other-checkbox mr-2 text-primary" checked data-warehouse="2">
+                      <span class="text-sm text-gray-700">其他</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div id="remark-section-2">
+                <p class="text-sm text-gray-500 mb-2">异常备注</p>
+                <textarea class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary" rows="3" placeholder="请描述异常情况">入仓号2：部分货物包装渗水，疑似运输过程中淋雨</textarea>
+                <p class="mt-1 text-xs text-gray-500">最多200字</p>
+              </div>
+            </div>
+            <div class="mb-4">
+              <p class="text-sm text-gray-500 mb-2">现场照片</p>
+              <div class="photo-upload-section">
+                <div class="grid grid-cols-4 gap-3 photo-preview-container">
+                  <div class="relative">
+                    <img src="https://picsum.photos/seed/water1/200/200" alt="渗水" class="w-full h-24 object-cover rounded-md">
+                    <button type="button" class="absolute top-1 right-1 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="relative">
+                    <img src="https://picsum.photos/seed/water2/200/200" alt="受潮" class="w-full h-24 object-cover rounded-md">
+                    <button type="button" class="absolute top-1 right-1 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="relative">
+                    <img src="https://picsum.photos/seed/water3/200/200" alt="包装情况" class="w-full h-24 object-cover rounded-md">
+                    <button type="button" class="absolute top-1 right-1 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-600">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="flex items-center justify-center h-24 border-2 border-dashed border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
+                    <label class="flex flex-col items-center justify-center cursor-pointer">
+                      <i class="fa fa-camera text-gray-400 text-xl mb-1"></i>
+                      <span class="text-xs text-gray-500">添加照片</span>
+                      <input type="file" class="photo-upload-input hidden" accept="image/*" multiple>
+                    </label>
+                  </div>
+                </div>
+                <p class="mt-2 text-xs text-gray-500">最多上传6张照片，单张不超过5MB</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button class="cancel-edit-btn px-3 py-1 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors" data-warehouse="2">
+              取消
+            </button>
+            <button class="save-edit-btn px-3 py-1 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md transition-colors" data-warehouse="2">
+              保存
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="flex justify-end space-x-4">
+      <button class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50">
+        导出报告
+      </button>
+      <button class="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-md">
+        处理异常
+      </button>
+    </div>
+  </div>
+</body>
+</html>

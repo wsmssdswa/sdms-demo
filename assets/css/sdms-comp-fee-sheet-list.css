@@ -1,0 +1,459 @@
+/**
+ * SDMS — 费用单列表页 专用样式
+ * ==============================
+ * 本文件仅包含 fee-sheet-list 页面独有的组件样式。
+ * 通用列表页组件（filter-panel、query-row、filter-control、list-table、
+ * scene-tabs、action-link、table-footer、pager、toast、modal 基础结构等）
+ * 由 sdms-comp-config-list.css 提供，不在本文件中重复。
+ *
+ * 设计令牌来源：MasterGo Design Tokens
+ */
+
+/* ================================================================
+   1. 页面容器覆写
+   ================================================================ */
+
+.page-card {
+  min-height: calc(100vh - 65px);
+  padding: 10px;
+}
+
+/* ================================================================
+   2. 详情弹窗 — 信息卡片（MasterGo Descriptions 水平无框）
+   ================================================================ */
+
+.detail-info-card {
+  padding: 16px 0;
+  margin-bottom: 20px;
+}
+
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, auto 1fr);
+  column-gap: 8px;
+  row-gap: 12px;
+  font-size: 13px;
+}
+
+.detail-info-grid .info-label {
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  line-height: 20px;
+  padding-right: 4px;
+}
+
+.detail-info-grid .info-value {
+  color: var(--text-main);
+  font-weight: 500;
+  line-height: 20px;
+  padding-right: 16px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ================================================================
+   3. 详情弹窗 — 区域分隔
+   ================================================================ */
+
+.detail-section {
+  margin-bottom: 20px;
+}
+
+.detail-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.detail-section-sum {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+  margin-left: auto;
+}
+
+/* ================================================================
+   4. 方向标签 — 应收 / 应付
+   ================================================================ */
+
+.dir-receivable-tag {
+  background: #e0e7ff;
+  color: var(--color-indigo, #4f46e5);
+  padding: 2px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.dir-payable-tag {
+  background: #fff3e0;
+  color: var(--color-deep-orange, #e65100);
+  padding: 2px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+/* ================================================================
+   5. 详情弹窗 — 汇总卡片
+   ================================================================ */
+
+.detail-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  padding: 14px 0 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.detail-summary .summary-item {
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: var(--panel-bg);
+  border: 1px solid var(--line);
+}
+
+.detail-summary .summary-label {
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.detail-summary .summary-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* ================================================================
+   6. 净额正负色
+   ================================================================ */
+
+.net-positive {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.net-negative {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* ================================================================
+   7. 详情弹窗 — 费用项表格
+   ================================================================ */
+
+.detail-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.detail-items-table th {
+  text-align: left;
+  padding: 8px 10px;
+  background: var(--panel-bg);
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+  font-size: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.detail-items-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 12px;
+}
+
+.detail-items-table .amount-cell {
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.detail-items-table .amount-orig {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.detail-items-table .amount-base {
+  color: var(--color-indigo, #4f46e5);
+  font-weight: 500;
+}
+
+.detail-items-table .rate-cell {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  font-size: 11px;
+  font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.detail-items-table .amount-header {
+  text-align: right;
+}
+
+.detail-items-table .fee-name-cell {
+  font-weight: 500;
+}
+
+.detail-items-table .time-cell {
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.detail-items-table .fee-item-row {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.detail-items-table .fee-item-row:hover {
+  background: var(--color-primary-light, #f5f8ff);
+}
+
+.detail-items-table .fee-item-row.expanded {
+  background: var(--color-primary-light, #f0f4ff);
+}
+
+.detail-items-table .fee-item-row.expanded:hover {
+  background: var(--color-primary-hover-light, #e8edff);
+}
+
+/* ================================================================
+   8. 币种标签
+   ================================================================ */
+
+.currency-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--color-primary-light, #f0f4ff);
+  color: var(--color-indigo, #4f46e5);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+/* ================================================================
+   9. 展开按钮
+   ================================================================ */
+
+.expand-btn {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: all 0.15s;
+  line-height: 1;
+}
+
+.expand-btn:hover {
+  color: var(--color-primary);
+  background: var(--panel-bg);
+}
+
+/* ================================================================
+   10. 计费明细展开行
+   ================================================================ */
+
+.calc-detail-row > td {
+  padding: 0 !important;
+  border-bottom: 1px solid var(--table-border);
+  background: var(--panel-soft, #fafbfd);
+}
+
+.calc-detail-panel {
+  padding: 10px 12px 10px 36px;
+  font-size: 12px;
+}
+
+.calc-detail-grid {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+}
+
+.calc-rule-col {
+  flex: 1;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.calc-rule-col b {
+  color: var(--color-indigo, #4f46e5);
+  font-weight: 500;
+}
+
+.calc-formula-col {
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+  white-space: nowrap;
+}
+
+/* ================================================================
+   11. 详情弹窗 — 备注
+   ================================================================ */
+
+.detail-remark {
+  margin-top: 12px;
+}
+
+.detail-remark label {
+  display: block;
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 4px;
+}
+
+.detail-remark textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.detail-remark textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--input-focus-shadow);
+}
+
+/* ================================================================
+   12. 结算模式标签
+   ================================================================ */
+
+.settle-realtime {
+  color: var(--color-success);
+}
+
+.settle-bill {
+  color: var(--color-indigo, #6366f1);
+}
+
+/* ================================================================
+   13. 详情弹窗 — 宽弹窗覆写
+   ================================================================ */
+
+#detailModal .modal-dialog {
+  width: min(1100px, calc(100vw - 32px));
+}
+
+/* ================================================================
+   14. 审核选项（预留）
+   ================================================================ */
+
+.review-choice {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.review-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.review-option input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.review-reason-wrap {
+  margin-top: 4px;
+}
+
+.review-reason-label {
+  display: block;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.required-star {
+  color: var(--danger);
+}
+
+.review-reason-input {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-main);
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.review-reason-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--input-focus-shadow);
+}
+
+.review-reason-input::placeholder {
+  color: var(--placeholder-color);
+}
+
+/* ================================================================
+   15. 驳回原因图标
+   ================================================================ */
+
+.reject-info-icon {
+  color: #9d174d;
+  font-size: 14px;
+  margin-left: 4px;
+  vertical-align: middle;
+  cursor: help;
+}
+
+/* ================================================================
+   16. 复选框列
+   ================================================================ */
+
+.list-table th:first-child,
+.list-table .check-cell {
+  text-align: center;
+}
+
+.list-table .check-cell input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+#checkAll {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.list-table .check-cell input[type="checkbox"]:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增物流费</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/sdms-comp-form-create.css">
+  <link rel="stylesheet" href="./assets/css/logistics-fee-create.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
+    <div class="page-shell">
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="logistics-fee-create" data-include-tools="true" data-user-name="张三"></div>
+      <main class="content-wrap">
+        <section class="page-card">
+          <div class="page-card-head">
+            <div class="page-title" id="pageTitleLabel">新增物流费</div>
+            <div class="page-actions">
+              <button class="btn btn-outline" id="backBtn" type="button">返回</button>
+              <button class="btn btn-primary" id="saveBtn" type="button">保存</button>
+            </div>
+          </div>
+          <div class="page-body">
+            <div class="form-panel">
+              <div class="section-title">基本信息</div>
+              <form id="logisticsFeeForm" novalidate>
+                <div class="section-row">
+                  <div class="field-group" data-field="quoteName">
+                    <div class="field-label"><span class="required-star">*</span><span>物流费名称</span></div>
+                    <input class="field-control" id="quoteName" name="quoteName" maxlength="50" placeholder="请输入物流费名称">
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="channel">
+                    <div class="field-label"><span class="required-star">*</span><span>渠道</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="channel" name="channel">
+                        <option value="">请选择渠道</option>
+                        <option value="西欧专线">西欧专线</option>
+                        <option value="全渠道">全渠道</option>
+                        <option value="东南亚专线">东南亚专线</option>
+                        <option value="北美专线">北美专线</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="currency">
+                    <div class="field-label"><span class="required-star">*</span><span>币种</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="currency" name="currency">
+                        <option value="">请选择币种</option>
+                        <option value="EUR">EUR</option>
+                        <option value="USD">USD</option>
+                        <option value="CNY">CNY</option>
+                        <option value="GBP">GBP</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="weightUnit">
+                    <div class="field-label"><span class="required-star">*</span><span>计重单位</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="weightUnit" name="weightUnit">
+                        <option value="">请选择</option>
+                        <option value="KG">KG</option>
+                        <option value="LB">LB</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="volWeightMethod">
+                    <div class="field-label"><span class="required-star">*</span><span>体积重计算方式</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="volWeightMethod" name="volWeightMethod">
+                        <option value="">请选择</option>
+                        <option value="divide">体积/体积系数</option>
+                        <option value="multiply">CBM*体积系数</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="volWeightCoeff">
+                    <div class="field-label"><span class="required-star">*</span><span>体积重系数</span></div>
+                    <input class="field-control" id="volWeightCoeff" name="volWeightCoeff" type="number" min="0" step="0.01" placeholder="请输入体积重系数">
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group" data-field="fuelRule">
+                    <div class="field-label"><span>燃油规则</span></div>
+                    <div class="select-wrap">
+                      <select class="field-select" id="fuelRule" name="fuelRule">
+                        <option value="">请选择</option>
+                      </select>
+                      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m7 10 5 5 5-5z"></path></svg>
+                    </div>
+                    <div class="field-tip"></div>
+                  </div>
+                  <div class="field-group span-2" data-field="remark">
+                    <div class="field-label"><span>备注</span></div>
+                    <input class="field-control" id="remark" name="remark" maxlength="255" placeholder="请输入备注">
+                    <div class="field-tip"></div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="tab-bar" id="tabBar">
+              <button class="tab-item active" type="button" data-tab="zone">分区</button>
+              <button class="tab-item" type="button" data-tab="freight">运费</button>
+              <button class="tab-item" type="button" data-tab="surcharge">附加费</button>
+            </div>
+            <div class="tab-content" id="tabZone" data-tab-panel="zone">
+              <div class="tab-section">
+                <div class="tab-section-head">
+                  <div class="section-title">分区管理</div>
+                </div>
+                <div class="zone-cascade">
+                  <div class="zone-panel">
+                    <div class="zone-panel-head">
+                      <span class="zone-panel-title">分区</span>
+                    </div>
+                    <div class="zone-panel-body" id="zoneList"></div>
+                    <button class="zone-panel-add-bottom" id="addZoneBtn" type="button">+ 新增</button>
+                  </div>
+                  <div class="zone-panel">
+                    <div class="zone-panel-head">
+                      <span class="zone-panel-title">国家/地区</span>
+                    </div>
+                    <div class="zone-panel-body" id="countryList"></div>
+                    <button class="zone-panel-add-bottom" id="addCountryBtn" type="button">+ 新增</button>
+                  </div>
+                  <div class="zone-panel">
+                    <div class="zone-panel-head city-grid-head">
+                      <span class="zone-panel-title-sub">城市</span><span class="zone-panel-title-sub">开始邮编</span><span class="zone-panel-title-sub">结束邮编</span><span></span>
+                    </div>
+                    <div class="zone-panel-body" id="cityList"></div>
+                    <button class="zone-panel-add-bottom" id="addCityBtn" type="button">+ 新增</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tab-content" id="tabFreight" data-tab-panel="freight" style="display:none">
+              <div class="freight-toggles">
+                <label class="fee-toggle"><input type="checkbox" id="deliveryEnabledCheck" checked disabled>配送费</label>
+                <label class="fee-toggle"><input type="checkbox" id="transferEnabledCheck" checked>中转费</label>
+                <label class="fee-toggle"><input type="checkbox" id="codEnabledCheck" checked>COD服务费</label>
+              </div>
+              <div class="tab-section" id="deliverySection">
+                <div class="tab-section-head">
+                  <div class="tab-section-left">
+                    <div class="section-title">配送费</div>
+                    <label class="renewal-check"><input type="checkbox" id="deliveryRenewalCheck">启用续重</label>
+                  </div>
+                </div>
+                <div class="matrix-table-wrap" id="deliveryTableWrap"><table class="matrix-table" id="deliveryFeeTable"><thead id="deliveryFeeHead"></thead><tbody id="deliveryFeeBody"></tbody></table></div>
+              </div>
+              <div class="tab-section" id="transferSection">
+                <div class="tab-section-head">
+                  <div class="tab-section-left">
+                    <div class="section-title">中转费</div>
+                    <label class="renewal-check"><input type="checkbox" id="transferRenewalCheck">启用续重</label>
+                  </div>
+                </div>
+                <div class="matrix-table-wrap" id="transferTableWrap"><table class="matrix-table" id="transferFeeTable"><thead id="transferFeeHead"></thead><tbody id="transferFeeBody"></tbody></table></div>
+              </div>
+              <div class="tab-section" id="codSection">
+                <div class="tab-section-head">
+                  <div class="tab-section-left">
+                    <div class="section-title">COD服务费</div>
+                  </div>
+                </div>
+                <div class="matrix-table-wrap" id="codTableWrap"><table class="matrix-table" id="codFeeTable"><thead id="codFeeHead"></thead><tbody id="codFeeBody"></tbody></table></div>
+              </div>
+            </div>
+            <div class="tab-content" id="tabSurcharge" data-tab-panel="surcharge" style="display:none">
+              <div class="surcharge-toggles">
+                <label class="fee-toggle"><input type="checkbox" id="surchargeLengthEnabled">超长附加费</label>
+                <label class="fee-toggle"><input type="checkbox" id="surchargeWeightEnabled">超重附加费</label>
+                <label class="fee-toggle"><input type="checkbox" id="surchargeDimensionEnabled">超尺寸附加费</label>
+                <label class="fee-toggle"><input type="checkbox" id="surchargeVolumeEnabled">超体积附加费</label>
+                <label class="fee-toggle"><input type="checkbox" id="surchargeLimitEnabled">超限制附加费</label>
+                <label class="fee-toggle"><input type="checkbox" id="surchargeRemoteEnabled">偏远附加费</label>
+                <label class="fee-toggle"><input type="checkbox" id="surchargeRemotePlusEnabled">超偏远附加费</label>
+                <label class="fee-toggle"><input type="checkbox" id="surchargeRemoteUltraEnabled">超超偏远附加费</label>
+                <label class="fee-toggle"><input type="checkbox" id="surchargeCodEnabled">COD金额附加费</label>
+              </div>
+              <div class="tab-section" id="surchargeLengthSection" style="display:none">
+                <div class="tab-section-head"><div class="tab-section-left">
+                  <div class="section-title">超长附加费</div>
+                  <div class="surcharge-config"><label>命中规则</label><select class="surcharge-rule-select" id="surchargeLengthRule"><option value="">请选择命中规则</option><option>规则A-单边超长</option><option>规则B-超重</option><option>规则C-超尺寸</option><option>规则D-超体积</option><option>规则E-综合超限</option></select><label class="fuel-check"><input type="checkbox" id="surchargeLengthFuel">计算燃油费</label></div>
+                </div></div>
+                <div class="matrix-table-wrap"><table class="surcharge-fee-table"><thead id="surchargeLengthHead"></thead><tbody id="surchargeLengthBody"></tbody></table></div>
+              </div>
+              <div class="tab-section" id="surchargeWeightSection" style="display:none">
+                <div class="tab-section-head"><div class="tab-section-left">
+                  <div class="section-title">超重附加费</div>
+                  <div class="surcharge-config"><label>命中规则</label><select class="surcharge-rule-select" id="surchargeWeightRule"><option value="">请选择命中规则</option><option>规则A-单边超长</option><option>规则B-超重</option><option>规则C-超尺寸</option><option>规则D-超体积</option><option>规则E-综合超限</option></select><label class="fuel-check"><input type="checkbox" id="surchargeWeightFuel">计算燃油费</label></div>
+                </div></div>
+                <div class="matrix-table-wrap"><table class="surcharge-fee-table"><thead id="surchargeWeightHead"></thead><tbody id="surchargeWeightBody"></tbody></table></div>
+              </div>
+              <div class="tab-section" id="surchargeDimensionSection" style="display:none">
+                <div class="tab-section-head"><div class="tab-section-left">
+                  <div class="section-title">超尺寸附加费</div>
+                  <div class="surcharge-config"><label>命中规则</label><select class="surcharge-rule-select" id="surchargeDimensionRule"><option value="">请选择命中规则</option><option>规则A-单边超长</option><option>规则B-超重</option><option>规则C-超尺寸</option><option>规则D-超体积</option><option>规则E-综合超限</option></select><label class="fuel-check"><input type="checkbox" id="surchargeDimensionFuel">计算燃油费</label></div>
+                </div></div>
+                <div class="matrix-table-wrap"><table class="surcharge-fee-table"><thead id="surchargeDimensionHead"></thead><tbody id="surchargeDimensionBody"></tbody></table></div>
+              </div>
+              <div class="tab-section" id="surchargeVolumeSection" style="display:none">
+                <div class="tab-section-head"><div class="tab-section-left">
+                  <div class="section-title">超体积附加费</div>
+                  <div class="surcharge-config"><label>命中规则</label><select class="surcharge-rule-select" id="surchargeVolumeRule"><option value="">请选择命中规则</option><option>规则A-单边超长</option><option>规则B-超重</option><option>规则C-超尺寸</option><option>规则D-超体积</option><option>规则E-综合超限</option></select><label class="fuel-check"><input type="checkbox" id="surchargeVolumeFuel">计算燃油费</label></div>
+                </div></div>
+                <div class="matrix-table-wrap"><table class="surcharge-fee-table"><thead id="surchargeVolumeHead"></thead><tbody id="surchargeVolumeBody"></tbody></table></div>
+              </div>
+              <div class="tab-section" id="surchargeLimitSection" style="display:none">
+                <div class="tab-section-head"><div class="tab-section-left">
+                  <div class="section-title">超限制附加费</div>
+                  <div class="surcharge-config"><label>命中规则</label><select class="surcharge-rule-select" id="surchargeLimitRule"><option value="">请选择命中规则</option><option>规则A-单边超长</option><option>规则B-超重</option><option>规则C-超尺寸</option><option>规则D-超体积</option><option>规则E-综合超限</option></select><label class="fuel-check"><input type="checkbox" id="surchargeLimitFuel">计算燃油费</label></div>
+                </div></div>
+                <div class="matrix-table-wrap"><table class="surcharge-fee-table"><thead id="surchargeLimitHead"></thead><tbody id="surchargeLimitBody"></tbody></table></div>
+              </div>
+              <div class="tab-section" id="surchargeRemoteSection" style="display:none">
+                <div class="tab-section-head"><div class="tab-section-left">
+                  <div class="section-title">偏远附加费</div>
+                  <div class="surcharge-config"><label>命中规则</label><select class="surcharge-rule-select" id="surchargeRemoteRule"><option value="">请选择命中规则</option><option>按邮编匹配</option><option>按城市匹配</option><option>按国家匹配</option></select><label class="renewal-check"><input type="checkbox" id="surchargeRemoteRenewalCheck">启用续重</label><label class="fuel-check"><input type="checkbox" id="surchargeRemoteFuel">计算燃油费</label></div>
+                </div></div>
+                <div class="matrix-table-wrap"><table class="matrix-table"><thead id="surchargeRemoteHead"></thead><tbody id="surchargeRemoteBody"></tbody></table></div>
+              </div>
+              <div class="tab-section" id="surchargeRemotePlusSection" style="display:none">
+                <div class="tab-section-head"><div class="tab-section-left">
+                  <div class="section-title">超偏远附加费</div>
+                  <div class="surcharge-config"><label>命中规则</label><select class="surcharge-rule-select" id="surchargeRemotePlusRule"><option value="">请选择命中规则</option><option>按邮编匹配</option><option>按城市匹配</option><option>按国家匹配</option></select><label class="renewal-check"><input type="checkbox" id="surchargeRemotePlusRenewalCheck">启用续重</label><label class="fuel-check"><input type="checkbox" id="surchargeRemotePlusFuel">计算燃油费</label></div>
+                </div></div>
+                <div class="matrix-table-wrap"><table class="matrix-table"><thead id="surchargeRemotePlusHead"></thead><tbody id="surchargeRemotePlusBody"></tbody></table></div>
+              </div>
+              <div class="tab-section" id="surchargeRemoteUltraSection" style="display:none">
+                <div class="tab-section-head"><div class="tab-section-left">
+                  <div class="section-title">超超偏远附加费</div>
+                  <div class="surcharge-config"><label>命中规则</label><select class="surcharge-rule-select" id="surchargeRemoteUltraRule"><option value="">请选择命中规则</option><option>按邮编匹配</option><option>按城市匹配</option><option>按国家匹配</option></select><label class="renewal-check"><input type="checkbox" id="surchargeRemoteUltraRenewalCheck">启用续重</label><label class="fuel-check"><input type="checkbox" id="surchargeRemoteUltraFuel">计算燃油费</label></div>
+                </div></div>
+                <div class="matrix-table-wrap"><table class="matrix-table"><thead id="surchargeRemoteUltraHead"></thead><tbody id="surchargeRemoteUltraBody"></tbody></table></div>
+              </div>
+              <div class="tab-section" id="surchargeCodSection" style="display:none">
+                <div class="tab-section-head">
+                  <div class="section-title">COD金额附加费</div>
+                </div>
+                <div id="codSurchargeContainer" style="padding:0 16px 16px;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div class="toast-stack" id="toastStack"></div>
+  <script src="./assets/js/sdms-header-tabs.js"></script>
+  <script src="./assets/js/sdms-sidebar.js"></script>
+  <script src="./assets/js/logistics-fee-create.js"></script>
+</body>
+</html>

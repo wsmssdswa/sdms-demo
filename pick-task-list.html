@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>入仓挑货 — 千仓SDMS</title>
+  <style>
+    :root {
+      --brand: #2B6CB0;
+      --brand-bright: #3B82F6;
+      --surface: #FFFFFF;
+      --surface-alt: #F7F8FA;
+      --text-primary: #1A202C;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --divider: #E2E8F0;
+      --status-pending: #94A3B8;
+      --status-active: #3B82F6;
+      --status-done: #22C55E;
+      --danger: #EF4444;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+      --shadow-fab: 0 6px 20px rgba(43, 108, 176, 0.45);
+      --radius: 8px;
+      --radius-sm: 4px;
+      --font-ui: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --font-mono: 'IBM Plex Mono', 'SF Mono', 'Cascadia Code', monospace;
+      --frame-max: 100%;
+      --content-pad: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: var(--font-ui);
+      background: #EDF0F4;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .pda-frame {
+      width: 100%;
+      max-width: var(--frame-max);
+      min-height: 100vh;
+      background: var(--surface-alt);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── 顶部导航栏 ── */
+    .nav-bar {
+      background: var(--surface-alt);
+      color: var(--text-primary);
+      padding: 0 12px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-bar .title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.3px;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    /* 小程序胶囊按钮 */
+    .mp-capsule {
+      display: flex; align-items: center;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 16px; height: 32px;
+      padding: 0 8px; gap: 0;
+    }
+    .capsule-dot, .capsule-close {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--text-primary);
+      font-weight: 700; letter-spacing: 1px;
+    }
+    .capsule-divider {
+      width: 1px; height: 16px;
+      background: rgba(0,0,0,0.12);
+    }
+
+
+    /* ── 扫码输入栏 ── */
+    .scan-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--divider);
+      padding: 8px var(--content-pad);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    @keyframes scanSlideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .scan-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--surface-alt);
+      border: 1.5px solid var(--divider);
+      border-radius: 4px;
+      padding: 10px 14px 10px 36px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 7V5a2 2 0 0 1 2-2h2'/%3E%3Cpath d='M17 3h2a2 2 0 0 1 2 2v2'/%3E%3Cpath d='M21 17v2a2 2 0 0 1-2 2h-2'/%3E%3Cpath d='M7 21H5a2 2 0 0 1-2-2v-2'/%3E%3Cline x1='7' y1='12' x2='17' y2='12'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 12px center;
+    }
+    .scan-input::placeholder { color: var(--text-muted); font-family: var(--font-ui); font-size: 13px; }
+    .scan-input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1); }
+    .scan-icon-btn {
+      width: 40px; height: 40px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--brand); border: none; border-radius: 4px;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .scan-icon-btn:active { background: #1E4F8A; }
+    .scan-icon-btn svg { width: 20px; height: 20px; fill: #fff; }
+
+    /* ── 内容区 ── */
+    .content {
+      flex: 1;
+      padding: 10px var(--content-pad) 88px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── 空状态 ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px 40px;
+      text-align: center;
+    }
+    .empty-icon {
+      width: 72px; height: 72px;
+      background: var(--surface);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-md);
+    }
+    .empty-icon svg { width: 36px; height: 36px; fill: var(--text-muted); }
+    .empty-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .empty-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
+
+    /* ── 任务卡片 ── */
+    .task-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: box-shadow 0.15s, transform 0.1s;
+      animation: fadeInUp 0.35s ease-out both;
+    }
+    .task-card:active { transform: scale(0.985); box-shadow: var(--shadow-md); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .task-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .task-header .status-tag { flex-shrink: 0; }
+    .task-header .order-no {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-left: 8px;
+      letter-spacing: 0.5px;
+    }
+    .task-header .task-time {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+
+    .status-tag {
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+    .status-tag.pending { background: var(--status-pending); }
+    .status-tag.in-progress { background: var(--status-active); }
+    .status-tag.completed { background: var(--status-done); }
+
+    /* 进度条 */
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .progress-track {
+      flex: 1;
+      height: 4px;
+      background: var(--divider);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    .progress-fill.pending { background: var(--status-pending); width: 0%; }
+    .progress-fill.in-progress { background: var(--status-active); }
+    .progress-fill.completed { background: var(--status-done); }
+    .progress-text {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      font-weight: 500;
+      flex-shrink: 0;
+      min-width: 44px;
+      text-align: right;
+    }
+
+    /* ── 底部FAB ── */
+    .fab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: var(--frame-max);
+      width: 100%;
+      padding: 12px var(--content-pad);
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(transparent, var(--surface-alt) 20%);
+      z-index: 100;
+      animation: fabIn 0.5s ease-out 0.3s both;
+    }
+    @keyframes fabIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .fab-bar .btn-fab {
+      width: 100%;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-bright) 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 14px 24px;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-fab);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .fab-bar .btn-fab:active {
+      transform: scale(0.97);
+      box-shadow: 0 3px 12px rgba(43, 108, 176, 0.35);
+    }
+    .fab-bar .btn-fab svg { width: 18px; height: 18px; fill: #fff; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: rgba(26, 32, 44, 0.88);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── 响应式断点 ── */
+    @media (min-width: 481px) {
+      :root {
+        --frame-max: 480px;
+        --content-pad: 16px;
+      }
+      .pda-frame {
+        box-shadow: 0 0 60px rgba(15, 23, 42, 0.12);
+      }
+    }
+
+    @media (min-width: 769px) {
+      :root {
+        --frame-max: 520px;
+        --content-pad: 20px;
+      }
+      .task-card { padding: 16px 18px; }
+      .task-header .order-no { font-size: 16px; }
+      .fab-bar .btn-fab { padding: 16px 24px; font-size: 16px; }
+    }
+
+    @media (min-width: 1200px) {
+      :root { --frame-max: 560px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="pda-frame">
+    <!-- 顶部导航 -->
+    <div class="nav-bar">
+      <div class="placeholder"></div>
+      <div class="title">入仓挑货</div>
+      <div class="mp-capsule">
+        <span class="capsule-dot">···</span>
+        <span class="capsule-divider"></span>
+        <span class="capsule-close"><svg viewBox="0 0 24 24" width="14" height="14"><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg></span>
+      </div>
+    </div>
+
+    <!-- 查询栏（常驻显示） -->
+    <div class="scan-bar" id="scanBar">
+      <input class="scan-input" id="scanInput" type="text" placeholder="输入订单号筛选或扫码跳转"
+             oninput="onFilterInput()" onkeydown="onScanKeyDown(event)">
+      <button class="scan-icon-btn" type="button">
+        <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="12" x2="17" y2="12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="content" id="taskContent"></div>
+
+    <!-- 底部上传按钮 -->
+    <div class="fab-bar">
+      <button class="btn-fab" type="button" onclick="triggerFileUpload()">
+        <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/></svg>
+        上传清单
+      </button>
+    </div>
+  </div>
+
+  <!-- 隐藏文件输入 -->
+  <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="onFileSelected(event)">
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 共享数据层 -->
+  <script src="./assets/js/pick-tool-data.js"></script>
+
+  <script>
+    /* ── 全局引用 ── */
+    var contentEl = document.getElementById('taskContent');
+    var scanBar = document.getElementById('scanBar');
+    var scanInput = document.getElementById('scanInput');
+    var toastEl = document.getElementById('toast');
+    var currentFilter = '';
+
+    /* ── 初始化 ── */
+    document.addEventListener('DOMContentLoaded', function () {
+      if (PickTool.getAllTasks().length === 0) {
+        seedMockTasks();
+      }
+      renderTasks();
+    });
+
+    /* ── 渲染任务列表 ── */
+    function renderTasks() {
+      var tasks = PickTool.getAllTasks();
+      if (currentFilter) {
+        var kw = currentFilter;
+        tasks = tasks.filter(function (t) { return t.orderNo.indexOf(kw) !== -1; });
+      }
+      contentEl.innerHTML = '';
+
+      if (!tasks.length) {
+        contentEl.innerHTML =
+          '<div class="empty-state">' +
+            '<div class="empty-icon">' +
+              '<svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-1 12H5v-1h14v1zm0-3H5v-1h14v1zm0-3H5v-1h14v1z" opacity="0.4"/><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z" transform="translate(2,2) scale(0.7)" opacity="0.3"/></svg>' +
+            '</div>' +
+            '<div class="empty-title">暂无挑货任务</div>' +
+            '<div class="empty-desc">请点击下方按钮上传清单</div>' +
+          '</div>';
+        return;
+      }
+
+      tasks.forEach(function (task, idx) {
+        var stats = PickTool.getTaskStats(task);
+        var statusLabel = task.status === 'pending' ? '待开始'
+                        : task.status === 'in_progress' ? '进行中'
+                        : '已完成';
+        var statusClass = task.status === 'pending' ? 'pending'
+                        : task.status === 'in_progress' ? 'in-progress'
+                        : 'completed';
+        var pct = stats.total ? Math.round(stats.picked / stats.total * 100) : 0;
+        var timeStr = formatTime(task.createdAt);
+
+        var card = document.createElement('div');
+        card.className = 'task-card';
+        card.style.animationDelay = (idx * 0.05) + 's';
+        card.innerHTML =
+          '<div class="task-header">' +
+            '<span class="status-tag ' + statusClass + '">' + statusLabel + '</span>' +
+            '<span class="order-no">' + esc(task.orderNo) + '</span>' +
+            '<span class="task-time">' + timeStr + '</span>' +
+          '</div>' +
+          '<div class="progress-row">' +
+            '<div class="progress-track"><div class="progress-fill ' + statusClass + '" style="width:' + pct + '%"></div></div>' +
+            '<span class="progress-text">' + stats.picked + '/' + stats.total + '</span>' +
+          '</div>';
+        card.addEventListener('click', function () {
+          goScan(task.id);
+        });
+
+        contentEl.appendChild(card);
+      });
+    }
+
+    /* ── 实时筛选 ── */
+    function onFilterInput() {
+      currentFilter = scanInput.value.trim();
+      renderTasks();
+    }
+
+    /* ── 扫码跳转（回车触发，模拟PDA扫码枪） ── */
+    function onScanKeyDown(e) {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      onScanGo();
+    }
+
+    function onScanGo() {
+      var orderNo = scanInput.value.trim();
+      if (!orderNo) return;
+
+      var task = PickTool.getTaskByOrderNo(orderNo);
+      if (task) {
+        goScan(task.id);
+      } else {
+        showToast('未找到该订单');
+      }
+    }
+
+    /* ── 模拟数据 ── */
+    function seedMockTasks() {
+      var rows = [
+        { orderNo: '999-12345678', cartonNo: 'CTN-A01', parcelNo: 'PKG-001' },
+        { orderNo: '999-12345678', cartonNo: 'CTN-A01', parcelNo: 'PKG-002' },
+        { orderNo: '999-12345678', cartonNo: 'CTN-A01', parcelNo: 'PKG-003' },
+        { orderNo: '999-12345678', cartonNo: 'CTN-A02', parcelNo: 'PKG-004' },
+        { orderNo: '999-12345678', cartonNo: 'CTN-A02', parcelNo: 'PKG-005' },
+        { orderNo: '888-23456789', cartonNo: 'CTN-B01', parcelNo: 'PKG-010' },
+        { orderNo: '888-23456789', cartonNo: 'CTN-B01', parcelNo: 'PKG-011' },
+        { orderNo: '888-23456789', cartonNo: 'CTN-B01', parcelNo: 'PKG-012' },
+        { orderNo: '777-34567890', cartonNo: 'CTN-C01', parcelNo: 'PKG-020' },
+        { orderNo: '777-34567890', cartonNo: 'CTN-C01', parcelNo: 'PKG-021' }
+      ];
+      var created = PickTool.createTasksFromRows(rows);
+      var now = new Date().toISOString();
+
+      // 任务1：进行中，已挑2个
+      var t1 = PickTool.getTaskByOrderNo('999-12345678');
+      t1.status = 'in_progress';
+      t1.cartons[0].parcels[0].picked = true;
+      t1.cartons[0].parcels[0].pickedAt = now;
+      t1.cartons[0].parcels[1].picked = true;
+      t1.cartons[0].parcels[1].pickedAt = now;
+      PickTool.updateTask(t1);
+
+      // 任务3：已完成
+      var t3 = PickTool.getTaskByOrderNo('777-34567890');
+      t3.status = 'completed';
+      t3.cartons[0].parcels[0].picked = true;
+      t3.cartons[0].parcels[0].pickedAt = now;
+      t3.cartons[0].parcels[1].picked = true;
+      t3.cartons[0].parcels[1].pickedAt = now;
+      PickTool.updateTask(t3);
+    }
+
+    /* ── 内联上传 ── */
+    function triggerFileUpload() {
+      document.getElementById('fileInput').click();
+    }
+
+    var _xlsxLoading = false;
+    function ensureXLSX(cb) {
+      if (window.XLSX) return cb();
+      if (_xlsxLoading) return;
+      _xlsxLoading = true;
+      showToast('正在加载解析引擎...');
+      var s = document.createElement('script');
+      s.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+      s.onload = function () { _xlsxLoading = false; cb(); };
+      s.onerror = function () { _xlsxLoading = false; showToast('解析引擎加载失败，请检查网络'); };
+      document.head.appendChild(s);
+    }
+
+    function onFileSelected(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
+      // 从文件名解析主单号
+      var match = file.name.match(/(\d{3}-\d{8})/);
+      if (!match) {
+        showToast('文件名需包含主单号（格式：999-12345678）');
+        e.target.value = '';
+        return;
+      }
+      var orderNo = match[1];
+
+      ensureXLSX(function () {
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+          try {
+            var data = new Uint8Array(ev.target.result);
+            var workbook = XLSX.read(data, { type: 'array' });
+            var sheet = workbook.Sheets[workbook.SheetNames[0]];
+            var jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+            if (jsonData.length < 2) {
+              showToast('文件内容为空');
+              return;
+            }
+
+            // 跳过表头，第1列=大箱号，第2列=包裹号
+            var rows = [];
+            for (var i = 1; i < jsonData.length; i++) {
+              var cartonNo = String(jsonData[i][0] || '').trim();
+              var parcelNo = String(jsonData[i][1] || '').trim();
+              if (cartonNo && parcelNo) {
+                rows.push({ orderNo: orderNo, cartonNo: cartonNo, parcelNo: parcelNo });
+              }
+            }
+
+            if (!rows.length) {
+              showToast('未识别到有效数据');
+              return;
+            }
+
+            var isOverwrite = PickTool.orderNoExists(orderNo);
+            var created = isOverwrite
+              ? PickTool.overwriteByOrderNo(orderNo, rows)
+              : PickTool.createTasksFromRows(rows);
+            if (isOverwrite) showToast('已覆盖旧数据');
+            if (created.length > 0) {
+              navigateTo('pick-scan.html?taskId=' + created[0].id);
+            }
+          } catch (err) {
+            showToast('文件解析失败: ' + err.message);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      });
+      e.target.value = '';
+    }
+
+    function navigateTo(url) {
+      document.body.style.transition = 'opacity 0.2s';
+      document.body.style.opacity = '0';
+      setTimeout(function () { window.location.href = url; }, 220);
+    }
+
+    /* ── 导航 ── */
+    function goScan(taskId) {
+      navigateTo('pick-scan.html?taskId=' + taskId);
+    }
+
+    /* ── Toast ── */
+    var toastTimer = null;
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2000);
+    }
+
+    /* ── 工具函数 ── */
+    function formatTime(iso) {
+      if (!iso) return '';
+      var d = new Date(iso);
+      var mm = String(d.getMonth() + 1).padStart(2, '0');
+      var dd = String(d.getDate()).padStart(2, '0');
+      var hh = String(d.getHours()).padStart(2, '0');
+      var mi = String(d.getMinutes()).padStart(2, '0');
+      return mm + '-' + dd + ' ' + hh + ':' + mi;
+    }
+
+    function esc(s) {
+      var div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

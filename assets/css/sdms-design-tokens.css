@@ -1,0 +1,101 @@
+:root {
+  /* === MasterGo Neutral === */
+  --color-n0: #FFFFFF;       /* 背景/N0纯白 */
+  --color-n1: #F4F5F7;       /* 背景/N1浅背景 */
+  --color-n2: #EDEFF2;       /* 背景/N2背景 */
+  --color-n3: #E7EAEE;       /* 线条/N3弱分割线 */
+  --color-n4: #D2D7DD;       /* 线条/N4强分割线 */
+  --color-n5: #C0C6CD;       /* 文字/N5禁用.占位符 */
+  --color-n6: #909499;       /* 文字/N6三级文字 */
+  --color-n7: #65686C;       /* 文字/N7二级文字 */
+  --color-n8: #1C1D1E;       /* 文字/N8一级文字 */
+  --color-n3-alpha: rgba(0, 44, 93, 0.08); /* 线条/N3-A半透明 */
+  --color-hover-bg: rgba(28, 29, 30, 0.03); /* 背景/悬停 */
+  --color-selected-bg: rgba(22, 132, 252, 0.1); /* 背景/选中 */
+
+  /* === MasterGo Primary Blue === */
+  --color-blue-1: #E3F2FF;   /* 辅助色/主色/Blue-1浅背景 */
+  --color-blue-2: #D5E9FE;   /* 辅助色/主色/Blue-2背景 */
+  --color-blue-3: #A2CEFE;   /* 辅助色/主色/Blue-3禁用 */
+  --color-blue-4: #73B5FD;   /* 辅助色/主色/Blue-4 */
+  --color-blue-5: #459DFD;   /* 辅助色/主色/Blue-5悬停 */
+  --color-blue-6: #1684FC;   /* Blue-6-主色 */
+  --color-blue-7: #1C72E8;   /* 辅助色/主色/Blue-7 */
+  --color-blue-8: #1F61D5;   /* 辅助色/主色/Blue-8点击 */
+  --color-blue-9: #194EAA;   /* 辅助色/主色/Blue-9 */
+
+  /* === MasterGo Functional === */
+  --color-red-1: #FFF3F3;
+  --color-red-6: #ED0404;    /* Red-6-错误 */
+  --color-green-1: #E5F2E8;
+  --color-green-6: #007E22;  /* Green-6-成功 */
+  --color-orange-1: #FFF2E9;
+  --color-orange-6: #FF8225; /* Orange-6-异常 */
+
+  /* === Business-specific Colors === */
+  --color-indigo: #4f46e5;       /* 应收方向标签 */
+  --color-deep-orange: #e65100;  /* 应付方向标签 */
+
+  /* === Semantic Aliases (MasterGo tokens → 语义名称) === */
+  --color-primary: var(--color-blue-6);
+  --color-primary-hover: var(--color-blue-5);
+  --color-primary-active: var(--color-blue-8);
+  --color-primary-disabled: var(--color-blue-3);
+  --color-primary-light: var(--color-blue-1);
+  --color-primary-lighter: var(--color-blue-2);
+  --color-text-primary: var(--color-n8);
+  --color-text-secondary: var(--color-n7);
+  --color-text-tertiary: var(--color-n6);
+  --color-text-disabled: var(--color-n5);
+  --color-text-placeholder: var(--color-n5);
+  --color-bg-primary: var(--color-n0);
+  --color-bg-secondary: var(--color-n1);
+  --color-bg-tertiary: var(--color-n2);
+  --color-border: var(--color-n3);
+  --color-border-strong: var(--color-n4);
+  --color-error: var(--color-red-6);
+  --color-error-light: var(--color-red-1);
+  --color-success: var(--color-green-6);
+  --color-success-light: var(--color-green-1);
+  --color-warning: var(--color-orange-6);
+  --color-warning-light: var(--color-orange-1);
+
+  /* === Shadow Tokens === */
+  --shadow-sm: 0 2px 8px 1px rgba(0, 0, 0, 0.06);  /* low */
+  --shadow-md: 0 6px 16px 3px rgba(0, 0, 0, 0.08);  /* medium */
+  --shadow-lg: 0 9px 24px 9px rgba(0, 0, 0, 0.08);  /* high */
+
+  /* === Input Focus === */
+  --input-border: var(--color-n4);
+  --input-focus-border: var(--color-primary);
+  --input-focus-shadow: 0 0 0 2px rgba(22, 132, 252, 0.15);
+  --placeholder-color: var(--color-text-disabled);
+
+  /* === Table === */
+  --table-header-bg: var(--color-bg-tertiary);
+  --table-header-text: var(--color-text-tertiary);
+  --table-row-hover: rgba(22, 132, 252, 0.04);
+  --table-border: var(--color-border);
+  --table-body-text: var(--color-text-primary);
+
+  /* === Backward-compatible Aliases (旧名称 → 新token) === */
+  --page-bg: var(--color-bg-secondary);
+  --panel-bg: var(--color-bg-primary);
+  --panel-soft: var(--color-bg-tertiary);
+  --line: var(--color-border);
+  --line-deep: var(--color-border-strong);
+  --brand: var(--color-primary);
+  --brand-deep: var(--color-primary-hover);
+  --brand-light: var(--color-primary-light);
+  --text-main: var(--color-text-primary);
+  --text-sub: var(--color-text-secondary);
+  --text-muted: var(--color-text-tertiary);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger: var(--color-error);
+  --violet: #7d67ff;
+  --sidebar: #203746;
+  --sidebar-deep: #1c3240;
+  --shadow: var(--shadow-sm);
+  --shadow-panel: var(--shadow-md);
+}
