@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI医美咨询实训系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif;background:linear-gradient(135deg,#0a0e27 0%,#1a1f4e 40%,#0d1b3e 100%);color:#e0e6f0;min-height:100vh;overflow-x:hidden}
+
+/* hero */
+.hero{text-align:center;padding:72px 20px 56px;position:relative}
+.hero::before{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,.15) 0%,transparent 70%);pointer-events:none}
+.hero-badge{display:inline-block;padding:6px 20px;border:1px solid rgba(96,165,250,.4);border-radius:20px;font-size:13px;color:#60a5fa;letter-spacing:2px;margin-bottom:24px;background:rgba(59,130,246,.08)}
+.hero h1{font-size:42px;font-weight:700;background:linear-gradient(135deg,#60a5fa,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;letter-spacing:1px}
+.hero p{font-size:16px;color:#94a3b8;max-width:680px;margin:0 auto;line-height:1.8}
+
+/* section */
+.section{max-width:1100px;margin:0 auto;padding:0 24px}
+.section-title{text-align:center;font-size:28px;font-weight:600;margin-bottom:48px;position:relative;color:#e2e8f0}
+.section-title::after{content:'';display:block;width:60px;height:3px;background:linear-gradient(90deg,#3b82f6,#8b5cf6);margin:14px auto 0;border-radius:2px}
+
+/* card */
+.card-wrap{display:flex;align-items:stretch;margin-bottom:40px;gap:0}
+.card-wrap:nth-child(even){flex-direction:row-reverse}
+.card-icon-box{flex:0 0 160px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.card-icon-box .icon-circle{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;position:relative;z-index:1}
+.card-icon-box .icon-label{font-size:13px;color:#94a3b8;margin-top:10px;letter-spacing:1px}
+.card-icon-box::after{content:'';position:absolute;width:1px;top:0;bottom:0;background:linear-gradient(180deg,rgba(96,165,250,.25),rgba(139,92,246,.25));z-index:0}
+.card-wrap:nth-child(odd) .card-icon-box::after{right:0}
+.card-wrap:nth-child(even) .card-icon-box::after{left:0}
+
+.card-body{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:28px 32px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:border-color .3s,box-shadow .3s}
+.card-body:hover{border-color:rgba(96,165,250,.3);box-shadow:0 8px 40px rgba(59,130,246,.1)}
+.card-body h3{font-size:20px;font-weight:600;margin-bottom:22px;display:flex;align-items:center;gap:10px}
+.card-body h3 .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;font-size:14px;font-weight:700;flex-shrink:0}
+
+/* two-col feature grid with capsule tags */
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
+.feat-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.04);transition:background .2s}
+.feat-item:hover{background:rgba(255,255,255,.06)}
+.feat-tag{flex-shrink:0;display:inline-block;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.6}
+.feat-desc{font-size:13.5px;line-height:1.7;color:#b8c4d6}
+
+/* full-width item (spans 2 cols) */
+.feat-item.full{grid-column:1/-1}
+
+/* color variants */
+.mod1 .icon-circle{background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 0 30px rgba(59,130,246,.3)}
+.mod1 .num{background:rgba(59,130,246,.15);color:#60a5fa}
+.mod1 .feat-tag{background:rgba(59,130,246,.12);color:#60a5fa;border:1px solid rgba(59,130,246,.25)}
+
+.mod2 .icon-circle{background:linear-gradient(135deg,#8b5cf6,#7c3aed);box-shadow:0 0 30px rgba(139,92,246,.3)}
+.mod2 .num{background:rgba(139,92,246,.15);color:#a78bfa}
+.mod2 .feat-tag{background:rgba(139,92,246,.12);color:#a78bfa;border:1px solid rgba(139,92,246,.25)}
+
+.mod3 .icon-circle{background:linear-gradient(135deg,#06b6d4,#0891b2);box-shadow:0 0 30px rgba(6,182,212,.3)}
+.mod3 .num{background:rgba(6,182,212,.15);color:#22d3ee}
+.mod3 .feat-tag{background:rgba(6,182,212,.12);color:#22d3ee;border:1px solid rgba(6,182,212,.25)}
+
+.mod4 .icon-circle{background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 0 30px rgba(16,185,129,.3)}
+.mod4 .num{background:rgba(16,185,129,.15);color:#34d399}
+.mod4 .feat-tag{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.25)}
+
+.mod5 .icon-circle{background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 0 30px rgba(245,158,11,.3)}
+.mod5 .num{background:rgba(245,158,11,.15);color:#fbbf24}
+.mod5 .feat-tag{background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+
+.mod6 .icon-circle{background:linear-gradient(135deg,#ec4899,#db2777);box-shadow:0 0 30px rgba(236,72,153,.3)}
+.mod6 .num{background:rgba(236,72,153,.15);color:#f472b6}
+.mod6 .feat-tag{background:rgba(236,72,153,.12);color:#f472b6;border:1px solid rgba(236,72,153,.25)}
+
+.mod7 .icon-circle{background:linear-gradient(135deg,#6366f1,#4f46e5);box-shadow:0 0 30px rgba(99,102,241,.3)}
+.mod7 .num{background:rgba(99,102,241,.15);color:#818cf8}
+.mod7 .feat-tag{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.25)}
+
+/* hardware */
+.hw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.hw-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px 22px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:border-color .3s}
+.hw-item:hover{border-color:rgba(96,165,250,.3)}
+.hw-item .hw-label{font-size:12px;font-weight:600;margin-bottom:6px;letter-spacing:.5px}
+.hw-item .hw-value{font-size:14px;line-height:1.6;color:#c8d2e0}
+.hw-item .hw-note{font-size:12px;color:#64748b;margin-top:6px;line-height:1.5}
+.mod1 .hw-label{color:#60a5fa}
+.mod3 .hw-label{color:#22d3ee}
+
+/* footer */
+.footer{text-align:center;padding:56px 20px 36px;color:#475569;font-size:13px;border-top:1px solid rgba(255,255,255,.06);margin-top:40px}
+
+/* responsive */
+@media(max-width:768px){
+  .hero h1{font-size:28px}
+  .card-wrap,.card-wrap:nth-child(even){flex-direction:column}
+  .card-icon-box{flex:none;padding:16px 0}
+  .card-icon-box::after{display:none}
+  .card-body{padding:20px 18px}
+  .feat-grid{grid-template-columns:1fr}
+  .hw-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge">AI-DRIVEN EDUCATION PLATFORM</div>
+  <h1>AI医美咨询实训系统</h1>
+  <p>基于LLM大语言模型，面向医美咨询课程实验教学的AI驱动型实训平台<br>覆盖咨询模拟、智能评价、能力图谱、考试管理全链路，赋能医美教育数智化升级</p>
+</div>
+
+<!-- 功能模块 -->
+<div class="section">
+  <div class="section-title">七大核心功能模块</div>
+
+  <!-- 模块一：用户管理 -->
+  <div class="card-wrap">
+    <div class="card-icon-box mod1">
+      <div class="icon-circle">👥</div>
+      <div class="icon-label">用户管理</div>
+    </div>
+    <div class="card-body mod1">
+      <h3><span class="num">01</span>系统用户管理模块</h3>
+      <div class="feat-grid">
+        <div class="feat-item">
+          <span class="feat-tag">三级权限</span>
+          <span class="feat-desc">高级管理员→普通管理员→学员，支持权限分配与班级管理</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">账号管理</span>
+          <span class="feat-desc">支持密码修改、手机号绑定，创建多级管理员并分配权限</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">实训室管理</span>
+          <span class="feat-desc">管理学校专业、班级、实训室，按分类分配实训权限</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">知识库建设</span>
+          <span class="feat-desc">建立垂直知识库、编撰题库、设计AI模拟话剧本（NPC设定）</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">评估维度</span>
+          <span class="feat-desc">可调整AI实训动态能力雷达，自定义实训评估维度</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">注册审核</span>
+          <span class="feat-desc">普通管理员审核学员注册，通过/驳回并填写原因</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">个性化任务</span>
+          <span class="feat-desc">查看学员实训记录、考试成绩，定制个性化实训任务</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">自助注册</span>
+          <span class="feat-desc">学员填写信息自助注册，审核通过后查看权限、记录、成绩</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模块二：咨询对象 -->
+  <div class="card-wrap">
+    <div class="card-icon-box mod2">
+      <div class="icon-circle">🎭</div>
+      <div class="icon-label">咨询对象</div>
+    </div>
+    <div class="card-body mod2">
+      <h3><span class="num">02</span>AI模拟医美咨询对象模块</h3>
+      <div class="feat-grid">
+        <div class="feat-item">
+          <span class="feat-tag">客户画像</span>
+          <span class="feat-desc">预设18-70岁客户画像，覆盖温和/挑剔/犹豫/理性等≥4种性格</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">项目类别</span>
+          <span class="feat-desc">涵盖整形、注射、皮肤光电、中医、生活美容五大类别</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">自定义配置</span>
+          <span class="feat-desc">自定义年龄、性别、性格、职业、医美认知、核心需求、既往经历</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">批量模板</span>
+          <span class="feat-desc">支持批量创建咨询对象模板，快速复用</span>
+        </div>
+        <div class="feat-item full">
+          <span class="feat-tag">3D检测报告</span>
+          <span class="feat-desc">上传或调用皮肤状态、面部形态、形体形态的3D图形文件，精准匹配顾客画像</span>
+        </div>
+        <div class="feat-item full">
+          <span class="feat-tag">NPC捏脸</span>
+          <span class="feat-desc">拖曳滑块控制AI参数（挑剔度、专业度、暴躁值等≥3项，0-100范围），预设沟通对象画像</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模块三：实训对话 -->
+  <div class="card-wrap">
+    <div class="card-icon-box mod3">
+      <div class="icon-circle">💬</div>
+      <div class="icon-label">实训对话</div>
+    </div>
+    <div class="card-body mod3">
+      <h3><span class="num">03</span>AI模拟医美咨询实训模块</h3>
+      <div class="feat-grid">
+        <div class="feat-item">
+          <span class="feat-tag">RAG知识库</span>
+          <span class="feat-desc">自建知识库支持长文本/PDF导入，自动生成向量切片并可视化</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">变体题库</span>
+          <span class="feat-desc">AI自动生成匹配咨询对象的提问，学生文字应答模拟完整咨询</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">实时记录</span>
+          <span class="feat-desc">保存对话记录并支持回顾，AI按角色画像模拟真实客户异议</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">应答建议</span>
+          <span class="feat-desc">应答完毕后系统实时提供AI建议，供学生参考与学习</span>
+        </div>
+        <div class="feat-item full">
+          <span class="feat-tag">安全阻断</span>
+          <span class="feat-desc">全局敏感词监控，违规/黄/政/暴/不文明对话红线急停</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模块四：实训评价 -->
+  <div class="card-wrap">
+    <div class="card-icon-box mod4">
+      <div class="icon-circle">📊</div>
+      <div class="icon-label">实训评价</div>
+    </div>
+    <div class="card-body mod4">
+      <h3><span class="num">04</span>AI模拟医美咨询实训评价模块</h3>
+      <div class="feat-grid">
+        <div class="feat-item full">
+          <span class="feat-tag">N维评价</span>
+          <span class="feat-desc">N-Dimensional Evaluator，可高度自定义的智能化实训评价模型</span>
+        </div>
+        <div class="feat-item full">
+          <span class="feat-tag">多维评价引擎</span>
+          <span class="feat-desc">销售技巧（建立信任·痛点挖掘·达成销售·同理心·合规）+ 专业基础（逻辑严密·引用准确·情绪控制·威慑力·合规）等维度≥2</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">自定义微调</span>
+          <span class="feat-desc">高级管理员可按实际需要微调评价维度与权重</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">人工复核</span>
+          <span class="feat-desc">AI评价有异议时，管理员可调出记录推翻AI评价</span>
+        </div>
+        <div class="feat-item full">
+          <span class="feat-tag">成绩导出</span>
+          <span class="feat-desc">支持导出AI客观评分 + 教师主观评价，便于教学实训综合评估</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模块五：实训管理 -->
+  <div class="card-wrap">
+    <div class="card-icon-box mod5">
+      <div class="icon-circle">📋</div>
+      <div class="icon-label">实训管理</div>
+    </div>
+    <div class="card-body mod5">
+      <h3><span class="num">05</span>AI医美咨询实训管理模块</h3>
+      <div class="feat-grid">
+        <div class="feat-item">
+          <span class="feat-tag">练习模式</span>
+          <span class="feat-desc">自主选择AI顾客与对话模式，无时间与评分限制，可暂停重启</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">考试模式</span>
+          <span class="feat-desc">老师创建考试任务，学员完成AI商谈后自动评分，支持复核</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">任务下发</span>
+          <span class="feat-desc">向指定学员/班级下发实训任务，实时追踪进度与结果</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">话术库</span>
+          <span class="feat-desc">自定义话术库，支持添加/编辑/删除/分类，学员可收藏调用</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">实训记录</span>
+          <span class="feat-desc">学员查看全部记录（时间、顾客、对话、评分、提升建议）</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">筛选指导</span>
+          <span class="feat-desc">按学员/模式/时间筛选，在AI评价基础上发送针对性指导</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模块六：能力图谱 -->
+  <div class="card-wrap">
+    <div class="card-icon-box mod6">
+      <div class="icon-circle">🎯</div>
+      <div class="icon-label">能力图谱</div>
+    </div>
+    <div class="card-body mod6">
+      <h3><span class="num">06</span>AI医美咨询学员能力图谱模块</h3>
+      <div class="feat-grid">
+        <div class="feat-item">
+          <span class="feat-tag">闯关路线</span>
+          <span class="feat-desc">Phase 1/Phase 2逐步解锁，闯关破壁式能力图谱</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">荣誉大厅</span>
+          <span class="feat-desc">金色/银色电子技能执照认证、里程碑头衔展示</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">能力雷达</span>
+          <span class="feat-desc">直观呈现个人缺陷，精准推送"3分钟靶向补救知识点"</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">错题本</span>
+          <span class="feat-desc">会话切片级定位，冻结错误回答，对照"金牌咨询术语"回放</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模块七：系统管理 -->
+  <div class="card-wrap">
+    <div class="card-icon-box mod7">
+      <div class="icon-circle">⚙️</div>
+      <div class="icon-label">系统管理</div>
+    </div>
+    <div class="card-body mod7">
+      <h3><span class="num">07</span>AI医美咨询实训系统管理模块</h3>
+      <div class="feat-grid">
+        <div class="feat-item">
+          <span class="feat-tag">独立部署</span>
+          <span class="feat-desc">局域网运行，保障数据安全</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">数据备份</span>
+          <span class="feat-desc">手动+自动定时备份，支持数据恢复</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">数据导出</span>
+          <span class="feat-desc">导出学员信息、实训成绩、顾客模板等</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">操作日志</span>
+          <span class="feat-desc">按时间/用户/操作类型筛选，可追溯与故障排查</span>
+        </div>
+        <div class="feat-item">
+          <span class="feat-tag">系统更新</span>
+          <span class="feat-desc">支持在线系统版本更新</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 硬件配置 -->
+<div class="section" style="margin-top:16px">
+  <div class="section-title">部署与硬件配置</div>
+  <div style="max-width:900px;margin:0 auto">
+    <div class="card-body mod1" style="margin-bottom:28px;border-radius:16px">
+      <h3 style="margin-bottom:16px">基本要求</h3>
+      <div class="hw-grid">
+        <div class="hw-item">
+          <div class="hw-label">并发支持</div>
+          <div class="hw-value">在线用户并发数量 ≥ 20</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-label">终端设备</div>
+          <div class="hw-value">平板≥10英寸 / ≥1920×1200 / ≥8GB+256GB</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-label">部署方式</div>
+          <div class="hw-value">独立部署，局域网运行</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body mod3" style="border-radius:16px">
+      <h3 style="margin-bottom:16px">服务器配置要求</h3>
+      <div class="hw-grid">
+        <div class="hw-item">
+          <div class="hw-label">CPU</div>
+          <div class="hw-value">AMD Ryzen 9 9950X / Intel Ultra 9</div>
+          <div class="hw-note">多核高效调度，避免AI运算瓶颈</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-label">主板</div>
+          <div class="hw-value">AMD X870E / Intel Z890</div>
+          <div class="hw-note">PCIe 5.0带宽，双RTX 5090高效通信</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-label">内存</div>
+          <div class="hw-value">128GB (64GB×2) DDR5</div>
+          <div class="hw-note">KV缓存+中间数据，20人并发流畅</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-label">系统盘</div>
+          <div class="hw-value">2TB PCIe 5.0 NVMe SSD</div>
+          <div class="hw-note">模型加载和系统启动极速响应</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-label">数据盘</div>
+          <div class="hw-value">4TB+ NVMe SSD (RAID 0)</div>
+          <div class="hw-note">超大容量+高读写，存放模型和训练数据</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-label">显卡（算力核心）</div>
+          <div class="hw-value">2× RTX 5090 / 32GB GDDR7</div>
+          <div class="hw-note">双卡64GB显存，20人并发算力保障</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <p>AI医美咨询实训系统 · 产品参数说明文档</p>
+</div>
+
+</body>
+</html>
