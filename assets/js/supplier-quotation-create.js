@@ -39,6 +39,7 @@ const feeSelectModalTitle=document.getElementById('feeSelectModalTitle');
 const feeSelectModalCount=document.getElementById('feeSelectModalCount');
 const feeSelectSearch=document.getElementById('feeSelectSearch');
 const feeSelectBody=document.getElementById('feeSelectBody');
+const feeSelectHead=document.getElementById('feeSelectHead');
 const feeSelectInfo=document.getElementById('feeSelectInfo');
 const feeSelectCancelBtn=document.getElementById('feeSelectCancelBtn');
 const feeSelectConfirmBtn=document.getElementById('feeSelectConfirmBtn');
@@ -157,7 +158,7 @@ function buildSeedFeeData(){
       period:'2025-01-01 ~ 2025-12-31'
     }},
     // ── 仓储费 (id 7-9) ──
-    {id:7,name:'标准仓储费',category:'storage',subCategory:'',desc:'CBM/天 · 4个阶梯 · EUR',enabled:true,detail:{
+    {id:7,name:'标准仓储费',category:'storage',subCategory:'',desc:'CBM/天 · 4个阶梯 · EUR',enabled:true,goodsType:'common',detail:{
       method:'CBM/天',
       tiers:[
         {label:'0~7天',price:'0.00'},
@@ -169,7 +170,7 @@ function buildSeedFeeData(){
       surcharge:'旺季附加费(11-12月+20%)',
       period:'2025-01-01 ~ 2025-12-31'
     }},
-    {id:8,name:'长期仓储费',category:'storage',subCategory:'',desc:'CBM/天 · 3个阶梯 · EUR',enabled:true,detail:{
+    {id:8,name:'长期仓储费',category:'storage',subCategory:'',desc:'CBM/天 · 3个阶梯 · EUR',enabled:true,goodsType:'common',detail:{
       method:'CBM/天',
       tiers:[
         {label:'0~30天',price:'0.30'},
@@ -180,7 +181,7 @@ function buildSeedFeeData(){
       surcharge:'无',
       period:'2025-01-01 ~ 2025-12-31'
     }},
-    {id:9,name:'小件仓储费',category:'storage',subCategory:'',desc:'SKU/天 · EUR',enabled:false,detail:{
+    {id:9,name:'小件仓储费',category:'storage',subCategory:'',desc:'SKU/天 · EUR',enabled:false,goodsType:'b2c',detail:{
       method:'SKU/天',
       tiers:[
         {label:'统一价',price:'0.02'}
@@ -298,6 +299,29 @@ function buildSeedFeeData(){
         ]}
       ],
       surcharge:'危险品加收100%',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    // ── 仓储费-B2B/B2C专用 (id 19-20) ──
+    {id:19,name:'B2B大货仓储费',category:'storage',subCategory:'',desc:'CBM/天 · 3个阶梯 · EUR',enabled:true,goodsType:'b2b',detail:{
+      method:'CBM/天',
+      tiers:[
+        {label:'0~15天',price:'0.00'},
+        {label:'16~45天',price:'0.40'},
+        {label:'46天+',price:'0.90'}
+      ],
+      peakSurcharge:'',
+      surcharge:'无',
+      period:'2025-01-01 ~ 2025-12-31'
+    }},
+    {id:20,name:'B2C小件仓储费',category:'storage',subCategory:'',desc:'件/天 · EUR',enabled:true,goodsType:'b2c',detail:{
+      method:'件/天',
+      tiers:[
+        {label:'0~7天',price:'0.01'},
+        {label:'8~30天',price:'0.03'},
+        {label:'31天+',price:'0.06'}
+      ],
+      peakSurcharge:'旺季附加费(11-12月+30%)',
+      surcharge:'旺季附加费(11-12月+30%)',
       period:'2025-01-01 ~ 2025-12-31'
     }},
   ];
@@ -776,7 +800,7 @@ function renderFeeItemList(){
       listHtml+=`<div class="fee-item selected" data-fee-id="${item.id}">
         <div class="fee-item-header" data-fee-id="${item.id}">
           <div class="fee-item-info">
-            <div class="fee-item-name"><a class="fee-item-link" href="${getFeeItemUrl(item)}" target="_blank">${escapeHtml(item.name)}</a>${ovBadge}</div>
+            <div class="fee-item-name"><a class="fee-item-link" href="${getFeeItemUrl(item)}" target="_blank">${escapeHtml(item.name)}</a>${item.category==='storage'?'<span class="goods-type-tag goods-type-'+(item.goodsType||'common')+'">'+(GOODS_TYPE_LABELS[item.goodsType||'common']||'通用')+'</span>':''}${ovBadge}</div>
             <div class="fee-item-desc">${escapeHtml(descText)}</div>
           </div>
           ${restoreBtn}
@@ -1088,12 +1112,29 @@ function getModalItems(){
   });
 }
 
+const GOODS_TYPE_LABELS={common:'通用',b2b:'B2B',b2c:'B2C'};
+
 function renderFeeSelectTable(){
   const items=getModalItems();
   const sel=state.selections[state.currentBizType]||new Set();
+  const isStorage=state.currentCategory==='storage';
   feeSelectModalCount.textContent='共'+items.length+'项可选';
+
+  // Dynamic header
+  const gtCol=isStorage?'<th>适用类型</th>':'';
+  feeSelectHead.innerHTML='<tr>'
+    +'<th style="width:36px"></th>'
+    +'<th>费用项名称</th>'
+    +'<th>渠道</th>'
+    +'<th>计重单位</th>'
+    +'<th>燃油规则</th>'
+    +gtCol
+    +'<th>状态</th>'
+    +'</tr>';
+
+  const colCount=isStorage?7:6;
   if(!items.length){
-    feeSelectBody.innerHTML='<tr><td colspan="6" style="padding:30px;text-align:center;color:var(--text-sub)">暂无匹配的费用项</td></tr>';
+    feeSelectBody.innerHTML='<tr><td colspan="'+colCount+'" style="padding:30px;text-align:center;color:var(--text-sub)">暂无匹配的费用项</td></tr>';
   }else{
     feeSelectBody.innerHTML=items.map(item=>{
       const isAlreadyAdded=sel.has(item.id);
@@ -1109,14 +1150,17 @@ function renderFeeSelectTable(){
       const wu=item.detail&&item.detail.weightUnit?item.detail.weightUnit:'-';
       let fr='-';
       if(item.detail&&item.detail.fuelRule)fr=item.detail.fuelRule.name+'('+item.detail.fuelRule.rate+'%)';
-      return `<tr class="${rowCls}">
-        <td><input type="checkbox" data-modal-fee-id="${item.id}" ${cbChecked?'checked':''} ${cbDisabled?'disabled':''}></td>
-        <td>${escapeHtml(item.name)}</td>
-        <td>${escapeHtml(ch)}</td>
-        <td>${escapeHtml(wu)}</td>
-        <td>${escapeHtml(fr)}</td>
-        <td>${statusHtml}</td>
-      </tr>`;
+      const gt=item.goodsType||'common';
+      const gtLabel=isStorage?'<td><span class="goods-type-tag goods-type-'+gt+'">'+(GOODS_TYPE_LABELS[gt]||'通用')+'</span></td>':'';
+      return '<tr class="'+rowCls+'">'
+        +'<td><input type="checkbox" data-modal-fee-id="'+item.id+'" '+(cbChecked?'checked':'')+' '+(cbDisabled?'disabled':'')+'></td>'
+        +'<td>'+escapeHtml(item.name)+'</td>'
+        +'<td>'+escapeHtml(ch)+'</td>'
+        +'<td>'+escapeHtml(wu)+'</td>'
+        +'<td>'+escapeHtml(fr)+'</td>'
+        +gtLabel
+        +'<td>'+statusHtml+'</td>'
+        +'</tr>';
     }).join('');
   }
   const newCount=state.modalChecks.size;
@@ -1152,6 +1196,30 @@ feeSelectCancelBtn.addEventListener('click',closeFeeSelectModal);
 /* ── Event: Modal confirm ── */
 feeSelectConfirmBtn.addEventListener('click',()=>{
   const sel=state.selections[state.currentBizType];
+  if(state.currentCategory==='storage'){
+    // Get existing storage goodsTypes
+    const existingGoodsTypes=new Set();
+    sel.forEach(id=>{
+      const item=allFeeItems.find(f=>f.id===id);
+      if(item&&item.category==='storage')existingGoodsTypes.add(item.goodsType||'common');
+    });
+    // Check new items for conflicts
+    let conflictMsg='';
+    state.modalChecks.forEach(feeId=>{
+      const item=allFeeItems.find(f=>f.id===feeId);
+      if(!item||item.category!=='storage')return;
+      const newGt=item.goodsType||'common';
+      if(newGt==='common'&&(existingGoodsTypes.has('b2b')||existingGoodsTypes.has('b2c'))){
+        conflictMsg='已选择B2B或B2C专用仓储费，不能再添加通用仓储费';
+      }else if(newGt!=='common'&&existingGoodsTypes.has('common')){
+        conflictMsg='已选择通用仓储费，不能再添加'+GOODS_TYPE_LABELS[newGt]+'专用仓储费';
+      }
+    });
+    if(conflictMsg){
+      showToast('error','选择冲突',conflictMsg);
+      return;
+    }
+  }
   state.modalChecks.forEach(feeId=>{sel.add(feeId);});
   closeFeeSelectModal();
   render();

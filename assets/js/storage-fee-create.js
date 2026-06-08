@@ -5,6 +5,7 @@ const saveBtn=document.getElementById('saveBtn');
 const pageTitleLabel=document.getElementById('pageTitleLabel');
 const feeName=document.getElementById('feeName');
 const warehouse=document.getElementById('warehouse');
+const goodsType=document.getElementById('goodsType');
 const unitSelect=document.getElementById('unit');
 const currency=document.getElementById('currency');
 const effectType=document.getElementById('effectType');
@@ -38,6 +39,7 @@ if(isEdit){
   document.title='编辑仓储费';
   feeName.value='标准仓储费';
   warehouse.value='波兰海外仓';
+  goodsType.value='common';
   unitSelect.value='CBM';
   currency.value='EUR';
   state.peakRules=[
@@ -230,6 +232,7 @@ unitSelect.addEventListener('change',()=>{renderTierTable();renderPeakTable();})
 const requiredFieldMap={
   feeName:{el:feeName,label:'计费项名称'},
   warehouse:{el:warehouse,label:'所属仓库'},
+  goodsType:{el:goodsType,label:'适用货物类型'},
   unit:{el:unitSelect,label:'计费维度'},
   currency:{el:currency,label:'币种'}
 };

@@ -70,8 +70,18 @@
       icon: 'ri-receipt-line',
       href: './fee-sheet-list.html'
     },
+    'bill-list': {
+      label: '账单管理',
+      icon: 'ri-bill-line',
+      href: './bill-list.html'
+    },
+    'settlement-list': {
+      label: '结算管理',
+      icon: 'ri-exchange-cny-line',
+      href: './settlement-list.html'
+    },
     'account': {
-      label: '账户管理',
+      label: '费用流水',
       icon: 'ri-wallet-3-line',
       href: './account-list.html'
     },

@@ -1,0 +1,179 @@
+/* ── 试算弹窗 ── */
+.trial-mask {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 51px 24px 24px;
+  background: rgba(33, 41, 54, 0.36);
+  backdrop-filter: blur(1.5px);
+  z-index: 82;
+}
+.trial-mask.open { display: flex; }
+
+.trial-dialog {
+  width: min(1076px, calc(100vw - 48px));
+  height: calc(100vh - 74px);
+  background: #fff;
+  border: 1px solid #dfe6f1;
+  box-shadow: 0 24px 48px rgba(28, 39, 56, 0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.trial-header {
+  height: 37px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px 0 16px;
+  background: #f4f6fb;
+  border-bottom: 1px solid #ebf0f6;
+}
+.trial-title { font-size: 14px; font-weight: 700; color: #8f9cb2; letter-spacing: 0.1px; }
+.trial-close {
+  width: 24px; height: 24px; border: 0; background: transparent;
+  color: #8d9dc4; font-size: 25px; line-height: 1; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; padding: 0;
+}
+.trial-close:hover { color: #6f83b6; }
+
+.trial-body {
+  padding: 18px 16px 14px;
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.trial-toolbar { display: flex; flex-direction: column; gap: 14px; }
+.trial-form-row { display: flex; align-items: flex-start; gap: 12px; }
+.trial-form-field { display: flex; flex-direction: column; gap: 7px; }
+.trial-form-label { display: flex; align-items: center; gap: 4px; font-size: 12px; line-height: 1; color: #47576a; }
+.trial-form-label .required-star { color: #ef5d66; margin-top: 1px; }
+.trial-form-inline { display: inline-flex; align-items: stretch; }
+.trial-input {
+  width: 184px; height: 30px; border: 1px solid #d6dfea; border-right: 0;
+  padding: 0 10px; font-size: 12px; font-weight: 600; color: #2f3d4f; outline: none; background: #fff;
+}
+.trial-input:focus { border-color: #6c84f1; box-shadow: inset 0 0 0 1px rgba(92,116,239,0.12); }
+.trial-input.error { border-color: #ef6b73; }
+.trial-run-btn {
+  width: 64px; height: 30px; border: 0; border-radius: 0 3px 3px 0;
+  background: #5875ef; color: #fff; font-size: 12px; font-weight: 600;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s;
+}
+.trial-run-btn:hover { background: #4967e8; }
+.trial-run-btn:disabled { cursor: not-allowed; background: #93a6f2; }
+
+.trial-inline-status { min-height: 16px; font-size: 12px; line-height: 16px; color: #8e9bb1; }
+.trial-inline-status.error { color: #ef5d66; }
+.trial-inline-status.loading { color: #5a74ef; }
+
+.trial-summary { display: flex; flex-wrap: wrap; column-gap: 22px; row-gap: 12px; padding: 0 2px; }
+.trial-summary-item { display: flex; align-items: center; gap: 4px; min-width: 100px; font-size: 12px; line-height: 18px; color: #5d6d81; white-space: nowrap; }
+.trial-summary-item.compact { min-width: 92px; }
+.trial-summary-item.wide { min-width: 204px; max-width: 214px; overflow: hidden; }
+.trial-summary-item.break { flex-basis: 100%; min-width: 100%; margin-top: -2px; }
+.trial-summary-label { color: #445368; }
+.trial-summary-label.strong { font-weight: 700; color: #27364a; }
+.trial-summary-value { color: #2f3d4f; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── 业务类型Tab ── */
+.trial-biz-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid #dbe4f3;
+}
+.trial-biz-tab {
+  padding: 8px 16px; font-size: 12px; color: #8694ae; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  background: none; border-top: 0; border-left: 0; border-right: 0;
+  transition: color 0.15s;
+}
+.trial-biz-tab.active { color: #5875ef; font-weight: 600; border-bottom-color: #5875ef; }
+.trial-biz-tab:hover { color: #5875ef; }
+
+/* ── 结果面板 ── */
+.trial-board { border: 1px solid #dbe4f3; display: flex; flex-direction: column; flex: 1; min-height: 0; background: #fff; }
+.trial-board-head {
+  height: 46px; display: grid; grid-template-columns: 1fr 138px; align-items: center;
+  padding: 0 11px 0 28px; background: #f6f8fc; border-bottom: 1px solid #dbe4f3; font-size: 12px; color: #8694ae;
+}
+.trial-board-head .align-right { text-align: right; padding-right: 6px; }
+.trial-board-scroll { max-height: min(554px, calc(100vh - 286px)); overflow: auto; }
+
+/* ── 分类标题行 ── */
+.trial-category-header {
+  padding: 6px 14px; font-size: 12px; font-weight: 600; color: #445368;
+  background: #f6f8fc; border-bottom: 1px solid #edf1f7;
+}
+
+/* ── 可展开费用项 ── */
+.trial-item { border-bottom: 1px solid #edf1f7; }
+.trial-item:last-child { border-bottom: 0; }
+
+.trial-item-head {
+  display: grid; grid-template-columns: 18px 1fr 138px; align-items: center;
+  padding: 0 11px 0 10px; min-height: 38px; cursor: pointer; transition: background 0.12s;
+}
+.trial-item-head:hover { background: #f9fbff; }
+.trial-item-head.expanded { background: #f4f7ff; }
+
+.trial-item-arrow {
+  font-size: 10px; color: #a0aec0; text-align: center;
+  transition: transform 0.15s;
+}
+.trial-item-head.expanded .trial-item-arrow { color: #5875ef; }
+
+.trial-item-badge {
+  height: 18px; padding: 0 5px; border: 1px solid #bed3ff; border-radius: 4px;
+  background: #f1f6ff; color: #76a0ff; font-size: 11px; line-height: 16px;
+  text-align: center; white-space: nowrap;
+}
+
+.trial-item-name {
+  font-size: 12px; color: #2e3b4d; padding: 0 8px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.trial-item-amount {
+  text-align: right; font-size: 12px; font-weight: 600; color: #37465a; padding-right: 6px;
+}
+
+.trial-item-detail {
+  display: none;
+  border-top: 1px solid #edf1f7; background: #fafbfd;
+}
+
+.trial-detail-group-label {
+  padding: 5px 10px 5px 52px; font-size: 11px; font-weight: 600; color: #6b7a90;
+  background: #f0f3f9; border-bottom: 1px solid #edf1f7;
+}
+
+/* ── 明细行 ── */
+.trial-row {
+  min-height: 35px; display: grid; grid-template-columns: 42px 1fr 138px; align-items: center;
+  padding: 0 11px 0 10px; border-bottom: 1px solid #edf1f7; font-size: 12px; color: #344357; background: #fafbfd;
+}
+.trial-row:last-child { border-bottom: 0; }
+.trial-row.miss .trial-row-amount { color: #92a0b3; }
+.trial-row-index { text-align: center; color: #7e8ca0; }
+.trial-row-text { padding-right: 16px; color: #2e3b4d; }
+.trial-row-amount { text-align: right; font-weight: 600; color: #37465a; padding-right: 6px; }
+
+.trial-board-status {
+  height: 250px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 12px; color: #7d8da2; font-size: 13px; background: #fff;
+}
+.trial-board-status.error { color: #df5c64; }
+
+.trial-board-spinner {
+  width: 26px; height: 26px; border: 3px solid #dbe4f3; border-top-color: #5875ef;
+  border-radius: 50%; animation: trial-spin 0.8s linear infinite;
+}
+@keyframes trial-spin { to { transform: rotate(360deg); } }
+
+.trial-total {
+  height: 44px; display: grid; grid-template-columns: 1fr 138px; align-items: center;
+  padding: 0 11px 0 28px; border-top: 1px solid #dbe4f3; background: #f4f6fb;
+}
+.trial-total-label { font-size: 13px; font-weight: 600; color: #27364a; }
+.trial-total-value { text-align: right; font-size: 17px; font-weight: 700; color: #23b5cb; padding-right: 6px; }

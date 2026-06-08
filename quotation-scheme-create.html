@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="./assets/css/sdms-comp-form-create.css">
   <link rel="stylesheet" href="./assets/css/quotation-scheme-create.css">
   <link rel="stylesheet" href="./assets/css/quotation-preview.css?v=20260513">
+  <link rel="stylesheet" href="./assets/css/quotation-trial-calc.css">
 </head>
 <body>
   <div class="app-shell">
@@ -23,6 +24,7 @@
             <div class="page-actions">
               <button class="btn btn-outline" id="backBtn" type="button">返回</button>
               <button class="btn btn-default" id="previewBtn" type="button"><i class="ri-eye-line"></i> 预览</button>
+              <button class="btn btn-default" id="trialCalcBtn" type="button"><i class="ri-calculator-line"></i> 费用试算</button>
               <button class="btn btn-default" id="saveDraftBtn" type="button">保存草稿</button>
               <button class="btn btn-primary" id="submitBtn" type="button">提交审核</button>
             </div>
@@ -99,10 +101,10 @@
                 </div>
                 <div class="modal-search-bar">
                   <input class="fee-search" id="feeSelectSearch" type="text" placeholder="搜索费用项名称...">
-                </div>
+</div>
                 <div class="modal-table-wrap">
                   <table class="modal-table">
-                    <thead>
+                    <thead id="feeSelectHead">
                       <tr>
                         <th style="width:36px"></th>
                         <th>费用项名称</th>
@@ -186,6 +188,7 @@
   <script src="./assets/js/sdms-header-tabs.js"></script>
   <script src="./assets/js/sdms-sidebar.js"></script>
   <script src="./assets/js/quotation-preview.js"></script>
+  <script src="./assets/js/quotation-trial-calc.js"></script>
   <script src="./assets/js/quotation-scheme-create.js"></script>
 </body>
 </html>

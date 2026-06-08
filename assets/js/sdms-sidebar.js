@@ -53,11 +53,11 @@
       ]},
       { title: '费用管理', icon: 'ri-receipt-line', items: [
         { label: '费用单管理', href: './fee-sheet-list.html' },
-        { label: '账户管理', href: './account-list.html' }
+        { label: '费用流水', href: './account-list.html' }
       ]},
       { title: '账单管理', icon: 'ri-bill-line', items: [
         { label: '账单列表', href: './bill-list.html' },
-        { label: '结算单', href: '' }
+        { label: '结算单', href: './settlement-list.html' }
       ]}
     ]
   };

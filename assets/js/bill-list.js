@@ -23,9 +23,11 @@
     draft:{label:'草稿',cls:'pending'},
     sent:{label:'已发送',cls:'active'},
     confirmed:{label:'已确认',cls:'success'},
+    partially_received:{label:'部分收款',cls:'pending'},
+    settled:{label:'已结清',cls:'success'},
     cancelled:{label:'已作废',cls:'inactive'}
   };
-  const STATUS_TABS=[{key:'',label:'全部'},{key:'draft',label:'草稿'},{key:'sent',label:'已发送'},{key:'confirmed',label:'已确认'},{key:'cancelled',label:'已作废'}];
+  const STATUS_TABS=[{key:'',label:'全部'},{key:'draft',label:'草稿'},{key:'sent',label:'已发送'},{key:'confirmed',label:'已确认'},{key:'partially_received',label:'部分收款'},{key:'settled',label:'已结清'},{key:'cancelled',label:'已作废'}];
 
   function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function fmtAmt(n){return n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
@@ -140,6 +142,47 @@
             items:[
               {feeItemName:'入库操作费',currency:'EUR',amount:196.25,billingTime:'05-15 09:35'},
               {feeItemName:'检验费',currency:'EUR',amount:78.5,billingTime:'05-15 09:40'}
+            ]}
+        ]},
+      {id:6,billNo:'BL-20260519-001',customerName:'深圳ABC贸易',customerId:1,
+        periodStart:'2026-04-01',periodEnd:'2026-04-30',periodLabel:'2026年4月',
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:628,receivableTotal:4931.80,receivedAmount:3000,cancelReason:'',feeSheetCount:2,
+        status:'partially_received',remark:'',createdBy:'Kevin.王磊',
+        createdAt:'2026-05-19 10:00',sentAt:'2026-05-19 14:00',confirmedAt:'2026-05-20 09:00',
+        categorySummary:[
+          {key:'inbound',amount:2465.90,count:1},
+          {key:'storage',amount:0,count:0},
+          {key:'order',amount:2465.90,count:1},
+          {key:'other',amount:0,count:0}
+        ],
+        feeSheets:[
+          {feeNo:'FS-20260516-001',sheetType:'stock_inbound',sourceNo:'STK-IN-20260516-001',warehouseName:'波兰海外仓',receivableAmount:314,
+            items:[
+              {feeItemName:'卸货费',currency:'EUR',amount:196.25,billingTime:'05-16 10:20'},
+              {feeItemName:'清点费',currency:'EUR',amount:117.75,billingTime:'05-16 10:22'}
+            ]},
+          {feeNo:'FS-20260517-001',sheetType:'order',sourceNo:'TRK-2026-004',warehouseName:'波兰海外仓',receivableAmount:314,
+            items:[
+              {feeItemName:'出库操作费',currency:'EUR',amount:196.25,billingTime:'05-17 09:30'},
+              {feeItemName:'打包费',currency:'EUR',amount:117.75,billingTime:'05-17 09:35'}
+            ]}
+        ]},
+      {id:7,billNo:'BL-20260520-001',customerName:'杭州XYZ物流',customerId:2,
+        periodStart:'2026-03-01',periodEnd:'2026-03-31',periodLabel:'2026年3月',
+        currency:'CNY',settlementCurrency:'CNY',exchangeRate:7.85,originalTotal:392.5,receivableTotal:3081.13,receivedAmount:3081.13,cancelReason:'',feeSheetCount:1,
+        status:'settled',remark:'',createdBy:'Amy.李婷',
+        createdAt:'2026-05-20 08:00',sentAt:'2026-05-20 11:00',confirmedAt:'2026-05-21 09:00',
+        categorySummary:[
+          {key:'inbound',amount:0,count:0},
+          {key:'storage',amount:0,count:0},
+          {key:'order',amount:3081.13,count:1},
+          {key:'other',amount:0,count:0}
+        ],
+        feeSheets:[
+          {feeNo:'FS-20260518-001',sheetType:'order',sourceNo:'TRK-2026-005',warehouseName:'德国海外仓',receivableAmount:392.5,
+            items:[
+              {feeItemName:'出库操作费',currency:'EUR',amount:196.25,billingTime:'05-18 10:20'},
+              {feeItemName:'干线物流费',currency:'EUR',amount:196.25,billingTime:'05-18 10:25'}
             ]}
         ]}
     ];

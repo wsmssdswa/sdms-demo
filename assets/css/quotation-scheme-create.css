@@ -559,6 +559,29 @@ body.view-mode #addFeeBtnEmpty { display: none; }
 
 .fee-override-badge-tree { font-size: 10px; color: var(--color-warning); font-weight: 600; margin-left: 2px; }
 
+.goods-type-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 6px;
+  color: #fff;
+}
+.goods-type-common { background: #8c8c8c; }
+.goods-type-b2b { background: #1677ff; }
+.goods-type-b2c { background: #52c41a; }
+
+.fee-search-filter {
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 12px;
+  margin-left: 8px;
+  background: #fff;
+}
+
 .fee-price-matrix { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; }
 
 .fee-price-matrix th {

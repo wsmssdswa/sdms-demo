@@ -7,6 +7,8 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/sdms-design-tokens.css">
   <link rel="stylesheet" href="./assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="./assets/css/sdms-comp-config-list.css">
+  <link rel="stylesheet" href="./assets/css/sdms-comp-fee-sheet-list.css">
   <link rel="stylesheet" href="./assets/css/bill-detail.css">
 </head>
 <body>
@@ -32,7 +34,20 @@
     <div class="info-grid" id="billInfo"></div>
   </div>
   <div class="info-card" id="currencyCard"></div>
+  <div id="receiptSection" style="display:none"></div>
   <div id="tabContent"></div>
+  <div class="modal-mask" id="feeDetailModal" aria-hidden="true">
+    <div class="modal-dialog" style="width:min(1100px,calc(100vw - 32px))">
+      <div class="modal-header">
+        <span class="modal-title" id="feeDetailTitle">费用单详情</span>
+        <button type="button" class="modal-close" id="feeDetailCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="feeDetailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-default" id="feeDetailOkBtn" type="button">关闭</button>
+      </div>
+    </div>
+  </div>
   <div class="modal-overlay" id="withdrawModal" style="display:none">
     <div class="modal-box">
       <div class="modal-title">确认撒回账单</div>

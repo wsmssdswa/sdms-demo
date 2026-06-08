@@ -61,10 +61,15 @@ let currentTabIndex = 0;
 let tabList = [];
 
 function renderHeader(){
-  document.getElementById('previewSchemeName').textContent=_state.schemeName;
+  const nameEl=document.getElementById('previewSchemeName');
+  nameEl.innerHTML=escapeHtml(_state.schemeName)+(_state.isDefault?' <span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600;background:#e8f4ff;color:#2b5aed;vertical-align:middle">默认</span>':'');
   const metaParts=[];
-  metaParts.push('有效期：'+_state.startDate+' ~ '+_state.endDate);
-  metaParts.push('客户：'+_state.selectedCustomers.join(' / '));
+  if(_state.startDate&&_state.endDate){
+    metaParts.push('有效期：'+_state.startDate+' ~ '+_state.endDate);
+  }else if(_state.isDefault){
+    metaParts.push('有效期：长期有效');
+  }
+  metaParts.push((_state.isDefault?'适用客户：':'客户：')+_state.selectedCustomers.join(' / '));
   metaParts.push('仓库：'+_state.warehouse);
   document.getElementById('previewMeta').textContent=metaParts.join(' | ');
 }
@@ -357,6 +362,7 @@ document.getElementById('previewExportBtn').addEventListener('click', () => {
   else alert('Excel导出功能开发中');
 });
 document.getElementById('previewCalcBtn').addEventListener('click', () => {
-  if (typeof showToast === 'function') showToast('info', '运费试算', '运费试算功能开发中');
-  else alert('运费试算功能开发中');
+  if (typeof QuotationTrialCalc !== 'undefined') {
+    QuotationTrialCalc.open(_state, _allFeeItems);
+  }
 });

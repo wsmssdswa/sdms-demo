@@ -37,6 +37,9 @@ const STATUS_TABS=[
 
 function buildSeedData(){
   const base=[
+    {name:'波兰海外仓默认报价',customer:'',warehouse:'波兰海外仓',startDate:'',endDate:'',status:'active',feeCount:12,updater:'张三',isDefault:true},
+    {name:'德国海外仓默认报价',customer:'',warehouse:'德国海外仓',startDate:'',endDate:'',status:'draft',feeCount:0,updater:'张三',isDefault:true},
+    {name:'深圳保税仓默认报价',customer:'',warehouse:'深圳保税仓',startDate:'',endDate:'',status:'pending',feeCount:8,updater:'李四',isDefault:true},
     {name:'ABC贸易-波兰仓标准报价',customer:'深圳ABC贸易有限公司',warehouse:'波兰海外仓',startDate:'2025-01-01',endDate:'2025-12-31',status:'active',feeCount:12,updater:'张三'},
     {name:'XYZ物流-德国仓FBA报价',customer:'杭州XYZ物流',warehouse:'德国海外仓',startDate:'2025-03-01',endDate:'2026-02-28',status:'active',feeCount:8,updater:'李四'},
     {name:'DEF电商-深圳仓综合报价',customer:'上海DEF电商',warehouse:'深圳保税仓',startDate:'2025-02-15',endDate:'2025-08-15',status:'draft',feeCount:5,updater:'张三'},
@@ -74,9 +77,17 @@ function getFilteredRows(){
   const keyword=state.keyword.trim();
   return rows.filter(item=>{
     if(keyword&&!item.name.includes(keyword))return false;
-    if(state.customer&&item.customer!==state.customer)return false;
+    if(state.customer==='__default__'){
+      if(item.customer!=='')return false;
+    }else if(state.customer&&item.customer!==state.customer){
+      return false;
+    }
     if(state.warehouse&&item.warehouse!==state.warehouse)return false;
-    if(state.currentTab&&item.status!==state.currentTab)return false;
+    if(state.currentTab==='default'){
+      if(!item.isDefault)return false;
+    }else if(state.currentTab&&item.status!==state.currentTab){
+      return false;
+    }
     return true;
   });
 }
@@ -95,8 +106,8 @@ function buildPageList(totalPages,currentPage){
 
 function getActions(item){
   const s=item.status;
-  const edit=`<a class="action-link" href="quotation-scheme-create.html?mode=edit&id=${item.id}">编辑</a>`;
-  const del=`<a class="action-link delete" href="javascript:void(0)" data-action="delete" data-id="${item.id}">删除</a>`;
+  const edit=`<a class="action-link" href="quotation-scheme-create.html?mode=edit&id=${item.id}${item.isDefault?'&isDefault=1':''}">编辑</a>`;
+  const del=item.isDefault?'':`<a class="action-link delete" href="javascript:void(0)" data-action="delete" data-id="${item.id}">删除</a>`;
   const submit=`<a class="action-link" href="javascript:void(0)" data-action="submit" data-id="${item.id}">提交审核</a>`;
   const review=`<a class="action-link" href="javascript:void(0)" data-action="review" data-id="${item.id}">审核</a>`;
   if(s==='draft') return `<div class="action-group">${edit}${submit}${del}</div>`;
@@ -109,7 +120,7 @@ function getActions(item){
 
 function renderStatusTabs(){
   statusTabs.innerHTML=STATUS_TABS.map(tab=>{
-    const count=tab.key===''?rows.length:rows.filter(r=>r.status===tab.key).length;
+    const count=tab.key===''?rows.length:tab.key==='default'?rows.filter(r=>r.isDefault).length:rows.filter(r=>r.status===tab.key).length;
     const active=tab.key===state.currentTab?'active':'';
     return `<button class="scene-tab ${active}" type="button" data-tab="${tab.key}">${tab.label}(${count})</button>`;
   }).join('');
@@ -126,13 +137,19 @@ function renderTable(){
   }else{
     tableBody.innerHTML=current.map((item,index)=>{
       const st=STATUS_MAP[item.status]||{label:item.status,cls:'draft'};
-      return `<tr>
+      const isDefault=!!item.isDefault;
+      const defaultBadge=isDefault?'<span class="default-badge">默认</span>':'';
+      const customerText=item.customer||(item.isDefault?'所有客户':'—');
+      const dateText=item.startDate?`${escapeHtml(item.startDate)} ~ ${escapeHtml(item.endDate)}`:'<span class="date-longterm">长期有效</span>';
+      const feeCountHtml=isDefault&&item.feeCount===0?`<span class="fee-count-warning">${item.feeCount}</span>`:`${item.feeCount}`;
+      const rowCls=isDefault?'row-default':'';
+      return `<tr class="${rowCls}">
         <td class="cell-center">${(state.currentPage-1)*state.pageSize+index+1}</td>
-        <td><a class="name-link" href="quotation-scheme-create.html?mode=edit&id=${item.id}">${escapeHtml(item.name)}</a></td>
-        <td>${escapeHtml(item.customer)}</td>
+        <td><a class="name-link" href="quotation-scheme-create.html?mode=edit&id=${item.id}${isDefault?'&isDefault=1':''}">${escapeHtml(item.name)}</a>${defaultBadge}</td>
+        <td${!item.customer?' class="cell-muted"':''}>${escapeHtml(customerText)}</td>
         <td class="cell-center">${escapeHtml(item.warehouse)}</td>
-        <td class="cell-center">${escapeHtml(item.startDate)} ~ ${escapeHtml(item.endDate)}</td>
-        <td class="cell-center">${item.feeCount}</td>
+        <td class="cell-center">${dateText}</td>
+        <td class="cell-center">${feeCountHtml}</td>
         <td class="cell-center"><span class="status-tag ${st.cls}">${st.label}</span>${item.status==='rejected'&&item.rejectReason?`<i class="ri-information-line reject-info-icon" title="${escapeHtml(item.rejectReason)}"></i>`:''}</td>
         <td>${escapeHtml(item.updateTime)}</td>
         <td>${getActions(item)}</td>
@@ -180,6 +197,7 @@ function handleAction(action,id){
   if(!item)return;
 
   if(action==='delete'){
+    if(item.isDefault){showToast('error','无法删除','默认报价不可删除。');return;}
     if(!window.confirm('删除后数据不可恢复，是否确认删除？'))return;
     rows=rows.filter(r=>r.id!==id);
     renderTable();
