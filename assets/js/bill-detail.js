@@ -460,7 +460,7 @@
     html+='<div class="info-label">业务员</div><div class="info-value">'+escapeHtml(fs.salesperson||'—')+'</div>';
     html+='<div class="info-label">创建时间</div><div class="info-value">'+escapeHtml(fs.createdAt||'—')+'</div>';
     html+='<div class="info-label">涉及币种</div><div class="info-value">'+escapeHtml(currencies)+'</div>';
-    html+='<div class="info-label">报价方案</div><div class="info-value">'+(fs.quotationScheme?'<a class="name-link" href="./quotation-scheme-config.html">《'+escapeHtml(fs.quotationSchemeName)+'》</a>':'—')+'</div>';
+    html+='<div class="info-label">报价方案</div><div class="info-value">'+(fs.quotationScheme?'<a class="name-link" href="../quotation/quotation-scheme-config.html">《'+escapeHtml(fs.quotationSchemeName)+'》</a>':'—')+'</div>';
     html+='</div></div>';
 
     const DETAIL_COLSPAN=10;

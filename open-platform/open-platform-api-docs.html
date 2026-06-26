@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开放平台 - 接口文档</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+<link rel="stylesheet" href="../assets/css/open-platform.css">
+<style>
+/* === 文档中心三栏布局 === */
+.op-docs-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* 文档目录树（左侧窄列） */
+.op-docs-toc {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--color-bg-primary, #fff);
+  border-right: 1px solid var(--color-border, #e7eaee);
+  overflow-y: auto;
+  padding: 16px 0;
+}
+
+.op-docs-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 24px 32px;
+}
+
+/* === 目录树节点 === */
+.op-toc-group {
+  margin-bottom: 2px;
+}
+
+.op-toc-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1d1e);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.op-toc-group-header:hover {
+  background: var(--color-bg-secondary, #f4f5f7);
+}
+
+.op-toc-group-header .op-toc-arrow {
+  font-size: 14px;
+  color: var(--color-text-tertiary, #909499);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.op-toc-group.collapsed .op-toc-arrow {
+  transform: rotate(-90deg);
+}
+
+.op-toc-group.collapsed .op-toc-children {
+  display: none;
+}
+
+.op-toc-group-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.op-toc-children {
+  padding-left: 8px;
+}
+
+.op-toc-item {
+  display: block;
+  padding: 6px 16px 6px 44px;
+  font-size: 12px;
+  color: var(--color-text-secondary, #65686c);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  position: relative;
+}
+
+.op-toc-item:hover {
+  color: var(--color-primary, #1684fc);
+  background: rgba(22, 132, 252, 0.04);
+}
+
+.op-toc-item.active {
+  color: var(--color-primary, #1684fc);
+  font-weight: 600;
+  background: rgba(22, 132, 252, 0.08);
+}
+
+.op-toc-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--color-primary, #1684fc);
+}
+
+/* === 文档页面通用 === */
+.op-doc-page {
+  display: none;
+  max-width: 900px;
+}
+
+.op-doc-page.active {
+  display: block;
+}
+
+.op-doc-page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin: 0 0 24px 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+}
+
+.op-doc-section {
+  margin-bottom: 32px;
+}
+
+.op-doc-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-doc-section-title i {
+  font-size: 18px;
+  color: var(--color-primary, #1684fc);
+}
+
+.op-doc-text {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--color-text-secondary, #65686c);
+}
+
+/* === 步骤卡片（快速开始） === */
+.op-steps-flow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-bottom: 8px;
+}
+
+.op-step-card {
+  flex: 1;
+  text-align: center;
+  padding: 20px 16px;
+  position: relative;
+}
+
+.op-step-card-num {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-primary, #1684fc);
+  margin-bottom: 12px;
+}
+
+.op-step-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 6px;
+}
+
+.op-step-card-desc {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+  line-height: 1.5;
+}
+
+.op-step-arrow {
+  display: flex;
+  align-items: center;
+  padding-top: 28px;
+  flex-shrink: 0;
+  color: var(--color-text-tertiary, #909499);
+  font-size: 20px;
+}
+
+/* === 代码块 === */
+.op-code-block {
+  position: relative;
+  background: #1e293b;
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
+.op-code-block pre {
+  margin: 0;
+  font-family: "SF Mono", "Consolas", "Monaco", "Menlo", monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #e2e8f0;
+  white-space: pre;
+}
+
+.op-code-block .op-code-lang {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 代码语法高亮 */
+.op-code-key { color: #7dd3fc; }
+.op-code-str { color: #86efac; }
+.op-code-num { color: #fbbf24; }
+.op-code-bool { color: #c084fc; }
+.op-code-comment { color: #64748b; font-style: italic; }
+.op-code-method { font-weight: 700; }
+
+/* === 接口方法标签 === */
+.op-method-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  letter-spacing: 0.5px;
+}
+
+.op-method-post { background: #e8f8e8; color: #1a7f37; border: 1px solid #c3f0c3; }
+.op-method-put { background: #e3f2ff; color: #0969da; border: 1px solid #d5e9fe; }
+.op-method-delete { background: #fff2f0; color: #cf222e; border: 1px solid #ffccc7; }
+.op-method-get { background: #e6fffa; color: #0d7377; border: 1px solid #b2f5ea; }
+
+/* === 接口路径 === */
+.op-api-path {
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-left: 12px;
+}
+
+.op-api-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 0;
+}
+
+.op-api-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary, #65686c);
+  padding: 12px 20px;
+  background: var(--color-bg-secondary, #f4f5f7);
+  border: 1px solid var(--color-border, #e7eaee);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  margin-bottom: 24px;
+}
+
+/* === 参数表格 === */
+.op-doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 12px 0;
+}
+
+.op-doc-table thead th {
+  background: var(--color-bg-tertiary, #edeff2);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text-tertiary, #909499);
+  border-bottom: 2px solid var(--color-border, #e7eaee);
+  white-space: nowrap;
+}
+
+.op-doc-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+  color: var(--color-text-primary, #1c1d1e);
+  vertical-align: top;
+}
+
+.op-doc-table tbody tr:hover td {
+  background: rgba(22, 132, 252, 0.03);
+}
+
+.op-doc-table .field-name {
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 12px;
+  color: var(--color-primary, #1684fc);
+  font-weight: 600;
+}
+
+.op-doc-table .field-type {
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-doc-table .field-required {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.op-doc-table .field-required.yes {
+  color: var(--color-error, #ed0404);
+}
+
+.op-doc-table .field-required.no {
+  color: var(--color-text-tertiary, #909499);
+}
+
+/* === 响应示例标签 === */
+.op-response-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.op-response-label.success { color: var(--color-success, #007e22); }
+.op-response-label.error { color: var(--color-error, #ed0404); }
+
+.op-response-label i {
+  font-size: 14px;
+}
+
+/* === 在线调试面板 === */
+.op-debugger {
+  border-top: 2px solid var(--color-border, #e7eaee);
+  margin-top: 32px;
+  padding-top: 24px;
+}
+
+.op-debugger-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-debugger-title i {
+  font-size: 18px;
+  color: var(--color-primary, #1684fc);
+}
+
+.op-debugger-body {
+  display: flex;
+  gap: 20px;
+}
+
+.op-debugger-left,
+.op-debugger-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.op-debugger-panel {
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.op-debugger-panel-head {
+  padding: 10px 16px;
+  background: var(--color-bg-tertiary, #edeff2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-tertiary, #909499);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.op-debugger-panel-body {
+  padding: 16px;
+}
+
+.op-debugger-row {
+  margin-bottom: 12px;
+}
+
+.op-debugger-row:last-child {
+  margin-bottom: 0;
+}
+
+.op-debugger-row label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #65686c);
+  margin-bottom: 6px;
+}
+
+.op-debugger-key-select {
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23909499'%3E%3Cpath d='m7 10 5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  padding-right: 30px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-debugger-body-input {
+  width: 100%;
+  min-height: 180px;
+  padding: 12px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 4px;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-primary, #1c1d1e);
+  resize: vertical;
+  background: #fff;
+}
+
+.op-debugger-body-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #1684fc);
+  box-shadow: 0 0 0 2px rgba(22, 132, 252, 0.15);
+}
+
+.op-debugger-send-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.op-debugger-response-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+
+.op-debugger-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.op-debugger-status.status-200 {
+  background: #e8f8e8;
+  color: #1a7f37;
+}
+
+.op-debugger-status.status-400 {
+  background: #fff2f0;
+  color: #cf222e;
+}
+
+.op-debugger-time {
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-debugger-response-body {
+  background: #1e293b;
+  border-radius: 4px;
+  padding: 12px 16px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.op-debugger-response-body pre {
+  margin: 0;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #e2e8f0;
+  white-space: pre;
+}
+
+/* 生产环境警告横幅 */
+.op-debugger-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-error, #ed0404);
+  display: none;
+}
+
+.op-debugger-warning.show {
+  display: flex;
+}
+
+.op-debugger-warning i {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* 等待态 */
+.op-debugger-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-debugger-waiting i {
+  font-size: 32px;
+  margin-bottom: 8px;
+  opacity: 0.4;
+}
+
+.op-debugger-waiting span {
+  font-size: 12px;
+}
+
+/* 加载态 */
+.op-debugger-loading {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--color-primary, #1684fc);
+}
+
+.op-debugger-loading.show {
+  display: flex;
+}
+
+.op-debugger-loading i {
+  font-size: 28px;
+  margin-bottom: 8px;
+  animation: op-spin 1s linear infinite;
+}
+
+.op-debugger-loading span {
+  font-size: 12px;
+}
+
+@keyframes op-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* === 更新日志 === */
+.op-changelog-item {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+}
+
+.op-changelog-item:last-child {
+  border-bottom: none;
+}
+
+.op-changelog-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.op-changelog-date {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+}
+
+.op-changelog-scope {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: var(--color-bg-tertiary, #edeff2);
+  color: var(--color-text-secondary, #65686c);
+  font-weight: 500;
+}
+
+.op-changelog-type {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.op-changelog-type.breaking {
+  background: #fff2f0;
+  color: #cf222e;
+  border: 1px solid #ffccc7;
+}
+
+.op-changelog-type.feature {
+  background: #e3f2ff;
+  color: #0969da;
+  border: 1px solid #d5e9fe;
+}
+
+.op-changelog-type.fix {
+  background: #e8f8e8;
+  color: #1a7f37;
+  border: 1px solid #c3f0c3;
+}
+
+.op-changelog-type.deprecate {
+  background: #fff2e9;
+  color: #b45309;
+  border: 1px solid #fed7aa;
+}
+
+.op-changelog-content {
+  font-size: 13px;
+  color: var(--color-text-secondary, #65686c);
+  line-height: 1.6;
+}
+
+/* === 事件类型与回调页面 === */
+.op-event-card {
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+}
+
+.op-event-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-event-card-title code {
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 12px;
+  background: var(--color-bg-secondary, #f4f5f7);
+  padding: 2px 8px;
+  border-radius: 3px;
+  color: var(--color-primary, #1684fc);
+}
+
+.op-event-card-desc {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+  line-height: 1.6;
+}
+
+/* === 请求格式规范卡片 === */
+.op-spec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+.op-spec-item {
+  padding: 16px;
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 6px;
+  background: var(--color-bg-primary, #fff);
+}
+
+.op-spec-item-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-tertiary, #909499);
+  margin-bottom: 6px;
+}
+
+.op-spec-item-value {
+  font-size: 13px;
+  color: var(--color-text-primary, #1c1d1e);
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+}
+
+/* === 响应式 === */
+@media (max-width: 1200px) {
+  .op-docs-toc {
+    width: 200px;
+  }
+  .op-docs-content {
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .op-docs-toc {
+    width: 180px;
+  }
+  .op-steps-flow {
+    flex-direction: column;
+  }
+  .op-step-arrow {
+    transform: rotate(90deg);
+    padding: 0;
+    justify-content: center;
+  }
+  .op-debugger-body {
+    flex-direction: column;
+  }
+  .op-spec-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="op-page no-sidebar">
+
+  <!-- 顶部导航栏 -->
+  <header id="opTopNav"></header>
+
+  <!-- 右侧主区域 -->
+  <div class="op-main">
+
+    <!-- 顶部标题栏 -->
+    <div class="op-header">
+      <div class="op-header-breadcrumb">
+        <a href="#">开放平台</a>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>接口文档</span>
+      </div>
+      <div class="op-header-actions">
+        <a href="#" class="op-btn op-btn-default" style="font-size:12px;height:30px;padding:0 12px">
+          <i class="ri-download-line"></i> 导出文档
+        </a>
+      </div>
+    </div>
+
+    <!-- 文档中心三栏布局 -->
+    <div class="op-docs-layout">
+
+      <!-- 文档目录树 -->
+      <div class="op-docs-toc" id="docsToc"></div>
+
+      <!-- 文档内容区 -->
+      <div class="op-docs-content" id="docsContent">
+
+        <!-- ====== 快速开始页 ====== -->
+        <div class="op-doc-page active" id="page-quickstart">
+          <h1 class="op-doc-page-title">快速开始</h1>
+
+          <!-- 接入流程 -->
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-route-line"></i>接入流程</div>
+            <div class="op-steps-flow">
+              <div class="op-step-card">
+                <div class="op-step-card-num">1</div>
+                <div class="op-step-card-title">申请开发者</div>
+                <div class="op-step-card-desc">提交申请表单</div>
+              </div>
+              <div class="op-step-arrow"><i class="ri-arrow-right-line"></i></div>
+              <div class="op-step-card">
+                <div class="op-step-card-num">2</div>
+                <div class="op-step-card-title">审批通过</div>
+                <div class="op-step-card-desc">获取API Key</div>
+              </div>
+              <div class="op-step-arrow"><i class="ri-arrow-right-line"></i></div>
+              <div class="op-step-card">
+                <div class="op-step-card-num">3</div>
+                <div class="op-step-card-title">阅读文档</div>
+                <div class="op-step-card-desc">了解接口规范</div>
+              </div>
+              <div class="op-step-arrow"><i class="ri-arrow-right-line"></i></div>
+              <div class="op-step-card">
+                <div class="op-step-card-num">4</div>
+                <div class="op-step-card-title">开始调用</div>
+                <div class="op-step-card-desc">集成到您的系统</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 认证说明 -->
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-shield-keyhole-line"></i>认证方式</div>
+            <p class="op-doc-text">所有接口请求需在Header中携带API Key，格式如下：</p>
+            <div class="op-code-block">
+              <span class="op-code-lang">HTTP Header</span>
+<pre>Authorization: Bearer ak_your_api_key_here</pre>
+            </div>
+          </div>
+
+          <!-- 请求格式规范 -->
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-settings-3-line"></i>请求格式规范</div>
+            <div class="op-spec-grid">
+              <div class="op-spec-item">
+                <div class="op-spec-item-label">Content-Type</div>
+                <div class="op-spec-item-value">application/json</div>
+              </div>
+              <div class="op-spec-item">
+                <div class="op-spec-item-label">字符编码</div>
+                <div class="op-spec-item-value">UTF-8</div>
+              </div>
+              <div class="op-spec-item">
+                <div class="op-spec-item-label">时间格式</div>
+                <div class="op-spec-item-value">ISO 8601<br><span style="font-size:11px;color:var(--color-text-tertiary)">如 2024-05-24T10:05:12Z</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 错误码总览 -->
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-error-warning-line"></i>错误码总览</div>
+            <table class="op-doc-table">
+              <thead>
+                <tr>
+                  <th style="width:100px">错误码</th>
+                  <th>含义</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><code>10001</code></td><td>认证失败（API Key无效）</td></tr>
+                <tr><td><code>10002</code></td><td>数据格式校验失败</td></tr>
+                <tr><td><code>10003</code></td><td>必填字段缺失</td></tr>
+                <tr><td><code>20001</code></td><td>订单号重复</td></tr>
+                <tr><td><code>20002</code></td><td>仓库编码不存在</td></tr>
+                <tr><td><code>20003</code></td><td>订单状态不允许此操作</td></tr>
+                <tr><td><code>30001</code></td><td>系统内部错误</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ====== 创建订单接口详情页 ====== -->
+        <div class="op-doc-page" id="page-post-orders">
+          <h1 class="op-doc-page-title">创建订单</h1>
+
+          <!-- 接口地址 -->
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-post">POST</span>
+            <span class="op-api-path">/api/v1/orders</span>
+          </div>
+          <div class="op-api-desc">创建新的入仓/出仓订单</div>
+
+          <!-- Header参数 -->
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-key-2-line"></i>Header参数</div>
+            <table class="op-doc-table">
+              <thead>
+                <tr><th>参数名</th><th>类型</th><th>必填</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="field-name">Authorization</td>
+                  <td class="field-type">string</td>
+                  <td class="field-required yes">是</td>
+                  <td>Bearer Token，格式：<code>Bearer ak_xxx</code></td>
+                </tr>
+                <tr>
+                  <td class="field-name">Content-Type</td>
+                  <td class="field-type">string</td>
+                  <td class="field-required yes">是</td>
+                  <td>固定值：<code>application/json</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Body参数 -->
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-code-s-slash-line"></i>Body参数</div>
+            <table class="op-doc-table">
+              <thead>
+                <tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td class="field-name">sourceOrderNo</td><td class="field-type">string</td><td class="field-required yes">是</td><td>来源订单号</td></tr>
+                <tr><td class="field-name">customerCode</td><td class="field-type">string</td><td class="field-required yes">是</td><td>客户编码</td></tr>
+                <tr><td class="field-name">warehouseCode</td><td class="field-type">string</td><td class="field-required yes">是</td><td>仓库编码</td></tr>
+                <tr><td class="field-name">orderType</td><td class="field-type">string</td><td class="field-required yes">是</td><td>订单类型（INBOUND/OUTBOUND）</td></tr>
+                <tr><td class="field-name">cargoDetails</td><td class="field-type">array</td><td class="field-required yes">是</td><td>货物明细</td></tr>
+                <tr><td class="field-name">remark</td><td class="field-type">string</td><td class="field-required no">否</td><td>备注</td></tr>
+                <tr><td class="field-name">extraData</td><td class="field-type">object</td><td class="field-required no">否</td><td>扩展字段</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 成功响应 -->
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"orderNo"</span>: <span class="op-code-str">"ORD-2024-001"</span>,
+    <span class="op-code-key">"status"</span>: <span class="op-code-str">"PENDING"</span>,
+    <span class="op-code-key">"createdAt"</span>: <span class="op-code-str">"2024-05-24T10:05:12Z"</span>
+  }
+}</pre>
+            </div>
+          </div>
+
+          <!-- 失败响应 -->
+          <div class="op-doc-section">
+            <div class="op-response-label error"><i class="ri-close-line"></i>失败响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">10003</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"必填字段缺失: warehouseCode"</span>,
+  <span class="op-code-key">"data"</span>: <span class="op-code-bool">null</span>
+}</pre>
+            </div>
+          </div>
+
+          <!-- 在线调试 -->
+          <div class="op-debugger" id="debugger-post-orders">
+            <div class="op-debugger-title"><i class="ri-terminal-box-line"></i>在线调试</div>
+            <div class="op-debugger-warning" id="debugger-warning-post-orders">
+              <i class="ri-alarm-warning-line"></i>
+              此请求将操作真实数据
+            </div>
+            <div class="op-debugger-body">
+              <div class="op-debugger-left">
+                <div class="op-debugger-panel">
+                  <div class="op-debugger-panel-head"><i class="ri-send-plane-line"></i>请求配置</div>
+                  <div class="op-debugger-panel-body">
+                    <div class="op-debugger-row">
+                      <label>API Key</label>
+                      <select class="op-debugger-key-select" id="keySelect-post-orders" onchange="onKeyChange('post-orders')">
+                        <option value="test">测试Key（返回模拟数据）</option>
+                        <option value="prod">生产Key（操作真实数据）</option>
+                      </select>
+                    </div>
+                    <div class="op-debugger-row">
+                      <label>请求Body</label>
+                      <textarea class="op-debugger-body-input" id="bodyInput-post-orders">{
+  "sourceOrderNo": "SO-20240524-001",
+  "customerCode": "CUST001",
+  "warehouseCode": "WH-SZ001",
+  "orderType": "INBOUND",
+  "cargoDetails": [
+    {
+      "sku": "SKU001",
+      "qty": 100,
+      "unit": "箱"
+    }
+  ],
+  "remark": "测试订单"
+}</textarea>
+                    </div>
+                    <div class="op-debugger-send-bar">
+                      <button class="op-btn op-btn-primary" id="sendBtn-post-orders" onclick="sendRequest('post-orders')">
+                        <i class="ri-send-plane-fill"></i>发送请求
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="op-debugger-right">
+                <div class="op-debugger-panel">
+                  <div class="op-debugger-panel-head"><i class="ri-inbox-line"></i>响应结果</div>
+                  <div class="op-debugger-panel-body" id="responseArea-post-orders">
+                    <div class="op-debugger-waiting">
+                      <i class="ri-inbox-line"></i>
+                      <span>点击"发送请求"查看响应</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 修改订单 ====== -->
+        <div class="op-doc-page" id="page-put-orders">
+          <h1 class="op-doc-page-title">修改订单</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-put">PUT</span>
+            <span class="op-api-path">/api/v1/orders/{orderNo}</span>
+          </div>
+          <div class="op-api-desc">修改已有订单的货物明细、备注等信息（仅限待处理状态的订单）</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-key-2-line"></i>Header参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>参数名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">Authorization</td><td class="field-type">string</td><td class="field-required yes">是</td><td>Bearer Token</td></tr>
+                <tr><td class="field-name">Content-Type</td><td class="field-type">string</td><td class="field-required yes">是</td><td><code>application/json</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-route-line"></i>路径参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>参数名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">orderNo</td><td class="field-type">string</td><td class="field-required yes">是</td><td>订单编号</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-code-s-slash-line"></i>Body参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">cargoDetails</td><td class="field-type">array</td><td class="field-required no">否</td><td>货物明细</td></tr>
+                <tr><td class="field-name">remark</td><td class="field-type">string</td><td class="field-required no">否</td><td>备注</td></tr>
+                <tr><td class="field-name">extraData</td><td class="field-type">object</td><td class="field-required no">否</td><td>扩展字段</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"orderNo"</span>: <span class="op-code-str">"ORD-2024-001"</span>,
+    <span class="op-code-key">"status"</span>: <span class="op-code-str">"PENDING"</span>,
+    <span class="op-code-key">"updatedAt"</span>: <span class="op-code-str">"2024-05-24T11:30:00Z"</span>
+  }
+}</pre>
+            </div>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label error"><i class="ri-close-line"></i>失败响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">20003</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"订单状态不允许此操作，当前状态: PROCESSING"</span>,
+  <span class="op-code-key">"data"</span>: <span class="op-code-bool">null</span>
+}</pre>
+            </div>
+          </div>
+
+          <div class="op-debugger">
+            <div class="op-debugger-title"><i class="ri-terminal-box-line"></i>在线调试</div>
+            <div class="op-debugger-warning" id="debugger-warning-put-orders"><i class="ri-alarm-warning-line"></i>此请求将操作真实数据</div>
+            <div class="op-debugger-body">
+              <div class="op-debugger-left">
+                <div class="op-debugger-panel">
+                  <div class="op-debugger-panel-head"><i class="ri-send-plane-line"></i>请求配置</div>
+                  <div class="op-debugger-panel-body">
+                    <div class="op-debugger-row">
+                      <label>API Key</label>
+                      <select class="op-debugger-key-select" id="keySelect-put-orders" onchange="onKeyChange('put-orders')">
+                        <option value="test">测试Key（返回模拟数据）</option>
+                        <option value="prod">生产Key（操作真实数据）</option>
+                      </select>
+                    </div>
+                    <div class="op-debugger-row">
+                      <label>请求Body</label>
+                      <textarea class="op-debugger-body-input" id="bodyInput-put-orders">{
+  "orderNo": "ORD-2024-001",
+  "remark": "修改备注信息"
+}</textarea>
+                    </div>
+                    <div class="op-debugger-send-bar">
+                      <button class="op-btn op-btn-primary" onclick="sendRequest('put-orders')"><i class="ri-send-plane-fill"></i>发送请求</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="op-debugger-right">
+                <div class="op-debugger-panel">
+                  <div class="op-debugger-panel-head"><i class="ri-inbox-line"></i>响应结果</div>
+                  <div class="op-debugger-panel-body" id="responseArea-put-orders">
+                    <div class="op-debugger-waiting"><i class="ri-inbox-line"></i><span>点击"发送请求"查看响应</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 取消订单 ====== -->
+        <div class="op-doc-page" id="page-delete-orders">
+          <h1 class="op-doc-page-title">取消订单</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-delete">DELETE</span>
+            <span class="op-api-path">/api/v1/orders/{orderNo}</span>
+          </div>
+          <div class="op-api-desc">取消指定订单（仅限待处理状态的订单）</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-key-2-line"></i>Header参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>参数名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">Authorization</td><td class="field-type">string</td><td class="field-required yes">是</td><td>Bearer Token</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-route-line"></i>路径参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>参数名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">orderNo</td><td class="field-type">string</td><td class="field-required yes">是</td><td>订单编号</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"orderNo"</span>: <span class="op-code-str">"ORD-2024-001"</span>,
+    <span class="op-code-key">"status"</span>: <span class="op-code-str">"CANCELLED"</span>,
+    <span class="op-code-key">"cancelledAt"</span>: <span class="op-code-str">"2024-05-24T12:00:00Z"</span>
+  }
+}</pre>
+            </div>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label error"><i class="ri-close-line"></i>失败响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">20003</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"订单状态不允许此操作"</span>,
+  <span class="op-code-key">"data"</span>: <span class="op-code-bool">null</span>
+}</pre>
+            </div>
+          </div>
+
+          <div class="op-debugger">
+            <div class="op-debugger-title"><i class="ri-terminal-box-line"></i>在线调试</div>
+            <div class="op-debugger-warning" id="debugger-warning-delete-orders"><i class="ri-alarm-warning-line"></i>此请求将操作真实数据</div>
+            <div class="op-debugger-body">
+              <div class="op-debugger-left">
+                <div class="op-debugger-panel">
+                  <div class="op-debugger-panel-head"><i class="ri-send-plane-line"></i>请求配置</div>
+                  <div class="op-debugger-panel-body">
+                    <div class="op-debugger-row">
+                      <label>API Key</label>
+                      <select class="op-debugger-key-select" id="keySelect-delete-orders" onchange="onKeyChange('delete-orders')">
+                        <option value="test">测试Key（返回模拟数据）</option>
+                        <option value="prod">生产Key（操作真实数据）</option>
+                      </select>
+                    </div>
+                    <div class="op-debugger-row">
+                      <label>请求Body</label>
+                      <textarea class="op-debugger-body-input" id="bodyInput-delete-orders">{
+  "orderNo": "ORD-2024-001"
+}</textarea>
+                    </div>
+                    <div class="op-debugger-send-bar">
+                      <button class="op-btn op-btn-primary" onclick="sendRequest('delete-orders')"><i class="ri-send-plane-fill"></i>发送请求</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="op-debugger-right">
+                <div class="op-debugger-panel">
+                  <div class="op-debugger-panel-head"><i class="ri-inbox-line"></i>响应结果</div>
+                  <div class="op-debugger-panel-body" id="responseArea-delete-orders">
+                    <div class="op-debugger-waiting"><i class="ri-inbox-line"></i><span>点击"发送请求"查看响应</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 入仓指令 ====== -->
+        <div class="op-doc-page" id="page-post-inbound">
+          <h1 class="op-doc-page-title">入仓指令</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-post">POST</span>
+            <span class="op-api-path">/api/v1/inbound/commands</span>
+          </div>
+          <div class="op-api-desc">向指定仓库发送入仓指令，触发收货流程</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-code-s-slash-line"></i>Body参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">warehouseCode</td><td class="field-type">string</td><td class="field-required yes">是</td><td>仓库编码</td></tr>
+                <tr><td class="field-name">expectedDate</td><td class="field-type">string</td><td class="field-required yes">是</td><td>预计到仓日期（ISO 8601）</td></tr>
+                <tr><td class="field-name">supplierCode</td><td class="field-type">string</td><td class="field-required yes">是</td><td>供应商编码</td></tr>
+                <tr><td class="field-name">cargoDetails</td><td class="field-type">array</td><td class="field-required yes">是</td><td>货物明细</td></tr>
+                <tr><td class="field-name">remark</td><td class="field-type">string</td><td class="field-required no">否</td><td>备注</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"commandNo"</span>: <span class="op-code-str">"IC-2024-0524-001"</span>,
+    <span class="op-code-key">"status"</span>: <span class="op-code-str">"SUBMITTED"</span>,
+    <span class="op-code-key">"createdAt"</span>: <span class="op-code-str">"2024-05-24T08:00:00Z"</span>
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 同步车辆 ====== -->
+        <div class="op-doc-page" id="page-post-vehicles">
+          <h1 class="op-doc-page-title">同步车辆</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-post">POST</span>
+            <span class="op-api-path">/api/v1/vehicles</span>
+          </div>
+          <div class="op-api-desc">同步车辆信息到系统，用于调度和装车管理</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-code-s-slash-line"></i>Body参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">plateNumber</td><td class="field-type">string</td><td class="field-required yes">是</td><td>车牌号</td></tr>
+                <tr><td class="field-name">driverName</td><td class="field-type">string</td><td class="field-required yes">是</td><td>司机姓名</td></tr>
+                <tr><td class="field-name">driverPhone</td><td class="field-type">string</td><td class="field-required yes">是</td><td>司机手机号</td></tr>
+                <tr><td class="field-name">vehicleType</td><td class="field-type">string</td><td class="field-required no">否</td><td>车辆类型</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"vehicleId"</span>: <span class="op-code-str">"VH-001"</span>,
+    <span class="op-code-key">"syncedAt"</span>: <span class="op-code-str">"2024-05-24T09:00:00Z"</span>
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 上传附件 ====== -->
+        <div class="op-doc-page" id="page-post-files">
+          <h1 class="op-doc-page-title">上传附件</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-post">POST</span>
+            <span class="op-api-path">/api/v1/files</span>
+          </div>
+          <div class="op-api-desc">上传订单或入仓指令相关附件（支持图片、PDF、Excel格式）</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-code-s-slash-line"></i>请求参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">file</td><td class="field-type">binary</td><td class="field-required yes">是</td><td>文件内容（multipart/form-data）</td></tr>
+                <tr><td class="field-name">bizType</td><td class="field-type">string</td><td class="field-required yes">是</td><td>业务类型（ORDER/INBOUND）</td></tr>
+                <tr><td class="field-name">bizNo</td><td class="field-type">string</td><td class="field-required yes">是</td><td>业务单号</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"fileId"</span>: <span class="op-code-str">"FILE-20240524-001"</span>,
+    <span class="op-code-key">"url"</span>: <span class="op-code-str">"https://cdn.example.com/files/xxx.pdf"</span>,
+    <span class="op-code-key">"uploadedAt"</span>: <span class="op-code-str">"2024-05-24T10:30:00Z"</span>
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 查询订单详情 ====== -->
+        <div class="op-doc-page" id="page-get-order-detail">
+          <h1 class="op-doc-page-title">查询订单详情</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-get">GET</span>
+            <span class="op-api-path">/api/v1/orders/{orderNo}</span>
+          </div>
+          <div class="op-api-desc">根据订单号查询单个订单的完整详情</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-route-line"></i>路径参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>参数名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">orderNo</td><td class="field-type">string</td><td class="field-required yes">是</td><td>订单编号</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"orderNo"</span>: <span class="op-code-str">"ORD-2024-001"</span>,
+    <span class="op-code-key">"sourceOrderNo"</span>: <span class="op-code-str">"SO-20240524-001"</span>,
+    <span class="op-code-key">"status"</span>: <span class="op-code-str">"PROCESSING"</span>,
+    <span class="op-code-key">"orderType"</span>: <span class="op-code-str">"INBOUND"</span>,
+    <span class="op-code-key">"warehouseCode"</span>: <span class="op-code-str">"WH-SZ001"</span>,
+    <span class="op-code-key">"customerCode"</span>: <span class="op-code-str">"CUST001"</span>,
+    <span class="op-code-key">"cargoDetails"</span>: [
+      { <span class="op-code-key">"sku"</span>: <span class="op-code-str">"SKU001"</span>, <span class="op-code-key">"qty"</span>: <span class="op-code-num">100</span>, <span class="op-code-key">"unit"</span>: <span class="op-code-str">"箱"</span> }
+    ],
+    <span class="op-code-key">"createdAt"</span>: <span class="op-code-str">"2024-05-24T10:05:12Z"</span>,
+    <span class="op-code-key">"updatedAt"</span>: <span class="op-code-str">"2024-05-24T11:00:00Z"</span>
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 查询订单列表 ====== -->
+        <div class="op-doc-page" id="page-get-orders">
+          <h1 class="op-doc-page-title">查询订单列表</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-get">GET</span>
+            <span class="op-api-path">/api/v1/orders</span>
+          </div>
+          <div class="op-api-desc">分页查询订单列表，支持多条件筛选</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-filter-3-line"></i>查询参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>参数名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">page</td><td class="field-type">integer</td><td class="field-required no">否</td><td>页码，默认1</td></tr>
+                <tr><td class="field-name">pageSize</td><td class="field-type">integer</td><td class="field-required no">否</td><td>每页条数，默认20，最大100</td></tr>
+                <tr><td class="field-name">status</td><td class="field-type">string</td><td class="field-required no">否</td><td>订单状态筛选</td></tr>
+                <tr><td class="field-name">orderType</td><td class="field-type">string</td><td class="field-required no">否</td><td>订单类型（INBOUND/OUTBOUND）</td></tr>
+                <tr><td class="field-name">startDate</td><td class="field-type">string</td><td class="field-required no">否</td><td>开始日期（ISO 8601）</td></tr>
+                <tr><td class="field-name">endDate</td><td class="field-type">string</td><td class="field-required no">否</td><td>结束日期（ISO 8601）</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"total"</span>: <span class="op-code-num">56</span>,
+    <span class="op-code-key">"page"</span>: <span class="op-code-num">1</span>,
+    <span class="op-code-key">"pageSize"</span>: <span class="op-code-num">20</span>,
+    <span class="op-code-key">"list"</span>: [
+      { <span class="op-code-key">"orderNo"</span>: <span class="op-code-str">"ORD-2024-001"</span>, <span class="op-code-key">"status"</span>: <span class="op-code-str">"PROCESSING"</span> }
+    ]
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 查询库存 ====== -->
+        <div class="op-doc-page" id="page-get-inventory">
+          <h1 class="op-doc-page-title">查询库存</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-get">GET</span>
+            <span class="op-api-path">/api/v1/inventory</span>
+          </div>
+          <div class="op-api-desc">查询指定仓库的实时库存信息</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-filter-3-line"></i>查询参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>参数名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">warehouseCode</td><td class="field-type">string</td><td class="field-required yes">是</td><td>仓库编码</td></tr>
+                <tr><td class="field-name">sku</td><td class="field-type">string</td><td class="field-required no">否</td><td>SKU编码筛选</td></tr>
+                <tr><td class="field-name">page</td><td class="field-type">integer</td><td class="field-required no">否</td><td>页码，默认1</td></tr>
+                <tr><td class="field-name">pageSize</td><td class="field-type">integer</td><td class="field-required no">否</td><td>每页条数，默认20</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"total"</span>: <span class="op-code-num">120</span>,
+    <span class="op-code-key">"list"</span>: [
+      { <span class="op-code-key">"sku"</span>: <span class="op-code-str">"SKU001"</span>, <span class="op-code-key">"qty"</span>: <span class="op-code-num">500</span>, <span class="op-code-key">"warehouseCode"</span>: <span class="op-code-str">"WH-SZ001"</span> }
+    ]
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 查询费用明细 ====== -->
+        <div class="op-doc-page" id="page-get-fees">
+          <h1 class="op-doc-page-title">查询费用明细</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-get">GET</span>
+            <span class="op-api-path">/api/v1/fees</span>
+          </div>
+          <div class="op-api-desc">查询订单或账单相关的费用明细</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-filter-3-line"></i>查询参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>参数名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">orderNo</td><td class="field-type">string</td><td class="field-required no">否</td><td>订单编号</td></tr>
+                <tr><td class="field-name">billNo</td><td class="field-type">string</td><td class="field-required no">否</td><td>账单编号</td></tr>
+                <tr><td class="field-name">startDate</td><td class="field-type">string</td><td class="field-required no">否</td><td>开始日期</td></tr>
+                <tr><td class="field-name">endDate</td><td class="field-type">string</td><td class="field-required no">否</td><td>结束日期</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"total"</span>: <span class="op-code-num">15680.50</span>,
+    <span class="op-code-key">"currency"</span>: <span class="op-code-str">"CNY"</span>,
+    <span class="op-code-key">"items"</span>: [
+      { <span class="op-code-key">"feeType"</span>: <span class="op-code-str">"仓储费"</span>, <span class="op-code-key">"amount"</span>: <span class="op-code-num">1200.00</span> }
+    ]
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 查询账单 ====== -->
+        <div class="op-doc-page" id="page-get-bills">
+          <h1 class="op-doc-page-title">查询账单</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-get">GET</span>
+            <span class="op-api-path">/api/v1/bills</span>
+          </div>
+          <div class="op-api-desc">查询月度/周期账单列表和详情</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-filter-3-line"></i>查询参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>参数名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">year</td><td class="field-type">integer</td><td class="field-required no">否</td><td>年份，默认当前年</td></tr>
+                <tr><td class="field-name">month</td><td class="field-type">integer</td><td class="field-required no">否</td><td>月份，默认当前月</td></tr>
+                <tr><td class="field-name">status</td><td class="field-type">string</td><td class="field-required no">否</td><td>账单状态（PENDING/CONFIRMED/PAID）</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"billNo"</span>: <span class="op-code-str">"BILL-202405"</span>,
+    <span class="op-code-key">"period"</span>: <span class="op-code-str">"2024-05"</span>,
+    <span class="op-code-key">"totalAmount"</span>: <span class="op-code-num">45680.00</span>,
+    <span class="op-code-key">"status"</span>: <span class="op-code-str">"CONFIRMED"</span>
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 回调事件 - 事件类型与数据结构 ====== -->
+        <div class="op-doc-page" id="page-callback-events">
+          <h1 class="op-doc-page-title">事件类型与数据结构</h1>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-flashlight-line"></i>支持的事件类型</div>
+            <p class="op-doc-text">系统会在特定业务事件发生时，向配置的回调地址推送事件通知。以下是所有支持的事件类型：</p>
+
+            <div class="op-event-card">
+              <div class="op-event-card-title"><code>order.created</code> 订单创建</div>
+              <div class="op-event-card-desc">当新订单创建成功时触发</div>
+            </div>
+            <div class="op-event-card">
+              <div class="op-event-card-title"><code>order.status_changed</code> 订单状态变更</div>
+              <div class="op-event-card-desc">当订单状态发生变化时触发（如PENDING -> PROCESSING -> COMPLETED）</div>
+            </div>
+            <div class="op-event-card">
+              <div class="op-event-card-title"><code>inbound.received</code> 入仓收货确认</div>
+              <div class="op-event-card-desc">当仓库完成入仓收货操作时触发</div>
+            </div>
+            <div class="op-event-card">
+              <div class="op-event-card-title"><code>outbound.shipped</code> 出仓发货确认</div>
+              <div class="op-event-card-desc">当出仓订单完成发货装车时触发</div>
+            </div>
+            <div class="op-event-card">
+              <div class="op-event-card-title"><code>inventory.warning</code> 库存预警</div>
+              <div class="op-event-card-desc">当库存低于安全库存阈值时触发</div>
+            </div>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-code-s-slash-line"></i>事件数据结构</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"eventId"</span>: <span class="op-code-str">"evt_a1b2c3d4e5"</span>,
+  <span class="op-code-key">"eventType"</span>: <span class="op-code-str">"order.status_changed"</span>,
+  <span class="op-code-key">"timestamp"</span>: <span class="op-code-str">"2024-05-24T10:30:00Z"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"orderNo"</span>: <span class="op-code-str">"ORD-2024-001"</span>,
+    <span class="op-code-key">"oldStatus"</span>: <span class="op-code-str">"PENDING"</span>,
+    <span class="op-code-key">"newStatus"</span>: <span class="op-code-str">"PROCESSING"</span>
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 回调机制说明 ====== -->
+        <div class="op-doc-page" id="page-callback-mechanism">
+          <h1 class="op-doc-page-title">回调机制说明</h1>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-flow-chart"></i>回调流程</div>
+            <p class="op-doc-text">
+              当业务事件发生时，系统会向开发者配置的Webhook URL发送HTTP POST请求。
+              开发者需要在收到请求后返回HTTP 200状态码表示接收成功。
+            </p>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-refresh-line"></i>重试机制</div>
+            <table class="op-doc-table">
+              <thead><tr><th>重试次数</th><th>间隔</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td>第1次</td><td>立即</td><td>首次推送</td></tr>
+                <tr><td>第2次</td><td>30秒后</td><td>-</td></tr>
+                <tr><td>第3次</td><td>5分钟后</td><td>-</td></tr>
+                <tr><td>第4次</td><td>30分钟后</td><td>最终重试</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-shield-check-line"></i>签名验证</div>
+            <p class="op-doc-text">每个回调请求在Header中携带签名，用于验证请求来源的真实性：</p>
+            <div class="op-code-block">
+              <span class="op-code-lang">HTTP Header</span>
+<pre>X-SDMS-Signature: sha256=hmac_sha256(webhook_secret, request_body)</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 批量导入订单 ====== -->
+        <div class="op-doc-page" id="page-post-batch-orders">
+          <h1 class="op-doc-page-title">批量导入订单</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-post">POST</span>
+            <span class="op-api-path">/api/v1/orders/batch</span>
+          </div>
+          <div class="op-api-desc">批量创建订单，单次最多支持100条</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-code-s-slash-line"></i>Body参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">orders</td><td class="field-type">array</td><td class="field-required yes">是</td><td>订单数组，每项结构同创建订单接口</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: {
+    <span class="op-code-key">"totalCount"</span>: <span class="op-code-num">3</span>,
+    <span class="op-code-key">"successCount"</span>: <span class="op-code-num">2</span>,
+    <span class="op-code-key">"failCount"</span>: <span class="op-code-num">1</span>,
+    <span class="op-code-key">"results"</span>: [
+      { <span class="op-code-key">"sourceOrderNo"</span>: <span class="op-code-str">"SO-001"</span>, <span class="op-code-key">"orderNo"</span>: <span class="op-code-str">"ORD-2024-001"</span>, <span class="op-code-key">"success"</span>: <span class="op-code-bool">true</span> },
+      { <span class="op-code-key">"sourceOrderNo"</span>: <span class="op-code-str">"SO-002"</span>, <span class="op-code-key">"orderNo"</span>: <span class="op-code-str">"ORD-2024-002"</span>, <span class="op-code-key">"success"</span>: <span class="op-code-bool">true</span> },
+      { <span class="op-code-key">"sourceOrderNo"</span>: <span class="op-code-str">"SO-003"</span>, <span class="op-code-key">"success"</span>: <span class="op-code-bool">false</span>, <span class="op-code-key">"error"</span>: <span class="op-code-str">"仓库编码不存在"</span> }
+    ]
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 批量查询库存 ====== -->
+        <div class="op-doc-page" id="page-post-batch-inventory">
+          <h1 class="op-doc-page-title">批量查询库存</h1>
+          <div class="op-api-header-bar">
+            <span class="op-method-tag op-method-post">POST</span>
+            <span class="op-api-path">/api/v1/inventory/batch</span>
+          </div>
+          <div class="op-api-desc">批量查询多个SKU的库存信息，单次最多支持200个SKU</div>
+
+          <div class="op-doc-section">
+            <div class="op-doc-section-title"><i class="ri-code-s-slash-line"></i>Body参数</div>
+            <table class="op-doc-table">
+              <thead><tr><th>字段名</th><th>类型</th><th>必填</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td class="field-name">warehouseCode</td><td class="field-type">string</td><td class="field-required yes">是</td><td>仓库编码</td></tr>
+                <tr><td class="field-name">skus</td><td class="field-type">array</td><td class="field-required yes">是</td><td>SKU编码数组</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="op-doc-section">
+            <div class="op-response-label success"><i class="ri-check-line"></i>成功响应示例</div>
+            <div class="op-code-block">
+              <span class="op-code-lang">JSON</span>
+<pre>{
+  <span class="op-code-key">"code"</span>: <span class="op-code-num">0</span>,
+  <span class="op-code-key">"message"</span>: <span class="op-code-str">"success"</span>,
+  <span class="op-code-key">"data"</span>: [
+    { <span class="op-code-key">"sku"</span>: <span class="op-code-str">"SKU001"</span>, <span class="op-code-key">"qty"</span>: <span class="op-code-num">500</span>, <span class="op-code-key">"available"</span>: <span class="op-code-num">320</span> },
+    { <span class="op-code-key">"sku"</span>: <span class="op-code-str">"SKU002"</span>, <span class="op-code-key">"qty"</span>: <span class="op-code-num">0</span>, <span class="op-code-key">"available"</span>: <span class="op-code-num">0</span> }
+  ]
+}</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== 更新日志 ====== -->
+        <div class="op-doc-page" id="page-changelog">
+          <h1 class="op-doc-page-title">更新日志</h1>
+
+          <div class="op-changelog-item">
+            <div class="op-changelog-meta">
+              <span class="op-changelog-date">2026-06-01</span>
+              <span class="op-changelog-scope">推送接口</span>
+              <span class="op-changelog-type breaking">Breaking Change</span>
+            </div>
+            <div class="op-changelog-content">创建订单接口新增<code>sourceOrderNo</code>必填字段。未传该字段的请求将返回10003错误。请所有接入方在2026-06-15前完成适配。</div>
+          </div>
+
+          <div class="op-changelog-item">
+            <div class="op-changelog-meta">
+              <span class="op-changelog-date">2026-05-20</span>
+              <span class="op-changelog-scope">查询接口</span>
+              <span class="op-changelog-type feature">新增功能</span>
+            </div>
+            <div class="op-changelog-content">库存查询接口新增<code>warehouseCode</code>筛选参数，支持按仓库维度查询库存。</div>
+          </div>
+
+          <div class="op-changelog-item">
+            <div class="op-changelog-meta">
+              <span class="op-changelog-date">2026-05-10</span>
+              <span class="op-changelog-scope">批量接口</span>
+              <span class="op-changelog-type feature">新增功能</span>
+            </div>
+            <div class="op-changelog-content">新增批量查询库存接口<code>POST /api/v1/inventory/batch</code>，支持单次查询最多200个SKU。</div>
+          </div>
+
+          <div class="op-changelog-item">
+            <div class="op-changelog-meta">
+              <span class="op-changelog-date">2026-04-28</span>
+              <span class="op-changelog-scope">回调事件</span>
+              <span class="op-changelog-type feature">新增功能</span>
+            </div>
+            <div class="op-changelog-content">新增<code>inventory.warning</code>库存预警回调事件，当SKU库存低于安全阈值时自动推送。</div>
+          </div>
+
+          <div class="op-changelog-item">
+            <div class="op-changelog-meta">
+              <span class="op-changelog-date">2026-04-15</span>
+              <span class="op-changelog-scope">推送接口</span>
+              <span class="op-changelog-type fix">问题修复</span>
+            </div>
+            <div class="op-changelog-content">修复创建订单接口在并发场景下偶发订单号重复的问题（错误码20001）。</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast容器 -->
+<div class="op-toast-stack" id="opToastStack"></div>
+
+<script src="../assets/js/open-platform.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---- 初始化顶部导航栏（公开页面，精简菜单） ---- */
+  OP.renderTopNav(OP.PUBLIC_MENUS, 'docs', { public: true });
+
+  /* ---- 目录树数据 ---- */
+  var tocData = [
+    { id: 'quickstart', icon: '📖', label: '快速开始', children: null },
+    {
+      id: 'group-trunk', icon: '✈️', label: '干线业务', children: [
+        { id: 'post-orders', label: '创建订单 POST /api/v1/orders' },
+        { id: 'put-orders', label: '修改订单 PUT /api/v1/orders/{orderNo}' },
+        { id: 'delete-orders', label: '取消订单 DELETE /api/v1/orders/{orderNo}' },
+        { id: 'post-inbound', label: '入仓指令 POST /api/v1/inbound/commands' },
+        { id: 'post-vehicles', label: '同步车辆 POST /api/v1/vehicles' },
+        { id: 'get-order-detail', label: '查询订单 GET /api/v1/orders/{orderNo}' },
+        { id: 'get-inventory', label: '查询库存 GET /api/v1/inventory' },
+        { id: 'get-fees', label: '查询费用 GET /api/v1/fees' }
+      ]
+    },
+    {
+      id: 'group-dropship', icon: '🚚', label: '一件代发', children: [
+        { id: 'post-orders', label: '创建订单 POST /api/v1/orders' },
+        { id: 'get-inventory', label: '查询库存 GET /api/v1/inventory' },
+        { id: 'get-fees', label: '查询费用 GET /api/v1/fees' },
+        { id: 'get-bills', label: '查询账单 GET /api/v1/bills' }
+      ]
+    },
+    {
+      id: 'group-return', icon: '↩️', label: '退件重派', children: [
+        { id: 'post-orders', label: '创建订单 POST /api/v1/orders（退件单）' },
+        { id: 'get-inventory', label: '查询库存 GET /api/v1/inventory' }
+      ]
+    },
+    {
+      id: 'group-stockup', icon: '📦', label: '备货中转', children: [
+        { id: 'post-batch-orders', label: '批量导入订单 POST /api/v1/orders/batch' },
+        { id: 'post-batch-inventory', label: '批量查询库存 POST /api/v1/inventory/batch' },
+        { id: 'get-inventory', label: '查询库存 GET /api/v1/inventory' },
+        { id: 'post-files', label: '上传附件 POST /api/v1/files' }
+      ]
+    },
+    {
+      id: 'group-callback', icon: '📬', label: '回调事件', children: [
+        { id: 'callback-events', label: '事件类型与数据结构' },
+        { id: 'callback-mechanism', label: '回调机制说明' }
+      ]
+    },
+    { id: 'changelog', icon: '📋', label: '更新日志', children: null }
+  ];
+
+  /* ---- 渲染目录树 ---- */
+  function renderToc() {
+    var container = document.getElementById('docsToc');
+    var html = '';
+
+    for (var i = 0; i < tocData.length; i++) {
+      var group = tocData[i];
+
+      if (!group.children) {
+        // 叶子节点（无子级）
+        var leafCls = group.id === 'quickstart' ? 'op-toc-item active' : 'op-toc-item';
+        html += '<div class="op-toc-item ' + leafCls + '" data-page="' + group.id + '" style="padding-left:20px">';
+        html += group.icon + ' ' + group.label;
+        html += '</div>';
+      } else {
+        // 可展开分组
+        html += '<div class="op-toc-group" data-group="' + group.id + '">';
+        html += '  <div class="op-toc-group-header" onclick="toggleTocGroup(this)">';
+        html += '    <i class="ri-arrow-down-s-line op-toc-arrow"></i>';
+        html += '    <span class="op-toc-group-icon">' + group.icon + '</span>';
+        html += '    <span>' + group.label + '</span>';
+        html += '  </div>';
+        html += '  <div class="op-toc-children">';
+
+        for (var j = 0; j < group.children.length; j++) {
+          var child = group.children[j];
+          html += '<div class="op-toc-item" data-page="' + child.id + '">' + child.label + '</div>';
+        }
+
+        html += '  </div>';
+        html += '</div>';
+      }
+    }
+
+    container.innerHTML = html;
+
+    // 绑定点击事件
+    var items = container.querySelectorAll('.op-toc-item');
+    for (var k = 0; k < items.length; k++) {
+      items[k].addEventListener('click', onTocItemClick);
+    }
+  }
+
+  /* ---- 目录树展开/折叠 ---- */
+  window.toggleTocGroup = function (headerEl) {
+    var group = headerEl.parentElement;
+    group.classList.toggle('collapsed');
+  };
+
+  /* ---- 目录项点击 ---- */
+  function onTocItemClick() {
+    var pageId = this.getAttribute('data-page');
+
+    // 更新目录高亮
+    var allItems = document.querySelectorAll('.op-toc-item');
+    for (var i = 0; i < allItems.length; i++) {
+      allItems[i].classList.remove('active');
+    }
+    this.classList.add('active');
+
+    // 切换页面
+    var allPages = document.querySelectorAll('.op-doc-page');
+    for (var j = 0; j < allPages.length; j++) {
+      allPages[j].classList.remove('active');
+    }
+
+    var targetPage = document.getElementById('page-' + pageId);
+    if (targetPage) {
+      targetPage.classList.add('active');
+    }
+
+    // 滚动到顶部
+    document.getElementById('docsContent').scrollTop = 0;
+  }
+
+  /* ---- 在线调试：Key切换 ---- */
+  window.onKeyChange = function (debugId) {
+    var select = document.getElementById('keySelect-' + debugId);
+    var warning = document.getElementById('debugger-warning-' + debugId);
+    if (!select || !warning) return;
+
+    if (select.value === 'prod') {
+      warning.classList.add('show');
+    } else {
+      warning.classList.remove('show');
+    }
+  };
+
+  /* ---- 在线调试：发送请求（模拟） ---- */
+  window.sendRequest = function (debugId) {
+    var area = document.getElementById('responseArea-' + debugId);
+    var sendBtn = document.getElementById('sendBtn-' + debugId);
+    if (!area) return;
+
+    // 禁用按钮
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<i class="ri-loader-4-line" style="animation:op-spin 1s linear infinite"></i>发送中...';
+    }
+
+    // 显示加载
+    area.innerHTML = '<div class="op-debugger-loading show"><i class="ri-loader-4-line"></i><span>请求发送中...</span></div>';
+
+    // 模拟延迟
+    setTimeout(function () {
+      var select = document.getElementById('keySelect-' + debugId);
+      var isTest = !select || select.value === 'test';
+
+      // 生成mock响应
+      var response = generateMockResponse(debugId, isTest);
+
+      // 渲染响应
+      var statusCls = response.status === 200 ? 'status-200' : 'status-400';
+      var html = '';
+      html += '<div class="op-debugger-response-meta">';
+      html += '  <span class="op-debugger-status ' + statusCls + '">';
+      html += '    <i class="ri-checkbox-circle-line"></i>' + response.status;
+      html += '  </span>';
+      html += '  <span class="op-debugger-time">耗时：' + response.time + 'ms</span>';
+      html += '</div>';
+      html += '<div class="op-debugger-response-body"><pre>' + syntaxHighlight(JSON.stringify(response.body, null, 2)) + '</pre></div>';
+
+      area.innerHTML = html;
+
+      // 恢复按钮
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<i class="ri-send-plane-fill"></i>发送请求';
+      }
+    }, 1500 + Math.random() * 1000);
+  };
+
+  /* ---- 生成Mock响应 ---- */
+  function generateMockResponse(debugId, isTest) {
+    var base = {
+      time: Math.floor(100 + Math.random() * 200),
+      status: 200,
+      body: { code: 0, message: 'success', data: {} }
+    };
+
+    // 根据接口类型返回不同的mock数据
+    var mockData = {
+      'post-orders': {
+        orderNo: 'ORD-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 999)).padStart(3, '0'),
+        status: 'PENDING',
+        createdAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z')
+      },
+      'put-orders': {
+        orderNo: 'ORD-2024-001',
+        status: 'PENDING',
+        updatedAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z')
+      },
+      'delete-orders': {
+        orderNo: 'ORD-2024-001',
+        status: 'CANCELLED',
+        cancelledAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z')
+      }
+    };
+
+    if (mockData[debugId]) {
+      base.body.data = mockData[debugId];
+    } else {
+      base.body.data = { message: 'Mock response for ' + debugId };
+    }
+
+    if (isTest) {
+      base.body.data._mock = true;
+    }
+
+    return base;
+  }
+
+  /* ---- JSON语法高亮 ---- */
+  function syntaxHighlight(json) {
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+      var cls = 'op-code-num';
+      if (/^"/.test(match)) {
+        if (/:$/.test(match)) {
+          cls = 'op-code-key';
+        } else {
+          cls = 'op-code-str';
+        }
+      } else if (/true|false/.test(match)) {
+        cls = 'op-code-bool';
+      } else if (/null/.test(match)) {
+        cls = 'op-code-bool';
+      }
+      return '<span class="' + cls + '">' + match + '</span>';
+    });
+  }
+
+  /* ---- 初始化 ---- */
+  renderToc();
+
+})();
+</script>
+</body>
+</html>

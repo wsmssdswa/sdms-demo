@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开放平台 - API Key管理</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+<link rel="stylesheet" href="../assets/css/open-platform.css">
+<style>
+/* === Key卡片网格布局 === */
+.op-key-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* === Key卡片 === */
+.op-key-card {
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  box-shadow: var(--op-card-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+.op-key-card.is-disabled {
+  opacity: 0.65;
+}
+
+.op-key-card.is-disabled .op-key-card-head,
+.op-key-card.is-disabled .op-key-card-body {
+  filter: grayscale(0.4);
+}
+
+/* 测试Key蓝色提示条 */
+.op-key-card-notice {
+  padding: 8px 20px;
+  background: var(--color-primary-light, #e3f2ff);
+  color: var(--color-primary, #1684fc);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.op-key-card-notice i {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.op-key-card-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--op-card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.op-key-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-key-card-body {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Key值展示行 */
+.op-key-value-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-bg-secondary, #f4f5f7);
+  border-radius: 4px;
+  border: 1px solid var(--color-border, #e7eaee);
+}
+
+.op-key-value-text {
+  flex: 1;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 13px;
+  color: var(--color-text-primary, #1c1d1e);
+  letter-spacing: 0.5px;
+  user-select: all;
+}
+
+.op-key-copy-btn {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 3px;
+  background: #fff;
+  font-size: 12px;
+  color: var(--color-text-secondary, #65686c);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.op-key-copy-btn:hover {
+  border-color: var(--color-primary, #1684fc);
+  color: var(--color-primary, #1684fc);
+}
+
+/* 授权接口范围标签组（只读） */
+.op-key-scope-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.op-key-scope-tag {
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--color-primary-light, #e3f2ff);
+  color: var(--color-primary, #1684fc);
+  border: 1px solid var(--color-primary-lighter, #d5e9fe);
+}
+
+/* 配额进度区 */
+.op-key-quota {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.op-key-quota-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-key-quota-value {
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-key-quota-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-bg-tertiary, #edeff2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.op-key-quota-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.op-key-quota-fill.green  { background: var(--color-success, #007e22); }
+.op-key-quota-fill.yellow { background: var(--color-warning, #ff8225); }
+.op-key-quota-fill.red    { background: var(--color-error, #ed0404); }
+
+/* 信息行 */
+.op-key-info-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-key-info-row i {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.op-key-info-row + .op-key-info-row {
+  margin-top: -8px;
+}
+
+/* 操作按钮区 */
+.op-key-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-border, #e7eaee);
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.op-key-actions .op-btn {
+  flex: 1;
+  height: 32px;
+  font-size: 12px;
+}
+
+/* === 弹窗增强 === */
+.op-modal-lg {
+  width: 640px;
+}
+
+/* 复制Key弹窗 */
+.op-copy-key-value {
+  padding: 12px 16px;
+  background: var(--color-bg-secondary, #f4f5f7);
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 4px;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 13px;
+  color: var(--color-text-primary, #1c1d1e);
+  word-break: break-all;
+  line-height: 1.6;
+  user-select: all;
+  cursor: text;
+}
+
+.op-copy-key-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--color-error, #ed0404);
+  font-weight: 600;
+}
+
+.op-copy-key-warning i {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* 确认输入框 */
+.op-confirm-input-wrap {
+  margin-top: 16px;
+}
+
+.op-confirm-input-label {
+  font-size: 12px;
+  color: var(--color-text-secondary, #65686c);
+  margin-bottom: 6px;
+}
+
+.op-confirm-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  color: var(--color-text-primary, #1c1d1e);
+  transition: border-color 0.2s ease;
+}
+
+.op-confirm-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #1684fc);
+  box-shadow: 0 0 0 2px rgba(22, 132, 252, 0.15);
+}
+
+.op-confirm-input.error {
+  border-color: var(--color-error, #ed0404);
+}
+
+/* === 详情弹窗 === */
+.op-detail-section {
+  margin-bottom: 20px;
+}
+
+.op-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.op-detail-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+}
+
+/* IP白名单区 */
+.op-ip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.op-ip-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--color-bg-secondary, #f4f5f7);
+  border-radius: 4px;
+  border: 1px solid var(--color-border, #e7eaee);
+}
+
+.op-ip-item-text {
+  flex: 1;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 13px;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-ip-item-del {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  color: var(--color-text-tertiary, #909499);
+  font-size: 14px;
+  transition: all 0.15s ease;
+}
+
+.op-ip-item-del:hover {
+  background: var(--color-error-light, #fff3f3);
+  color: var(--color-error, #ed0404);
+}
+
+.op-ip-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.op-ip-add-row .op-input {
+  flex: 1;
+  height: 32px;
+  font-size: 12px;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+}
+
+.op-ip-add-row .op-btn {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.op-ip-hint {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  margin-top: 6px;
+}
+
+/* 调用趋势迷你图（CSS柱状图） */
+.op-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 100px;
+  padding: 0 4px;
+}
+
+.op-chart-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.op-chart-bar {
+  width: 100%;
+  max-width: 40px;
+  border-radius: 3px 3px 0 0;
+  background: var(--color-primary, #1684fc);
+  transition: height 0.4s ease;
+  min-height: 4px;
+}
+
+.op-chart-bar-label {
+  font-size: 10px;
+  color: var(--color-text-tertiary, #909499);
+  white-space: nowrap;
+}
+
+.op-chart-bar-value {
+  font-size: 10px;
+  color: var(--color-text-secondary, #65686c);
+  font-weight: 600;
+}
+
+/* 配额详情 */
+.op-quota-detail {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.op-quota-detail-main {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-quota-detail-main span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-tertiary, #909499);
+}
+
+/* 风险提示 */
+.op-risk-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--color-error-light, #fff3f3);
+  border: 1px solid #ffccc7;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.op-risk-notice i {
+  font-size: 20px;
+  color: var(--color-error, #ed0404);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.op-risk-notice-text {
+  font-size: 13px;
+  color: var(--color-text-secondary, #65686c);
+  line-height: 1.6;
+}
+
+/* danger实心按钮 */
+.op-btn-danger-solid {
+  background: var(--color-error, #ed0404);
+  border-color: var(--color-error, #ed0404);
+  color: #fff;
+}
+
+.op-btn-danger-solid:hover {
+  background: #d70303;
+  border-color: #d70303;
+}
+
+.op-btn-danger-solid:disabled {
+  background: #f5a3a3;
+  border-color: #f5a3a3;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* === 应用分组 === */
+.op-app-group {
+  margin-bottom: 28px;
+}
+
+.op-app-group:last-child {
+  margin-bottom: 0;
+}
+
+.op-app-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+}
+
+.op-app-group-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--color-primary-light, #e3f2ff);
+  color: var(--color-primary, #1684fc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.op-app-group-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-app-group-desc {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+  margin-left: 4px;
+}
+
+/* === 响应式 === */
+@media (max-width: 1100px) {
+  .op-key-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<header id="opTopNav"></header>
+<div class="op-page no-sidebar">
+
+  <!-- 右侧主区域 -->
+  <div class="op-main">
+
+    <!-- 顶部标题栏 -->
+    <div class="op-header">
+      <div class="op-header-breadcrumb">
+        <a href="#">开放平台</a>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>Key管理</span>
+      </div>
+      <div class="op-header-actions">
+        <a href="#" class="op-btn op-btn-default" style="font-size:12px;height:30px;padding:0 12px">
+          <i class="ri-question-line"></i> 帮助文档
+        </a>
+      </div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="op-content">
+
+      <!-- 页面标题 -->
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <h2 style="margin:0;font-size:18px;font-weight:700;color:var(--color-text-primary)">API Key管理</h2>
+      </div>
+
+      <!-- Keys grouped by application -->
+      <div id="keysContainer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast容器 -->
+<div class="op-toast-stack" id="opToastStack"></div>
+
+<!-- ====== 复制Key弹窗 ====== -->
+<div class="op-modal-mask" id="copyKeyModal">
+  <div class="op-modal">
+    <div class="op-modal-head">
+      <span class="op-modal-title">API Key完整值</span>
+      <button class="op-modal-close" onclick="closeModal('copyKeyModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div class="op-copy-key-value" id="copyKeyValue"></div>
+      <div class="op-copy-key-warning">
+        <i class="ri-alarm-warning-line"></i>
+        <span>请妥善保管，关闭后无法再次查看完整Key值</span>
+      </div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('copyKeyModal')">关闭</button>
+      <button class="op-btn op-btn-primary" id="copyKeyBtn" onclick="doCopyKey()">
+        <i class="ri-file-copy-line"></i>复制到剪贴板
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 重新生成确认弹窗 ====== -->
+<div class="op-modal-mask" id="regenerateModal">
+  <div class="op-modal">
+    <div class="op-modal-head">
+      <span class="op-modal-title">确认重新生成Key</span>
+      <button class="op-modal-close" onclick="closeModal('regenerateModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div class="op-risk-notice">
+        <i class="ri-alarm-warning-line"></i>
+        <div class="op-risk-notice-text">
+          重新生成后，旧Key将在<strong>24小时后失效</strong>。使用旧Key的所有服务需要更新。
+        </div>
+      </div>
+      <div class="op-confirm-input-wrap">
+        <div class="op-confirm-input-label">请输入 <strong>CONFIRM</strong> 确认操作</div>
+        <input class="op-confirm-input" id="regenerateConfirmInput" type="text" placeholder="CONFIRM" autocomplete="off">
+      </div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('regenerateModal')">取消</button>
+      <button class="op-btn op-btn-danger-solid" id="regenerateConfirmBtn" disabled onclick="doRegenerate()">
+        <i class="ri-refresh-line"></i>确认重新生成
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 禁用确认弹窗 ====== -->
+<div class="op-modal-mask" id="disableModal">
+  <div class="op-modal">
+    <div class="op-modal-head">
+      <span class="op-modal-title" id="disableModalTitle">确认禁用Key</span>
+      <button class="op-modal-close" onclick="closeModal('disableModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div class="op-alert op-alert-warning" style="margin:0">
+        <i class="ri-error-warning-line"></i>
+        <div id="disableModalText">禁用后，使用该Key的所有接口调用将立即被拒绝。</div>
+      </div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('disableModal')">取消</button>
+      <button class="op-btn op-btn-danger-solid" id="disableConfirmBtn" onclick="doDisable()">
+        <i class="ri-forbid-line"></i>确认禁用
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== Key详情弹窗（大弹窗） ====== -->
+<div class="op-modal-mask" id="detailModal">
+  <div class="op-modal op-modal-lg">
+    <div class="op-modal-head">
+      <span class="op-modal-title" id="detailModalTitle">Key详情</span>
+      <button class="op-modal-close" onclick="closeModal('detailModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body" style="max-height:65vh;overflow-y:auto;padding:20px 24px">
+
+      <!-- 基本信息 -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">基本信息</div>
+        <div class="op-info-row"><span class="op-info-label">所属应用</span><span class="op-info-value" id="detailAppName"></span></div>
+        <div class="op-info-row"><span class="op-info-label">Key名称</span><span class="op-info-value" id="detailKeyName">生产环境Key</span></div>
+        <div class="op-info-row"><span class="op-info-label">Key值</span><span class="op-info-value" style="font-family:monospace;font-size:12px" id="detailKeyMasked">sdms_****a1b2</span></div>
+        <div class="op-info-row"><span class="op-info-label">状态</span><span class="op-info-value" id="detailKeyStatus"></span></div>
+        <div class="op-info-row"><span class="op-info-label">创建时间</span><span class="op-info-value" id="detailKeyCreated">2026-05-15 09:30:00</span></div>
+        <div class="op-info-row"><span class="op-info-label">最近调用</span><span class="op-info-value" id="detailKeyLastCall">2026-06-09 14:22:18</span></div>
+      </div>
+
+      <!-- 授权接口范围 -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">授权接口范围</div>
+        <div class="op-key-scope-tags" id="detailScopes">
+          <span class="op-key-scope-tag">推送接口</span>
+          <span class="op-key-scope-tag">查询接口</span>
+          <span class="op-key-scope-tag">回调事件</span>
+          <span class="op-key-scope-tag">批量接口</span>
+        </div>
+      </div>
+
+      <!-- IP白名单管理 -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">IP白名单</div>
+        <div class="op-ip-list" id="ipList"></div>
+        <div class="op-ip-add-row">
+          <input class="op-input" id="ipAddInput" type="text" placeholder="输入IP地址，如 192.168.1.100">
+          <button class="op-btn op-btn-primary" onclick="addIP()">
+            <i class="ri-add-line"></i>添加
+          </button>
+        </div>
+        <div class="op-ip-hint">未配置IP白名单时，不限制请求来源</div>
+      </div>
+
+      <!-- 近7天调用趋势 -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">近7天调用趋势</div>
+        <div class="op-chart-bars" id="chartBars"></div>
+      </div>
+
+      <!-- 配额使用详情 -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">配额使用详情</div>
+        <div class="op-quota-detail">
+          <div class="op-quota-detail-main" id="detailQuotaMain">3,247 <span>/ 10,000</span></div>
+          <div>
+            <div style="font-size:12px;color:var(--color-text-tertiary)">配额重置时间</div>
+            <div style="font-size:13px;color:var(--color-text-primary);font-weight:600" id="detailQuotaReset">2026-06-10 00:00:00</div>
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div class="op-progress" style="height:8px">
+            <div class="op-progress-bar" id="detailQuotaBar" style="width:32.47%"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('detailModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 新Key展示弹窗（重新生成后） ====== -->
+<div class="op-modal-mask" id="newKeyModal">
+  <div class="op-modal">
+    <div class="op-modal-head">
+      <span class="op-modal-title">新Key已生成</span>
+      <button class="op-modal-close" onclick="closeModal('newKeyModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div class="op-alert op-alert-success" style="margin-bottom:16px">
+        <i class="ri-check-line"></i>
+        <div>新Key已生成成功。旧Key将在24小时后失效，请尽快更新相关服务。</div>
+      </div>
+      <div class="op-copy-key-value" id="newKeyValue"></div>
+      <div class="op-copy-key-warning">
+        <i class="ri-alarm-warning-line"></i>
+        <span>请妥善保管，关闭后无法再次查看完整Key值</span>
+      </div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('newKeyModal')">关闭</button>
+      <button class="op-btn op-btn-primary" onclick="copyNewKey()">
+        <i class="ri-file-copy-line"></i>复制到剪贴板
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/open-platform.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---- 初始化顶栏 ---- */
+  if (!OP.requireAuth()) return;
+  OP.renderTopNav(OP.DEV_MENUS, 'apps');
+
+  /* ---- 从OP获取应用数据，构建Key索引 ---- */
+  var apps = OP.getApps();
+
+  // keyMap: "appId:env" -> key detail object
+  var keyMap = {};
+  apps.forEach(function (app) {
+    ['prod', 'test'].forEach(function (env) {
+      var keyObj = env === 'prod' ? app.prodKey : app.testKey;
+      var uid = app.id + ':' + env;
+      keyMap[uid] = {
+        appId: app.id,
+        appName: app.name,
+        appDesc: app.description,
+        appPermissions: app.permissions || [],
+        env: env,
+        name: env === 'prod' ? '生产环境Key' : '测试环境Key',
+        fullKey: keyObj.value,
+        maskedKey: keyObj.value.slice(0, 3) + '****' + keyObj.value.slice(-4),
+        status: keyObj.status,
+        created: app.createdAt,
+        lastCall: env === 'prod' ? '2026-06-09 14:22:18' : '2026-06-08 17:05:42',
+        quotaUsed: keyObj.used,
+        quotaTotal: keyObj.quota,
+        quotaReset: '2026-06-12 00:00:00',
+        scopes: app.permissions || [],
+        ipWhitelist: env === 'prod'
+          ? ['192.168.1.100', '10.0.0.55', '172.16.20.8']
+          : ['192.168.1.100'],
+        chart: env === 'prod'
+          ? [480, 520, 460, 510, 490, 500, 287]
+          : [25, 18, 30, 22, 28, 15, 18]
+      };
+    });
+  });
+
+  /* 当前操作的Key UID */
+  var currentUID = null;
+
+  /* ---- 弹窗工具函数 ---- */
+  function openModal(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      requestAnimationFrame(function () { el.classList.add('visible'); });
+    }
+  }
+
+  window.closeModal = function (id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('visible');
+    }
+  };
+
+  // 点击遮罩关闭
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('op-modal-mask') && e.target.classList.contains('visible')) {
+      e.target.classList.remove('visible');
+    }
+  });
+
+  /* ---- 配额进度条颜色 ---- */
+  function getQuotaColorClass(used, total) {
+    var pct = used / total * 100;
+    if (pct < 60) return 'green';
+    if (pct < 85) return 'yellow';
+    return 'red';
+  }
+
+  function getProgressCls(used, total) {
+    var pct = used / total * 100;
+    if (pct < 60) return 'success';
+    if (pct < 85) return 'warning';
+    return 'danger';
+  }
+
+  /* ---- 动态渲染Key卡片 ---- */
+  function renderAllCards() {
+    var container = document.getElementById('keysContainer');
+    var html = '';
+
+    apps.forEach(function (app) {
+      // 应用分组头
+      html += '<div class="op-app-group">';
+      html += '<div class="op-app-group-header">';
+      html += '<div class="op-app-group-icon"><i class="ri-apps-2-line"></i></div>';
+      html += '<span class="op-app-group-name">' + escHtml(app.name) + '</span>';
+      if (app.description) {
+        html += '<span class="op-app-group-desc">— ' + escHtml(app.description) + '</span>';
+      }
+      html += '</div>';
+
+      // Key卡片网格
+      html += '<div class="op-key-grid">';
+
+      // 生产Key
+      html += buildKeyCard(app.id, 'prod');
+      // 测试Key
+      html += buildKeyCard(app.id, 'test');
+
+      html += '</div>'; // .op-key-grid
+      html += '</div>'; // .op-app-group
+    });
+
+    container.innerHTML = html;
+  }
+
+  function escHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function buildKeyCard(appId, env) {
+    var uid = appId + ':' + env;
+    var d = keyMap[uid];
+    var isTest = env === 'test';
+    var disabled = d.status === 'disabled';
+    var quotaPct = (d.quotaUsed / d.quotaTotal * 100);
+    var quotaColor = getQuotaColorClass(d.quotaUsed, d.quotaTotal);
+
+    var html = '';
+    html += '<div class="op-key-card' + (disabled ? ' is-disabled' : '') + '" id="card-' + uid + '" data-uid="' + uid + '">';
+
+    // 测试Key提示条
+    if (isTest) {
+      html += '<div class="op-key-card-notice">';
+      html += '<i class="ri-information-line"></i>测试Key返回模拟数据，不触发真实业务';
+      html += '</div>';
+    }
+
+    // 卡片头
+    html += '<div class="op-key-card-head">';
+    html += '<div class="op-key-card-title">';
+    html += '<i class="' + (isTest ? 'ri-flask-line' : 'ri-shield-check-line') + '" style="color:var(' + (isTest ? '--color-primary' : '--color-success') + ')"></i>';
+    html += escHtml(d.name);
+    html += '</div>';
+    html += '<span class="op-status ' + (disabled ? 'op-status-disabled' : 'op-status-active') + '" id="status-' + uid + '">';
+    html += disabled ? '<i class="ri-forbid-line"></i>已禁用' : '<i class="ri-check-line"></i>正常';
+    html += '</span>';
+    html += '</div>';
+
+    // 卡片体
+    html += '<div class="op-key-card-body">';
+
+    // Key值
+    html += '<div class="op-key-value-row">';
+    html += '<span class="op-key-value-text" id="masked-' + uid + '">' + escHtml(d.maskedKey) + '</span>';
+    html += '<button class="op-key-copy-btn" onclick="showCopyKeyModal(\'' + uid + '\')">';
+    html += '<i class="ri-file-copy-line"></i>复制</button>';
+    html += '</div>';
+
+    // 授权接口范围
+    html += '<div>';
+    html += '<div style="font-size:12px;color:var(--color-text-tertiary);margin-bottom:6px">授权接口范围</div>';
+    html += '<div class="op-key-scope-tags">';
+    for (var i = 0; i < d.scopes.length; i++) {
+      html += '<span class="op-key-scope-tag">' + escHtml(d.scopes[i]) + '</span>';
+    }
+    html += '</div></div>';
+
+    // 调用配额
+    html += '<div class="op-key-quota">';
+    html += '<div class="op-key-quota-header">';
+    html += '<span>调用配额</span>';
+    html += '<span class="op-key-quota-value">' + d.quotaUsed.toLocaleString() + ' / ' + d.quotaTotal.toLocaleString() + '</span>';
+    html += '</div>';
+    html += '<div class="op-key-quota-bar">';
+    html += '<div class="op-key-quota-fill ' + quotaColor + '" style="width:' + quotaPct.toFixed(2) + '%"></div>';
+    html += '</div></div>';
+
+    // 时间信息
+    html += '<div style="display:flex;flex-direction:column;gap:4px">';
+    html += '<div class="op-key-info-row"><i class="ri-time-line"></i><span>创建时间：' + d.created + '</span></div>';
+    html += '<div class="op-key-info-row"><i class="ri-pulse-line"></i><span>最近调用：' + d.lastCall + '</span></div>';
+    html += '</div>';
+
+    // 操作按钮
+    html += '<div class="op-key-actions">';
+    html += '<button class="op-btn op-btn-primary" onclick="showDetailModal(\'' + uid + '\')">';
+    html += '<i class="ri-eye-line"></i>查看详情</button>';
+    html += '<button class="op-btn op-btn-default" id="toggleBtn-' + uid + '" onclick="handleToggle(\'' + uid + '\')">';
+    if (disabled) {
+      html += '<i class="ri-check-line"></i>启用';
+    } else {
+      html += '<i class="ri-forbid-line"></i>禁用';
+    }
+    html += '</button>';
+    html += '<button class="op-btn op-btn-danger" onclick="showRegenerateModal(\'' + uid + '\')">';
+    html += '<i class="ri-refresh-line"></i>重新生成</button>';
+    html += '</div>';
+
+    html += '</div>'; // .op-key-card-body
+    html += '</div>'; // .op-key-card
+    return html;
+  }
+
+  /* ---- 更新卡片状态 ---- */
+  function updateCardUI(uid) {
+    var d = keyMap[uid];
+    var card = document.getElementById('card-' + uid);
+    var statusEl = document.getElementById('status-' + uid);
+    var toggleBtn = document.getElementById('toggleBtn-' + uid);
+
+    if (d.status === 'disabled') {
+      card.classList.add('is-disabled');
+      statusEl.className = 'op-status op-status-disabled';
+      statusEl.innerHTML = '<i class="ri-forbid-line"></i>已禁用';
+      toggleBtn.innerHTML = '<i class="ri-check-line"></i>启用';
+      toggleBtn.onclick = function () { showEnableModal(uid); };
+    } else {
+      card.classList.remove('is-disabled');
+      statusEl.className = 'op-status op-status-active';
+      statusEl.innerHTML = '<i class="ri-check-line"></i>正常';
+      toggleBtn.innerHTML = '<i class="ri-forbid-line"></i>禁用';
+      toggleBtn.onclick = function () { showDisableModal(uid); };
+    }
+  }
+
+  /* ---- 切换按钮入口 ---- */
+  window.handleToggle = function (uid) {
+    var d = keyMap[uid];
+    if (d.status === 'disabled') {
+      showEnableModal(uid);
+    } else {
+      showDisableModal(uid);
+    }
+  };
+
+  /* ---- 复制Key弹窗 ---- */
+  window.showCopyKeyModal = function (uid) {
+    currentUID = uid;
+    var d = keyMap[uid];
+    document.getElementById('copyKeyValue').textContent = d.fullKey;
+    openModal('copyKeyModal');
+  };
+
+  window.doCopyKey = function () {
+    var d = keyMap[currentUID];
+    copyToClipboard(d.fullKey);
+    OP.showToast('Key已复制到剪贴板', 'success');
+  };
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+  }
+
+  /* ---- 重新生成确认弹窗 ---- */
+  window.showRegenerateModal = function (uid) {
+    currentUID = uid;
+    document.getElementById('regenerateConfirmInput').value = '';
+    document.getElementById('regenerateConfirmInput').classList.remove('error');
+    document.getElementById('regenerateConfirmBtn').disabled = true;
+    openModal('regenerateModal');
+  };
+
+  // CONFIRM输入验证
+  document.getElementById('regenerateConfirmInput').addEventListener('input', function () {
+    var val = this.value.trim();
+    this.classList.remove('error');
+    document.getElementById('regenerateConfirmBtn').disabled = (val !== 'CONFIRM');
+  });
+
+  window.doRegenerate = function () {
+    var val = document.getElementById('regenerateConfirmInput').value.trim();
+    if (val !== 'CONFIRM') {
+      document.getElementById('regenerateConfirmInput').classList.add('error');
+      return;
+    }
+    closeModal('regenerateModal');
+
+    // 生成新Key
+    var newKey = 'ak_' + generateRandomHex(16);
+    keyMap[currentUID].fullKey = newKey;
+    keyMap[currentUID].maskedKey = newKey.slice(0, 3) + '****' + newKey.slice(-4);
+
+    // 同步回app数据
+    syncKeyBack(currentUID);
+
+    // 更新卡片显示
+    document.getElementById('masked-' + currentUID).textContent = keyMap[currentUID].maskedKey;
+
+    // 展示新Key弹窗
+    document.getElementById('newKeyValue').textContent = newKey;
+    openModal('newKeyModal');
+    OP.showToast('Key已重新生成', 'success');
+  };
+
+  function generateRandomHex(len) {
+    var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    var result = '';
+    for (var i = 0; i < len; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  /* ---- 将keyMap中的变更同步回apps并持久化 ---- */
+  function syncKeyBack(uid) {
+    var d = keyMap[uid];
+    for (var i = 0; i < apps.length; i++) {
+      if (apps[i].id === d.appId) {
+        var keyObj = d.env === 'prod' ? apps[i].prodKey : apps[i].testKey;
+        keyObj.value = d.fullKey;
+        keyObj.status = d.status;
+        keyObj.used = d.quotaUsed;
+        keyObj.quota = d.quotaTotal;
+        break;
+      }
+    }
+    OP.saveApps(apps);
+  }
+
+  window.copyNewKey = function () {
+    var text = document.getElementById('newKeyValue').textContent;
+    copyToClipboard(text);
+    OP.showToast('新Key已复制到剪贴板', 'success');
+  };
+
+  /* ---- 禁用/启用确认弹窗 ---- */
+  window.showDisableModal = function (uid) {
+    currentUID = uid;
+    document.getElementById('disableModalTitle').textContent = '确认禁用Key';
+    document.getElementById('disableModalText').innerHTML = '禁用后，使用该Key的所有接口调用将<strong>立即被拒绝</strong>。';
+    document.getElementById('disableConfirmBtn').innerHTML = '<i class="ri-forbid-line"></i>确认禁用';
+    document.getElementById('disableConfirmBtn').onclick = function () { doDisable(); };
+    openModal('disableModal');
+  };
+
+  function showEnableModal(uid) {
+    currentUID = uid;
+    document.getElementById('disableModalTitle').textContent = '确认启用Key';
+    document.getElementById('disableModalText').innerHTML = '启用后，使用该Key的接口调用将恢复正常。';
+    document.getElementById('disableConfirmBtn').innerHTML = '<i class="ri-check-line"></i>确认启用';
+    document.getElementById('disableConfirmBtn').onclick = function () { doEnable(); };
+    openModal('disableModal');
+  }
+
+  window.doDisable = function () {
+    keyMap[currentUID].status = 'disabled';
+    syncKeyBack(currentUID);
+    updateCardUI(currentUID);
+    closeModal('disableModal');
+    OP.showToast('Key已禁用', 'success');
+  };
+
+  function doEnable() {
+    keyMap[currentUID].status = 'active';
+    syncKeyBack(currentUID);
+    updateCardUI(currentUID);
+    closeModal('disableModal');
+    OP.showToast('Key已启用', 'success');
+  }
+
+  /* ---- Key详情弹窗 ---- */
+  window.showDetailModal = function (uid) {
+    currentUID = uid;
+    var d = keyMap[uid];
+
+    // 基本信息
+    document.getElementById('detailModalTitle').textContent = d.appName + ' - ' + d.name + ' - 详情';
+    document.getElementById('detailAppName').textContent = d.appName;
+    document.getElementById('detailKeyName').textContent = d.name;
+    document.getElementById('detailKeyMasked').textContent = d.maskedKey;
+    document.getElementById('detailKeyCreated').textContent = d.created;
+    document.getElementById('detailKeyLastCall').textContent = d.lastCall;
+
+    // 状态
+    if (d.status === 'active') {
+      document.getElementById('detailKeyStatus').innerHTML =
+        '<span class="op-status op-status-active"><i class="ri-check-line"></i>正常</span>';
+    } else {
+      document.getElementById('detailKeyStatus').innerHTML =
+        '<span class="op-status op-status-disabled"><i class="ri-forbid-line"></i>已禁用</span>';
+    }
+
+    // 授权接口范围
+    var scopeHtml = '';
+    for (var i = 0; i < d.scopes.length; i++) {
+      scopeHtml += '<span class="op-key-scope-tag">' + escHtml(d.scopes[i]) + '</span>';
+    }
+    document.getElementById('detailScopes').innerHTML = scopeHtml;
+
+    // IP白名单
+    renderIPList(d.ipWhitelist);
+
+    // 调用趋势图
+    renderChart(d.chart);
+
+    // 配额
+    document.getElementById('detailQuotaMain').innerHTML =
+      d.quotaUsed.toLocaleString() + ' <span>/ ' + d.quotaTotal.toLocaleString() + '</span>';
+    document.getElementById('detailQuotaReset').textContent = d.quotaReset;
+
+    var pct = (d.quotaUsed / d.quotaTotal * 100).toFixed(2);
+    var bar = document.getElementById('detailQuotaBar');
+    bar.style.width = pct + '%';
+    bar.className = 'op-progress-bar ' + getProgressCls(d.quotaUsed, d.quotaTotal);
+
+    openModal('detailModal');
+  };
+
+  /* ---- IP白名单渲染 ---- */
+  function renderIPList(ips) {
+    var container = document.getElementById('ipList');
+    if (!ips || ips.length === 0) {
+      container.innerHTML = '<div style="font-size:12px;color:var(--color-text-tertiary);padding:8px 0">暂无IP白名单</div>';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < ips.length; i++) {
+      html += '<div class="op-ip-item">' +
+        '<span class="op-ip-item-text">' + ips[i] + '</span>' +
+        '<button class="op-ip-item-del" onclick="removeIP(' + i + ')" title="删除">' +
+        '<i class="ri-close-line"></i></button>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  window.removeIP = function (idx) {
+    var d = keyMap[currentUID];
+    d.ipWhitelist.splice(idx, 1);
+    renderIPList(d.ipWhitelist);
+    OP.showToast('IP已删除', 'success');
+  };
+
+  window.addIP = function () {
+    var input = document.getElementById('ipAddInput');
+    var val = input.value.trim();
+
+    if (!val) {
+      input.classList.add('error');
+      OP.showToast('请输入IP地址', 'error');
+      return;
+    }
+
+    // 简单IP格式验证
+    if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(val)) {
+      input.classList.add('error');
+      OP.showToast('请输入正确的IP地址格式', 'error');
+      return;
+    }
+
+    // 检查重复
+    var d = keyMap[currentUID];
+    if (d.ipWhitelist.indexOf(val) !== -1) {
+      input.classList.add('error');
+      OP.showToast('该IP已存在', 'error');
+      return;
+    }
+
+    d.ipWhitelist.push(val);
+    renderIPList(d.ipWhitelist);
+    input.value = '';
+    input.classList.remove('error');
+    OP.showToast('IP已添加', 'success');
+  };
+
+  // IP输入清除错误
+  document.getElementById('ipAddInput').addEventListener('input', function () {
+    this.classList.remove('error');
+  });
+
+  /* ---- 调用趋势柱状图 ---- */
+  function renderChart(data) {
+    var container = document.getElementById('chartBars');
+    var maxVal = 0;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i] > maxVal) maxVal = data[i];
+    }
+    maxVal = Math.max(maxVal, 1); // 防止除零
+
+    // 近7天日期标签
+    var labels = [];
+    var today = new Date();
+    for (var j = 6; j >= 0; j--) {
+      var dd = new Date(today);
+      dd.setDate(dd.getDate() - j);
+      var m = dd.getMonth() + 1;
+      var day = dd.getDate();
+      labels.push(m + '/' + day);
+    }
+
+    var html = '';
+    for (var k = 0; k < data.length; k++) {
+      var pct = (data[k] / maxVal * 85); // 最高85%高度，留空给label
+      html += '<div class="op-chart-bar-col">' +
+        '<div class="op-chart-bar-value">' + data[k] + '</div>' +
+        '<div class="op-chart-bar" style="height:' + pct + '%"></div>' +
+        '<div class="op-chart-bar-label">' + labels[k] + '</div>' +
+        '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  /* ---- 初始渲染 ---- */
+  renderAllCards();
+
+})();
+</script>
+</body>
+</html>

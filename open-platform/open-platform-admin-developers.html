@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开放平台 - 开发者管理</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+<link rel="stylesheet" href="../assets/css/open-platform.css">
+<style>
+/* === 筛选条 === */
+.op-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  padding: 16px 20px;
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  box-shadow: var(--op-card-shadow);
+  margin-bottom: 16px;
+}
+
+.op-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.op-filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-tertiary, #909499);
+  white-space: nowrap;
+}
+
+.op-filter-bar .op-input,
+.op-filter-bar .op-select {
+  height: 32px;
+  font-size: 12px;
+  min-width: 140px;
+}
+
+.op-filter-bar .op-btn {
+  height: 32px;
+  padding: 0 16px;
+  font-size: 12px;
+}
+
+/* === 列表卡片 === */
+.op-list-card {
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  box-shadow: var(--op-card-shadow);
+}
+
+.op-list-card .op-table th,
+.op-list-card .op-table td {
+  font-size: 12px;
+}
+
+/* 操作按钮组 */
+.op-action-link {
+  color: var(--color-primary, #1684fc);
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.15s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.op-action-link:hover {
+  color: var(--color-primary-hover, #459dfd);
+  text-decoration: underline;
+}
+
+.op-action-link + .op-action-link {
+  margin-left: 12px;
+}
+
+.op-action-link.danger {
+  color: var(--color-error, #ed0404);
+}
+
+.op-action-link.danger:hover {
+  color: #d70303;
+}
+
+.op-action-link.success {
+  color: var(--color-success, #007e22);
+}
+
+.op-action-link.success:hover {
+  color: #00992e;
+}
+
+/* 公司Key状态标签组 */
+.op-key-status-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.op-key-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.op-key-status-tag .op-key-type {
+  color: var(--color-text-tertiary, #909499);
+  min-width: 28px;
+}
+
+.op-key-status-tag .op-key-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.op-key-status-tag .op-key-status-dot.normal {
+  background: var(--color-success, #007e22);
+}
+
+.op-key-status-tag .op-key-status-dot.disabled {
+  background: #bbb;
+}
+
+.op-key-status-tag .op-key-status-text {
+  font-size: 11px;
+}
+
+.op-key-status-tag .op-key-status-text.normal {
+  color: var(--color-success, #007e22);
+}
+
+.op-key-status-tag .op-key-status-text.disabled {
+  color: #999;
+}
+
+/* === 分页器 === */
+.op-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--op-card-border);
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.op-pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.op-page-btn {
+  height: 28px;
+  min-width: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 12px;
+  color: var(--color-text-primary, #1c1d1e);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.op-page-btn:hover {
+  border-color: var(--color-primary, #1684fc);
+  color: var(--color-primary, #1684fc);
+}
+
+.op-page-btn.active {
+  background: var(--color-primary, #1684fc);
+  border-color: var(--color-primary, #1684fc);
+  color: #fff;
+  font-weight: 600;
+}
+
+.op-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* === 审批弹窗（双栏布局） === */
+.op-modal-lg {
+  width: 680px;
+}
+
+.op-approve-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.op-approve-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.op-approve-col-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.op-approve-col-title i {
+  font-size: 15px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-approve-status-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.op-approve-status-tip.info {
+  background: var(--color-primary-light, #e3f2ff);
+  color: var(--color-primary, #1684fc);
+  border: 1px solid #d5e9fe;
+}
+
+.op-approve-status-tip.warn {
+  background: var(--color-warning-light, #fff2e9);
+  color: var(--color-warning, #ff8225);
+  border: 1px solid #fed7aa;
+}
+
+.op-approve-status-tip i {
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* === 开发者详情弹窗（大弹窗） === */
+.op-modal-xl {
+  width: 780px;
+}
+
+.op-detail-section {
+  margin-bottom: 20px;
+}
+
+.op-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.op-detail-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.op-detail-section-title i {
+  font-size: 15px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+/* 简化版Key卡片 */
+.op-mini-key-card {
+  background: var(--color-bg-secondary, #f4f5f7);
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 6px;
+  padding: 14px 16px;
+  flex: 1;
+}
+
+.op-mini-key-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.op-mini-key-card-title i {
+  font-size: 15px;
+}
+
+.op-mini-key-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.op-mini-key-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.op-mini-key-info-label {
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-mini-key-info-value {
+  color: var(--color-text-primary, #1c1d1e);
+  font-weight: 500;
+}
+
+/* 配额进度条（迷你版） */
+.op-mini-quota-bar {
+  width: 100%;
+  height: 5px;
+  background: var(--color-bg-tertiary, #edeff2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.op-mini-quota-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.op-mini-quota-fill.green { background: var(--color-success, #007e22); }
+.op-mini-quota-fill.yellow { background: var(--color-warning, #ff8225); }
+.op-mini-quota-fill.red { background: var(--color-error, #ed0404); }
+
+/* 接口权限标签组 */
+.op-scope-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.op-scope-tag {
+  padding: 4px 12px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--color-primary-light, #e3f2ff);
+  color: var(--color-primary, #1684fc);
+  border: 1px solid #d5e9fe;
+}
+
+/* 权限编辑弹窗 - 复选框列表 */
+.op-perm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.op-perm-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.op-perm-item:hover {
+  border-color: var(--color-primary, #1684fc);
+  background: rgba(22, 132, 252, 0.03);
+}
+
+.op-perm-item.checked {
+  border-color: var(--color-primary, #1684fc);
+  background: var(--color-primary-light, #e3f2ff);
+}
+
+.op-perm-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+  transition: all 0.15s ease;
+}
+
+.op-perm-item.checked .op-perm-checkbox {
+  background: var(--color-primary, #1684fc);
+  border-color: var(--color-primary, #1684fc);
+}
+
+.op-perm-checkbox i {
+  font-size: 12px;
+  color: #fff;
+  display: none;
+}
+
+.op-perm-item.checked .op-perm-checkbox i {
+  display: block;
+}
+
+.op-perm-info {
+  flex: 1;
+}
+
+.op-perm-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-perm-desc {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  margin-top: 2px;
+}
+
+/* 全选操作行 */
+.op-perm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+}
+
+.op-perm-header label {
+  font-size: 12px;
+  color: var(--color-text-secondary, #65686c);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.op-perm-count {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+/* 操作按钮区 */
+.op-detail-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border, #e7eaee);
+}
+
+/* danger实心按钮 */
+.op-btn-danger-solid {
+  background: var(--color-error, #ed0404);
+  border-color: var(--color-error, #ed0404);
+  color: #fff;
+}
+
+.op-btn-danger-solid:hover {
+  background: #d70303;
+  border-color: #d70303;
+}
+
+/* success实心按钮 */
+.op-btn-success-solid {
+  background: var(--color-success, #007e22);
+  border-color: var(--color-success, #007e22);
+  color: #fff;
+}
+
+.op-btn-success-solid:hover {
+  background: #00992e;
+  border-color: #00992e;
+}
+
+/* === 驳回原因弹窗 === */
+.op-reject-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--color-text-primary, #1c1d1e);
+  resize: vertical;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.op-reject-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary, #1684fc);
+  box-shadow: 0 0 0 2px rgba(22, 132, 252, 0.15);
+}
+
+.op-reject-textarea::placeholder {
+  color: var(--color-text-placeholder, #c0c6cd);
+}
+
+.op-reject-textarea.error {
+  border-color: var(--color-error, #ed0404);
+}
+
+.op-error-hint {
+  font-size: 11px;
+  color: var(--color-error, #ed0404);
+  margin-top: 4px;
+  display: none;
+}
+
+.op-error-hint.show {
+  display: block;
+}
+
+/* === 禁用原因弹窗 === */
+.op-disable-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--color-text-primary, #1c1d1e);
+  resize: vertical;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.op-disable-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary, #1684fc);
+  box-shadow: 0 0 0 2px rgba(22, 132, 252, 0.15);
+}
+
+.op-disable-textarea::placeholder {
+  color: var(--color-text-placeholder, #c0c6cd);
+}
+
+.op-disable-textarea.error {
+  border-color: var(--color-error, #ed0404);
+}
+
+/* === 响应式 === */
+@media (max-width: 1200px) {
+  .op-filter-bar {
+    gap: 10px;
+  }
+  .op-filter-bar .op-input,
+  .op-filter-bar .op-select {
+    min-width: 120px;
+  }
+}
+</style>
+</head>
+<body>
+
+<header id="opTopNav"></header>
+<div class="op-page no-sidebar">
+
+  <!-- 右侧主区域 -->
+  <div class="op-main">
+
+    <!-- 顶部标题栏 -->
+    <div class="op-header">
+      <div class="op-header-breadcrumb">
+        <a href="#">开放平台</a>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>开发者管理</span>
+      </div>
+      <div class="op-header-actions">
+        <a href="#" class="op-btn op-btn-default" style="font-size:12px;height:30px;padding:0 12px">
+          <i class="ri-question-line"></i> 帮助文档
+        </a>
+      </div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="op-content">
+
+      <!-- 页面标题 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h2 style="margin:0;font-size:18px;font-weight:700;color:var(--color-text-primary)">开发者管理</h2>
+      </div>
+
+      <!-- 筛选条 -->
+      <div class="op-filter-bar" id="filterBar">
+        <div class="op-filter-item">
+          <span class="op-filter-label">审批状态</span>
+          <select class="op-select" id="filterStatus">
+            <option value="">全部</option>
+            <option value="pending">待审批</option>
+            <option value="active">已激活</option>
+            <option value="rejected">已驳回</option>
+            <option value="disabled">已禁用</option>
+          </select>
+        </div>
+        <div class="op-filter-item">
+          <span class="op-filter-label">公司名称</span>
+          <input class="op-input" type="text" id="filterCompany" placeholder="输入公司名称">
+        </div>
+        <div class="op-filter-item">
+          <span class="op-filter-label">联系人</span>
+          <input class="op-input" type="text" id="filterContact" placeholder="姓名/手机号">
+        </div>
+        <div class="op-filter-item" style="flex-direction:row;gap:8px;align-self:flex-end">
+          <button class="op-btn op-btn-primary" onclick="doSearch()">
+            <i class="ri-search-line"></i>查询
+          </button>
+          <button class="op-btn op-btn-default" onclick="doReset()">
+            <i class="ri-refresh-line"></i>重置
+          </button>
+        </div>
+      </div>
+
+      <!-- 列表卡片 -->
+      <div class="op-list-card">
+        <div class="op-table-wrap">
+          <table class="op-table" id="devTable">
+            <thead>
+              <tr>
+                <th style="min-width:110px">开发者账号</th>
+                <th style="min-width:160px">所属公司</th>
+                <th style="min-width:140px">联系人</th>
+                <th style="min-width:120px">申请时间</th>
+                <th style="min-width:80px">审批状态</th>
+                <th style="min-width:100px">公司Key状态</th>
+                <th style="min-width:80px">今日调用量</th>
+                <th style="min-width:140px">操作</th>
+              </tr>
+            </thead>
+            <tbody id="devTableBody">
+              <!-- JS动态渲染 -->
+            </tbody>
+          </table>
+        </div>
+        <!-- 分页器 -->
+        <div class="op-pagination" id="pagination">
+          <div class="op-pagination-info" id="paginationInfo"></div>
+          <div class="op-pagination-pages" id="paginationPages"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast容器 -->
+<div class="op-toast-stack" id="opToastStack"></div>
+
+<!-- ====== 审批详情弹窗 ====== -->
+<div class="op-modal-mask" id="approveModal">
+  <div class="op-modal op-modal-lg">
+    <div class="op-modal-head">
+      <span class="op-modal-title">开发者审批</span>
+      <button class="op-modal-close" onclick="closeModal('approveModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div class="op-approve-layout">
+        <!-- 左侧：申请表单内容（只读） -->
+        <div class="op-approve-col">
+          <div class="op-approve-col-title">
+            <i class="ri-file-text-line"></i>申请信息
+          </div>
+          <div class="op-info-row"><span class="op-info-label">公司名称</span><span class="op-info-value" id="approveCompany"></span></div>
+          <div class="op-info-row"><span class="op-info-label">联系人姓名</span><span class="op-info-value" id="approveContactName"></span></div>
+          <div class="op-info-row"><span class="op-info-label">联系电话</span><span class="op-info-value" id="approveContactPhone"></span></div>
+          <div class="op-info-row"><span class="op-info-label">联系邮箱</span><span class="op-info-value" id="approveContactEmail"></span></div>
+          <div class="op-info-row"><span class="op-info-label">用途说明</span><span class="op-info-value" id="approveUsage"></span></div>
+          <div class="op-info-row"><span class="op-info-label">申请接口范围</span><span class="op-info-value" id="approveScope"></span></div>
+          <div class="op-info-row"><span class="op-info-label">预计日调用量</span><span class="op-info-value" id="approveDailyQuota"></span></div>
+        </div>
+        <!-- 右侧：账号基本信息 -->
+        <div class="op-approve-col">
+          <div class="op-approve-col-title">
+            <i class="ri-user-line"></i>账号信息
+          </div>
+          <div class="op-info-row"><span class="op-info-label">SDMS账号名</span><span class="op-info-value" id="approveAccount"></span></div>
+          <div class="op-info-row"><span class="op-info-label">注册时间</span><span class="op-info-value" id="approveRegTime"></span></div>
+          <div class="op-info-row"><span class="op-info-label">所属客户公司</span><span class="op-info-value" id="approveClientCompany"></span></div>
+          <!-- 公司接入状态提示 -->
+          <div class="op-approve-status-tip" id="approveCompanyTip">
+            <!-- JS动态渲染 -->
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('approveModal')">取消</button>
+      <button class="op-btn op-btn-danger-solid" onclick="showRejectModal()">
+        <i class="ri-close-line"></i>驳回
+      </button>
+      <button class="op-btn op-btn-success-solid" onclick="doApprove()">
+        <i class="ri-check-line"></i>通过
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 驳回原因弹窗 ====== -->
+<div class="op-modal-mask" id="rejectModal">
+  <div class="op-modal">
+    <div class="op-modal-head">
+      <span class="op-modal-title">驳回申请</span>
+      <button class="op-modal-close" onclick="closeModal('rejectModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;font-weight:600">驳回原因 <span style="color:var(--color-error)">*</span></div>
+      <textarea class="op-reject-textarea" id="rejectReason" placeholder="请输入驳回原因，将发送给申请人"></textarea>
+      <div class="op-error-hint" id="rejectError">请输入驳回原因</div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('rejectModal')">取消</button>
+      <button class="op-btn op-btn-danger-solid" onclick="doReject()">
+        <i class="ri-close-line"></i>确认驳回
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 开发者详情弹窗 ====== -->
+<div class="op-modal-mask" id="detailModal">
+  <div class="op-modal op-modal-xl">
+    <div class="op-modal-head">
+      <span class="op-modal-title" id="detailModalTitle">开发者详情</span>
+      <button class="op-modal-close" onclick="closeModal('detailModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body" style="max-height:70vh;overflow-y:auto;padding:20px 24px">
+
+      <!-- 基本信息 -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">
+          <i class="ri-user-line"></i>基本信息
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
+          <div class="op-info-row"><span class="op-info-label">开发者账号</span><span class="op-info-value" id="detailAccount"></span></div>
+          <div class="op-info-row"><span class="op-info-label">所属公司</span><span class="op-info-value" id="detailCompany"></span></div>
+          <div class="op-info-row"><span class="op-info-label">联系人</span><span class="op-info-value" id="detailContact"></span></div>
+          <div class="op-info-row"><span class="op-info-label">邮箱</span><span class="op-info-value" id="detailEmail"></span></div>
+          <div class="op-info-row"><span class="op-info-label">申请时间</span><span class="op-info-value" id="detailApplyTime"></span></div>
+          <div class="op-info-row"><span class="op-info-label">用途说明</span><span class="op-info-value" id="detailUsage"></span></div>
+        </div>
+      </div>
+
+      <!-- 公司Key信息 -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">
+          <i class="ri-key-2-line"></i>公司Key信息
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px" id="detailKeyCards">
+          <!-- JS动态渲染 -->
+        </div>
+      </div>
+
+      <!-- 接口权限 -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title" style="justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:6px">
+            <i class="ri-shield-check-line"></i>已授权接口范围
+          </div>
+          <button class="op-btn op-btn-default" style="height:28px;padding:0 12px;font-size:12px" onclick="showPermEditModal()">
+            <i class="ri-edit-line"></i>编辑权限
+          </button>
+        </div>
+        <div class="op-scope-tags" id="detailScopes">
+          <!-- JS动态渲染 -->
+        </div>
+      </div>
+
+      <!-- 操作区 -->
+      <div class="op-detail-actions" id="detailActions">
+        <!-- JS动态渲染 -->
+      </div>
+
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('detailModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 权限编辑弹窗 ====== -->
+<div class="op-modal-mask" id="permEditModal">
+  <div class="op-modal op-modal-lg">
+    <div class="op-modal-head">
+      <span class="op-modal-title">编辑接口权限</span>
+      <button class="op-modal-close" onclick="closeModal('permEditModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div class="op-perm-header">
+        <label onclick="toggleAllPerms()">
+          <div class="op-perm-checkbox" id="permCheckAll">
+            <i class="ri-check-line"></i>
+          </div>
+          全选/取消
+        </label>
+        <span class="op-perm-count" id="permCount">已选 0 项</span>
+      </div>
+      <div class="op-perm-list" id="permList">
+        <!-- JS动态渲染 -->
+      </div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('permEditModal')">取消</button>
+      <button class="op-btn op-btn-primary" onclick="doSavePerms()">
+        <i class="ri-check-line"></i>保存
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 禁用确认弹窗 ====== -->
+<div class="op-modal-mask" id="disableModal">
+  <div class="op-modal">
+    <div class="op-modal-head">
+      <span class="op-modal-title" id="disableModalTitle">禁用开发者</span>
+      <button class="op-modal-close" onclick="closeModal('disableModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div class="op-alert op-alert-warning" style="margin:0 0 14px 0">
+        <i class="ri-error-warning-line"></i>
+        <div id="disableModalText">禁用后，该开发者的所有API Key将立即失效，相关服务将无法调用接口。</div>
+      </div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;font-weight:600">禁用原因 <span style="color:var(--color-error)">*</span></div>
+      <textarea class="op-disable-textarea" id="disableReason" placeholder="请输入禁用原因"></textarea>
+      <div class="op-error-hint" id="disableError">请输入禁用原因</div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('disableModal')">取消</button>
+      <button class="op-btn op-btn-danger-solid" id="disableConfirmBtn" onclick="doDisableDev()">
+        <i class="ri-forbid-line"></i>确认禁用
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/open-platform.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---- 初始化顶栏 ---- */
+  if (!OP.requireAuth()) return;
+  OP.renderTopNav(OP.ADMIN_MENUS, 'dev-manage');
+
+  /* ---- 所有接口定义 ---- */
+  var ALL_SCOPES = [
+    { id: 'push',    name: '推送接口',   desc: '订单推送、库存变更推送等' },
+    { id: 'query',   name: '查询接口',   desc: '订单查询、库存查询、仓库查询等' },
+    { id: 'batch',   name: '批量接口',   desc: '批量创建订单、批量查询等' },
+    { id: 'callback', name: '回调事件',  desc: '状态变更回调、事件通知等' },
+    { id: 'shipment', name: '物流接口',  desc: '发货单创建、物流跟踪等' },
+    { id: 'report',  name: '报表接口',   desc: '库存报表、出入库报表等' }
+  ];
+
+  /* ---- Mock数据 ---- */
+  var DEV_DATA = [
+    {
+      id: 1,
+      account: 'zhangsan_dev',
+      company: '运连网科技有限公司',
+      contactName: '张三',
+      contactPhone: '13812341234',
+      contactPhoneMasked: '138****1234',
+      contactEmail: 'zhangsan@yunlian.com',
+      applyTime: '2026-06-08 14:23',
+      status: 'pending',
+      regTime: '2026-06-08 14:20',
+      clientCompany: '运连网科技有限公司',
+      usage: '对接内部OMS系统，实现订单自动推送和库存同步',
+      applyScope: ['push', 'query', 'callback'],
+      dailyQuota: '约5,000次',
+      companyDevCount: 0,
+      companyKeyCount: 0,
+      todayCalls: 0,
+      prodKey: null,
+      testKey: null,
+      scopes: []
+    },
+    {
+      id: 2,
+      account: 'lisi_tech',
+      company: '深圳智联物流有限公司',
+      contactName: '李四',
+      contactPhone: '13987654321',
+      contactPhoneMasked: '139****4321',
+      contactEmail: 'lisi@zhilian.com',
+      applyTime: '2026-06-07 09:15',
+      status: 'active',
+      regTime: '2026-06-07 09:10',
+      clientCompany: '深圳智联物流有限公司',
+      usage: '对接ERP系统，实现仓储业务全流程自动化',
+      applyScope: ['push', 'query', 'batch', 'callback'],
+      dailyQuota: '约10,000次',
+      companyDevCount: 2,
+      companyKeyCount: 3,
+      todayCalls: 1247,
+      prodKey: { status: 'normal', quotaUsed: 3247, quotaTotal: 10000, created: '2026-06-07 09:20' },
+      testKey: { status: 'normal', quotaUsed: 156, quotaTotal: 10000, created: '2026-06-07 09:20' },
+      scopes: ['push', 'query', 'batch', 'callback']
+    },
+    {
+      id: 3,
+      account: 'wangwu_it',
+      company: '上海跨境通电子商务有限公司',
+      contactName: '王五',
+      contactPhone: '15011112222',
+      contactPhoneMasked: '150****2222',
+      contactEmail: 'wangwu@kjt.com',
+      applyTime: '2026-06-06 16:40',
+      status: 'active',
+      regTime: '2026-06-06 16:35',
+      clientCompany: '上海跨境通电子商务有限公司',
+      usage: '跨境电商订单推送与物流追踪',
+      applyScope: ['push', 'query', 'shipment'],
+      dailyQuota: '约8,000次',
+      companyDevCount: 1,
+      companyKeyCount: 2,
+      todayCalls: 3892,
+      prodKey: { status: 'normal', quotaUsed: 6820, quotaTotal: 10000, created: '2026-06-06 16:45' },
+      testKey: { status: 'normal', quotaUsed: 340, quotaTotal: 10000, created: '2026-06-06 16:45' },
+      scopes: ['push', 'query', 'shipment']
+    },
+    {
+      id: 4,
+      account: 'zhaoliu_dev',
+      company: '广州万达供应链管理有限公司',
+      contactName: '赵六',
+      contactPhone: '18633334444',
+      contactPhoneMasked: '186****4444',
+      contactEmail: 'zhaoliu@wanda.com',
+      applyTime: '2026-06-05 11:08',
+      status: 'rejected',
+      regTime: '2026-06-05 11:05',
+      clientCompany: '广州万达供应链管理有限公司',
+      usage: '对接WMS系统进行库存管理',
+      applyScope: ['query', 'report'],
+      dailyQuota: '约2,000次',
+      companyDevCount: 0,
+      companyKeyCount: 0,
+      todayCalls: 0,
+      prodKey: null,
+      testKey: null,
+      scopes: []
+    },
+    {
+      id: 5,
+      account: 'sunqi_api',
+      company: '北京中远海运科技有限公司',
+      contactName: '孙七',
+      contactPhone: '13566667777',
+      contactPhoneMasked: '135****7777',
+      contactEmail: 'sunqi@cosco.com',
+      applyTime: '2026-06-04 08:30',
+      status: 'active',
+      regTime: '2026-06-04 08:25',
+      clientCompany: '北京中远海运科技有限公司',
+      usage: '海运订舱数据对接与报关单推送',
+      applyScope: ['push', 'query', 'batch', 'callback', 'report'],
+      dailyQuota: '约15,000次',
+      companyDevCount: 3,
+      companyKeyCount: 5,
+      todayCalls: 8654,
+      prodKey: { status: 'normal', quotaUsed: 9120, quotaTotal: 15000, created: '2026-06-04 08:35' },
+      testKey: { status: 'normal', quotaUsed: 890, quotaTotal: 15000, created: '2026-06-04 08:35' },
+      scopes: ['push', 'query', 'batch', 'callback', 'report']
+    },
+    {
+      id: 6,
+      account: 'zhouba_tech',
+      company: '杭州阿里巴巴供应链有限公司',
+      contactName: '周八',
+      contactPhone: '17888889999',
+      contactPhoneMasked: '178****9999',
+      contactEmail: 'zhouba@alibaba.com',
+      applyTime: '2026-06-03 15:22',
+      status: 'disabled',
+      regTime: '2026-06-03 15:18',
+      clientCompany: '杭州阿里巴巴供应链有限公司',
+      usage: '电商仓储数据同步',
+      applyScope: ['push', 'query'],
+      dailyQuota: '约3,000次',
+      companyDevCount: 1,
+      companyKeyCount: 2,
+      todayCalls: 0,
+      prodKey: { status: 'disabled', quotaUsed: 0, quotaTotal: 5000, created: '2026-06-03 15:28' },
+      testKey: { status: 'disabled', quotaUsed: 0, quotaTotal: 5000, created: '2026-06-03 15:28' },
+      scopes: ['push', 'query']
+    },
+    {
+      id: 7,
+      account: 'wujiu_dev',
+      company: '顺丰科技有限公司',
+      contactName: '吴九',
+      contactPhone: '13100001111',
+      contactPhoneMasked: '131****1111',
+      contactEmail: 'wujiu@sf.com',
+      applyTime: '2026-06-09 08:05',
+      status: 'pending',
+      regTime: '2026-06-09 08:00',
+      clientCompany: '顺丰科技有限公司',
+      usage: '物流信息实时推送与签收状态回调',
+      applyScope: ['push', 'query', 'callback', 'shipment'],
+      dailyQuota: '约20,000次',
+      companyDevCount: 0,
+      companyKeyCount: 0,
+      todayCalls: 0,
+      prodKey: null,
+      testKey: null,
+      scopes: []
+    },
+    {
+      id: 8,
+      account: 'chenshi_api',
+      company: '宁波港务局信息技术中心',
+      contactName: '陈十',
+      contactPhone: '15222223333',
+      contactPhoneMasked: '152****3333',
+      contactEmail: 'chenshi@nbport.com',
+      applyTime: '2026-06-02 10:45',
+      status: 'active',
+      regTime: '2026-06-02 10:40',
+      clientCompany: '宁波港务局信息技术中心',
+      usage: '港口仓储数据对接与报表查询',
+      applyScope: ['query', 'report', 'shipment'],
+      dailyQuota: '约6,000次',
+      companyDevCount: 2,
+      companyKeyCount: 4,
+      todayCalls: 2156,
+      prodKey: { status: 'normal', quotaUsed: 4320, quotaTotal: 8000, created: '2026-06-02 10:50' },
+      testKey: { status: 'normal', quotaUsed: 210, quotaTotal: 8000, created: '2026-06-02 10:50' },
+      scopes: ['query', 'report', 'shipment']
+    },
+    {
+      id: 9,
+      account: 'huangyi_dev',
+      company: '厦门象屿集团有限公司',
+      contactName: '黄一',
+      contactPhone: '18844445555',
+      contactPhoneMasked: '188****5555',
+      contactEmail: 'huangyi@xiangyu.com',
+      applyTime: '2026-06-01 17:30',
+      status: 'rejected',
+      regTime: '2026-06-01 17:25',
+      clientCompany: '厦门象屿集团有限公司',
+      usage: '供应链金融系统对接',
+      applyScope: ['query', 'report'],
+      dailyQuota: '约1,000次',
+      companyDevCount: 0,
+      companyKeyCount: 0,
+      todayCalls: 0,
+      prodKey: null,
+      testKey: null,
+      scopes: []
+    },
+    {
+      id: 10,
+      account: 'liner_tech',
+      company: '深圳前海百丰供应链有限公司',
+      contactName: '林二',
+      contactPhone: '16677778888',
+      contactPhoneMasked: '166****8888',
+      contactEmail: 'liner@baifeng.com',
+      applyTime: '2026-05-30 13:18',
+      status: 'disabled',
+      regTime: '2026-05-30 13:15',
+      clientCompany: '深圳前海百丰供应链有限公司',
+      usage: '跨境电商仓储管理对接',
+      applyScope: ['push', 'query', 'batch'],
+      dailyQuota: '约4,000次',
+      companyDevCount: 1,
+      companyKeyCount: 1,
+      todayCalls: 0,
+      prodKey: { status: 'disabled', quotaUsed: 0, quotaTotal: 5000, created: '2026-05-30 13:22' },
+      testKey: null,
+      scopes: ['push', 'query', 'batch']
+    }
+  ];
+
+  /* ---- 当前操作的开发者ID ---- */
+  var currentDevId = null;
+
+  /* ---- 弹窗工具函数 ---- */
+  function openModal(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      requestAnimationFrame(function () { el.classList.add('visible'); });
+    }
+  }
+
+  window.closeModal = function (id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('visible');
+    }
+  };
+
+  // 点击遮罩关闭
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('op-modal-mask') && e.target.classList.contains('visible')) {
+      e.target.classList.remove('visible');
+    }
+  });
+
+  /* ---- 获取开发者数据 ---- */
+  function getDev(id) {
+    for (var i = 0; i < DEV_DATA.length; i++) {
+      if (DEV_DATA[i].id === id) return DEV_DATA[i];
+    }
+    return null;
+  }
+
+  /* ---- 渲染公司Key状态 ---- */
+  function renderKeyStatus(dev) {
+    if (!dev.prodKey && !dev.testKey) {
+      return '<span style="font-size:11px;color:var(--color-text-tertiary)">-</span>';
+    }
+    var html = '<div class="op-key-status-group">';
+    if (dev.prodKey) {
+      var prodStatus = dev.prodKey.status === 'normal';
+      html += '<div class="op-key-status-tag">' +
+        '<span class="op-key-type">生产:</span>' +
+        '<span class="op-key-status-dot ' + (prodStatus ? 'normal' : 'disabled') + '"></span>' +
+        '<span class="op-key-status-text ' + (prodStatus ? 'normal' : 'disabled') + '">' + (prodStatus ? '正常' : '已禁用') + '</span>' +
+        '</div>';
+    }
+    if (dev.testKey) {
+      var testStatus = dev.testKey.status === 'normal';
+      html += '<div class="op-key-status-tag">' +
+        '<span class="op-key-type">测试:</span>' +
+        '<span class="op-key-status-dot ' + (testStatus ? 'normal' : 'disabled') + '"></span>' +
+        '<span class="op-key-status-text ' + (testStatus ? 'normal' : 'disabled') + '">' + (testStatus ? '正常' : '已禁用') + '</span>' +
+        '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  /* ---- 渲染操作列 ---- */
+  function renderActions(dev) {
+    var html = '';
+    switch (dev.status) {
+      case 'pending':
+        html += '<button class="op-action-link" onclick="showApproveModal(' + dev.id + ')">审批</button>';
+        break;
+      case 'active':
+        html += '<button class="op-action-link" onclick="showDetailModal(' + dev.id + ')">查看</button>';
+        html += '<button class="op-action-link danger" onclick="showDisableDevModal(' + dev.id + ')">禁用</button>';
+        break;
+      case 'rejected':
+        html += '<button class="op-action-link" onclick="showDetailModal(' + dev.id + ')">查看</button>';
+        break;
+      case 'disabled':
+        html += '<button class="op-action-link" onclick="showDetailModal(' + dev.id + ')">查看</button>';
+        html += '<button class="op-action-link success" onclick="doEnableDev(' + dev.id + ')">启用</button>';
+        break;
+    }
+    return html;
+  }
+
+  /* ---- 渲染列表 ---- */
+  function renderTable(data) {
+    var tbody = document.getElementById('devTableBody');
+    var html = '';
+    for (var i = 0; i < data.length; i++) {
+      var dev = data[i];
+      html += '<tr>' +
+        '<td style="font-weight:600;font-family:SF Mono,Consolas,Monaco,monospace">' + dev.account + '</td>' +
+        '<td>' + dev.company + '</td>' +
+        '<td>' + dev.contactName + ' ' + dev.contactPhoneMasked + '</td>' +
+        '<td style="white-space:nowrap">' + dev.applyTime + '</td>' +
+        '<td>' + OP.renderStatusTag(dev.status) + '</td>' +
+        '<td>' + renderKeyStatus(dev) + '</td>' +
+        '<td style="font-weight:600">' + dev.todayCalls.toLocaleString() + '</td>' +
+        '<td>' + renderActions(dev) + '</td>' +
+        '</tr>';
+    }
+    tbody.innerHTML = html;
+  }
+
+  /* ---- 渲染分页器 ---- */
+  function renderPagination(total, pageSize, current) {
+    var totalPages = Math.ceil(total / pageSize);
+    var info = document.getElementById('paginationInfo');
+    info.innerHTML = '共 <strong>' + total + '</strong> 条，每页 ' + pageSize + ' 条，当前第 <strong>' + current + '</strong> 页';
+
+    var pages = document.getElementById('paginationPages');
+    var html = '';
+    html += '<button class="op-page-btn" ' + (current <= 1 ? 'disabled' : '') + '><i class="ri-arrow-left-s-line"></i></button>';
+    for (var p = 1; p <= totalPages; p++) {
+      html += '<button class="op-page-btn' + (p === current ? ' active' : '') + '">' + p + '</button>';
+    }
+    html += '<button class="op-page-btn" ' + (current >= totalPages ? 'disabled' : '') + '><i class="ri-arrow-right-s-line"></i></button>';
+    pages.innerHTML = html;
+  }
+
+  /* ---- 获取接口名称列表 ---- */
+  function getScopeNames(scopeIds) {
+    var names = [];
+    for (var i = 0; i < scopeIds.length; i++) {
+      for (var j = 0; j < ALL_SCOPES.length; j++) {
+        if (ALL_SCOPES[j].id === scopeIds[i]) {
+          names.push(ALL_SCOPES[j].name);
+          break;
+        }
+      }
+    }
+    return names;
+  }
+
+  /* ---- 审批弹窗 ---- */
+  window.showApproveModal = function (id) {
+    currentDevId = id;
+    var dev = getDev(id);
+
+    // 左侧：申请信息
+    document.getElementById('approveCompany').textContent = dev.company;
+    document.getElementById('approveContactName').textContent = dev.contactName;
+    document.getElementById('approveContactPhone').textContent = dev.contactPhone;
+    document.getElementById('approveContactEmail').textContent = dev.contactEmail;
+    document.getElementById('approveUsage').textContent = dev.usage;
+    document.getElementById('approveScope').innerHTML = getScopeNames(dev.applyScope).join('、');
+    document.getElementById('approveDailyQuota').textContent = dev.dailyQuota;
+
+    // 右侧：账号信息
+    document.getElementById('approveAccount').textContent = dev.account;
+    document.getElementById('approveRegTime').textContent = dev.regTime;
+    document.getElementById('approveClientCompany').textContent = dev.clientCompany;
+
+    // 公司接入状态提示
+    var tipEl = document.getElementById('approveCompanyTip');
+    if (dev.companyDevCount === 0) {
+      tipEl.className = 'op-approve-status-tip info';
+      tipEl.innerHTML = '<i class="ri-information-line"></i><span>该公司尚无开发者</span>';
+    } else {
+      tipEl.className = 'op-approve-status-tip warn';
+      tipEl.innerHTML = '<i class="ri-team-line"></i><span>该公司已有<strong>' + dev.companyDevCount + '</strong>名开发者，<strong>' + dev.companyKeyCount + '</strong>个API Key</span>';
+    }
+
+    openModal('approveModal');
+  };
+
+  /* ---- 通过审批 ---- */
+  window.doApprove = function () {
+    var dev = getDev(currentDevId);
+    if (!dev) return;
+
+    dev.status = 'active';
+    dev.todayCalls = Math.floor(Math.random() * 500);
+    dev.scopes = dev.applyScope.slice();
+    dev.prodKey = { status: 'normal', quotaUsed: 0, quotaTotal: 10000, created: OP.Mock.now() };
+    dev.testKey = { status: 'normal', quotaUsed: 0, quotaTotal: 10000, created: OP.Mock.now() };
+
+    closeModal('approveModal');
+    renderTable(DEV_DATA);
+    OP.showToast('已通过 ' + dev.account + ' 的开发者申请', 'success');
+  };
+
+  /* ---- 驳回弹窗 ---- */
+  window.showRejectModal = function () {
+    document.getElementById('rejectReason').value = '';
+    document.getElementById('rejectReason').classList.remove('error');
+    document.getElementById('rejectError').classList.remove('show');
+    openModal('rejectModal');
+  };
+
+  /* ---- 确认驳回 ---- */
+  window.doReject = function () {
+    var reason = document.getElementById('rejectReason').value.trim();
+    if (!reason) {
+      document.getElementById('rejectReason').classList.add('error');
+      document.getElementById('rejectError').classList.add('show');
+      return;
+    }
+
+    var dev = getDev(currentDevId);
+    if (!dev) return;
+
+    dev.status = 'rejected';
+
+    closeModal('rejectModal');
+    closeModal('approveModal');
+    renderTable(DEV_DATA);
+    OP.showToast('已驳回 ' + dev.account + ' 的开发者申请', 'success');
+  };
+
+  // 驳回原因输入时清除错误
+  document.getElementById('rejectReason').addEventListener('input', function () {
+    this.classList.remove('error');
+    document.getElementById('rejectError').classList.remove('show');
+  });
+
+  /* ---- 开发者详情弹窗 ---- */
+  window.showDetailModal = function (id) {
+    currentDevId = id;
+    var dev = getDev(id);
+
+    // 标题
+    document.getElementById('detailModalTitle').textContent = dev.account + ' - 开发者详情';
+
+    // 基本信息
+    document.getElementById('detailAccount').textContent = dev.account;
+    document.getElementById('detailCompany').textContent = dev.company;
+    document.getElementById('detailContact').textContent = dev.contactName + ' ' + dev.contactPhoneMasked;
+    document.getElementById('detailEmail').textContent = dev.contactEmail;
+    document.getElementById('detailApplyTime').textContent = dev.applyTime;
+    document.getElementById('detailUsage').textContent = dev.usage;
+
+    // 公司Key卡片
+    var keyCardsHtml = '';
+    if (dev.prodKey) {
+      var prodPct = dev.prodKey.quotaTotal > 0 ? (dev.prodKey.quotaUsed / dev.prodKey.quotaTotal * 100) : 0;
+      var prodColor = prodPct < 60 ? 'green' : (prodPct < 85 ? 'yellow' : 'red');
+      var prodStatusHtml = dev.prodKey.status === 'normal'
+        ? '<span class="op-status op-status-active" style="font-size:11px;padding:2px 8px"><i class="ri-check-line"></i>正常</span>'
+        : '<span class="op-status op-status-disabled" style="font-size:11px;padding:2px 8px"><i class="ri-forbid-line"></i>已禁用</span>';
+      keyCardsHtml += '<div class="op-mini-key-card">' +
+        '<div class="op-mini-key-card-title"><i class="ri-shield-check-line" style="color:var(--color-success)"></i>生产环境Key ' + prodStatusHtml + '</div>' +
+        '<div class="op-mini-key-info">' +
+        '<div class="op-mini-key-info-row"><span class="op-mini-key-info-label">配额使用</span><span class="op-mini-key-info-value">' + dev.prodKey.quotaUsed.toLocaleString() + ' / ' + dev.prodKey.quotaTotal.toLocaleString() + '</span></div>' +
+        '<div class="op-mini-quota-bar"><div class="op-mini-quota-fill ' + prodColor + '" style="width:' + prodPct.toFixed(1) + '%"></div></div>' +
+        '<div class="op-mini-key-info-row"><span class="op-mini-key-info-label">创建时间</span><span class="op-mini-key-info-value">' + dev.prodKey.created + '</span></div>' +
+        '</div></div>';
+    } else {
+      keyCardsHtml += '<div class="op-mini-key-card" style="display:flex;align-items:center;justify-content:center;color:var(--color-text-tertiary);font-size:12px;min-height:100px">暂无生产Key</div>';
+    }
+
+    if (dev.testKey) {
+      var testPct = dev.testKey.quotaTotal > 0 ? (dev.testKey.quotaUsed / dev.testKey.quotaTotal * 100) : 0;
+      var testColor = testPct < 60 ? 'green' : (testPct < 85 ? 'yellow' : 'red');
+      var testStatusHtml = dev.testKey.status === 'normal'
+        ? '<span class="op-status op-status-active" style="font-size:11px;padding:2px 8px"><i class="ri-check-line"></i>正常</span>'
+        : '<span class="op-status op-status-disabled" style="font-size:11px;padding:2px 8px"><i class="ri-forbid-line"></i>已禁用</span>';
+      keyCardsHtml += '<div class="op-mini-key-card">' +
+        '<div class="op-mini-key-card-title"><i class="ri-flask-line" style="color:var(--color-primary)"></i>测试环境Key ' + testStatusHtml + '</div>' +
+        '<div class="op-mini-key-info">' +
+        '<div class="op-mini-key-info-row"><span class="op-mini-key-info-label">配额使用</span><span class="op-mini-key-info-value">' + dev.testKey.quotaUsed.toLocaleString() + ' / ' + dev.testKey.quotaTotal.toLocaleString() + '</span></div>' +
+        '<div class="op-mini-quota-bar"><div class="op-mini-quota-fill ' + testColor + '" style="width:' + testPct.toFixed(1) + '%"></div></div>' +
+        '<div class="op-mini-key-info-row"><span class="op-mini-key-info-label">创建时间</span><span class="op-mini-key-info-value">' + dev.testKey.created + '</span></div>' +
+        '</div></div>';
+    } else {
+      keyCardsHtml += '<div class="op-mini-key-card" style="display:flex;align-items:center;justify-content:center;color:var(--color-text-tertiary);font-size:12px;min-height:100px">暂无测试Key</div>';
+    }
+    document.getElementById('detailKeyCards').innerHTML = keyCardsHtml;
+
+    // 接口权限
+    var scopeNames = getScopeNames(dev.scopes);
+    var scopeHtml = '';
+    if (scopeNames.length > 0) {
+      for (var i = 0; i < scopeNames.length; i++) {
+        scopeHtml += '<span class="op-scope-tag">' + scopeNames[i] + '</span>';
+      }
+    } else {
+      scopeHtml = '<span style="font-size:12px;color:var(--color-text-tertiary)">暂无授权接口</span>';
+    }
+    document.getElementById('detailScopes').innerHTML = scopeHtml;
+
+    // 操作区
+    var actionsHtml = '';
+    if (dev.status === 'active') {
+      actionsHtml += '<button class="op-btn op-btn-danger op-btn-danger-solid" onclick="showDisableDevModal(' + dev.id + ')"><i class="ri-forbid-line"></i>禁用该开发者</button>';
+    } else if (dev.status === 'disabled') {
+      actionsHtml += '<button class="op-btn op-btn-success-solid" onclick="doEnableDev(' + dev.id + ')"><i class="ri-check-line"></i>启用该开发者</button>';
+    } else {
+      actionsHtml = '';
+    }
+    document.getElementById('detailActions').innerHTML = actionsHtml;
+
+    openModal('detailModal');
+  };
+
+  /* ---- 禁用开发者弹窗 ---- */
+  window.showDisableDevModal = function (id) {
+    currentDevId = id;
+    var dev = getDev(id);
+    document.getElementById('disableModalTitle').textContent = '禁用开发者';
+    document.getElementById('disableModalText').innerHTML = '禁用后，开发者 <strong>' + dev.account + '</strong> 的所有API Key将立即失效，相关服务将无法调用接口。';
+    document.getElementById('disableReason').value = '';
+    document.getElementById('disableReason').classList.remove('error');
+    document.getElementById('disableError').classList.remove('show');
+    openModal('disableModal');
+  };
+
+  /* ---- 确认禁用 ---- */
+  window.doDisableDev = function () {
+    var reason = document.getElementById('disableReason').value.trim();
+    if (!reason) {
+      document.getElementById('disableReason').classList.add('error');
+      document.getElementById('disableError').classList.add('show');
+      return;
+    }
+
+    var dev = getDev(currentDevId);
+    if (!dev) return;
+
+    dev.status = 'disabled';
+    dev.todayCalls = 0;
+    if (dev.prodKey) dev.prodKey.status = 'disabled';
+    if (dev.testKey) dev.testKey.status = 'disabled';
+
+    closeModal('disableModal');
+    // 如果详情弹窗打开，也刷新
+    if (document.getElementById('detailModal').classList.contains('visible')) {
+      showDetailModal(currentDevId);
+    }
+    renderTable(DEV_DATA);
+    OP.showToast('已禁用开发者 ' + dev.account, 'success');
+  };
+
+  // 禁用原因输入时清除错误
+  document.getElementById('disableReason').addEventListener('input', function () {
+    this.classList.remove('error');
+    document.getElementById('disableError').classList.remove('show');
+  });
+
+  /* ---- 启用开发者 ---- */
+  window.doEnableDev = function (id) {
+    var dev = getDev(id);
+    if (!dev) return;
+
+    OP.showConfirm(
+      '确认启用开发者 <strong>' + dev.account + '</strong>？启用后其API Key将恢复正常调用。',
+      function () {
+        dev.status = 'active';
+        dev.todayCalls = Math.floor(Math.random() * 200);
+        if (dev.prodKey) dev.prodKey.status = 'normal';
+        if (dev.testKey) dev.testKey.status = 'normal';
+        renderTable(DEV_DATA);
+        OP.showToast('已启用开发者 ' + dev.account, 'success');
+      },
+      { title: '启用开发者', confirmText: '确认启用', type: '' }
+    );
+  };
+
+  /* ---- 权限编辑弹窗 ---- */
+  window.showPermEditModal = function () {
+    var dev = getDev(currentDevId);
+    if (!dev) return;
+
+    renderPermList(dev.scopes);
+    openModal('permEditModal');
+  };
+
+  function renderPermList(checkedIds) {
+    var container = document.getElementById('permList');
+    var html = '';
+    for (var i = 0; i < ALL_SCOPES.length; i++) {
+      var scope = ALL_SCOPES[i];
+      var checked = checkedIds.indexOf(scope.id) !== -1;
+      html += '<div class="op-perm-item' + (checked ? ' checked' : '') + '" data-id="' + scope.id + '" onclick="togglePerm(this)">' +
+        '<div class="op-perm-checkbox"><i class="ri-check-line"></i></div>' +
+        '<div class="op-perm-info">' +
+        '<div class="op-perm-name">' + scope.name + '</div>' +
+        '<div class="op-perm-desc">' + scope.desc + '</div>' +
+        '</div></div>';
+    }
+    container.innerHTML = html;
+    updatePermCount();
+  }
+
+  window.togglePerm = function (el) {
+    el.classList.toggle('checked');
+    updatePermCount();
+  };
+
+  function updatePermCount() {
+    var items = document.querySelectorAll('#permList .op-perm-item.checked');
+    var count = items.length;
+    document.getElementById('permCount').textContent = '已选 ' + count + ' 项';
+
+    var allEl = document.getElementById('permCheckAll');
+    var allItems = document.querySelectorAll('#permList .op-perm-item');
+    if (count === allItems.length) {
+      allEl.classList.add('checked');
+    } else {
+      allEl.classList.remove('checked');
+    }
+
+    // 给全选checkbox加样式
+    var allParent = allEl.closest('label');
+    if (count === allItems.length) {
+      allParent.querySelector('.op-perm-checkbox').style.background = 'var(--color-primary, #1684fc)';
+      allParent.querySelector('.op-perm-checkbox').style.borderColor = 'var(--color-primary, #1684fc)';
+    } else {
+      allParent.querySelector('.op-perm-checkbox').style.background = '';
+      allParent.querySelector('.op-perm-checkbox').style.borderColor = '';
+    }
+  }
+
+  window.toggleAllPerms = function () {
+    var items = document.querySelectorAll('#permList .op-perm-item');
+    var allChecked = document.querySelectorAll('#permList .op-perm-item.checked').length === items.length;
+
+    for (var i = 0; i < items.length; i++) {
+      if (allChecked) {
+        items[i].classList.remove('checked');
+      } else {
+        items[i].classList.add('checked');
+      }
+    }
+    updatePermCount();
+  };
+
+  window.doSavePerms = function () {
+    var dev = getDev(currentDevId);
+    if (!dev) return;
+
+    var items = document.querySelectorAll('#permList .op-perm-item.checked');
+    var newScopes = [];
+    for (var i = 0; i < items.length; i++) {
+      newScopes.push(items[i].getAttribute('data-id'));
+    }
+
+    if (newScopes.length === 0) {
+      OP.showToast('请至少选择一个接口权限', 'error');
+      return;
+    }
+
+    dev.scopes = newScopes;
+    closeModal('permEditModal');
+    // 刷新详情弹窗中的接口权限
+    var scopeNames = getScopeNames(dev.scopes);
+    var scopeHtml = '';
+    for (var j = 0; j < scopeNames.length; j++) {
+      scopeHtml += '<span class="op-scope-tag">' + scopeNames[j] + '</span>';
+    }
+    document.getElementById('detailScopes').innerHTML = scopeHtml;
+    OP.showToast('接口权限已更新', 'success');
+  };
+
+  /* ---- 筛选逻辑 ---- */
+  window.doSearch = function () {
+    var status = document.getElementById('filterStatus').value;
+    var company = document.getElementById('filterCompany').value.trim().toLowerCase();
+    var contact = document.getElementById('filterContact').value.trim().toLowerCase();
+
+    var filtered = DEV_DATA.filter(function (dev) {
+      if (status && dev.status !== status) return false;
+      if (company && dev.company.toLowerCase().indexOf(company) === -1) return false;
+      if (contact) {
+        var searchStr = (dev.contactName + ' ' + dev.contactPhone + ' ' + dev.contactPhoneMasked).toLowerCase();
+        if (searchStr.indexOf(contact) === -1) return false;
+      }
+      return true;
+    });
+
+    renderTable(filtered);
+    renderPagination(filtered.length, 20, 1);
+    OP.showToast('查询完成，共' + filtered.length + '条记录', 'success');
+  };
+
+  window.doReset = function () {
+    document.getElementById('filterStatus').value = '';
+    document.getElementById('filterCompany').value = '';
+    document.getElementById('filterContact').value = '';
+    renderTable(DEV_DATA);
+    renderPagination(DEV_DATA.length, 20, 1);
+  };
+
+  /* ---- 初始渲染 ---- */
+  renderTable(DEV_DATA);
+  renderPagination(DEV_DATA.length, 20, 1);
+
+})();
+</script>
+</body>
+</html>

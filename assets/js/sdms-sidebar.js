@@ -1,17 +1,17 @@
 (function () {
   const MENU_ITEMS = [
-    { key: 'workbench', label: '工作台', icon: 'ri-dashboard-3-line', href: './wms-workbench-v2.html' },
+    { key: 'workbench', label: '工作台', icon: 'ri-dashboard-3-line', href: '../wms/wms-workbench-v2.html' },
     { key: 'business', label: '业务', icon: 'ri-layout-grid-fill', href: '', submenuKey: 'business' },
     { key: 'finance', label: '财务', icon: 'ri-money-cny-box-fill', href: '', submenuKey: 'finance' },
     { key: 'user', label: '用户', icon: 'ri-user-3-fill', href: '' },
-    { key: 'report', label: '报表', icon: 'ri-bar-chart-grouped-fill', href: './bi-consolidated-report-v2.html' },
+    { key: 'report', label: '报表', icon: 'ri-bar-chart-grouped-fill', href: '../bi/bi-consolidated-report-v2.html' },
     { key: 'system', label: '系统', icon: 'ri-settings-5-fill', href: '' }
   ];
 
   const SUBMENU_DATA = {
     business: [
       { title: '订单管理', icon: 'ri-file-list-3-line', items: [
-        { label: '干线订单列表', href: './trunk-order-list.html' },
+        { label: '干线订单列表', href: '../outbound/trunk-order-list.html' },
         { label: '小包订单', href: '' },
         { label: 'FBA订单', href: '' },
         { label: '尾程大货订单', href: '' }
@@ -23,7 +23,7 @@
         { label: '无对应单列表', href: '' }
       ]},
       { title: '出库单', icon: 'ri-truck-line', items: [
-        { label: '干线出仓单', href: './trunk-outbound-pending-list.html' },
+        { label: '干线出仓单', href: '../outbound/trunk-outbound-pending-list.html' },
         { label: 'FBA出库单', href: '' },
         { label: '尾程出库单', href: '' }
       ]},
@@ -45,19 +45,19 @@
     ],
     finance: [
       { title: '费用管理', icon: 'ri-money-cny-box-line', items: [
-        { label: '操作费管理', href: './operation-fee-config.html' },
-        { label: '物流费管理', href: './logistics-fee-config.html' },
-        { label: '仓储费管理', href: './storage-fee-config.html' },
-        { label: '报价方案管理', href: './quotation-scheme-config.html' },
-        { label: '供应商报价管理', href: './supplier-quotation-config.html' }
+        { label: '操作费管理', href: '../fee/operation-fee-config.html' },
+        { label: '物流费管理', href: '../fee/logistics-fee-config.html' },
+        { label: '仓储费管理', href: '../fee/storage-fee-config.html' },
+        { label: '报价方案管理', href: '../quotation/quotation-scheme-config.html' },
+        { label: '供应商报价管理', href: '../quotation/supplier-quotation-config.html' }
       ]},
       { title: '费用管理', icon: 'ri-receipt-line', items: [
-        { label: '费用单管理', href: './fee-sheet-list.html' },
-        { label: '费用流水', href: './account-list.html' }
+        { label: '费用单管理', href: '../fee/fee-sheet-list.html' },
+        { label: '费用流水', href: '../account/account-list.html' }
       ]},
       { title: '账单管理', icon: 'ri-bill-line', items: [
-        { label: '账单列表', href: './bill-list.html' },
-        { label: '结算单', href: './settlement-list.html' }
+        { label: '账单列表', href: '../settlement/bill-list.html' },
+        { label: '结算单', href: '../settlement/settlement-list.html' }
       ]}
     ]
   };
@@ -107,7 +107,7 @@
   function renderSidebar(sidebar) {
     const activeKey = sidebar.dataset.sidebarKey || '';
     sidebar.innerHTML = [
-      '<a href="./index.html" class="logo-box">SDMS</a>',
+      '<a href="../../index.html" class="logo-box">SDMS</a>',
       MENU_ITEMS.map((item) => buildMenuItem(item, activeKey)).join(''),
       '<div class="side-version">V2.0.0</div>'
     ].join('');

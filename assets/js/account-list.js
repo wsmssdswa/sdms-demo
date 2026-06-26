@@ -103,7 +103,7 @@
         const isAdd=t.txType==='recharge';
         const amtCls=isAdd?'amount-positive':'amount-negative';
         const sign=isAdd?'+':'-';
-        const feeLink=t.relatedFeeNo?('<a class="name-link" href="./fee-sheet-list.html">'+escapeHtml(t.relatedFeeNo)+'</a>'):'—';
+        const feeLink=t.relatedFeeNo?('<a class="name-link" href="../fee/fee-sheet-list.html">'+escapeHtml(t.relatedFeeNo)+'</a>'):'—';
         const bal=t.balanceAfter!=null?'¥'+t.balanceAfter.toLocaleString():'—';
         return '<tr><td>'+escapeHtml(t.txNo)+'</td><td><span class="type-tag '+typeCls+'">'+TX_TYPE_MAP[t.txType]+'</span></td><td>'+escapeHtml(name)+'</td><td>'+feeLink+'</td><td>'+escapeHtml(t.feeItem)+'</td><td class="'+amtCls+'">'+sign+'¥'+t.amount.toLocaleString()+'</td><td>'+bal+'</td><td>'+escapeHtml(t.createdAt)+'</td></tr>';
       }).join('');

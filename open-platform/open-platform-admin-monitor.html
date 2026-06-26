@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开放平台 - 全局监控看板</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+<link rel="stylesheet" href="../assets/css/open-platform.css">
+<style>
+/* === 统计卡片组 === */
+.op-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.op-stat-card {
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  box-shadow: var(--op-card-shadow);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 0.2s ease;
+}
+
+.op-stat-card:hover {
+  box-shadow: 0 4px 16px 2px rgba(0, 0, 0, 0.1);
+}
+
+.op-stat-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.op-stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.op-stat-icon.blue {
+  background: var(--color-primary-light, #e3f2ff);
+  color: var(--color-primary, #1684fc);
+}
+
+.op-stat-icon.green {
+  background: var(--color-success-light, #e5f2e8);
+  color: var(--color-success, #007e22);
+}
+
+.op-stat-icon.orange {
+  background: var(--color-warning-light, #fff2e9);
+  color: var(--color-warning, #ff8225);
+}
+
+.op-stat-icon.red {
+  background: var(--color-error-light, #fff3f3);
+  color: var(--color-error, #ed0404);
+}
+
+.op-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.op-stat-value.danger {
+  color: var(--color-error, #ed0404);
+}
+
+.op-stat-label {
+  font-size: 13px;
+  color: var(--color-text-tertiary, #909499);
+  font-weight: 500;
+}
+
+/* 异常卡片闪烁效果 */
+.op-stat-card.alert-pulse {
+  border-color: rgba(237, 4, 4, 0.3);
+  animation: card-pulse 2s ease-in-out infinite;
+}
+
+@keyframes card-pulse {
+  0%, 100% {
+    box-shadow: var(--op-card-shadow);
+    border-color: rgba(237, 4, 4, 0.15);
+  }
+  50% {
+    box-shadow: 0 2px 12px 2px rgba(237, 4, 4, 0.15);
+    border-color: rgba(237, 4, 4, 0.4);
+  }
+}
+
+/* === 连接状态指示灯 === */
+.op-status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.op-status-dot.green {
+  background: var(--color-success, #007e22);
+  box-shadow: 0 0 0 2px rgba(0, 126, 34, 0.2);
+}
+
+.op-status-dot.yellow {
+  background: var(--color-warning, #ff8225);
+  box-shadow: 0 0 0 2px rgba(255, 130, 37, 0.2);
+  animation: dot-blink 1.5s ease-in-out infinite;
+}
+
+.op-status-dot.red {
+  background: var(--color-error, #ed0404);
+  box-shadow: 0 0 0 2px rgba(237, 4, 4, 0.2);
+  animation: dot-blink 1s ease-in-out infinite;
+}
+
+@keyframes dot-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.op-conn-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.op-conn-status.normal { color: var(--color-success, #007e22); }
+.op-conn-status.warning { color: var(--color-warning, #ff8225); }
+.op-conn-status.error { color: var(--color-error, #ed0404); }
+
+/* === 成功率文字颜色 === */
+.op-rate {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.op-rate.danger {
+  color: var(--color-error, #ed0404);
+}
+
+.op-rate.normal {
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+/* === 表格行展开区 === */
+.op-expand-row {
+  display: none;
+}
+
+.op-expand-row.open {
+  display: table-row;
+}
+
+.op-expand-content {
+  padding: 16px 20px;
+  background: var(--color-bg-secondary, #f4f5f7);
+  border-radius: 0;
+}
+
+.op-expand-inner {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 20px;
+}
+
+/* 开发者列表 */
+.op-dev-list-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.op-dev-list-title i {
+  color: var(--color-text-tertiary, #909499);
+  font-size: 15px;
+}
+
+.op-dev-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.op-dev-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.op-dev-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-dev-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4d77ea, #7d67ff);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.op-dev-name {
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1d1e);
+  font-family: SF Mono, Consolas, Monaco, monospace;
+}
+
+.op-dev-status {
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.op-dev-status.active {
+  background: var(--color-success-light, #e5f2e8);
+  color: var(--color-success, #007e22);
+}
+
+.op-dev-status.inactive {
+  background: var(--color-bg-tertiary, #edeff2);
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-dev-time {
+  color: var(--color-text-tertiary, #909499);
+  white-space: nowrap;
+}
+
+/* 迷你柱状图 */
+.op-mini-chart-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.op-mini-chart-title i {
+  color: var(--color-text-tertiary, #909499);
+  font-size: 15px;
+}
+
+.op-mini-chart {
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 6px;
+  padding: 14px 16px;
+  height: calc(100% - 30px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.op-mini-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 80px;
+  padding-top: 8px;
+}
+
+.op-mini-chart-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.op-mini-chart-bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  min-height: 4px;
+  transition: height 0.3s ease;
+}
+
+.op-mini-chart-bar.green { background: var(--color-primary, #1684fc); }
+.op-mini-chart-bar.yellow { background: var(--color-warning, #ff8225); }
+.op-mini-chart-bar.red { background: var(--color-error, #ed0404); }
+
+.op-mini-chart-label {
+  font-size: 10px;
+  color: var(--color-text-tertiary, #909499);
+  white-space: nowrap;
+}
+
+.op-mini-chart-value {
+  font-size: 10px;
+  color: var(--color-text-secondary, #65686c);
+  font-weight: 600;
+}
+
+/* === 表格行点击展开 === */
+.op-table tbody tr.op-row-main {
+  cursor: pointer;
+}
+
+.op-table tbody tr.op-row-main:hover td {
+  background: rgba(22, 132, 252, 0.04);
+}
+
+.op-expand-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  color: var(--color-text-tertiary, #909499);
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.op-expand-toggle:hover {
+  background: var(--color-bg-tertiary, #edeff2);
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-expand-toggle.open {
+  transform: rotate(90deg);
+}
+
+/* === 刷新按钮 === */
+.op-btn-refresh {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+.op-btn-refresh.spinning i {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* === 提示条 === */
+.op-tip-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--color-primary-light, #e3f2ff);
+  border: 1px solid #d5e9fe;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--color-text-secondary, #65686c);
+  margin-top: 16px;
+}
+
+.op-tip-bar i {
+  font-size: 16px;
+  color: var(--color-primary, #1684fc);
+  flex-shrink: 0;
+}
+
+.op-tip-bar a {
+  color: var(--color-primary, #1684fc);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.op-tip-bar a:hover {
+  text-decoration: underline;
+}
+
+/* === 状态规则说明 === */
+.op-rule-footer {
+  margin-top: 16px;
+  padding: 12px 16px;
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  line-height: 1.8;
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: 6px;
+}
+
+.op-rule-footer-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-rule-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.op-rule-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.op-rule-dot.green { background: var(--color-success, #007e22); }
+.op-rule-dot.yellow { background: var(--color-warning, #ff8225); }
+.op-rule-dot.red { background: var(--color-error, #ed0404); }
+
+/* === 响应式 === */
+@media (max-width: 1200px) {
+  .op-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .op-expand-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .op-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<header id="opTopNav"></header>
+<div class="op-page no-sidebar">
+
+  <!-- 右侧主区域 -->
+  <div class="op-main">
+
+    <!-- 顶部标题栏 -->
+    <div class="op-header">
+      <div class="op-header-breadcrumb">
+        <a href="#">开放平台</a>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>全局监控看板</span>
+      </div>
+      <div class="op-header-actions">
+        <span style="font-size:12px;color:var(--color-text-tertiary)">
+          <i class="ri-time-line"></i> 最后刷新: <span id="lastRefresh">2026-06-09 11:25:00</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="op-content">
+
+      <!-- 页面标题 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h2 style="margin:0;font-size:18px;font-weight:700;color:var(--color-text-primary)">全局监控看板</h2>
+        <button class="op-btn op-btn-default op-btn-refresh" id="refreshBtn" onclick="doRefresh()">
+          <i class="ri-refresh-line"></i>刷新数据
+        </button>
+      </div>
+
+      <!-- 全局统计卡片 -->
+      <div class="op-stats-grid">
+        <div class="op-stat-card">
+          <div class="op-stat-card-header">
+            <div class="op-stat-icon blue"><i class="ri-building-2-line"></i></div>
+          </div>
+          <div class="op-stat-value">8</div>
+          <div class="op-stat-label">接入客户总数</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-card-header">
+            <div class="op-stat-icon green"><i class="ri-user-heart-line"></i></div>
+          </div>
+          <div class="op-stat-value">23</div>
+          <div class="op-stat-label">已激活开发者</div>
+        </div>
+        <div class="op-stat-card">
+          <div class="op-stat-card-header">
+            <div class="op-stat-icon orange"><i class="ri-line-chart-line"></i></div>
+          </div>
+          <div class="op-stat-value">48,291</div>
+          <div class="op-stat-label">今日总调用量</div>
+        </div>
+        <div class="op-stat-card alert-pulse">
+          <div class="op-stat-card-header">
+            <div class="op-stat-icon red"><i class="ri-alarm-warning-line"></i></div>
+          </div>
+          <div class="op-stat-value danger">2</div>
+          <div class="op-stat-label">今日异常客户</div>
+        </div>
+      </div>
+
+      <!-- 客户连接状态表格 -->
+      <div class="op-card">
+        <div class="op-card-head">
+          <div class="op-card-title">
+            <i class="ri-pulse-line" style="color:var(--color-primary);margin-right:4px"></i>
+            客户连接状态
+          </div>
+          <button class="op-btn op-btn-default op-btn-refresh" onclick="doRefresh()">
+            <i class="ri-refresh-line"></i>刷新
+          </button>
+        </div>
+        <div class="op-table-wrap">
+          <table class="op-table" id="monitorTable">
+            <thead>
+              <tr>
+                <th style="width:30px"></th>
+                <th style="min-width:180px">客户公司</th>
+                <th style="min-width:80px;text-align:center">开发者数</th>
+                <th style="min-width:100px">连接状态</th>
+                <th style="min-width:90px;text-align:right">今日调用量</th>
+                <th style="min-width:100px;text-align:center">今日成功率</th>
+                <th style="min-width:110px;text-align:center">今日回调成功率</th>
+                <th style="min-width:130px">最近调用时间</th>
+                <th style="min-width:130px">最近回调时间</th>
+              </tr>
+            </thead>
+            <tbody id="monitorTableBody">
+              <!-- JS动态渲染 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 告警快捷入口 -->
+      <div class="op-tip-bar">
+        <i class="ri-alarm-warning-line"></i>
+        <span>发现异常客户？前往 <a href="#">告警配置</a> 设置通知规则</span>
+      </div>
+
+      <!-- 状态判定规则说明 -->
+      <div class="op-rule-footer">
+        <div class="op-rule-footer-title">状态判定规则：</div>
+        <div class="op-rule-item">
+          <span class="op-rule-dot green"></span>
+          <span>正常：近1小时有调用且成功率 > 99%</span>
+        </div>
+        <div class="op-rule-item">
+          <span class="op-rule-dot yellow"></span>
+          <span>异常：近1小时成功率 < 95% 或回调连续失败</span>
+        </div>
+        <div class="op-rule-item">
+          <span class="op-rule-dot red"></span>
+          <span>已断开：近24小时无任何调用</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast容器 -->
+<div class="op-toast-stack" id="opToastStack"></div>
+
+<script src="../assets/js/open-platform.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---- 初始化顶栏 ---- */
+  if (!OP.requireAuth()) return;
+  OP.renderTopNav(OP.ADMIN_MENUS, 'monitor');
+
+  /* ---- Mock客户数据 ---- */
+  var CLIENT_DATA = [
+    {
+      id: 1,
+      company: '深圳智联物流有限公司',
+      devCount: 2,
+      status: 'normal',
+      todayCalls: 12847,
+      successRate: 99.8,
+      callbackRate: 98.5,
+      lastCallTime: '2026-06-09 11:23',
+      lastCallbackTime: '2026-06-09 11:22',
+      developers: [
+        { name: 'lisi_tech', initial: '李', status: 'active', lastAction: '2026-06-09 11:23' },
+        { name: 'liwei_dev', initial: '李', status: 'active', lastAction: '2026-06-09 11:20' }
+      ],
+      chartData: [
+        { label: '6/3', value: 9200, color: 'green' },
+        { label: '6/4', value: 10500, color: 'green' },
+        { label: '6/5', value: 11800, color: 'green' },
+        { label: '6/6', value: 10200, color: 'green' },
+        { label: '6/7', value: 13100, color: 'green' },
+        { label: '6/8', value: 12600, color: 'green' },
+        { label: '6/9', value: 12847, color: 'green' }
+      ]
+    },
+    {
+      id: 2,
+      company: '上海跨境通电子商务有限公司',
+      devCount: 1,
+      status: 'normal',
+      todayCalls: 8923,
+      successRate: 99.5,
+      callbackRate: 99.1,
+      lastCallTime: '2026-06-09 11:21',
+      lastCallbackTime: '2026-06-09 11:21',
+      developers: [
+        { name: 'wangwu_it', initial: '王', status: 'active', lastAction: '2026-06-09 11:21' }
+      ],
+      chartData: [
+        { label: '6/3', value: 7200, color: 'green' },
+        { label: '6/4', value: 8100, color: 'green' },
+        { label: '6/5', value: 8500, color: 'green' },
+        { label: '6/6', value: 7800, color: 'green' },
+        { label: '6/7', value: 9000, color: 'green' },
+        { label: '6/8', value: 8700, color: 'green' },
+        { label: '6/9', value: 8923, color: 'green' }
+      ]
+    },
+    {
+      id: 3,
+      company: '北京中远海运科技有限公司',
+      devCount: 3,
+      status: 'normal',
+      todayCalls: 15632,
+      successRate: 99.9,
+      callbackRate: 99.6,
+      lastCallTime: '2026-06-09 11:24',
+      lastCallbackTime: '2026-06-09 11:23',
+      developers: [
+        { name: 'sunqi_api', initial: '孙', status: 'active', lastAction: '2026-06-09 11:24' },
+        { name: 'sunw_erp', initial: '孙', status: 'active', lastAction: '2026-06-09 11:18' },
+        { name: 'suny_test', initial: '孙', status: 'active', lastAction: '2026-06-09 10:55' }
+      ],
+      chartData: [
+        { label: '6/3', value: 12000, color: 'green' },
+        { label: '6/4', value: 14200, color: 'green' },
+        { label: '6/5', value: 13800, color: 'green' },
+        { label: '6/6', value: 15100, color: 'green' },
+        { label: '6/7', value: 16200, color: 'green' },
+        { label: '6/8', value: 15800, color: 'green' },
+        { label: '6/9', value: 15632, color: 'green' }
+      ]
+    },
+    {
+      id: 4,
+      company: '宁波港务局信息技术中心',
+      devCount: 2,
+      status: 'normal',
+      todayCalls: 5634,
+      successRate: 99.3,
+      callbackRate: 97.8,
+      lastCallTime: '2026-06-09 11:19',
+      lastCallbackTime: '2026-06-09 11:18',
+      developers: [
+        { name: 'chenshi_api', initial: '陈', status: 'active', lastAction: '2026-06-09 11:19' },
+        { name: 'chenm_dev', initial: '陈', status: 'active', lastAction: '2026-06-09 10:45' }
+      ],
+      chartData: [
+        { label: '6/3', value: 4800, color: 'green' },
+        { label: '6/4', value: 5200, color: 'green' },
+        { label: '6/5', value: 5100, color: 'green' },
+        { label: '6/6', value: 5500, color: 'green' },
+        { label: '6/7', value: 5800, color: 'green' },
+        { label: '6/8', value: 5600, color: 'green' },
+        { label: '6/9', value: 5634, color: 'green' }
+      ]
+    },
+    {
+      id: 5,
+      company: '顺丰科技有限公司',
+      devCount: 1,
+      status: 'normal',
+      todayCalls: 3205,
+      successRate: 99.6,
+      callbackRate: 98.9,
+      lastCallTime: '2026-06-09 11:22',
+      lastCallbackTime: '2026-06-09 11:22',
+      developers: [
+        { name: 'wujiu_dev', initial: '吴', status: 'active', lastAction: '2026-06-09 11:22' }
+      ],
+      chartData: [
+        { label: '6/3', value: 2100, color: 'green' },
+        { label: '6/4', value: 2800, color: 'green' },
+        { label: '6/5', value: 3000, color: 'green' },
+        { label: '6/6', value: 3200, color: 'green' },
+        { label: '6/7', value: 3500, color: 'green' },
+        { label: '6/8', value: 3100, color: 'green' },
+        { label: '6/9', value: 3205, color: 'green' }
+      ]
+    },
+    {
+      id: 6,
+      company: '广州万达供应链管理有限公司',
+      devCount: 2,
+      status: 'warning',
+      todayCalls: 1287,
+      successRate: 93.2,
+      callbackRate: 88.4,
+      lastCallTime: '2026-06-09 11:15',
+      lastCallbackTime: '2026-06-09 11:10',
+      developers: [
+        { name: 'zhaoliu_dev', initial: '赵', status: 'active', lastAction: '2026-06-09 11:15' },
+        { name: 'zhaoq_test', initial: '赵', status: 'active', lastAction: '2026-06-09 10:32' }
+      ],
+      chartData: [
+        { label: '6/3', value: 1800, color: 'green' },
+        { label: '6/4', value: 2100, color: 'green' },
+        { label: '6/5', value: 1900, color: 'yellow' },
+        { label: '6/6', value: 1500, color: 'yellow' },
+        { label: '6/7', value: 1100, color: 'yellow' },
+        { label: '6/8', value: 900, color: 'yellow' },
+        { label: '6/9', value: 1287, color: 'yellow' }
+      ]
+    },
+    {
+      id: 7,
+      company: '杭州阿里巴巴供应链有限公司',
+      devCount: 1,
+      status: 'warning',
+      todayCalls: 862,
+      successRate: 91.7,
+      callbackRate: 82.3,
+      lastCallTime: '2026-06-09 10:48',
+      lastCallbackTime: '2026-06-09 10:30',
+      developers: [
+        { name: 'zhouba_tech', initial: '周', status: 'active', lastAction: '2026-06-09 10:48' }
+      ],
+      chartData: [
+        { label: '6/3', value: 3200, color: 'green' },
+        { label: '6/4', value: 2800, color: 'green' },
+        { label: '6/5', value: 1900, color: 'yellow' },
+        { label: '6/6', value: 1200, color: 'yellow' },
+        { label: '6/7', value: 800, color: 'red' },
+        { label: '6/8', value: 600, color: 'red' },
+        { label: '6/9', value: 862, color: 'yellow' }
+      ]
+    },
+    {
+      id: 8,
+      company: '厦门象屿集团有限公司',
+      devCount: 0,
+      status: 'disconnected',
+      todayCalls: 0,
+      successRate: 0,
+      callbackRate: 0,
+      lastCallTime: '2026-06-08 09:15',
+      lastCallbackTime: '2026-06-08 09:14',
+      developers: [],
+      chartData: [
+        { label: '6/3', value: 0, color: 'green' },
+        { label: '6/4', value: 120, color: 'green' },
+        { label: '6/5', value: 80, color: 'green' },
+        { label: '6/6', value: 50, color: 'green' },
+        { label: '6/7', value: 30, color: 'red' },
+        { label: '6/8', value: 15, color: 'red' },
+        { label: '6/9', value: 0, color: 'red' }
+      ]
+    }
+  ];
+
+  /* ---- 展开状态跟踪 ---- */
+  var expandedRows = {};
+
+  /* ---- 渲染连接状态 ---- */
+  function renderConnStatus(status) {
+    var config = {
+      normal:       { dotClass: 'green',  textClass: 'normal',   label: '正常' },
+      warning:      { dotClass: 'yellow', textClass: 'warning',  label: '异常' },
+      disconnected: { dotClass: 'red',    textClass: 'error',    label: '已断开' }
+    };
+    var cfg = config[status] || config.disconnected;
+    return '<span class="op-conn-status ' + cfg.textClass + '">' +
+           '<span class="op-status-dot ' + cfg.dotClass + '"></span>' +
+           cfg.label +
+           '</span>';
+  }
+
+  /* ---- 渲染成功率 ---- */
+  function renderRate(rate, threshold) {
+    threshold = threshold || 95;
+    if (rate === 0) return '<span style="color:var(--color-text-tertiary)">-</span>';
+    var cls = rate < threshold ? 'danger' : 'normal';
+    return '<span class="op-rate ' + cls + '">' + rate.toFixed(1) + '%</span>';
+  }
+
+  /* ---- 渲染迷你柱状图 ---- */
+  function renderMiniChart(chartData) {
+    if (!chartData || chartData.length === 0) return '';
+    var maxVal = 0;
+    for (var i = 0; i < chartData.length; i++) {
+      if (chartData[i].value > maxVal) maxVal = chartData[i].value;
+    }
+    if (maxVal === 0) maxVal = 1;
+
+    var html = '';
+    for (var j = 0; j < chartData.length; j++) {
+      var item = chartData[j];
+      var heightPct = (item.value / maxVal * 100);
+      var barHeight = Math.max(4, heightPct * 0.7);
+      html += '<div class="op-mini-chart-bar-group">' +
+              '<div class="op-mini-chart-value">' + (item.value > 0 ? (item.value >= 1000 ? (item.value / 1000).toFixed(1) + 'k' : item.value) : '0') + '</div>' +
+              '<div class="op-mini-chart-bar ' + item.color + '" style="height:' + barHeight + 'px"></div>' +
+              '<div class="op-mini-chart-label">' + item.label + '</div>' +
+              '</div>';
+    }
+    return html;
+  }
+
+  /* ---- 渲染开发者列表 ---- */
+  function renderDevList(developers) {
+    if (!developers || developers.length === 0) {
+      return '<div style="font-size:12px;color:var(--color-text-tertiary);padding:8px 0">暂无开发者</div>';
+    }
+    var html = '<div class="op-dev-list">';
+    for (var i = 0; i < developers.length; i++) {
+      var dev = developers[i];
+      html += '<div class="op-dev-item">' +
+              '<div class="op-dev-item-left">' +
+              '<div class="op-dev-avatar">' + dev.initial + '</div>' +
+              '<span class="op-dev-name">' + dev.name + '</span>' +
+              '<span class="op-dev-status ' + dev.status + '">' + (dev.status === 'active' ? '活跃' : '离线') + '</span>' +
+              '</div>' +
+              '<span class="op-dev-time">' + dev.lastAction + '</span>' +
+              '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  /* ---- 渲染表格 ---- */
+  function renderTable() {
+    var tbody = document.getElementById('monitorTableBody');
+    var html = '';
+
+    for (var i = 0; i < CLIENT_DATA.length; i++) {
+      var client = CLIENT_DATA[i];
+      var isOpen = expandedRows[client.id] === true;
+      var toggleIcon = isOpen ? 'open' : '';
+
+      // 主行
+      html += '<tr class="op-row-main" data-id="' + client.id + '">' +
+        '<td>' +
+        '<span class="op-expand-toggle ' + toggleIcon + '" onclick="toggleRow(event, ' + client.id + ')">' +
+        '<i class="ri-arrow-right-s-line"></i>' +
+        '</span>' +
+        '</td>' +
+        '<td style="font-weight:600">' + client.company + '</td>' +
+        '<td style="text-align:center">' + client.devCount + '</td>' +
+        '<td>' + renderConnStatus(client.status) + '</td>' +
+        '<td style="text-align:right;font-weight:600">' + client.todayCalls.toLocaleString() + '</td>' +
+        '<td style="text-align:center">' + renderRate(client.successRate, 95) + '</td>' +
+        '<td style="text-align:center">' + renderRate(client.callbackRate, 95) + '</td>' +
+        '<td style="white-space:nowrap">' + client.lastCallTime + '</td>' +
+        '<td style="white-space:nowrap">' + client.lastCallbackTime + '</td>' +
+        '</tr>';
+
+      // 展开行
+      html += '<tr class="op-expand-row ' + (isOpen ? 'open' : '') + '" id="expand-' + client.id + '">' +
+        '<td colspan="9">' +
+        '<div class="op-expand-content">' +
+        '<div class="op-expand-inner">' +
+        '<div>' +
+        '<div class="op-dev-list-title"><i class="ri-team-line"></i>开发者列表</div>' +
+        renderDevList(client.developers) +
+        '</div>' +
+        '<div>' +
+        '<div class="op-mini-chart-title"><i class="ri-bar-chart-2-line"></i>近7天调用量</div>' +
+        '<div class="op-mini-chart">' +
+        '<div class="op-mini-chart-bars">' +
+        renderMiniChart(client.chartData) +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</td>' +
+        '</tr>';
+    }
+
+    tbody.innerHTML = html;
+  }
+
+  /* ---- 展开/收起行 ---- */
+  window.toggleRow = function (e, id) {
+    e.stopPropagation();
+    expandedRows[id] = !expandedRows[id];
+    renderTable();
+  };
+
+  /* ---- 刷新数据 ---- */
+  window.doRefresh = function () {
+    var btns = document.querySelectorAll('.op-btn-refresh');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.add('spinning');
+    }
+
+    setTimeout(function () {
+      // 模拟刷新：更新最后刷新时间
+      var now = new Date();
+      var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+      var timeStr = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) +
+                    ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+      document.getElementById('lastRefresh').textContent = timeStr;
+
+      // 微调模拟数据
+      for (var j = 0; j < CLIENT_DATA.length; j++) {
+        var c = CLIENT_DATA[j];
+        if (c.status === 'normal') {
+          c.todayCalls += Math.floor(Math.random() * 50) - 10;
+          if (c.todayCalls < 0) c.todayCalls = 0;
+        }
+      }
+
+      renderTable();
+
+      for (var k = 0; k < btns.length; k++) {
+        btns[k].classList.remove('spinning');
+      }
+
+      OP.showToast('数据已刷新', 'success');
+    }, 800);
+  };
+
+  /* ---- 初始渲染 ---- */
+  renderTable();
+
+})();
+</script>
+</body>
+</html>

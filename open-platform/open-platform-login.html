@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDMS开放平台 - 登录</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="../assets/css/open-platform.css">
+</head>
+<body class="op-login-page">
+  <!-- 顶部导航 -->
+  <header id="opTopNav"></header>
+
+  <!-- 登录卡片 -->
+  <div class="op-login-card">
+    <div class="op-login-title">SDMS开放平台</div>
+    <div class="op-login-subtitle">开发者登录</div>
+    <div class="op-login-form">
+      <div class="op-login-field">
+        <label for="loginUsername">用户名</label>
+        <input type="text" id="loginUsername" placeholder="请输入用户名" autocomplete="username">
+      </div>
+      <div class="op-login-field">
+        <label for="loginPassword">密码</label>
+        <input type="password" id="loginPassword" placeholder="请输入密码" autocomplete="current-password">
+      </div>
+      <div class="op-login-error" id="loginError"></div>
+      <button class="op-login-btn" id="loginBtn" onclick="doLogin()">登 录</button>
+    </div>
+    <div class="op-login-footer">还没有账号？请联系管理员开通</div>
+  </div>
+
+  <!-- 非开发者提示 -->
+  <div class="op-login-prompt" id="notDeveloperPrompt">
+    <div class="op-login-prompt-card">
+      <div class="op-login-prompt-icon"><i class="ri-error-warning-line"></i></div>
+      <div class="op-login-prompt-title">您还不是开发者</div>
+      <div class="op-login-prompt-desc">您的账号尚未申请成为开发者。申请通过后，即可使用API接口和相关功能。</div>
+      <div class="op-login-prompt-actions">
+        <a href="open-platform-developer-apply.html" class="op-btn op-btn-primary op-btn-lg">申请成为开发者</a>
+        <button class="op-btn op-btn-default op-btn-lg" onclick="closePrompt()">暂不申请</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../assets/js/open-platform.js"></script>
+  <script>
+    /* ---- 初始化顶部导航（公开页面，精简菜单） ---- */
+    OP.renderTopNav(OP.PUBLIC_MENUS, 'docs', { public: true });
+
+    /* ---- 键盘支持：Enter触发登录 ---- */
+    document.getElementById('loginUsername').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doLogin();
+    });
+    document.getElementById('loginPassword').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doLogin();
+    });
+
+    /* ---- 登录逻辑 ---- */
+    function doLogin() {
+      var username = document.getElementById('loginUsername').value.trim();
+      var password = document.getElementById('loginPassword').value.trim();
+      var errorEl  = document.getElementById('loginError');
+
+      errorEl.classList.remove('show');
+
+      if (!username || !password) {
+        errorEl.textContent = '请输入用户名和密码';
+        errorEl.classList.add('show');
+        return;
+      }
+
+      var btn = document.getElementById('loginBtn');
+      btn.classList.add('loading');
+      btn.textContent = '登录中...';
+
+      setTimeout(function () {
+        var result = OP.login(username, password);
+        btn.classList.remove('loading');
+        btn.textContent = '登 录';
+
+        if (!result.success) {
+          errorEl.textContent = '用户名或密码错误';
+          errorEl.classList.add('show');
+          return;
+        }
+
+        if (!result.isDeveloper) {
+          document.getElementById('notDeveloperPrompt').classList.add('show');
+          return;
+        }
+
+        OP.saveUser(result.user);
+        window.location.href = 'open-platform-developer-dashboard.html';
+      }, 800);
+    }
+
+    /* ---- 关闭非开发者提示 ---- */
+    function closePrompt() {
+      document.getElementById('notDeveloperPrompt').classList.remove('show');
+    }
+  </script>
+</body>
+</html>

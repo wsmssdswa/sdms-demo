@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PDA订单出库详情 — 千仓SDMS</title>
+  <style>
+    :root {
+      --nav-bg: #0F2B46;
+      --nav-bg-end: #1A3F66;
+      --brand: #2B6CB0;
+      --brand-bright: #3B82F6;
+      --brand-glow: rgba(59, 130, 246, 0.35);
+      --surface: #FFFFFF;
+      --surface-alt: #F7F8FA;
+      --text-primary: #1A202C;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --divider: #E2E8F0;
+      --check-green: #22C55E;
+      --green-badge-bg: #DCFCE7;
+      --green-badge-text: #16A34A;
+      --green-number: #3B9F08;
+      --orange-number: #F59E0B;
+      --blue-card-bg: #EFF6FF;
+      --green-card-bg: #F0FDF4;
+      --danger: #EF4444;
+      --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.10);
+      --shadow-fab: 0 10px 32px rgba(43, 108, 176, 0.45);
+      /* 固定 750×1536 设计稿画板（与入库页一致） */
+      --frame-w: 750px;
+      --frame-h: 1536px;
+      --radius: 20px;
+      --radius-sm: 12px;
+      --font-ui: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --font-mono: 'IBM Plex Mono', 'SF Mono', 'Cascadia Code', monospace;
+      --content-pad: 24px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-ui);
+      background: #EDF0F4;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── 固定设计稿画板 750×1536（绝对定位居中 + 等比缩放至一屏）── */
+    .pda-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: var(--frame-w);
+      height: var(--frame-h);
+      background: var(--surface-alt);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--divider);
+      box-shadow: 0 24px 80px rgba(15, 23, 42, 0.25);
+      transform: translate(-50%, -50%) scale(var(--frame-scale, 1));
+      transform-origin: center center;
+    }
+
+    /* ── 顶部导航栏（与列表页一致）── */
+    .nav-bar {
+      background: linear-gradient(135deg, var(--nav-bg) 0%, var(--nav-bg-end) 100%);
+      color: #fff;
+      padding: 0 32px;
+      height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .nav-bar .back {
+      width: 64px; height: 64px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 16px; transition: background 0.15s;
+    }
+    .nav-bar .back:active { background: rgba(255,255,255,0.12); }
+    .nav-bar .title {
+      font-family: var(--font-mono);
+      font-size: 32px; font-weight: 700; letter-spacing: 0.5px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .nav-bar .actions { display: flex; align-items: center; gap: 8px; }
+    .nav-bar .icon-btn {
+      width: 64px; height: 64px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 16px; transition: background 0.15s;
+    }
+    .nav-bar .icon-btn:active { background: rgba(255,255,255,0.12); }
+    .nav-bar .icon-btn svg { width: 40px; height: 40px; }
+
+    /* ── 统计条 ── */
+    .stats-bar {
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      padding: 28px 0;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+    }
+    .stats-item {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+    .stats-item + .stats-item::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 15%;
+      height: 70%;
+      width: 2px;
+      background: var(--divider);
+    }
+    .stats-label {
+      font-size: 24px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .stats-value {
+      font-size: 34px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+    }
+    .stats-value.green { color: var(--green-number); }
+    .stats-value.orange { color: var(--orange-number); }
+    .stats-btn {
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-bright) 100%);
+      color: #fff;
+      font-family: var(--font-ui);
+      font-size: 26px;
+      font-weight: 600;
+      padding: 12px 32px;
+      border-radius: 40px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: transform 0.1s;
+    }
+    .stats-btn:active { transform: scale(0.95); }
+
+    /* ── 内容区 ── */
+    .content {
+      flex: 1;
+      padding: 20px var(--content-pad) 40px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── 订单折叠卡片 ── */
+    .order-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      animation: fadeInUp 0.35s ease-out both;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .order-card-header {
+      display: flex;
+      align-items: center;
+      padding: 28px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .order-card-header:active { background: rgba(0,0,0,0.02); }
+
+    .card-left {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .card-arrow {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+    }
+    .card-arrow svg { width: 28px; height: 28px; fill: var(--text-muted); }
+    .card-arrow.expanded { transform: rotate(180deg); }
+
+    .card-order-no {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-badge {
+      flex-shrink: 0;
+      background: var(--green-badge-bg);
+      color: var(--green-badge-text);
+      font-size: 22px;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .card-right {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 16px;
+      font-size: 26px;
+      color: var(--text-muted);
+    }
+    .card-right .route-code {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .card-right .route-sep { color: var(--divider); }
+    .card-right .route-name { color: var(--text-secondary); }
+
+    /* ── 标签列表 ── */
+    .tag-list {
+      padding: 0 28px 28px;
+      border-top: 2px solid var(--divider);
+    }
+
+    .tag-item {
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      border-radius: var(--radius-sm);
+      margin-top: 16px;
+      transition: transform 0.1s, background 0.25s;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .tag-item:active { transform: scale(0.98); }
+
+    .tag-item.pending { background: var(--blue-card-bg); }
+    .tag-item.verified { background: var(--green-card-bg); }
+
+    /* 水印文字 */
+    .tag-item::after {
+      content: attr(data-watermark);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-18deg);
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: 12px;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .tag-item.pending::after {
+      color: rgba(43, 108, 176, 0.10);
+    }
+    .tag-item.verified::after {
+      color: rgba(22, 163, 74, 0.12);
+    }
+
+    /* 卡片顶行：标签编号 + 状态 */
+    .tag-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .tag-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .tag-icon {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .tag-icon svg { width: 32px; height: 32px; }
+    .tag-id {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .tag-status .dot {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tag-status .dot.done {
+      background: var(--check-green);
+    }
+    .tag-status .dot.done svg { width: 24px; height: 24px; fill: #fff; }
+    .tag-status .dot.wait {
+      background: var(--divider);
+    }
+    .tag-status .dot.wait svg { width: 24px; height: 24px; fill: var(--text-muted); }
+
+    /* 卡片内容行：左侧信息 + 右侧照片 */
+    .tag-body-row {
+      display: flex;
+      gap: 20px;
+    }
+
+    /* 左侧信息区 */
+    .tag-info-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .tag-info-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 24px;
+    }
+    .tag-info-row svg {
+      width: 28px; height: 28px;
+      flex-shrink: 0;
+    }
+    .tag-info-row .info-label {
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .tag-info-row .info-value {
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-weight: 500;
+    }
+
+    /* 右侧货物照片 */
+    .tag-photo {
+      width: 128px;
+      height: 128px;
+      flex-shrink: 0;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 2px solid var(--divider);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .tag-photo:active { border-color: var(--brand); }
+    .tag-photo svg { width: 56px; height: 56px; }
+    .tag-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── 结束装车按钮 ── */
+    .finish-bar {
+      padding: 24px var(--content-pad);
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(transparent, var(--surface-alt) 20%);
+      display: none;
+      flex-shrink: 0;
+    }
+    .finish-bar.show { display: block; }
+    .finish-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-bright) 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 28px 48px;
+      font-family: var(--font-ui);
+      font-size: 30px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-fab);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: transform 0.15s;
+    }
+    .finish-btn:active { transform: scale(0.97); }
+    .finish-btn svg { width: 40px; height: 40px; }
+
+    /* ── 通用弹窗遮罩（相对画板）── */
+    .modal-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.5);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.active { display: flex; }
+
+    /* 底部弹窗（标签核验用） */
+    .modal-overlay.bottom-sheet { align-items: flex-end; }
+    .modal-overlay.bottom-sheet .modal-content {
+      border-radius: 32px 32px 0 0;
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    /* 居中弹窗（结束装车警告用） */
+    .modal-overlay.center-dialog .modal-content {
+      border-radius: 28px;
+      width: 88%;
+      max-width: 560px;
+      animation: zoomIn 0.25s ease-out;
+    }
+    @keyframes zoomIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-content {
+      background: var(--surface);
+      width: 100%;
+      max-width: var(--frame-w);
+      overflow: hidden;
+    }
+
+    .modal-handle {
+      width: 72px; height: 8px;
+      background: var(--divider);
+      border-radius: 4px;
+      margin: 20px auto 0;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 32px 40px;
+    }
+    .modal-title {
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .modal-close {
+      width: 56px; height: 56px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 50%;
+      transition: background 0.15s;
+    }
+    .modal-close:active { background: var(--surface-alt); }
+    .modal-close svg { width: 36px; height: 36px; stroke: var(--text-muted); }
+
+    .modal-body { padding: 0 40px 40px; }
+
+    /* 扫描步骤区 */
+    .scan-steps { display: flex; flex-direction: column; gap: 24px; margin-bottom: 32px; }
+
+    .scan-step {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .scan-step-label {
+      width: 120px;
+      flex-shrink: 0;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .scan-step-input {
+      flex: 1;
+      height: 80px;
+      background: var(--surface-alt);
+      border: 2px solid var(--divider);
+      border-radius: var(--radius-sm);
+      padding: 0 24px;
+      font-family: var(--font-mono);
+      font-size: 26px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .scan-step-input::placeholder { color: var(--text-muted); font-family: var(--font-ui); font-size: 24px; }
+    .scan-step-input:focus { border-color: var(--brand); box-shadow: 0 0 0 6px rgba(43, 108, 176, 0.1); }
+    .scan-step-input.matched {
+      border-color: var(--check-green);
+      background: var(--green-card-bg);
+    }
+    .scan-step-input.mismatch {
+      border-color: var(--danger);
+      background: #FEF2F2;
+    }
+    .scan-step-btn {
+      height: 80px;
+      width: 80px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-bright) 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s;
+    }
+    .scan-step-btn:active { transform: scale(0.94); }
+    .scan-step-btn svg { width: 36px; height: 36px; }
+
+    /* 匹配结果提示 */
+    .match-result {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 24px;
+      border-radius: var(--radius-sm);
+      font-size: 26px;
+      font-weight: 500;
+    }
+    .match-result.show { display: flex; }
+    .match-result.success {
+      background: var(--green-badge-bg);
+      color: var(--green-badge-text);
+    }
+    .match-result.fail {
+      background: #FEF2F2;
+      color: var(--danger);
+    }
+    .match-result svg { width: 32px; height: 32px; flex-shrink: 0; }
+
+    .modal-footer {
+      padding: 24px 40px;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+    }
+    .modal-submit {
+      width: 100%;
+      height: 96px;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-bright) 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-family: var(--font-ui);
+      font-size: 32px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-fab);
+      transition: transform 0.15s;
+    }
+    .modal-submit:active { transform: scale(0.97); }
+    .modal-submit:disabled { background: #CBD5E1; box-shadow: none; cursor: not-allowed; }
+
+    /* ── 封条类型按钮 ── */
+    .seal-type-btn {
+      padding: 16px 44px;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--brand);
+      background: var(--surface);
+      color: var(--brand);
+      font-family: var(--font-ui);
+      font-size: 28px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .seal-type-btn.active {
+      background: var(--blue-card-bg);
+      color: var(--brand);
+    }
+    .seal-type-btn:active { transform: scale(0.96); }
+
+    /* ── 封条照片 ── */
+    .seal-photos {
+      width: 112px;
+      flex-shrink: 0;
+      align-self: stretch;
+    }
+    .seal-photo-add {
+      width: 112px;
+      height: 100%;
+      border: 2px dashed var(--brand);
+      border-radius: var(--radius-sm);
+      background: var(--blue-card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .seal-photo-add:active {
+      border-color: var(--brand-bright);
+      background: var(--surface);
+    }
+    .seal-photo-item {
+      width: 112px;
+      height: 100%;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      position: relative;
+      border: 2px solid var(--divider);
+    }
+    .seal-photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .seal-photo-del {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 32px;
+      height: 32px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .seal-photo-del svg { width: 16px; height: 16px; }
+
+    /* ── 装车人列表 ── */
+    .loader-list {
+      background: var(--surface);
+      border: 2px solid var(--divider);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .loader-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      font-size: 28px;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 2px solid var(--divider);
+    }
+    .loader-item:last-child { border-bottom: none; }
+    .loader-item:active { background: var(--surface-alt); }
+    .loader-item .loader-check {
+      width: 36px; height: 36px;
+      fill: transparent;
+      transition: fill 0.15s;
+    }
+    .loader-item.selected .loader-check {
+      fill: var(--brand);
+    }
+
+    /* ── 二次确认弹窗（结束装车警告）── */
+    .warn-icon {
+      width: 112px; height: 112px;
+      background: #FEF3C7;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 16px auto 28px;
+    }
+    .warn-icon svg { width: 60px; height: 60px; }
+    .warn-title {
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .warn-text {
+      font-size: 28px;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+    .warn-text strong {
+      color: var(--orange-number);
+      font-weight: 700;
+      font-size: 34px;
+      font-family: var(--font-mono);
+    }
+
+    /* ── 弹窗底部按钮 ── */
+    .dialog-cancel {
+      flex: 2;
+      height: 88px;
+      background: var(--surface-alt);
+      color: var(--text-secondary);
+      border: none;
+      border-radius: 44px;
+      font-family: var(--font-ui);
+      font-size: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .dialog-cancel:active { transform: scale(0.97); }
+    .dialog-confirm {
+      flex: 3;
+      height: 88px;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-bright) 100%);
+      color: #fff;
+      border: none;
+      border-radius: 44px;
+      font-family: var(--font-ui);
+      font-size: 30px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .dialog-confirm:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+
+<div class="pda-frame">
+
+  <!-- 顶部导航 -->
+  <div class="nav-bar">
+    <div class="back" onclick="history.back()">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </div>
+    <div class="title">甘H45F0B</div>
+    <div class="actions">
+      <div class="icon-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </div>
+      <div class="icon-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- 统计条 -->
+  <div class="stats-bar">
+    <div class="stats-item">
+      <div class="stats-label">监装人</div>
+      <div class="stats-value">严振范</div>
+    </div>
+    <div class="stats-item">
+      <div class="stats-label">标签核验</div>
+      <div class="stats-value green">1/1</div>
+    </div>
+    <div class="stats-item">
+      <div class="stats-label">托盘核验</div>
+      <div class="stats-value orange" id="trayCount">1/2</div>
+    </div>
+    <div class="stats-item">
+      <button class="stats-btn" id="openVerifyBtn">标签核验</button>
+    </div>
+  </div>
+
+  <!-- 内容区 -->
+  <div class="content">
+
+    <!-- 订单卡片 -->
+    <div class="order-card">
+      <div class="order-card-header" id="collapseHeader">
+        <div class="card-left">
+          <span class="card-arrow expanded" id="collapseArrow">
+            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          </span>
+          <span class="card-order-no">BSISZX26060091</span>
+          <span class="card-badge">标签核验(1/1)</span>
+        </div>
+        <div class="card-right">
+          <span class="route-code">T3</span>
+          <span class="route-sep">–</span>
+          <span class="route-name">直飞报关</span>
+        </div>
+      </div>
+
+      <!-- 标签列表 -->
+      <div class="tag-list" id="tagList">
+        <!-- TTBP-A04387 待核验 -->
+        <div class="tag-item pending" data-watermark="待核验" data-board="TTBP-A04387" onclick="toggleVerify(this)">
+          <div class="tag-top-row">
+            <div class="tag-header">
+              <span class="tag-icon tag-icon-pending">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </span>
+              <span class="tag-id">TTBP-A04387</span>
+            </div>
+            <div class="tag-status">
+              <div class="dot wait">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="tag-body-row">
+            <div class="tag-info-list">
+              <div class="tag-info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <span class="info-label">库位</span>
+                <span class="info-value">A-02-03</span>
+              </div>
+              <div class="tag-info-row">
+                <svg viewBox="0 0 24 24" fill="var(--text-muted)"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="var(--surface)"/></svg>
+                <span class="info-label">目的地</span>
+                <span class="info-value">--</span>
+              </div>
+              <div class="tag-info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span class="info-label">件数</span>
+                <span class="info-value">3</span>
+              </div>
+            </div>
+            <div class="tag-photo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- TTBP-A04386 已核验 -->
+        <div class="tag-item verified" data-watermark="已核验" data-board="TTBP-A04386" onclick="toggleVerify(this)">
+          <div class="tag-top-row">
+            <div class="tag-header">
+              <span class="tag-icon tag-icon-verified">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--check-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </span>
+              <span class="tag-id">TTBP-A04386</span>
+            </div>
+            <div class="tag-status">
+              <div class="dot done">
+                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="tag-body-row">
+            <div class="tag-info-list">
+              <div class="tag-info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <span class="info-label">库位</span>
+                <span class="info-value">B-01-05</span>
+              </div>
+              <div class="tag-info-row">
+                <svg viewBox="0 0 24 24" fill="var(--text-muted)"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="var(--surface)"/></svg>
+                <span class="info-label">目的地</span>
+                <span class="info-value">深圳</span>
+              </div>
+              <div class="tag-info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span class="info-label">件数</span>
+                <span class="info-value">2</span>
+              </div>
+            </div>
+            <div class="tag-photo">
+              <img src="https://picsum.photos/seed/cargo04386/128/128" alt="货物照片">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 标签核验弹窗 -->
+  <div class="modal-overlay bottom-sheet" id="verifyModal">
+    <div class="modal-content">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <span class="modal-title">标签核验</span>
+        <div class="modal-close" id="closeModalBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </div>
+      </div>
+      <div class="modal-body">
+        <!-- 扫描步骤 -->
+        <div class="scan-steps">
+          <div class="scan-step">
+            <span class="scan-step-label">主单号</span>
+            <input class="scan-step-input" id="scanOrderNo" placeholder="扫描主单号条码" readonly>
+            <button class="scan-step-btn" id="scanOrderBtn" title="扫描">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </button>
+          </div>
+          <div class="scan-step">
+            <span class="scan-step-label">卡板号</span>
+            <input class="scan-step-input" id="scanBoardNo" placeholder="扫描卡板号条码" readonly>
+            <button class="scan-step-btn" id="scanBoardBtn" title="扫描">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- 匹配结果 -->
+        <div class="match-result" id="matchResult">
+          <svg id="matchIcon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+          <span id="matchText"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-submit" id="submitVerify" disabled>确认核验</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结束装车按钮 -->
+  <div class="finish-bar" id="finishBar">
+    <button class="finish-btn" id="finishBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      结束装车
+    </button>
+  </div>
+
+  <!-- 结束装车二次确认弹窗（跳过核验时） -->
+  <div class="modal-overlay center-dialog" id="finishWarnModal">
+    <div class="modal-content" style="padding:48px 44px 40px">
+      <div class="warn-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="warn-title">确认结束装车</div>
+      <div class="warn-text" id="warnText"></div>
+      <div style="display:flex;gap:20px">
+        <button class="dialog-cancel" id="cancelWarnBtn">取消</button>
+        <button class="dialog-confirm" id="confirmWarnBtn">确认结束</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结束装车弹窗（抽屉） -->
+  <div class="modal-overlay bottom-sheet" id="finishModal">
+    <div class="modal-content" style="max-height:85%;display:flex;flex-direction:column">
+      <div class="modal-handle"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 40px 0">
+        <span style="font-size:34px;font-weight:700;color:var(--text-primary)">结束装车</span>
+        <div class="modal-close" id="closeFinishBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:32px 40px">
+
+      <div style="padding:32px 40px">
+        <!-- 提示文字 -->
+        <div style="font-size:28px;color:var(--text-secondary);margin-bottom:24px">
+          您好，<span style="font-weight:600;color:var(--text-primary)">严振范</span>，本车装载数据，请确认
+        </div>
+
+        <!-- 数据卡片 -->
+        <div style="background:var(--surface-alt);border-radius:var(--radius-sm);padding:28px;display:flex;text-align:center;margin-bottom:32px">
+          <div style="flex:1">
+            <div style="font-size:44px;font-weight:700;color:var(--text-primary);font-family:var(--font-mono)">2</div>
+            <div style="font-size:24px;color:var(--text-muted);margin-top:4px">总托数</div>
+          </div>
+          <div style="width:2px;background:var(--divider)"></div>
+          <div style="flex:1">
+            <div style="font-size:44px;font-weight:700;color:var(--text-primary);font-family:var(--font-mono)">5</div>
+            <div style="font-size:24px;color:var(--text-muted);margin-top:4px">总件数</div>
+          </div>
+          <div style="width:2px;background:var(--divider)"></div>
+          <div style="flex:1">
+            <div style="font-size:44px;font-weight:700;color:var(--text-primary);font-family:var(--font-mono)">30<small style="font-size:26px;font-weight:500">kg</small></div>
+            <div style="font-size:24px;color:var(--text-muted);margin-top:4px">总重量</div>
+          </div>
+        </div>
+
+        <!-- 封条类型 -->
+        <div style="margin-bottom:28px">
+          <div style="font-size:28px;color:var(--text-primary);margin-bottom:16px"><span style="color:var(--danger)">*</span> 封条类型：</div>
+          <div style="display:flex;gap:20px">
+            <button class="seal-type-btn active" onclick="selectSeal(this)">塑封</button>
+            <button class="seal-type-btn" onclick="selectSeal(this)">高保封</button>
+          </div>
+        </div>
+
+        <!-- 封条号 + 封条照片 -->
+        <div style="margin-bottom:28px">
+          <div style="display:flex;gap:20px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:28px;color:var(--text-primary);margin-bottom:16px"><span style="color:var(--danger)">*</span> 封条号：</div>
+              <input class="seal-input" value="BT" style="width:100%;height:80px;background:var(--surface-alt);border:2px solid var(--divider);border-radius:var(--radius-sm);padding:0 24px;font-family:var(--font-mono);font-size:30px;font-weight:600;color:var(--text-primary);outline:none">
+            </div>
+            <div class="seal-photos" id="sealPhotos">
+              <div class="seal-photo-add" id="addSealPhoto" onclick="mockTakePhoto()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="44" height="44"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 装车人 -->
+        <div>
+          <div style="font-size:28px;color:var(--text-primary);margin-bottom:16px">添加其他装车人：</div>
+          <div style="position:relative;margin-bottom:16px">
+            <svg style="position:absolute;left:20px;top:50%;transform:translateY(-50%);width:32px;height:32px" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input class="seal-input" placeholder="请输入姓名" style="width:100%;height:76px;background:var(--surface-alt);border:2px solid var(--divider);border-radius:var(--radius-sm);padding:0 24px 0 64px;font-size:26px;color:var(--text-primary);outline:none">
+          </div>
+          <div class="loader-list">
+            <div class="loader-item" onclick="toggleLoader(this)">
+              <span>冯进龙</span>
+              <svg class="loader-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+            </div>
+            <div class="loader-item" onclick="toggleLoader(this)">
+              <span>容晨光</span>
+              <svg class="loader-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+            </div>
+            <div class="loader-item" onclick="toggleLoader(this)">
+              <span>其他人</span>
+              <svg class="loader-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部按钮 -->
+      <div style="display:flex;gap:20px;padding:28px 40px;border-top:2px solid var(--divider);flex-shrink:0">
+        <button class="dialog-cancel" id="cancelFinishBtn">取消</button>
+        <button class="dialog-confirm" id="confirmFinishBtn">确定</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── 画板等比缩放至视窗一屏（复用列表页 / 入库页）──
+  function fitFrame() {
+    var margin = 32;
+    var scaleW = (window.innerWidth  - margin) / 750;
+    var scaleH = (window.innerHeight - margin) / 1536;
+    var s = Math.min(scaleW, scaleH, 1);
+    document.documentElement.style.setProperty('--frame-scale', s.toFixed(4));
+  }
+  window.addEventListener('resize', fitFrame);
+  window.addEventListener('DOMContentLoaded', fitFrame);
+  fitFrame();
+
+  // ── 订单数据（模拟） ──
+  // 卡板号 → 所属订单号的映射
+  const boardOrderMap = {
+    'TTBP-A04387': 'BSISZX26060091',
+    'TTBP-A04386': 'BSISZX26060091',
+  };
+  const currentOrder = 'BSISZX26060091';
+
+  // 仓库配置：是否允许跳过核验（手机收货无标签场景）
+  // true=跳过核验，未全部核验也允许结束装车；false=必须全部核验
+  const skipVerificationEnabled = true;
+
+  // 已核验状态
+  const verifiedSet = new Set(['TTBP-A04386']);
+
+  // ── 折叠/展开 ──
+  const collapseHeader = document.getElementById('collapseHeader');
+  const collapseArrow = document.getElementById('collapseArrow');
+  const tagList = document.getElementById('tagList');
+
+  collapseHeader.addEventListener('click', () => {
+    const isExpanded = collapseArrow.classList.contains('expanded');
+    collapseArrow.classList.toggle('expanded', !isExpanded);
+    tagList.style.display = isExpanded ? 'none' : 'block';
+  });
+
+  // ── 卡板卡片点击切换核验状态 ──
+  const svgFilePending = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+  const svgFileVerified = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--check-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
+  const svgDotWait = '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+  const svgDotDone = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>';
+
+  function toggleVerify(card) {
+    const isPending = card.classList.contains('pending');
+    const dot = card.querySelector('.tag-status .dot');
+    const icon = card.querySelector('.tag-icon');
+
+    if (isPending) {
+      card.classList.remove('pending');
+      card.classList.add('verified');
+      card.setAttribute('data-watermark', '已核验');
+      icon.innerHTML = svgFileVerified;
+      dot.classList.remove('wait');
+      dot.classList.add('done');
+      dot.innerHTML = svgDotDone;
+    } else {
+      card.classList.remove('verified');
+      card.classList.add('pending');
+      card.setAttribute('data-watermark', '待核验');
+      icon.innerHTML = svgFilePending;
+      dot.classList.remove('done');
+      dot.classList.add('wait');
+      dot.innerHTML = svgDotWait;
+    }
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const cards = document.querySelectorAll('.tag-item');
+    const total = cards.length;
+    const verifiedCount = document.querySelectorAll('.tag-item.verified').length;
+
+    // 更新统计条（托盘核验）
+    const trayEl = document.getElementById('trayCount');
+    if (trayEl) {
+      trayEl.textContent = verifiedCount + '/' + total;
+      if (verifiedCount === total) {
+        trayEl.classList.remove('orange');
+        trayEl.classList.add('green');
+      } else {
+        trayEl.classList.remove('green');
+        trayEl.classList.add('orange');
+      }
+    }
+
+    // 显示结束装车按钮：跳过核验时始终显示，否则需全部核验
+    const finishBar = document.getElementById('finishBar');
+    if (finishBar) {
+      const canFinish = skipVerificationEnabled || verifiedCount === total;
+      finishBar.classList.toggle('show', canFinish);
+    }
+  }
+
+  // ── 标签核验弹窗 ──
+  const openVerifyBtn = document.getElementById('openVerifyBtn');
+  const verifyModal = document.getElementById('verifyModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const scanOrderInput = document.getElementById('scanOrderNo');
+  const scanBoardInput = document.getElementById('scanBoardNo');
+  const scanOrderBtn = document.getElementById('scanOrderBtn');
+  const scanBoardBtn = document.getElementById('scanBoardBtn');
+  const matchResult = document.getElementById('matchResult');
+  const matchIcon = document.getElementById('matchIcon');
+  const matchText = document.getElementById('matchText');
+  const submitVerify = document.getElementById('submitVerify');
+
+  // 当前匹配中的卡板号
+  let matchedBoard = null;
+
+  function resetModal() {
+    scanOrderInput.value = '';
+    scanBoardInput.value = '';
+    scanOrderInput.className = 'scan-step-input';
+    scanBoardInput.className = 'scan-step-input';
+    matchResult.className = 'match-result';
+    matchResult.innerHTML = '<svg id="matchIcon" viewBox="0 0 24 24"><path id="matchIconPath"/></svg><span id="matchText"></span>';
+    submitVerify.disabled = true;
+    matchedBoard = null;
+  }
+
+  openVerifyBtn.addEventListener('click', () => {
+    resetModal();
+    verifyModal.classList.add('active');
+  });
+
+  closeModalBtn.addEventListener('click', () => {
+    verifyModal.classList.remove('active');
+  });
+
+  verifyModal.addEventListener('click', (e) => {
+    if (e.target === verifyModal) verifyModal.classList.remove('active');
+  });
+
+  // 扫描主单号（模拟扫描当前订单号）
+  scanOrderBtn.addEventListener('click', () => {
+    scanOrderInput.value = currentOrder;
+    scanOrderInput.classList.add('matched');
+    checkMatch();
+  });
+
+  // 扫描卡板号（模拟扫描 TTBP-A04387）
+  scanBoardBtn.addEventListener('click', () => {
+    // 模拟扫到待核验的卡板
+    const pendingBoard = Object.keys(boardOrderMap).find(b => !verifiedSet.has(b));
+    if (pendingBoard) {
+      scanBoardInput.value = pendingBoard;
+      scanBoardInput.classList.add('matched');
+    }
+    checkMatch();
+  });
+
+  // 校验匹配
+  function checkMatch() {
+    const orderNo = scanOrderInput.value.trim();
+    const boardNo = scanBoardInput.value.trim();
+
+    if (!orderNo || !boardNo) return;
+
+    const resultEl = document.getElementById('matchResult');
+    const iconEl = resultEl.querySelector('svg');
+    const textEl = resultEl.querySelector('#matchText') || resultEl.querySelector('span');
+
+    // 查卡板号对应的订单
+    const belongOrder = boardOrderMap[boardNo];
+
+    if (belongOrder && belongOrder === orderNo) {
+      // 匹配成功：卡板属于该订单
+      resultEl.className = 'match-result show success';
+      iconEl.innerHTML = '<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="var(--green-badge-text)"/>';
+      textEl.textContent = '匹配通过：卡板 ' + boardNo + ' 属于订单 ' + orderNo;
+      matchedBoard = boardNo;
+      submitVerify.disabled = false;
+    } else if (!belongOrder) {
+      // 卡板号不存在
+      resultEl.className = 'match-result show fail';
+      iconEl.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="var(--danger)"/>';
+      textEl.textContent = '匹配失败：卡板号 ' + boardNo + ' 不存在';
+      matchedBoard = null;
+      submitVerify.disabled = true;
+    } else {
+      // 卡板不属于该订单
+      resultEl.className = 'match-result show fail';
+      iconEl.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="var(--danger)"/>';
+      textEl.textContent = '匹配失败：卡板 ' + boardNo + ' 不属于当前订单（属于 ' + belongOrder + '）';
+      matchedBoard = null;
+      submitVerify.disabled = true;
+    }
+  }
+
+  // 确认核验
+  submitVerify.addEventListener('click', () => {
+    if (!matchedBoard) return;
+    verifyModal.classList.remove('active');
+  });
+
+  // ── 结束装车弹窗 ──
+  const finishBtn = document.getElementById('finishBtn');
+  const finishModal = document.getElementById('finishModal');
+  const finishWarnModal = document.getElementById('finishWarnModal');
+  const warnText = document.getElementById('warnText');
+  const closeFinishBtn = document.getElementById('closeFinishBtn');
+  const cancelFinishBtn = document.getElementById('cancelFinishBtn');
+  const confirmFinishBtn = document.getElementById('confirmFinishBtn');
+  const cancelWarnBtn = document.getElementById('cancelWarnBtn');
+  const confirmWarnBtn = document.getElementById('confirmWarnBtn');
+
+  finishBtn.addEventListener('click', () => {
+    const unverifiedCount = document.querySelectorAll('.tag-item.pending').length;
+    if (skipVerificationEnabled && unverifiedCount > 0) {
+      // 跳过核验且有未核验托盘 → 先二次确认
+      warnText.innerHTML = '当前还有 <strong>' + unverifiedCount + '</strong> 托未核验，是否确认结束装车？';
+      finishWarnModal.classList.add('active');
+    } else {
+      finishModal.classList.add('active');
+    }
+  });
+  // 二次确认：取消
+  cancelWarnBtn.addEventListener('click', () => finishWarnModal.classList.remove('active'));
+  finishWarnModal.addEventListener('click', (e) => {
+    if (e.target === finishWarnModal) finishWarnModal.classList.remove('active');
+  });
+  // 二次确认：确认结束 → 进入结束装车表单
+  confirmWarnBtn.addEventListener('click', () => {
+    finishWarnModal.classList.remove('active');
+    finishModal.classList.add('active');
+  });
+
+  closeFinishBtn.addEventListener('click', () => finishModal.classList.remove('active'));
+  cancelFinishBtn.addEventListener('click', () => finishModal.classList.remove('active'));
+  finishModal.addEventListener('click', (e) => {
+    if (e.target === finishModal) finishModal.classList.remove('active');
+  });
+  confirmFinishBtn.addEventListener('click', () => {
+    finishModal.classList.remove('active');
+    alert('装车完成');
+  });
+
+  // ── 封条类型（互斥单选）──
+  function selectSeal(btn) {
+    document.querySelectorAll('.seal-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  // ── 装车人（多选切换）──
+  function toggleLoader(item) {
+    item.classList.toggle('selected');
+  }
+
+  // ── 封条照片（只拍一张） ──
+  const sealPhotos = document.getElementById('sealPhotos');
+  let photoIndex = 0;
+
+  function mockTakePhoto() {
+    photoIndex++;
+    const seed = 'seal' + Date.now() + photoIndex;
+    // 移除旧照片
+    sealPhotos.querySelectorAll('.seal-photo-item').forEach(el => el.remove());
+    // 隐藏拍照按钮
+    document.getElementById('addSealPhoto').style.display = 'none';
+    // 插入照片
+    const div = document.createElement('div');
+    div.className = 'seal-photo-item';
+    div.innerHTML =
+      '<img src="https://picsum.photos/seed/' + seed + '/112/112" alt="封条照片">' +
+      '<div class="seal-photo-del" onclick="removePhoto(this)"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></div>';
+    sealPhotos.appendChild(div);
+  }
+
+  function removePhoto(el) {
+    el.parentElement.remove();
+    document.getElementById('addSealPhoto').style.display = 'flex';
+  }
+
+  // ── 初始化结束装车按钮显示状态 ──
+  updateStats();
+</script>
+
+</body>
+</html>

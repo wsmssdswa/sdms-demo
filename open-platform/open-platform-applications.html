@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开放平台 - 应用管理</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+<link rel="stylesheet" href="../assets/css/open-platform.css">
+<style>
+/* === 页面标题区 === */
+.app-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.app-page-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin: 0;
+}
+
+.app-page-subtitle {
+  font-size: 13px;
+  color: var(--color-text-tertiary, #909499);
+  margin: 4px 0 0;
+}
+
+/* === 应用计数 === */
+.app-count-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 0 20px;
+  padding: 10px 16px;
+  background: var(--color-bg-secondary, #f4f5f7);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--color-text-secondary, #65686c);
+}
+
+.app-count-bar strong {
+  color: var(--color-primary, #1684fc);
+}
+
+/* === 应用卡片 === */
+.app-card {
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  box-shadow: var(--op-card-shadow);
+  padding: 24px;
+  margin-bottom: 16px;
+  transition: box-shadow 0.2s ease;
+}
+
+.app-card:hover {
+  box-shadow: 0 4px 12px 2px rgba(0, 0, 0, 0.08);
+}
+
+.app-card.is-disabled {
+  opacity: 0.6;
+}
+
+.app-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.app-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.app-card-desc {
+  font-size: 13px;
+  color: var(--color-text-tertiary, #909499);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+/* 权限标签 */
+.app-card-perms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.app-perm-tag {
+  padding: 3px 10px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--color-primary-light, #e3f2ff);
+  color: var(--color-primary, #1684fc);
+  border: 1px solid var(--color-primary-lighter, #d5e9fe);
+}
+
+/* Key信息行 */
+.app-card-keys {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.app-key-mini {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--color-bg-secondary, #f4f5f7);
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 6px;
+}
+
+.app-key-mini-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-tertiary, #909499);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.app-key-mini-label i {
+  font-size: 13px;
+}
+
+.app-key-mini-value {
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 13px;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+.app-key-mini-quota {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  margin-bottom: 4px;
+}
+
+.app-key-mini-quota strong {
+  color: var(--color-text-secondary, #65686c);
+}
+
+.app-key-mini-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--color-bg-tertiary, #edeff2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.app-key-mini-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.app-key-mini-fill.green  { background: var(--color-success, #007e22); }
+.app-key-mini-fill.yellow { background: var(--color-warning, #ff8225); }
+.app-key-mini-fill.red    { background: var(--color-error, #ed0404); }
+
+/* 底部：创建时间 + 操作按钮 */
+.app-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border, #e7eaee);
+}
+
+.app-card-time {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.app-card-time i {
+  font-size: 13px;
+}
+
+.app-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.app-card-actions .op-btn {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+/* === 空状态 === */
+.app-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.app-empty i {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.app-empty-text {
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* === 弹窗增强 === */
+.op-modal-lg {
+  width: 600px;
+}
+
+/* === 表单标签组（弹窗内） === */
+.app-form-perm-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* === 删除确认 === */
+.app-delete-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--color-error-light, #fff3f3);
+  border: 1px solid #ffccc7;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.app-delete-warning i {
+  font-size: 20px;
+  color: var(--color-error, #ed0404);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.app-delete-warning-text {
+  font-size: 13px;
+  color: var(--color-text-secondary, #65686c);
+  line-height: 1.6;
+}
+
+.app-confirm-input-wrap {
+  margin-top: 16px;
+}
+
+.app-confirm-input-label {
+  font-size: 12px;
+  color: var(--color-text-secondary, #65686c);
+  margin-bottom: 6px;
+}
+
+.app-confirm-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--color-text-primary, #1c1d1e);
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+}
+
+.app-confirm-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #1684fc);
+  box-shadow: 0 0 0 2px rgba(22, 132, 252, 0.15);
+}
+
+.app-confirm-input.error {
+  border-color: var(--color-error, #ed0404);
+}
+
+/* danger实心按钮 */
+.op-btn-danger-solid {
+  background: var(--color-error, #ed0404);
+  border-color: var(--color-error, #ed0404);
+  color: #fff;
+}
+
+.op-btn-danger-solid:hover {
+  background: #d70303;
+  border-color: #d70303;
+}
+
+.op-btn-danger-solid:disabled {
+  background: #f5a3a3;
+  border-color: #f5a3a3;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 查看Key弹窗内Key展示 */
+.app-view-key-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--color-bg-secondary, #f4f5f7);
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.app-view-key-text {
+  flex: 1;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 13px;
+  color: var(--color-text-primary, #1c1d1e);
+  letter-spacing: 0.3px;
+}
+
+.app-view-key-toggle {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 3px;
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary, #909499);
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.app-view-key-toggle:hover {
+  border-color: var(--color-primary, #1684fc);
+  color: var(--color-primary, #1684fc);
+}
+
+.app-view-key-copy {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 3px;
+  background: #fff;
+  font-size: 12px;
+  color: var(--color-text-secondary, #65686c);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.app-view-key-copy:hover {
+  border-color: var(--color-primary, #1684fc);
+  color: var(--color-primary, #1684fc);
+}
+
+/* Key区块标题 */
+.app-view-key-section {
+  margin-bottom: 20px;
+}
+
+.app-view-key-section:last-child {
+  margin-bottom: 0;
+}
+
+.app-view-key-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app-view-key-quota {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+  margin-top: 4px;
+}
+
+.app-view-key-quota strong {
+  color: var(--color-text-secondary, #65686c);
+}
+
+.app-view-key-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-primary, #1684fc);
+  text-decoration: none;
+  margin-top: 12px;
+}
+
+.app-view-key-link:hover {
+  text-decoration: underline;
+}
+
+/* === 响应式 === */
+@media (max-width: 900px) {
+  .app-card-keys {
+    flex-direction: column;
+  }
+
+  .app-card-header {
+    flex-wrap: wrap;
+  }
+
+  .app-card-footer {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
+</style>
+</head>
+<body>
+
+<header id="opTopNav"></header>
+<div class="op-page no-sidebar">
+  <div class="op-main">
+
+    <!-- 顶部标题栏 -->
+    <div class="op-header">
+      <div class="op-header-breadcrumb">
+        <a href="#">开放平台</a>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>应用管理</span>
+      </div>
+      <div class="op-header-actions">
+        <a href="#" class="op-btn op-btn-default" style="font-size:12px;height:30px;padding:0 12px">
+          <i class="ri-question-line"></i> 帮助文档
+        </a>
+      </div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="op-content">
+
+      <!-- 页面标题 -->
+      <div class="app-page-header">
+        <div>
+          <h2 class="app-page-title">应用管理</h2>
+          <p class="app-page-subtitle">管理您的应用，每个应用拥有独立的API Key、权限和配额</p>
+        </div>
+        <button class="op-btn op-btn-primary" id="btnCreateApp" onclick="AppPage.openCreateModal()">
+          <i class="ri-add-line"></i>创建应用
+        </button>
+      </div>
+
+      <!-- 应用计数 -->
+      <div class="app-count-bar" id="appCountBar">
+        已创建 <strong>0/5</strong> 个应用
+      </div>
+
+      <!-- 应用列表 -->
+      <div id="appList"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast容器 -->
+<div class="op-toast-stack" id="opToastStack"></div>
+
+<!-- ====== 创建/编辑应用弹窗 ====== -->
+<div class="op-modal-mask" id="appFormModal">
+  <div class="op-modal">
+    <div class="op-modal-head">
+      <span class="op-modal-title" id="appFormTitle">创建应用</span>
+      <button class="op-modal-close" onclick="AppPage.closeModal('appFormModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div class="op-form">
+        <div class="op-form-row">
+          <label class="op-form-label">应用名称<span class="required">*</span></label>
+          <input class="op-input" id="formAppName" type="text" placeholder="请输入应用名称" maxlength="20" autocomplete="off">
+          <div class="op-error-msg" id="formAppNameError">请输入应用名称</div>
+        </div>
+        <div class="op-form-row">
+          <label class="op-form-label">应用描述<span class="required">*</span></label>
+          <textarea class="op-textarea" id="formAppDesc" placeholder="请输入应用描述" maxlength="100" rows="3"></textarea>
+          <div class="op-error-msg" id="formAppDescError">请输入应用描述</div>
+        </div>
+        <div class="op-form-row">
+          <label class="op-form-label">接口权限<span class="required">*</span></label>
+          <div class="app-form-perm-tags" id="formPermTags">
+            <div class="op-tag-item" data-perm="干线业务" onclick="AppPage.togglePerm(this)">
+              <i class="ri-check-line"></i>干线业务
+            </div>
+            <div class="op-tag-item" data-perm="一件代发" onclick="AppPage.togglePerm(this)">
+              <i class="ri-check-line"></i>一件代发
+            </div>
+            <div class="op-tag-item" data-perm="退件重派" onclick="AppPage.togglePerm(this)">
+              <i class="ri-check-line"></i>退件重派
+            </div>
+            <div class="op-tag-item" data-perm="备货中转" onclick="AppPage.togglePerm(this)">
+              <i class="ri-check-line"></i>备货中转
+            </div>
+          </div>
+          <div class="op-error-msg" id="formPermError">请至少选择一个接口权限</div>
+        </div>
+      </div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="AppPage.closeModal('appFormModal')">取消</button>
+      <button class="op-btn op-btn-primary" id="appFormSubmitBtn" onclick="AppPage.submitForm()">
+        <i class="ri-check-line"></i>确认创建
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 删除应用确认弹窗 ====== -->
+<div class="op-modal-mask" id="deleteAppModal">
+  <div class="op-modal">
+    <div class="op-modal-head">
+      <span class="op-modal-title">删除应用</span>
+      <button class="op-modal-close" onclick="AppPage.closeModal('deleteAppModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div class="app-delete-warning">
+        <i class="ri-alarm-warning-line"></i>
+        <div class="app-delete-warning-text">
+          删除应用后，该应用的所有Key将<strong>立即失效</strong>，使用该Key的服务将无法调用接口。此操作不可撤销。
+        </div>
+      </div>
+      <div class="app-confirm-input-wrap">
+        <div class="app-confirm-input-label">请输入应用名称 <strong id="deleteAppNameHint"></strong> 确认删除</div>
+        <input class="app-confirm-input" id="deleteAppConfirmInput" type="text" placeholder="请输入应用名称" autocomplete="off">
+      </div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="AppPage.closeModal('deleteAppModal')">取消</button>
+      <button class="op-btn op-btn-danger-solid" id="deleteAppConfirmBtn" disabled onclick="AppPage.confirmDelete()">
+        <i class="ri-delete-bin-line"></i>确认删除
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 查看Key弹窗 ====== -->
+<div class="op-modal-mask" id="viewKeysModal">
+  <div class="op-modal op-modal-lg">
+    <div class="op-modal-head">
+      <span class="op-modal-title" id="viewKeysTitle">查看Key</span>
+      <button class="op-modal-close" onclick="AppPage.closeModal('viewKeysModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body" id="viewKeysBody"></div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="AppPage.closeModal('viewKeysModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/open-platform.js"></script>
+<script>
+var AppPage = (function () {
+  'use strict';
+
+  /* ---- 权限选项 ---- */
+  var ALL_PERMISSIONS = ['干线业务', '一件代发', '退件重派', '备货中转'];
+
+  /* ---- 当前编辑/删除的应用ID ---- */
+  var editingAppId = null;
+  var deletingAppId = null;
+
+  /* ---- 初始化 ---- */
+  if (!OP.requireAuth()) return {};
+  OP.renderTopNav(OP.DEV_MENUS, 'apps');
+
+  /* ---- 初始渲染 ---- */
+  renderAppList();
+
+  /* ============================================================
+   * 渲染应用列表
+   * ============================================================ */
+  function renderAppList() {
+    var apps = OP.getApps();
+    var container = document.getElementById('appList');
+    var countBar = document.getElementById('appCountBar');
+
+    countBar.innerHTML = '已创建 <strong>' + apps.length + '/' + OP.MAX_APPS + '</strong> 个应用';
+
+    if (apps.length === 0) {
+      container.innerHTML =
+        '<div class="app-empty">' +
+        '  <i class="ri-apps-2-line"></i>' +
+        '  <div class="app-empty-text">暂无应用，点击上方按钮创建第一个应用</div>' +
+        '</div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < apps.length; i++) {
+      html += renderAppCard(apps[i]);
+    }
+    container.innerHTML = html;
+  }
+
+  /* ============================================================
+   * 渲染单个应用卡片
+   * ============================================================ */
+  function renderAppCard(app) {
+    var isDisabled = app.status === 'disabled';
+    var cardCls = 'app-card' + (isDisabled ? ' is-disabled' : '');
+
+    // 状态标签
+    var statusHtml = OP.renderStatusTag(app.status);
+
+    // 权限标签
+    var permsHtml = '';
+    for (var i = 0; i < app.permissions.length; i++) {
+      permsHtml += '<span class="app-perm-tag">' + app.permissions[i] + '</span>';
+    }
+
+    // 操作按钮
+    var toggleBtn = isDisabled
+      ? '<button class="op-btn op-btn-default" onclick="AppPage.toggleAppStatus(\'' + app.id + '\')"><i class="ri-check-line"></i>启用</button>'
+      : '<button class="op-btn op-btn-default" onclick="AppPage.toggleAppStatus(\'' + app.id + '\')"><i class="ri-forbid-line"></i>禁用</button>';
+
+    var actionsHtml =
+      '<button class="op-btn op-btn-default" onclick="AppPage.openViewKeysModal(\'' + app.id + '\')"><i class="ri-key-2-line"></i>查看Key</button>' +
+      '<button class="op-btn op-btn-default" onclick="AppPage.openEditModal(\'' + app.id + '\')"><i class="ri-edit-line"></i>编辑</button>' +
+      toggleBtn +
+      '<button class="op-btn op-btn-danger" onclick="AppPage.openDeleteModal(\'' + app.id + '\')"><i class="ri-delete-bin-line"></i>删除</button>';
+
+    return (
+      '<div class="' + cardCls + '" data-app-id="' + app.id + '">' +
+        '<div class="app-card-header">' +
+          '<span class="app-card-name">' + escapeHtml(app.name) + '</span>' +
+          statusHtml +
+        '</div>' +
+        '<div class="app-card-desc">' + escapeHtml(app.description) + '</div>' +
+        '<div class="app-card-perms">' + permsHtml + '</div>' +
+        '<div class="app-card-keys">' +
+          renderKeyMini('生产Key', app.prodKey) +
+          renderKeyMini('测试Key', app.testKey) +
+        '</div>' +
+        '<div class="app-card-footer">' +
+          '<span class="app-card-time"><i class="ri-time-line"></i>创建于 ' + app.createdAt + '</span>' +
+          '<div class="app-card-actions">' + actionsHtml + '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  /* ============================================================
+   * 渲染Key迷你卡片（卡片内的配额展示）
+   * ============================================================ */
+  function renderKeyMini(label, keyData) {
+    var maskedValue = maskKey(keyData.value);
+    var used = keyData.used || 0;
+    var quota = keyData.quota || 10000;
+    var pct = (used / quota * 100).toFixed(1);
+    var colorCls = getQuotaColor(used, quota);
+
+    return (
+      '<div class="app-key-mini">' +
+        '<div class="app-key-mini-label"><i class="ri-key-2-line"></i>' + label + '</div>' +
+        '<div class="app-key-mini-value">' + maskedValue + '</div>' +
+        '<div class="app-key-mini-quota">' +
+          '<span>配额使用</span>' +
+          '<span><strong>' + formatNum(used) + '</strong>/' + formatNum(quota) + '</span>' +
+        '</div>' +
+        '<div class="app-key-mini-bar">' +
+          '<div class="app-key-mini-fill ' + colorCls + '" style="width:' + pct + '%"></div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  /* ============================================================
+   * 创建应用弹窗
+   * ============================================================ */
+  function openCreateModal() {
+    var apps = OP.getApps();
+    if (apps.length >= OP.MAX_APPS) {
+      OP.showToast('已达最大应用数量上限（' + OP.MAX_APPS + '个）', 'error');
+      return;
+    }
+
+    editingAppId = null;
+    document.getElementById('appFormTitle').textContent = '创建应用';
+    document.getElementById('appFormSubmitBtn').innerHTML = '<i class="ri-check-line"></i>确认创建';
+    resetForm();
+    openModal('appFormModal');
+  }
+
+  /* ============================================================
+   * 编辑应用弹窗
+   * ============================================================ */
+  function openEditModal(appId) {
+    var apps = OP.getApps();
+    var app = findApp(apps, appId);
+    if (!app) return;
+
+    editingAppId = appId;
+    document.getElementById('appFormTitle').textContent = '编辑应用';
+    document.getElementById('appFormSubmitBtn').innerHTML = '<i class="ri-check-line"></i>确认保存';
+    resetForm();
+
+    // 填充数据
+    document.getElementById('formAppName').value = app.name;
+    document.getElementById('formAppDesc').value = app.description;
+
+    // 选中已有权限
+    var tags = document.querySelectorAll('#formPermTags .op-tag-item');
+    for (var i = 0; i < tags.length; i++) {
+      var perm = tags[i].getAttribute('data-perm');
+      if (app.permissions.indexOf(perm) !== -1) {
+        tags[i].classList.add('selected');
+      }
+    }
+
+    openModal('appFormModal');
+  }
+
+  /* ============================================================
+   * 提交表单（创建或编辑）
+   * ============================================================ */
+  function submitForm() {
+    var name = document.getElementById('formAppName').value.trim();
+    var desc = document.getElementById('formAppDesc').value.trim();
+    var perms = getSelectedPerms();
+    var valid = true;
+
+    // 验证
+    if (!name) {
+      document.getElementById('formAppNameError').classList.add('show');
+      document.getElementById('formAppName').classList.add('error');
+      valid = false;
+    } else {
+      document.getElementById('formAppNameError').classList.remove('show');
+      document.getElementById('formAppName').classList.remove('error');
+    }
+
+    if (!desc) {
+      document.getElementById('formAppDescError').classList.add('show');
+      document.getElementById('formAppDesc').classList.add('error');
+      valid = false;
+    } else {
+      document.getElementById('formAppDescError').classList.remove('show');
+      document.getElementById('formAppDesc').classList.remove('error');
+    }
+
+    if (perms.length === 0) {
+      document.getElementById('formPermError').classList.add('show');
+      valid = false;
+    } else {
+      document.getElementById('formPermError').classList.remove('show');
+    }
+
+    if (!valid) return;
+
+    var apps = OP.getApps();
+
+    if (editingAppId) {
+      // 编辑模式
+      var app = findApp(apps, editingAppId);
+      if (app) {
+        app.name = name;
+        app.description = desc;
+        app.permissions = perms;
+      }
+      OP.saveApps(apps);
+      closeModal('appFormModal');
+      OP.showToast('应用已更新', 'success');
+    } else {
+      // 创建模式
+      if (apps.length >= OP.MAX_APPS) {
+        OP.showToast('已达最大应用数量上限', 'error');
+        return;
+      }
+
+      var newApp = {
+        id: OP.generateAppId(),
+        name: name,
+        description: desc,
+        status: 'active',
+        permissions: perms,
+        createdAt: formatNow(),
+        prodKey: {
+          value: OP.generateKeyValue(),
+          status: 'active',
+          quota: 10000,
+          used: 0
+        },
+        testKey: {
+          value: OP.generateKeyValue(),
+          status: 'active',
+          quota: 10000,
+          used: 0
+        }
+      };
+
+      apps.push(newApp);
+      OP.saveApps(apps);
+      closeModal('appFormModal');
+      OP.showToast('应用创建成功', 'success');
+    }
+
+    renderAppList();
+  }
+
+  /* ============================================================
+   * 切换权限标签
+   * ============================================================ */
+  function togglePerm(el) {
+    el.classList.toggle('selected');
+    // 清除错误提示
+    document.getElementById('formPermError').classList.remove('show');
+  }
+
+  /* ============================================================
+   * 切换应用启用/禁用状态
+   * ============================================================ */
+  function toggleAppStatus(appId) {
+    var apps = OP.getApps();
+    var app = findApp(apps, appId);
+    if (!app) return;
+
+    var newStatus = app.status === 'active' ? 'disabled' : 'active';
+    var actionText = newStatus === 'disabled' ? '禁用' : '启用';
+    var warningText = newStatus === 'disabled'
+      ? '禁用后，该应用的所有Key将立即失效，相关服务将无法调用接口。'
+      : '启用后，该应用的Key将恢复正常使用。';
+
+    OP.showConfirm(warningText, function () {
+      app.status = newStatus;
+      OP.saveApps(apps);
+      renderAppList();
+      OP.showToast('应用已' + actionText, 'success');
+    }, {
+      title: '确认' + actionText + '应用',
+      confirmText: '确认' + actionText,
+      type: newStatus === 'disabled' ? 'danger' : ''
+    });
+  }
+
+  /* ============================================================
+   * 删除应用弹窗
+   * ============================================================ */
+  function openDeleteModal(appId) {
+    var apps = OP.getApps();
+    var app = findApp(apps, appId);
+    if (!app) return;
+
+    deletingAppId = appId;
+    document.getElementById('deleteAppNameHint').textContent = '"' + app.name + '"';
+    document.getElementById('deleteAppConfirmInput').value = '';
+    document.getElementById('deleteAppConfirmInput').classList.remove('error');
+    document.getElementById('deleteAppConfirmBtn').disabled = true;
+    openModal('deleteAppModal');
+  }
+
+  /* ============================================================
+   * 确认删除
+   * ============================================================ */
+  function confirmDelete() {
+    var apps = OP.getApps();
+    var app = findApp(apps, deletingAppId);
+    if (!app) return;
+
+    var inputVal = document.getElementById('deleteAppConfirmInput').value.trim();
+    if (inputVal !== app.name) {
+      document.getElementById('deleteAppConfirmInput').classList.add('error');
+      OP.showToast('应用名称不匹配', 'error');
+      return;
+    }
+
+    // 删除
+    for (var i = 0; i < apps.length; i++) {
+      if (apps[i].id === deletingAppId) {
+        apps.splice(i, 1);
+        break;
+      }
+    }
+    OP.saveApps(apps);
+    closeModal('deleteAppModal');
+    deletingAppId = null;
+    renderAppList();
+    OP.showToast('应用已删除', 'success');
+  }
+
+  /* ============================================================
+   * 查看Key弹窗
+   * ============================================================ */
+  function openViewKeysModal(appId) {
+    var apps = OP.getApps();
+    var app = findApp(apps, appId);
+    if (!app) return;
+
+    document.getElementById('viewKeysTitle').textContent = app.name + ' - Key管理';
+
+    var html = '';
+
+    // 生产Key
+    html += '<div class="app-view-key-section">';
+    html += '  <div class="app-view-key-section-title"><i class="ri-shield-check-line" style="color:var(--color-success)"></i>生产Key</div>';
+    html += renderViewKeyRow(app.id, 'prod', app.prodKey);
+    html += '</div>';
+
+    // 测试Key
+    html += '<div class="app-view-key-section">';
+    html += '  <div class="app-view-key-section-title"><i class="ri-flask-line" style="color:var(--color-primary)"></i>测试Key</div>';
+    html += renderViewKeyRow(app.id, 'test', app.testKey);
+    html += '</div>';
+
+    // 底部链接
+    html += '<a href="open-platform-api-keys.html" class="app-view-key-link"><i class="ri-arrow-right-line"></i>此应用的Key也可在Key管理页查看</a>';
+
+    document.getElementById('viewKeysBody').innerHTML = html;
+    openModal('viewKeysModal');
+  }
+
+  function renderViewKeyRow(appId, env, keyData) {
+    var used = keyData.used || 0;
+    var quota = keyData.quota || 10000;
+    var pct = (used / quota * 100).toFixed(1);
+    var colorCls = getQuotaColor(used, quota);
+    var statusHtml = keyData.status === 'active'
+      ? '<span class="op-status op-status-active" style="margin-left:8px"><i class="ri-check-line"></i>正常</span>'
+      : '<span class="op-status op-status-disabled" style="margin-left:8px"><i class="ri-forbid-line"></i>已禁用</span>';
+
+    return (
+      '<div class="app-view-key-row" id="viewKey_' + appId + '_' + env + '">' +
+        '<span class="app-view-key-text" data-masked="' + maskKey(keyData.value) + '" data-full="' + keyData.value + '">' + maskKey(keyData.value) + '</span>' +
+        '<button class="app-view-key-toggle" onclick="AppPage.toggleKeyReveal(this)" title="显示/隐藏"><i class="ri-eye-line"></i></button>' +
+        '<button class="app-view-key-copy" onclick="AppPage.copyKey(this)"><i class="ri-file-copy-line"></i>复制</button>' +
+        statusHtml +
+      '</div>' +
+      '<div class="app-view-key-quota">' +
+        '<span>配额：<strong>' + formatNum(used) + '</strong>/' + formatNum(quota) + '（' + pct + '%）</span>' +
+      '</div>' +
+      '<div style="margin-top:4px">' +
+        '<div class="op-key-mini-bar" style="height:4px">' +
+          '<div class="app-key-mini-fill ' + colorCls + '" style="width:' + pct + '%"></div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  /* ============================================================
+   * 显示/隐藏Key值
+   * ============================================================ */
+  function toggleKeyReveal(btn) {
+    var textEl = btn.parentElement.querySelector('.app-view-key-text');
+    var icon = btn.querySelector('i');
+    if (textEl.textContent === textEl.getAttribute('data-masked')) {
+      textEl.textContent = textEl.getAttribute('data-full');
+      icon.className = 'ri-eye-off-line';
+    } else {
+      textEl.textContent = textEl.getAttribute('data-masked');
+      icon.className = 'ri-eye-line';
+    }
+  }
+
+  /* ============================================================
+   * 复制Key
+   * ============================================================ */
+  function copyKey(btn) {
+    var textEl = btn.parentElement.querySelector('.app-view-key-text');
+    var fullValue = textEl.getAttribute('data-full');
+    copyToClipboard(fullValue);
+    OP.showToast('Key已复制到剪贴板', 'success');
+  }
+
+  /* ============================================================
+   * 弹窗工具函数
+   * ============================================================ */
+  function openModal(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      requestAnimationFrame(function () { el.classList.add('visible'); });
+    }
+  }
+
+  function closeModal(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('visible');
+    }
+  }
+
+  // 点击遮罩关闭
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('op-modal-mask') && e.target.classList.contains('visible')) {
+      e.target.classList.remove('visible');
+    }
+  });
+
+  /* ============================================================
+   * 表单工具函数
+   * ============================================================ */
+  function resetForm() {
+    document.getElementById('formAppName').value = '';
+    document.getElementById('formAppDesc').value = '';
+    document.getElementById('formAppName').classList.remove('error');
+    document.getElementById('formAppDesc').classList.remove('error');
+    document.getElementById('formAppNameError').classList.remove('show');
+    document.getElementById('formAppDescError').classList.remove('show');
+    document.getElementById('formPermError').classList.remove('show');
+
+    var tags = document.querySelectorAll('#formPermTags .op-tag-item');
+    for (var i = 0; i < tags.length; i++) {
+      tags[i].classList.remove('selected');
+    }
+  }
+
+  function getSelectedPerms() {
+    var tags = document.querySelectorAll('#formPermTags .op-tag-item.selected');
+    var perms = [];
+    for (var i = 0; i < tags.length; i++) {
+      perms.push(tags[i].getAttribute('data-perm'));
+    }
+    return perms;
+  }
+
+  /* ============================================================
+   * 删除确认输入验证
+   * ============================================================ */
+  document.getElementById('deleteAppConfirmInput').addEventListener('input', function () {
+    this.classList.remove('error');
+    var apps = OP.getApps();
+    var app = findApp(apps, deletingAppId);
+    if (!app) return;
+    var match = this.value.trim() === app.name;
+    document.getElementById('deleteAppConfirmBtn').disabled = !match;
+  });
+
+  // 表单输入时清除错误
+  document.getElementById('formAppName').addEventListener('input', function () {
+    this.classList.remove('error');
+    document.getElementById('formAppNameError').classList.remove('show');
+  });
+
+  document.getElementById('formAppDesc').addEventListener('input', function () {
+    this.classList.remove('error');
+    document.getElementById('formAppDescError').classList.remove('show');
+  });
+
+  /* ============================================================
+   * 通用工具函数
+   * ============================================================ */
+  function findApp(apps, appId) {
+    for (var i = 0; i < apps.length; i++) {
+      if (apps[i].id === appId) return apps[i];
+    }
+    return null;
+  }
+
+  function maskKey(value) {
+    if (!value || value.length < 8) return value;
+    return value.substring(0, 3) + '****' + value.substring(value.length - 4);
+  }
+
+  function getQuotaColor(used, total) {
+    var pct = used / total * 100;
+    if (pct < 60) return 'green';
+    if (pct < 85) return 'yellow';
+    return 'red';
+  }
+
+  function formatNum(n) {
+    return n.toLocaleString();
+  }
+
+  function formatNow() {
+    var d = new Date();
+    var pad = function (v) { return v < 10 ? '0' + v : '' + v; };
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+           ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+  }
+
+  /* ============================================================
+   * 导出公共方法
+   * ============================================================ */
+  return {
+    openCreateModal: openCreateModal,
+    openEditModal: openEditModal,
+    submitForm: submitForm,
+    togglePerm: togglePerm,
+    toggleAppStatus: toggleAppStatus,
+    openDeleteModal: openDeleteModal,
+    confirmDelete: confirmDelete,
+    openViewKeysModal: openViewKeysModal,
+    toggleKeyReveal: toggleKeyReveal,
+    copyKey: copyKey,
+    closeModal: closeModal
+  };
+
+})();
+</script>
+</body>
+</html>

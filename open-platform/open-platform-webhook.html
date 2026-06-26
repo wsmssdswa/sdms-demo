@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开放平台 - Webhook管理</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+<link rel="stylesheet" href="../assets/css/open-platform.css">
+<style>
+/* === Webhook页面特定样式 === */
+
+/* 上下分区 */
+.op-webhook-section {
+  margin-bottom: 24px;
+}
+
+/* 输入行带按钮 */
+.op-input-with-action {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.op-input-with-action .op-input {
+  flex: 1;
+}
+
+/* 连通性测试结果 */
+.op-connect-result {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.op-connect-result.show {
+  opacity: 1;
+}
+
+.op-connect-result.success {
+  color: var(--color-success, #007e22);
+}
+
+.op-connect-result.error {
+  color: var(--color-error, #ed0404);
+}
+
+/* 签名密钥行 */
+.op-secret-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-secret-value {
+  flex: 1;
+  height: var(--op-input-height);
+  padding: 0 12px;
+  background: var(--color-bg-secondary, #f4f5f7);
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 4px;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 13px;
+  color: var(--color-text-primary, #1c1d1e);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  user-select: all;
+}
+
+.op-secret-btn {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 12px;
+  color: var(--color-text-secondary, #65686c);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.op-secret-btn:hover {
+  border-color: var(--color-primary, #1684fc);
+  color: var(--color-primary, #1684fc);
+}
+
+.op-secret-btn.danger:hover {
+  border-color: var(--color-error, #ed0404);
+  color: var(--color-error, #ed0404);
+}
+
+/* 事件订阅复选框网格 */
+.op-event-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.op-event-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.op-event-item:hover {
+  border-color: var(--color-primary, #1684fc);
+  background: var(--color-primary-light, #e3f2ff);
+}
+
+.op-event-item.checked {
+  border-color: var(--color-primary, #1684fc);
+  background: var(--color-primary-light, #e3f2ff);
+}
+
+.op-event-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: all 0.15s ease;
+}
+
+.op-event-item.checked .op-event-checkbox {
+  background: var(--color-primary, #1684fc);
+  border-color: var(--color-primary, #1684fc);
+}
+
+.op-event-checkbox i {
+  font-size: 12px;
+  color: #fff;
+  display: none;
+}
+
+.op-event-item.checked .op-event-checkbox i {
+  display: block;
+}
+
+.op-event-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.op-event-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1d1e);
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+}
+
+.op-event-desc {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  margin-top: 2px;
+}
+
+/* 开关 */
+.op-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.op-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--color-border-strong, #d2d7dd);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.op-toggle.on {
+  background: var(--color-primary, #1684fc);
+}
+
+.op-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+}
+
+.op-toggle.on .op-toggle-knob {
+  transform: translateX(20px);
+}
+
+.op-toggle-label {
+  font-size: 13px;
+  color: var(--color-text-secondary, #65686c);
+  font-weight: 500;
+}
+
+/* 折叠区 */
+.op-collapse {
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  background: var(--color-bg-primary, #fff);
+  box-shadow: var(--op-card-shadow);
+  overflow: hidden;
+}
+
+.op-collapse-head {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.op-collapse-head:hover {
+  background: var(--color-bg-secondary, #f4f5f7);
+}
+
+.op-collapse-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-collapse-arrow {
+  font-size: 16px;
+  color: var(--color-text-tertiary, #909499);
+  transition: transform 0.2s ease;
+}
+
+.op-collapse.open .op-collapse-arrow {
+  transform: rotate(180deg);
+}
+
+.op-collapse-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.op-collapse.open .op-collapse-body {
+  max-height: 500px;
+}
+
+/* 筛选条 */
+.op-filter-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.op-filter-bar .op-select {
+  width: auto;
+  min-width: 160px;
+}
+
+.op-filter-bar .op-input {
+  width: auto;
+  min-width: 180px;
+}
+
+/* HTTP状态码颜色 */
+.op-http-code {
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.op-http-code.s200 { color: var(--color-success, #007e22); }
+.op-http-code.s500 { color: var(--color-error, #ed0404); }
+.op-http-code.timeout { color: var(--color-warning, #ff8225); }
+
+/* 状态标签 - Webhook专用 */
+.op-wh-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.op-wh-status i {
+  font-size: 12px;
+}
+
+.op-wh-status-success {
+  background: var(--op-status-active-bg);
+  color: var(--op-status-active-text);
+  border: 1px solid var(--op-status-active-border);
+}
+
+.op-wh-status-retrying {
+  background: var(--op-status-pending-bg);
+  color: var(--op-status-pending-text);
+  border: 1px solid var(--op-status-pending-border);
+}
+
+.op-wh-status-failed {
+  background: var(--op-status-rejected-bg);
+  color: var(--op-status-rejected-text);
+  border: 1px solid var(--op-status-rejected-border);
+}
+
+/* 操作链接 */
+.op-action-link {
+  font-size: 12px;
+  color: var(--color-primary, #1684fc);
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+}
+
+.op-action-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.op-action-link + .op-action-link {
+  margin-left: 12px;
+}
+
+/* 大弹窗 */
+.op-modal-xl {
+  width: 720px;
+}
+
+/* JSON代码块 */
+.op-json-block {
+  background: #1e2127;
+  border-radius: 6px;
+  padding: 16px;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #abb2bf;
+  overflow-x: auto;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.op-json-key { color: #e06c75; }
+.op-json-string { color: #98c379; }
+.op-json-number { color: #d19a66; }
+.op-json-bool { color: #56b6c2; }
+.op-json-null { color: #56b6c2; }
+.op-json-brace { color: #abb2bf; }
+
+/* 重试时间线 */
+.op-timeline {
+  position: relative;
+  padding-left: 24px;
+}
+
+.op-timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--color-border, #e7eaee);
+}
+
+.op-timeline-item {
+  position: relative;
+  padding-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.op-timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.op-timeline-dot {
+  position: absolute;
+  left: -21px;
+  top: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border, #e7eaee);
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.op-timeline-dot.success {
+  border-color: var(--color-success, #007e22);
+  background: var(--color-success, #007e22);
+}
+
+.op-timeline-dot.error {
+  border-color: var(--color-error, #ed0404);
+  background: var(--color-error, #ed0404);
+}
+
+.op-timeline-dot.timeout {
+  border-color: var(--color-warning, #ff8225);
+  background: var(--color-warning, #ff8225);
+}
+
+.op-timeline-dot.current {
+  border-color: var(--color-primary, #1684fc);
+  background: var(--color-primary, #1684fc);
+}
+
+.op-timeline-content {
+  flex: 1;
+}
+
+.op-timeline-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-timeline-time {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  margin-top: 2px;
+  font-family: "SF Mono", "Consolas", "Monaco", monospace;
+}
+
+.op-timeline-result {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.op-timeline-result.success { color: var(--color-success, #007e22); }
+.op-timeline-result.error { color: var(--color-error, #ed0404); }
+.op-timeline-result.timeout { color: var(--color-warning, #ff8225); }
+
+/* 详情弹窗Section */
+.op-detail-section {
+  margin-bottom: 20px;
+}
+
+.op-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.op-detail-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.op-detail-section-title i {
+  font-size: 14px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+/* 分页 */
+.op-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 16px;
+}
+
+.op-pagination-info {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+  margin-right: auto;
+}
+
+.op-page-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 12px;
+  color: var(--color-text-primary, #1c1d1e);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.op-page-btn:hover {
+  border-color: var(--color-primary, #1684fc);
+  color: var(--color-primary, #1684fc);
+}
+
+.op-page-btn.active {
+  background: var(--color-primary, #1684fc);
+  border-color: var(--color-primary, #1684fc);
+  color: #fff;
+  font-weight: 600;
+}
+
+.op-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* === 响应式 === */
+@media (max-width: 1100px) {
+  .op-event-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .op-event-grid {
+    grid-template-columns: 1fr;
+  }
+  .op-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .op-filter-bar .op-select,
+  .op-filter-bar .op-input {
+    width: 100%;
+    min-width: 0;
+  }
+}
+</style>
+</head>
+<body>
+
+<header id="opTopNav"></header>
+<div class="op-page no-sidebar">
+
+  <!-- 右侧主区域 -->
+  <div class="op-main">
+
+    <!-- 顶部标题栏 -->
+    <div class="op-header">
+      <div class="op-header-breadcrumb">
+        <a href="#">开放平台</a>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>Webhook管理</span>
+      </div>
+      <div class="op-header-actions">
+        <a href="#" class="op-btn op-btn-default" style="font-size:12px;height:30px;padding:0 12px">
+          <i class="ri-question-line"></i> 帮助文档
+        </a>
+      </div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="op-content">
+
+      <!-- 页面标题 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <h2 style="margin:0;font-size:18px;font-weight:700;color:var(--color-text-primary)">Webhook管理</h2>
+      </div>
+
+      <!-- ========== 上半部分：Webhook配置区 ========== -->
+      <div class="op-webhook-section">
+
+        <!-- 应用选择 -->
+        <div class="op-card" style="margin-bottom:20px">
+          <div class="op-card-body" style="padding:16px 20px">
+            <div class="op-form" style="max-width:100%;margin:0">
+              <div class="op-form-row" style="margin:0">
+                <label class="op-form-label" style="margin:0;min-width:80px;line-height:32px">选择应用</label>
+                <select id="appSelect" class="op-select" onchange="onAppChange()">
+                  <!-- JS渲染 -->
+                </select>
+                <span id="appHint" style="font-size:12px;color:var(--color-text-tertiary);margin-left:12px"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 回调地址配置卡片 -->
+        <div class="op-card" id="webhookConfigCard">
+          <div class="op-card-head">
+            <div class="op-card-title">
+              <i class="ri-link" style="color:var(--color-primary)"></i>
+              回调地址配置
+            </div>
+          </div>
+          <div class="op-card-body">
+            <div class="op-form" style="max-width:100%">
+
+              <!-- 回调URL -->
+              <div class="op-form-row">
+                <label class="op-form-label">回调URL <span class="required">*</span></label>
+                <div class="op-input-with-action">
+                  <input class="op-input" id="callbackUrl" type="url" placeholder="https://your-server.com/callback" value="https://api.example.com/sdms/webhook">
+                  <button class="op-btn op-btn-default" id="testConnBtn" onclick="testConnectivity()" style="flex-shrink:0">
+                    <i class="ri-signal-wifi-line"></i>连通性测试
+                  </button>
+                  <span class="op-connect-result" id="connectResult"></span>
+                </div>
+                <div class="op-form-hint">接收SDMS事件推送的回调地址，必须为HTTPS</div>
+              </div>
+
+              <!-- 签名密钥 -->
+              <div class="op-form-row">
+                <label class="op-form-label">签名密钥</label>
+                <div class="op-secret-row">
+                  <div class="op-secret-value" id="secretValue">sk_****x9y2</div>
+                  <button class="op-secret-btn" onclick="copySecret()">
+                    <i class="ri-file-copy-line"></i>复制
+                  </button>
+                  <button class="op-secret-btn danger" onclick="regenerateSecret()">
+                    <i class="ri-refresh-line"></i>重新生成
+                  </button>
+                </div>
+                <div class="op-form-hint" style="display:flex;align-items:center;gap:4px;margin-top:8px">
+                  <i class="ri-shield-check-line" style="font-size:13px;color:var(--color-primary)"></i>
+                  SDMS使用HMAC-SHA256对回调请求签名，您可以在接收端验证请求来源
+                </div>
+              </div>
+
+              <!-- 事件订阅 -->
+              <div class="op-form-row">
+                <label class="op-form-label">订阅事件类型</label>
+                <div class="op-event-grid" id="eventGrid">
+                  <!-- JS渲染 -->
+                </div>
+              </div>
+
+              <!-- 状态开关 -->
+              <div class="op-form-row">
+                <label class="op-form-label">Webhook状态</label>
+                <div class="op-toggle-wrap">
+                  <div class="op-toggle on" id="webhookToggle" onclick="toggleWebhook()">
+                    <div class="op-toggle-knob"></div>
+                  </div>
+                  <span class="op-toggle-label" id="toggleLabel">已启用</span>
+                </div>
+              </div>
+
+              <!-- 保存按钮 -->
+              <div class="op-form-row" style="margin-top:24px">
+                <button class="op-btn op-btn-primary op-btn-lg" onclick="saveConfig()">
+                  <i class="ri-save-line"></i>保存配置
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 配置变更审计折叠区 -->
+        <div class="op-collapse" id="auditCollapse" style="margin-top:20px">
+          <div class="op-collapse-head" onclick="toggleCollapse('auditCollapse')">
+            <div class="op-collapse-title">
+              <i class="ri-history-line" style="color:var(--color-text-tertiary)"></i>
+              配置变更记录
+            </div>
+            <i class="ri-arrow-down-s-line op-collapse-arrow"></i>
+          </div>
+          <div class="op-collapse-body">
+            <div style="padding:0 20px 20px">
+              <div class="op-table-wrap">
+                <table class="op-table">
+                  <thead>
+                    <tr>
+                      <th style="width:170px">操作时间</th>
+                      <th style="width:120px">应用</th>
+                      <th style="width:80px">操作人</th>
+                      <th>变更内容</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditTableBody">
+                    <!-- JS渲染 -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== 下半部分：回调日志区 ========== -->
+      <div class="op-webhook-section">
+        <div class="op-card">
+          <div class="op-card-head">
+            <div class="op-card-title">
+              <i class="ri-file-list-3-line" style="color:var(--color-primary)"></i>
+              回调日志
+            </div>
+          </div>
+          <div class="op-card-body">
+
+            <!-- 筛选条 -->
+            <div class="op-filter-bar" style="margin-bottom:16px">
+              <input class="op-input" id="filterDateStart" type="date" value="2026-06-01" style="width:150px">
+              <span style="color:var(--color-text-tertiary);font-size:12px">至</span>
+              <input class="op-input" id="filterDateEnd" type="date" value="2026-06-09" style="width:150px">
+              <select class="op-select" id="filterEventType">
+                <option value="">全部事件</option>
+                <option value="ORDER_RECEIVED">ORDER_RECEIVED</option>
+                <option value="INBOUND_COMPLETED">INBOUND_COMPLETED</option>
+                <option value="OUTBOUND_COMPLETED">OUTBOUND_COMPLETED</option>
+                <option value="STATUS_CHANGED">STATUS_CHANGED</option>
+                <option value="ORDER_CANCELLED">ORDER_CANCELLED</option>
+                <option value="FILE_UPLOADED">FILE_UPLOADED</option>
+              </select>
+              <select class="op-select" id="filterApp">
+                <option value="">全部应用</option>
+              </select>
+              <select class="op-select" id="filterStatus">
+                <option value="">全部状态</option>
+                <option value="success">成功</option>
+                <option value="retrying">重试中</option>
+                <option value="failed">失败</option>
+              </select>
+              <button class="op-btn op-btn-primary" onclick="filterLogs()">
+                <i class="ri-search-line"></i>查询
+              </button>
+              <button class="op-btn op-btn-default" onclick="resetFilter()">
+                <i class="ri-refresh-line"></i>重置
+              </button>
+            </div>
+
+            <!-- 日志表格 -->
+            <div class="op-table-wrap">
+              <table class="op-table">
+                <thead>
+                  <tr>
+                    <th style="width:150px">事件ID</th>
+                    <th style="width:110px">应用</th>
+                    <th style="width:160px">事件类型</th>
+                    <th style="width:170px">推送时间</th>
+                    <th>目标URL</th>
+                    <th style="width:100px">HTTP状态码</th>
+                    <th style="width:80px">重试次数</th>
+                    <th style="width:90px">状态</th>
+                    <th style="width:130px">操作</th>
+                  </tr>
+                </thead>
+                <tbody id="logTableBody">
+                  <!-- JS渲染 -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 分页 -->
+            <div class="op-pagination">
+              <span class="op-pagination-info" id="paginationInfo">共 12 条</span>
+              <button class="op-page-btn" disabled><i class="ri-arrow-left-s-line"></i></button>
+              <button class="op-page-btn active">1</button>
+              <button class="op-page-btn">2</button>
+              <button class="op-page-btn"><i class="ri-arrow-right-s-line"></i></button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast容器 -->
+<div class="op-toast-stack" id="opToastStack"></div>
+
+<!-- ====== 回调详情弹窗 ====== -->
+<div class="op-modal-mask" id="detailModal">
+  <div class="op-modal op-modal-xl">
+    <div class="op-modal-head">
+      <span class="op-modal-title" id="detailModalTitle">回调详情</span>
+      <button class="op-modal-close" onclick="closeModal('detailModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body" style="max-height:70vh;overflow-y:auto;padding:20px 24px">
+
+      <!-- 基本信息 -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">
+          <i class="ri-information-line"></i>基本信息
+        </div>
+        <div class="op-info-row">
+          <span class="op-info-label">事件ID</span>
+          <span class="op-info-value" id="detailEventId" style="font-family:'SF Mono','Consolas',monospace;font-size:12px"></span>
+        </div>
+        <div class="op-info-row">
+          <span class="op-info-label">事件类型</span>
+          <span class="op-info-value" id="detailEventType"></span>
+        </div>
+        <div class="op-info-row">
+          <span class="op-info-label">推送时间</span>
+          <span class="op-info-value" id="detailPushTime"></span>
+        </div>
+        <div class="op-info-row">
+          <span class="op-info-label">目标URL</span>
+          <span class="op-info-value" id="detailTargetUrl" style="font-family:'SF Mono','Consolas',monospace;font-size:12px;word-break:break-all"></span>
+        </div>
+        <div class="op-info-row">
+          <span class="op-info-label">状态</span>
+          <span class="op-info-value" id="detailStatus"></span>
+        </div>
+      </div>
+
+      <!-- 请求Body -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">
+          <i class="ri-upload-cloud-line"></i>请求Body
+        </div>
+        <div class="op-json-block" id="detailRequestBody"></div>
+      </div>
+
+      <!-- 响应Body -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">
+          <i class="ri-download-cloud-line"></i>响应Body
+        </div>
+        <div class="op-json-block" id="detailResponseBody"></div>
+      </div>
+
+      <!-- 重试历史时间线 -->
+      <div class="op-detail-section">
+        <div class="op-detail-section-title">
+          <i class="ri-history-line"></i>推送历史
+        </div>
+        <div class="op-timeline" id="detailTimeline"></div>
+      </div>
+
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('detailModal')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 手动重试确认弹窗 ====== -->
+<div class="op-modal-mask" id="retryModal">
+  <div class="op-modal">
+    <div class="op-modal-head">
+      <span class="op-modal-title">确认手动重试</span>
+      <button class="op-modal-close" onclick="closeModal('retryModal')"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="op-modal-body">
+      <div class="op-alert op-alert-warning" style="margin:0">
+        <i class="ri-error-warning-line"></i>
+        <div>
+          将重新推送此事件到回调地址。<br>
+          <span style="font-size:12px;color:var(--color-text-tertiary)" id="retryEventInfo"></span>
+        </div>
+      </div>
+    </div>
+    <div class="op-modal-footer">
+      <button class="op-btn op-btn-default" onclick="closeModal('retryModal')">取消</button>
+      <button class="op-btn op-btn-primary" onclick="doRetry()">
+        <i class="ri-refresh-line"></i>确认重试
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/open-platform.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---- 初始化顶栏 ---- */
+  if (!OP.requireAuth()) return;
+  OP.renderTopNav(OP.DEV_MENUS, 'webhook');
+
+  /* ============================================================
+   * 应用数据 & Webhook配置
+   * ============================================================ */
+
+  var apps = OP.getApps();
+
+  // 为每个应用初始化webhook配置（如果不存在）
+  function ensureWebhook(app) {
+    if (!app.webhook) {
+      app.webhook = { url: '', signingKey: '', events: [], enabled: false };
+    }
+    return app.webhook;
+  }
+
+  // 给默认应用添加mock webhook数据
+  var mockWebhooks = {
+    'app_001': {
+      url: 'https://api.example.com/sdms/webhook',
+      signingKey: 'sk_k8m3p7q2w5t9r1v4x6y8z0a3b5c7d9e2',
+      events: ['ORDER_RECEIVED', 'INBOUND_COMPLETED', 'OUTBOUND_COMPLETED'],
+      enabled: true
+    },
+    'app_002': {
+      url: 'https://finance.example.com/sdms/callback',
+      signingKey: 'sk_x9y2z4a6b8c0d2e4f6g8h0j2k4m6n8p0',
+      events: ['ORDER_RECEIVED', 'STATUS_CHANGED'],
+      enabled: true
+    }
+  };
+
+  for (var k = 0; k < apps.length; k++) {
+    if (mockWebhooks[apps[k].id] && !apps[k].webhook) {
+      apps[k].webhook = JSON.parse(JSON.stringify(mockWebhooks[apps[k].id]));
+    }
+    ensureWebhook(apps[k]);
+  }
+  OP.saveApps(apps);
+
+  // 当前选中的应用
+  var selectedAppId = apps.length > 0 ? apps[0].id : null;
+
+  // 事件类型定义（checked状态动态取自当前应用webhook.events）
+  var EVENT_TYPES = [
+    { key: 'ORDER_RECEIVED',     name: 'ORDER_RECEIVED',     desc: 'SDMS确认收到订单' },
+    { key: 'INBOUND_COMPLETED',  name: 'INBOUND_COMPLETED',  desc: '入仓作业完成' },
+    { key: 'OUTBOUND_COMPLETED', name: 'OUTBOUND_COMPLETED', desc: '出库作业完成' },
+    { key: 'STATUS_CHANGED',     name: 'STATUS_CHANGED',     desc: '订单状态变更' },
+    { key: 'ORDER_CANCELLED',    name: 'ORDER_CANCELLED',    desc: '订单已取消' },
+    { key: 'FILE_UPLOADED',      name: 'FILE_UPLOADED',      desc: '附件上传完成' }
+  ];
+
+  // 变更审计记录
+  var auditRecords = [
+    { time: '2026-06-09 10:32', appId: 'app_001', appName: 'ERP同步系统', user: '张三', content: '修改回调URL为 https://api.example.com/sdms/webhook' },
+    { time: '2026-06-08 14:23', appId: 'app_001', appName: 'ERP同步系统', user: '张三', content: '修改回调URL' },
+    { time: '2026-06-06 09:15', appId: 'app_001', appName: 'ERP同步系统', user: '李四', content: '新增订阅事件 ORDER_CANCELLED' },
+    { time: '2026-06-04 16:40', appId: 'app_002', appName: '财务对账系统', user: '张三', content: '重新生成签名密钥' },
+    { time: '2026-06-01 08:00', appId: 'app_001', appName: 'ERP同步系统', user: '系统', content: '初始化Webhook配置' },
+    { time: '2026-06-01 08:05', appId: 'app_002', appName: '财务对账系统', user: '系统', content: '初始化Webhook配置' }
+  ];
+
+  // 回调日志数据（全局，附带appId）
+  var logData = [
+    {
+      eventId: 'evt_20260609_001', appId: 'app_001', appName: 'ERP同步系统',
+      eventType: 'ORDER_RECEIVED', pushTime: '2026-06-09 14:32:05',
+      targetUrl: 'https://api.example.com/sdms/webhook', httpCode: '200', httpLabel: '200',
+      retryCount: 0, status: 'success', statusLabel: '成功',
+      requestBody: {
+        eventId: 'evt_20260609_001', eventType: 'ORDER_RECEIVED', customerCode: 'CAMS',
+        orderNo: 'A001', sourceOrderNo: 'ORD-2026-001', timestamp: '2026-06-09T14:32:05Z',
+        data: { orderType: 'INBOUND', estimatedQty: 100, warehouseCode: 'WH-GZ-01' }
+      },
+      responseBody: { code: 0, message: 'success', receivedAt: '2026-06-09T14:32:05Z' },
+      timeline: [
+        { time: '2026-06-09 14:32:05', result: 'success', label: '200 成功' }
+      ]
+    },
+    {
+      eventId: 'evt_20260609_002', appId: 'app_002', appName: '财务对账系统',
+      eventType: 'ORDER_RECEIVED', pushTime: '2026-06-09 11:20:18',
+      targetUrl: 'https://finance.example.com/sdms/callback', httpCode: '200', httpLabel: '200',
+      retryCount: 0, status: 'success', statusLabel: '成功',
+      requestBody: {
+        eventId: 'evt_20260609_002', eventType: 'ORDER_RECEIVED', customerCode: 'CAMS',
+        orderNo: 'A001', sourceOrderNo: 'ORD-2026-001', timestamp: '2026-06-09T11:20:18Z',
+        data: { receivedQty: 50, receivedWeight: 120.5, receivedVolume: 2.3, warehouseLocation: 'A-01-03' }
+      },
+      responseBody: { code: 0, message: 'success', receivedAt: '2026-06-09T11:20:18Z' },
+      timeline: [
+        { time: '2026-06-09 11:20:18', result: 'success', label: '200 成功' }
+      ]
+    },
+    {
+      eventId: 'evt_20260608_003', appId: 'app_001', appName: 'ERP同步系统',
+      eventType: 'OUTBOUND_COMPLETED', pushTime: '2026-06-08 16:45:33',
+      targetUrl: 'https://api.example.com/sdms/webhook', httpCode: 'timeout', httpLabel: '超时',
+      retryCount: 3, status: 'failed', statusLabel: '失败',
+      requestBody: {
+        eventId: 'evt_20260608_003', eventType: 'OUTBOUND_COMPLETED', customerCode: 'CAMS',
+        orderNo: 'B045', sourceOrderNo: 'ORD-2026-045', timestamp: '2026-06-08T16:45:33Z',
+        data: { shippedQty: 200, shippedWeight: 450.8, trackingNo: 'SF1234567890', carrierCode: 'SF' }
+      },
+      responseBody: { code: 0, message: 'success', receivedAt: '2026-06-08T16:46:02Z' },
+      timeline: [
+        { time: '2026-06-08 16:45:33', result: 'timeout', label: '超时' },
+        { time: '2026-06-08 16:45:35', result: 'error',   label: '500 Internal Server Error' },
+        { time: '2026-06-08 16:45:40', result: 'timeout', label: '超时' },
+        { time: '2026-06-08 16:45:50', result: 'timeout', label: '超时' }
+      ]
+    },
+    {
+      eventId: 'evt_20260608_004', appId: 'app_001', appName: 'ERP同步系统',
+      eventType: 'STATUS_CHANGED', pushTime: '2026-06-08 15:12:07',
+      targetUrl: 'https://api.example.com/sdms/webhook', httpCode: '200', httpLabel: '200',
+      retryCount: 0, status: 'success', statusLabel: '成功',
+      requestBody: {
+        eventId: 'evt_20260608_004', eventType: 'STATUS_CHANGED', customerCode: 'CAMS',
+        orderNo: 'A098', sourceOrderNo: 'ORD-2026-098', timestamp: '2026-06-08T15:12:07Z',
+        data: { oldStatus: 'PENDING', newStatus: 'PROCESSING', changedBy: 'SYSTEM' }
+      },
+      responseBody: { code: 0, message: 'ok' },
+      timeline: [
+        { time: '2026-06-08 15:12:07', result: 'success', label: '200 成功' }
+      ]
+    },
+    {
+      eventId: 'evt_20260608_005', appId: 'app_001', appName: 'ERP同步系统',
+      eventType: 'INBOUND_COMPLETED', pushTime: '2026-06-08 14:05:22',
+      targetUrl: 'https://api.example.com/sdms/webhook', httpCode: '500', httpLabel: '500',
+      retryCount: 2, status: 'success', statusLabel: '成功',
+      requestBody: {
+        eventId: 'evt_20260608_005', eventType: 'INBOUND_COMPLETED', customerCode: 'CAMS',
+        orderNo: 'A067', sourceOrderNo: 'ORD-2026-067', timestamp: '2026-06-08T14:05:22Z',
+        data: { receivedQty: 80, receivedWeight: 230.6, receivedVolume: 5.1, warehouseLocation: 'B-02-15' }
+      },
+      responseBody: { code: 0, message: 'success', receivedAt: '2026-06-08T14:05:38Z' },
+      timeline: [
+        { time: '2026-06-08 14:05:22', result: 'timeout', label: '超时' },
+        { time: '2026-06-08 14:05:24', result: 'error',   label: '500 Internal Server Error' },
+        { time: '2026-06-08 14:05:29', result: 'success', label: '200 成功' }
+      ]
+    },
+    {
+      eventId: 'evt_20260607_006', appId: 'app_002', appName: '财务对账系统',
+      eventType: 'STATUS_CHANGED', pushTime: '2026-06-07 09:30:11',
+      targetUrl: 'https://finance.example.com/sdms/callback', httpCode: '200', httpLabel: '200',
+      retryCount: 0, status: 'success', statusLabel: '成功',
+      requestBody: {
+        eventId: 'evt_20260607_006', eventType: 'STATUS_CHANGED', customerCode: 'CAMS',
+        orderNo: 'A120', sourceOrderNo: 'ORD-2026-120', timestamp: '2026-06-07T09:30:11Z',
+        data: { oldStatus: 'PENDING', newStatus: 'PROCESSING', changedBy: 'SYSTEM' }
+      },
+      responseBody: { code: 0, message: 'ok', receivedAt: '2026-06-07T09:30:11Z' },
+      timeline: [
+        { time: '2026-06-07 09:30:11', result: 'success', label: '200 成功' }
+      ]
+    },
+    {
+      eventId: 'evt_20260607_007', appId: 'app_001', appName: 'ERP同步系统',
+      eventType: 'ORDER_CANCELLED', pushTime: '2026-06-07 08:15:44',
+      targetUrl: 'https://api.example.com/sdms/webhook', httpCode: '200', httpLabel: '200',
+      retryCount: 0, status: 'success', statusLabel: '成功',
+      requestBody: {
+        eventId: 'evt_20260607_007', eventType: 'ORDER_CANCELLED', customerCode: 'CAMS',
+        orderNo: 'A088', sourceOrderNo: 'ORD-2026-088', timestamp: '2026-06-07T08:15:44Z',
+        data: { cancelReason: '客户取消', cancelledBy: 'CUSTOMER', refundRequired: true }
+      },
+      responseBody: { code: 0, message: 'received' },
+      timeline: [
+        { time: '2026-06-07 08:15:44', result: 'success', label: '200 成功' }
+      ]
+    },
+    {
+      eventId: 'evt_20260606_008', appId: 'app_001', appName: 'ERP同步系统',
+      eventType: 'OUTBOUND_COMPLETED', pushTime: '2026-06-06 17:22:09',
+      targetUrl: 'https://api.example.com/sdms/webhook', httpCode: '500', httpLabel: '500',
+      retryCount: 3, status: 'retrying', statusLabel: '重试中',
+      requestBody: {
+        eventId: 'evt_20260606_008', eventType: 'OUTBOUND_COMPLETED', customerCode: 'CAMS',
+        orderNo: 'B032', sourceOrderNo: 'ORD-2026-032', timestamp: '2026-06-06T17:22:09Z',
+        data: { shippedQty: 150, shippedWeight: 320.4, trackingNo: 'YT9876543210', carrierCode: 'YT' }
+      },
+      responseBody: { error: 'Internal Server Error' },
+      timeline: [
+        { time: '2026-06-06 17:22:09', result: 'error',   label: '500 Internal Server Error' },
+        { time: '2026-06-06 17:22:11', result: 'error',   label: '500 Internal Server Error' },
+        { time: '2026-06-06 17:22:16', result: 'error',   label: '502 Bad Gateway' }
+      ]
+    },
+    {
+      eventId: 'evt_20260606_009', appId: 'app_001', appName: 'ERP同步系统',
+      eventType: 'FILE_UPLOADED', pushTime: '2026-06-06 11:08:35',
+      targetUrl: 'https://api.example.com/sdms/webhook', httpCode: '200', httpLabel: '200',
+      retryCount: 0, status: 'success', statusLabel: '成功',
+      requestBody: {
+        eventId: 'evt_20260606_009', eventType: 'FILE_UPLOADED', customerCode: 'CAMS',
+        orderNo: 'A055', sourceOrderNo: 'ORD-2026-055', timestamp: '2026-06-06T11:08:35Z',
+        data: { fileName: 'packing_list.pdf', fileSize: 1024000, uploadedBy: 'warehouse_op' }
+      },
+      responseBody: { code: 0, message: 'success' },
+      timeline: [
+        { time: '2026-06-06 11:08:35', result: 'success', label: '200 成功' }
+      ]
+    },
+    {
+      eventId: 'evt_20260605_010', appId: 'app_002', appName: '财务对账系统',
+      eventType: 'ORDER_RECEIVED', pushTime: '2026-06-05 16:50:28',
+      targetUrl: 'https://finance.example.com/sdms/callback', httpCode: '200', httpLabel: '200',
+      retryCount: 1, status: 'success', statusLabel: '成功',
+      requestBody: {
+        eventId: 'evt_20260605_010', eventType: 'ORDER_RECEIVED', customerCode: 'CAMS',
+        orderNo: 'B019', sourceOrderNo: 'ORD-2026-019', timestamp: '2026-06-05T16:50:28Z',
+        data: { orderType: 'OUTBOUND', estimatedQty: 200, warehouseCode: 'WH-SZ-02' }
+      },
+      responseBody: { code: 0, message: 'ok' },
+      timeline: [
+        { time: '2026-06-05 16:50:28', result: 'timeout', label: '超时' },
+        { time: '2026-06-05 16:50:30', result: 'success', label: '200 成功' }
+      ]
+    },
+    {
+      eventId: 'evt_20260604_011', appId: 'app_001', appName: 'ERP同步系统',
+      eventType: 'INBOUND_COMPLETED', pushTime: '2026-06-04 13:22:51',
+      targetUrl: 'https://api.example.com/sdms/webhook', httpCode: '200', httpLabel: '200',
+      retryCount: 0, status: 'success', statusLabel: '成功',
+      requestBody: {
+        eventId: 'evt_20260604_011', eventType: 'INBOUND_COMPLETED', customerCode: 'CAMS',
+        orderNo: 'A033', sourceOrderNo: 'ORD-2026-033', timestamp: '2026-06-04T13:22:51Z',
+        data: { receivedQty: 120, receivedWeight: 350.2, receivedVolume: 8.7, warehouseLocation: 'C-03-08' }
+      },
+      responseBody: { code: 0, message: 'success' },
+      timeline: [
+        { time: '2026-06-04 13:22:51', result: 'success', label: '200 成功' }
+      ]
+    },
+    {
+      eventId: 'evt_20260603_012', appId: 'app_001', appName: 'ERP同步系统',
+      eventType: 'ORDER_RECEIVED', pushTime: '2026-06-03 10:05:19',
+      targetUrl: 'https://api.example.com/sdms/webhook', httpCode: '500', httpLabel: '500',
+      retryCount: 3, status: 'failed', statusLabel: '失败',
+      requestBody: {
+        eventId: 'evt_20260603_012', eventType: 'ORDER_RECEIVED', customerCode: 'CAMS',
+        orderNo: 'A010', sourceOrderNo: 'ORD-2026-010', timestamp: '2026-06-03T10:05:19Z',
+        data: { orderType: 'INBOUND', estimatedQty: 500, warehouseCode: 'WH-GZ-01' }
+      },
+      responseBody: { error: 'Service Unavailable' },
+      timeline: [
+        { time: '2026-06-03 10:05:19', result: 'error',   label: '500 Internal Server Error' },
+        { time: '2026-06-03 10:05:21', result: 'error',   label: '503 Service Unavailable' },
+        { time: '2026-06-03 10:05:26', result: 'timeout', label: '超时' },
+        { time: '2026-06-03 10:05:36', result: 'error',   label: '500 Internal Server Error' }
+      ]
+    }
+  ];
+
+  /* ============================================================
+   * 辅助函数
+   * ============================================================ */
+
+  function getSelectedApp() {
+    for (var i = 0; i < apps.length; i++) {
+      if (apps[i].id === selectedAppId) return apps[i];
+    }
+    return null;
+  }
+
+  function maskSecret(key) {
+    if (!key) return '';
+    return 'sk_****' + key.slice(-4);
+  }
+
+  /* ============================================================
+   * 渲染函数
+   * ============================================================ */
+
+  // 渲染应用选择器
+  function renderAppSelect() {
+    var sel = document.getElementById('appSelect');
+    var html = '';
+    for (var i = 0; i < apps.length; i++) {
+      var selected = apps[i].id === selectedAppId ? ' selected' : '';
+      html += '<option value="' + apps[i].id + '"' + selected + '>' + apps[i].name + '</option>';
+    }
+    sel.innerHTML = html;
+
+    // 同时更新日志筛选栏的应用下拉
+    renderFilterAppSelect();
+  }
+
+  // 渲染日志筛选栏的应用下拉
+  function renderFilterAppSelect() {
+    var sel = document.getElementById('filterApp');
+    if (!sel) return;
+    var html = '<option value="">全部应用</option>';
+    for (var i = 0; i < apps.length; i++) {
+      html += '<option value="' + apps[i].id + '">' + apps[i].name + '</option>';
+    }
+    sel.innerHTML = html;
+  }
+
+  // 渲染事件订阅复选框（根据当前应用的events）
+  function renderEventGrid() {
+    var app = getSelectedApp();
+    var wh = app ? app.webhook : { events: [] };
+    var container = document.getElementById('eventGrid');
+    var html = '';
+    for (var i = 0; i < EVENT_TYPES.length; i++) {
+      var ev = EVENT_TYPES[i];
+      var isChecked = wh.events.indexOf(ev.key) >= 0;
+      var cls = isChecked ? 'op-event-item checked' : 'op-event-item';
+      html += '<div class="' + cls + '" data-key="' + ev.key + '" onclick="toggleEvent(\'' + ev.key + '\')">';
+      html += '  <div class="op-event-checkbox"><i class="ri-check-line"></i></div>';
+      html += '  <div class="op-event-info">';
+      html += '    <div class="op-event-name">' + ev.name + '</div>';
+      html += '    <div class="op-event-desc">' + ev.desc + '</div>';
+      html += '  </div>';
+      html += '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  // 将当前应用的webhook配置加载到表单
+  function loadWebhookForm() {
+    var app = getSelectedApp();
+    var hint = document.getElementById('appHint');
+
+    if (!app) {
+      hint.textContent = '请先创建应用';
+      document.getElementById('callbackUrl').value = '';
+      document.getElementById('secretValue').textContent = '';
+      document.getElementById('webhookToggle').classList.remove('on');
+      document.getElementById('toggleLabel').textContent = '已禁用';
+      renderEventGrid();
+      return;
+    }
+
+    var wh = app.webhook;
+    if (!wh.url && !wh.signingKey && wh.events.length === 0) {
+      hint.textContent = '尚未配置';
+      hint.style.color = 'var(--color-warning, #ff8225)';
+    } else {
+      hint.textContent = '';
+    }
+
+    document.getElementById('callbackUrl').value = wh.url || '';
+    document.getElementById('secretValue').textContent = maskSecret(wh.signingKey);
+
+    var toggle = document.getElementById('webhookToggle');
+    var label = document.getElementById('toggleLabel');
+    if (wh.enabled) {
+      toggle.classList.add('on');
+      label.textContent = '已启用';
+    } else {
+      toggle.classList.remove('on');
+      label.textContent = '已禁用';
+    }
+
+    renderEventGrid();
+  }
+
+  // 渲染变更审计记录
+  function renderAuditTable() {
+    var tbody = document.getElementById('auditTableBody');
+    var html = '';
+    for (var i = 0; i < auditRecords.length; i++) {
+      var r = auditRecords[i];
+      html += '<tr>';
+      html += '<td style="font-family:\'SF Mono\',Consolas,monospace;font-size:12px;color:var(--color-text-secondary)">' + r.time + '</td>';
+      html += '<td style="font-size:12px">' + r.appName + '</td>';
+      html += '<td>' + r.user + '</td>';
+      html += '<td>' + r.content + '</td>';
+      html += '</tr>';
+    }
+    tbody.innerHTML = html;
+  }
+
+  // 渲染日志表格
+  function renderLogTable(data) {
+    var tbody = document.getElementById('logTableBody');
+    var html = '';
+    for (var i = 0; i < data.length; i++) {
+      var log = data[i];
+      html += '<tr>';
+
+      // 事件ID
+      html += '<td style="font-family:\'SF Mono\',Consolas,monospace;font-size:12px;font-weight:600">' + log.eventId + '</td>';
+
+      // 应用名称
+      html += '<td style="font-size:12px">' + log.appName + '</td>';
+
+      // 事件类型
+      html += '<td><span style="font-family:\'SF Mono\',Consolas,monospace;font-size:12px;font-weight:600;color:var(--color-primary)">' + log.eventType + '</span></td>';
+
+      // 推送时间
+      html += '<td style="font-size:12px;color:var(--color-text-secondary)">' + log.pushTime + '</td>';
+
+      // 目标URL
+      html += '<td style="font-family:\'SF Mono\',Consolas,monospace;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + log.targetUrl + '">' + log.targetUrl + '</td>';
+
+      // HTTP状态码
+      var codeCls = 's200';
+      if (log.httpCode === '500') codeCls = 's500';
+      else if (log.httpCode === 'timeout') codeCls = 'timeout';
+      html += '<td><span class="op-http-code ' + codeCls + '">' + log.httpLabel + '</span></td>';
+
+      // 重试次数
+      html += '<td style="text-align:center">' + log.retryCount + '</td>';
+
+      // 状态
+      var statusCls = 'op-wh-status-success';
+      var statusIcon = 'ri-check-line';
+      if (log.status === 'retrying') { statusCls = 'op-wh-status-retrying'; statusIcon = 'ri-refresh-line'; }
+      else if (log.status === 'failed') { statusCls = 'op-wh-status-failed'; statusIcon = 'ri-close-line'; }
+      html += '<td><span class="op-wh-status ' + statusCls + '"><i class="' + statusIcon + '"></i>' + log.statusLabel + '</span></td>';
+
+      // 操作
+      html += '<td>';
+      html += '<button class="op-action-link" onclick="showDetail(\'' + log.eventId + '\')">查看详情</button>';
+      html += '<button class="op-action-link" onclick="showRetryConfirm(\'' + log.eventId + '\')">手动重试</button>';
+      html += '</td>';
+
+      html += '</tr>';
+    }
+    tbody.innerHTML = html;
+
+    // 更新分页信息
+    document.getElementById('paginationInfo').textContent = '共 ' + data.length + ' 条';
+  }
+
+  /* ============================================================
+   * 弹窗工具
+   * ============================================================ */
+
+  function openModal(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      requestAnimationFrame(function () { el.classList.add('visible'); });
+    }
+  }
+
+  window.closeModal = function (id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('visible');
+    }
+  };
+
+  // 点击遮罩关闭
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('op-modal-mask') && e.target.classList.contains('visible')) {
+      e.target.classList.remove('visible');
+    }
+  });
+
+  /* ============================================================
+   * 交互逻辑
+   * ============================================================ */
+
+  // 应用切换
+  window.onAppChange = function () {
+    var sel = document.getElementById('appSelect');
+    selectedAppId = sel.value;
+    loadWebhookForm();
+  };
+
+  // 连通性测试
+  window.testConnectivity = function () {
+    var btn = document.getElementById('testConnBtn');
+    var result = document.getElementById('connectResult');
+    var url = document.getElementById('callbackUrl').value.trim();
+
+    if (!url) {
+      OP.showToast('请先输入回调URL', 'error');
+      return;
+    }
+
+    // 按钮loading
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ri-loader-4-line" style="animation:spin 1s linear infinite"></i>测试中...';
+    result.className = 'op-connect-result';
+    result.textContent = '';
+
+    // 添加旋转动画
+    if (!document.getElementById('spinStyle')) {
+      var style = document.createElement('style');
+      style.id = 'spinStyle';
+      style.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+      document.head.appendChild(style);
+    }
+
+    // 模拟2秒测试
+    setTimeout(function () {
+      var success = Math.random() > 0.3;
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ri-signal-wifi-line"></i>连通性测试';
+
+      if (success) {
+        result.className = 'op-connect-result show success';
+        result.innerHTML = '<i class="ri-check-line"></i>连接成功';
+      } else {
+        result.className = 'op-connect-result show error';
+        result.innerHTML = '<i class="ri-close-line"></i>连接失败';
+      }
+    }, 2000);
+  };
+
+  // 复制签名密钥
+  window.copySecret = function () {
+    var app = getSelectedApp();
+    if (!app || !app.webhook.signingKey) {
+      OP.showToast('当前应用无签名密钥', 'error');
+      return;
+    }
+    copyToClipboard(app.webhook.signingKey);
+    OP.showToast('签名密钥已复制到剪贴板', 'success');
+  };
+
+  // 重新生成签名密钥
+  window.regenerateSecret = function () {
+    var app = getSelectedApp();
+    if (!app) return;
+
+    OP.showConfirm('重新生成签名密钥后，旧密钥将立即失效。使用旧密钥验证签名的服务需要更新。', function () {
+      var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      var newSecret = 'sk_';
+      for (var i = 0; i < 32; i++) {
+        newSecret += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      app.webhook.signingKey = newSecret;
+      OP.saveApps(apps);
+      document.getElementById('secretValue').textContent = maskSecret(newSecret);
+      OP.showToast('签名密钥已重新生成', 'success');
+
+      // 添加审计记录
+      auditRecords.unshift({
+        time: OP.Mock.now().slice(0, 16),
+        appId: app.id,
+        appName: app.name,
+        user: '张三',
+        content: '重新生成签名密钥'
+      });
+      renderAuditTable();
+    }, {
+      title: '确认重新生成签名密钥',
+      type: 'danger'
+    });
+  };
+
+  // 切换事件订阅
+  window.toggleEvent = function (key) {
+    var app = getSelectedApp();
+    if (!app) return;
+    var wh = app.webhook;
+    var idx = wh.events.indexOf(key);
+    if (idx >= 0) {
+      wh.events.splice(idx, 1);
+    } else {
+      wh.events.push(key);
+    }
+    OP.saveApps(apps);
+    renderEventGrid();
+  };
+
+  // 切换Webhook状态
+  window.toggleWebhook = function () {
+    var app = getSelectedApp();
+    if (!app) return;
+    app.webhook.enabled = !app.webhook.enabled;
+    OP.saveApps(apps);
+
+    var toggle = document.getElementById('webhookToggle');
+    var label = document.getElementById('toggleLabel');
+
+    if (app.webhook.enabled) {
+      toggle.classList.add('on');
+      label.textContent = '已启用';
+    } else {
+      toggle.classList.remove('on');
+      label.textContent = '已禁用';
+    }
+  };
+
+  // 保存配置
+  window.saveConfig = function () {
+    var app = getSelectedApp();
+    if (!app) {
+      OP.showToast('请先选择应用', 'error');
+      return;
+    }
+
+    var url = document.getElementById('callbackUrl').value.trim();
+    if (!url) {
+      OP.showToast('请输入回调URL', 'error');
+      return;
+    }
+
+    if (app.webhook.events.length === 0) {
+      OP.showToast('请至少选择一个订阅事件类型', 'error');
+      return;
+    }
+
+    // 写入当前应用
+    app.webhook.url = url;
+    OP.saveApps(apps);
+
+    // 添加审计记录
+    auditRecords.unshift({
+      time: OP.Mock.now().slice(0, 16),
+      appId: app.id,
+      appName: app.name,
+      user: '张三',
+      content: '更新Webhook配置（回调URL、事件订阅、状态）'
+    });
+    renderAuditTable();
+
+    // 更新hint
+    var hint = document.getElementById('appHint');
+    hint.textContent = '';
+
+    OP.showToast(app.name + ' 的Webhook配置已保存', 'success');
+  };
+
+  // 折叠区切换
+  window.toggleCollapse = function (id) {
+    document.getElementById(id).classList.toggle('open');
+  };
+
+  // 筛选日志
+  window.filterLogs = function () {
+    var eventType = document.getElementById('filterEventType').value;
+    var status = document.getElementById('filterStatus').value;
+    var appId = document.getElementById('filterApp').value;
+    var dateStart = document.getElementById('filterDateStart').value;
+    var dateEnd = document.getElementById('filterDateEnd').value;
+
+    var filtered = [];
+    for (var i = 0; i < logData.length; i++) {
+      var log = logData[i];
+      var match = true;
+
+      if (appId && log.appId !== appId) match = false;
+      if (eventType && log.eventType !== eventType) match = false;
+      if (status && log.status !== status) match = false;
+      if (dateStart) {
+        var logDate = log.pushTime.slice(0, 10);
+        if (logDate < dateStart) match = false;
+      }
+      if (dateEnd) {
+        var logDate2 = log.pushTime.slice(0, 10);
+        if (logDate2 > dateEnd) match = false;
+      }
+
+      if (match) filtered.push(log);
+    }
+
+    renderLogTable(filtered);
+  };
+
+  // 重置筛选
+  window.resetFilter = function () {
+    document.getElementById('filterDateStart').value = '2026-06-01';
+    document.getElementById('filterDateEnd').value = '2026-06-09';
+    document.getElementById('filterEventType').value = '';
+    document.getElementById('filterStatus').value = '';
+    var filterAppSel = document.getElementById('filterApp');
+    if (filterAppSel) filterAppSel.value = '';
+    renderLogTable(logData);
+  };
+
+  // 查看回调详情
+  window.showDetail = function (eventId) {
+    var log = null;
+    for (var i = 0; i < logData.length; i++) {
+      if (logData[i].eventId === eventId) {
+        log = logData[i];
+        break;
+      }
+    }
+    if (!log) return;
+
+    document.getElementById('detailModalTitle').textContent = '回调详情 — ' + log.eventId;
+    document.getElementById('detailEventId').textContent = log.eventId;
+    document.getElementById('detailEventType').innerHTML =
+      '<span style="font-family:\'SF Mono\',Consolas,monospace;font-weight:600;color:var(--color-primary)">' + log.eventType + '</span>';
+    document.getElementById('detailPushTime').textContent = log.pushTime;
+    document.getElementById('detailTargetUrl').textContent = log.targetUrl;
+
+    // 状态
+    var statusHtml = '';
+    if (log.status === 'success') {
+      statusHtml = '<span class="op-wh-status op-wh-status-success"><i class="ri-check-line"></i>成功</span>';
+    } else if (log.status === 'retrying') {
+      statusHtml = '<span class="op-wh-status op-wh-status-retrying"><i class="ri-refresh-line"></i>重试中</span>';
+    } else {
+      statusHtml = '<span class="op-wh-status op-wh-status-failed"><i class="ri-close-line"></i>失败</span>';
+    }
+    document.getElementById('detailStatus').innerHTML = statusHtml;
+
+    // 请求Body（语法高亮）
+    document.getElementById('detailRequestBody').innerHTML = syntaxHighlight(JSON.stringify(log.requestBody, null, 2));
+
+    // 响应Body（语法高亮）
+    document.getElementById('detailResponseBody').innerHTML = syntaxHighlight(JSON.stringify(log.responseBody, null, 2));
+
+    // 推送历史时间线
+    var timelineHtml = '';
+    for (var j = 0; j < log.timeline.length; j++) {
+      var t = log.timeline[j];
+      var dotCls = t.result;
+      var resultCls = t.result;
+      var title = '第' + (j + 1) + '次推送';
+      timelineHtml += '<div class="op-timeline-item">';
+      timelineHtml += '  <div class="op-timeline-dot ' + dotCls + '"></div>';
+      timelineHtml += '  <div class="op-timeline-content">';
+      timelineHtml += '    <div class="op-timeline-title">' + title + '</div>';
+      timelineHtml += '    <div class="op-timeline-time">' + t.time + '</div>';
+      timelineHtml += '    <div class="op-timeline-result ' + resultCls + '">' + t.label + '</div>';
+      timelineHtml += '  </div>';
+      timelineHtml += '</div>';
+    }
+    document.getElementById('detailTimeline').innerHTML = timelineHtml;
+
+    openModal('detailModal');
+  };
+
+  // 显示手动重试确认弹窗
+  window.showRetryConfirm = function (eventId) {
+    document.getElementById('retryEventInfo').textContent = '事件ID: ' + eventId;
+    openModal('retryModal');
+
+    // 存储当前重试的事件ID
+    window._retryEventId = eventId;
+  };
+
+  // 执行手动重试
+  window.doRetry = function () {
+    closeModal('retryModal');
+    OP.showToast('事件 ' + window._retryEventId + ' 已重新推送', 'success');
+  };
+
+  /* ============================================================
+   * 工具函数
+   * ============================================================ */
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+  }
+
+  // JSON语法高亮
+  function syntaxHighlight(json) {
+    return json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*"(\s*:)?)/g, function (match) {
+        var cls = 'op-json-string';
+        if (/:$/.test(match)) {
+          cls = 'op-json-key';
+          return '<span class="' + cls + '">' + match.slice(0, -1) + '</span>:';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      })
+      .replace(/\b(\d+\.?\d*)\b/g, '<span class="op-json-number">$1</span>')
+      .replace(/\b(true|false)\b/g, '<span class="op-json-bool">$1</span>')
+      .replace(/\bnull\b/g, '<span class="op-json-null">null</span>');
+  }
+
+  /* ============================================================
+   * 初始化
+   * ============================================================ */
+  renderAppSelect();
+  loadWebhookForm();
+  renderAuditTable();
+  renderLogTable(logData);
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>千仓SDMS - 智能打包工作站</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/packing-station.css">
+</head>
+<body class="ps-login-page">
+
+  <!-- 页面标题组 -->
+  <div class="ps-login-hero">
+    <div class="ps-login-hero-row">
+      <div class="ps-login-hero-logo"><i class="ri-box-3-fill"></i></div>
+      <div class="ps-login-hero-text">千仓打包台登录中心</div>
+    </div>
+    <div class="ps-login-hero-line"></div>
+  </div>
+
+  <!-- 登录卡片 -->
+  <div class="ps-login-card" id="loginCard">
+
+      <!-- 编码区 -->
+      <div class="ps-code-field" id="codeField"></div>
+
+      <!-- 用户名 -->
+      <div class="ps-field">
+        <label class="ps-field-label">用户名</label>
+        <div class="ps-input-wrap">
+          <i class="ri-user-3-line"></i>
+          <input type="text" class="ps-input" id="usernameInput" placeholder="请输入用户名" autocomplete="username">
+        </div>
+      </div>
+
+      <!-- 密码 -->
+      <div class="ps-field">
+        <label class="ps-field-label">密码</label>
+        <div class="ps-input-wrap" id="passwordWrap">
+          <i class="ri-lock-line"></i>
+          <input type="password" class="ps-input" id="passwordInput" placeholder="请输入密码" autocomplete="current-password">
+          <button type="button" class="ps-input-toggle" id="togglePassword" title="显示/隐藏密码">
+            <i class="ri-eye-off-line"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 错误信息 -->
+      <div class="ps-error-msg" id="errorMsg"></div>
+
+      <!-- 登录按钮 -->
+      <button type="button" class="ps-login-btn" id="loginBtn">
+        <span class="ps-btn-text">登 录</span>
+        <i class="ri-loader-4-line ps-btn-spinner"></i>
+      </button>
+
+      <!-- 底部 -->
+      <div class="ps-login-footer">
+        <span class="ps-footer-dot"></span>
+        <span>SYSTEM ONLINE</span>
+        <span style="margin-left:auto">© 运连网 千仓科技</span>
+      </div>
+    </div>
+
+  <script src="../assets/js/packing-station.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    var codeField     = document.getElementById('codeField');
+    var usernameInput = document.getElementById('usernameInput');
+    var passwordInput = document.getElementById('passwordInput');
+    var togglePwd     = document.getElementById('togglePassword');
+    var loginBtn      = document.getElementById('loginBtn');
+    var errorMsg      = document.getElementById('errorMsg');
+    var loginCard     = document.getElementById('loginCard');
+
+    var currentCode = null;
+
+    function renderCodeField() {
+      var cachedCode  = PS.lsGet(PS.STORAGE_KEYS.code);
+      var cachedType  = PS.lsGet(PS.STORAGE_KEYS.type);
+      var cachedName  = PS.lsGet(PS.STORAGE_KEYS.name);
+
+      if (cachedCode && cachedType) {
+        currentCode = { valid: true, type: cachedType, name: cachedName, code: cachedCode };
+        codeField.innerHTML =
+          '<label class="ps-field-label">仓库 / 租户编码</label>' +
+          '<div class="ps-code-display">' +
+            '<span class="ps-code-display-code">' + cachedCode + '</span>' +
+            '<span class="ps-code-display-name">' + cachedName + '</span>' +
+            '<span class="ps-code-display-check"><i class="ri-checkbox-circle-fill"></i></span>' +
+            '<button class="ps-code-display-edit" id="editCodeBtn">修改</button>' +
+          '</div>';
+        document.getElementById('editCodeBtn').addEventListener('click', function () {
+          PS.lsRemove(PS.STORAGE_KEYS.code);
+          PS.lsRemove(PS.STORAGE_KEYS.type);
+          PS.lsRemove(PS.STORAGE_KEYS.name);
+          PS.lsRemove(PS.STORAGE_KEYS.warehouse);
+          currentCode = null;
+          renderCodeField();
+        });
+      } else {
+        codeField.innerHTML =
+          '<label class="ps-field-label">仓库 / 租户编码</label>' +
+          '<div class="ps-input-wrap" id="codeWrap">' +
+            '<i class="ri-barcode-line"></i>' +
+            '<input type="text" class="ps-input ps-input-mono" id="codeInput" placeholder="请输入仓库编码或租户编码" autocomplete="off">' +
+          '</div>' +
+          '<div class="ps-field-hint">首次使用需配置编码</div>' +
+          '<div class="ps-error-msg" id="codeError"></div>';
+
+        var codeInput = document.getElementById('codeInput');
+        var codeError = document.getElementById('codeError');
+
+        codeInput.addEventListener('blur', function () {
+          var val = codeInput.value.trim();
+          if (!val) return;
+          var result = PS.verifyCode(val);
+          if (result.valid) {
+            currentCode = result;
+            PS.lsSet(PS.STORAGE_KEYS.code, result.code);
+            PS.lsSet(PS.STORAGE_KEYS.type, result.type);
+            PS.lsSet(PS.STORAGE_KEYS.name, result.name);
+            renderCodeField();
+            PS.showToast('编码识别成功：' + result.name, 'success');
+          } else {
+            codeError.textContent = '编码无效，请检查后重新输入';
+            codeError.classList.add('show');
+            document.getElementById('codeWrap').classList.add('error');
+            currentCode = null;
+          }
+        });
+
+        codeInput.addEventListener('input', function () {
+          codeError.classList.remove('show');
+          var wrap = document.getElementById('codeWrap');
+          if (wrap) wrap.classList.remove('error');
+        });
+      }
+    }
+
+    togglePwd.addEventListener('click', function () {
+      var icon = togglePwd.querySelector('i');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.className = 'ri-eye-line';
+      } else {
+        passwordInput.type = 'password';
+        icon.className = 'ri-eye-off-line';
+      }
+    });
+
+    function doLogin(warehouse) {
+      var username = usernameInput.value.trim();
+      var password = passwordInput.value.trim();
+
+      if (!currentCode || !currentCode.valid) { showError('请先配置仓库/租户编码'); return; }
+      if (!username) { showError('请输入用户名'); usernameInput.focus(); return; }
+      if (!password) { showError('请输入密码'); passwordInput.focus(); return; }
+
+      hideError();
+      loginBtn.classList.add('loading');
+
+      setTimeout(function () {
+        var result = PS.verifyLogin(username, password);
+        loginBtn.classList.remove('loading');
+
+        if (result.success) {
+          PS.lsSet(PS.STORAGE_KEYS.token, 'mock-token-' + Date.now());
+          PS.lsSet(PS.STORAGE_KEYS.user, JSON.stringify(result.user));
+
+          if (warehouse) {
+            PS.lsSet(PS.STORAGE_KEYS.warehouse, JSON.stringify({ code: warehouse.code, name: warehouse.name }));
+          } else if (currentCode.type === 'warehouse') {
+            PS.lsSet(PS.STORAGE_KEYS.warehouse, JSON.stringify({ code: currentCode.code, name: currentCode.name }));
+          }
+
+          document.body.classList.add('fade-out');
+          setTimeout(function () { window.location.href = 'packing-station-home.html'; }, 400);
+        } else {
+          showError(result.error);
+          loginCard.classList.add('shake');
+          setTimeout(function () { loginCard.classList.remove('shake'); }, 400);
+        }
+      }, 800);
+    }
+
+    loginBtn.addEventListener('click', function () {
+      if (!currentCode) { showError('请先配置仓库/租户编码'); return; }
+      if (currentCode.type === 'tenant') {
+        var warehouses = PS.getWarehousesForTenant(currentCode.code);
+        if (warehouses.length > 1) { PS.showWarehouseModal(warehouses, function (s) { doLogin(s); }); return; }
+        if (warehouses.length === 1) { doLogin(warehouses[0]); return; }
+      }
+      doLogin(null);
+    });
+
+    function showError(msg) { errorMsg.textContent = msg; errorMsg.classList.add('show'); }
+    function hideError() { errorMsg.classList.remove('show'); }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !document.querySelector('.ps-modal-mask')) { loginBtn.click(); }
+    });
+
+    renderCodeField();
+    usernameInput.focus();
+  })();
+  </script>
+</body>
+</html>

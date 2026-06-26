@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDMS开放平台 - 首页</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="../assets/css/open-platform.css">
+  <style>
+  /* ============================================================
+   * 开放平台首页 — 页面级样式
+   * ============================================================ */
+
+  .op-home {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---- Section通用 ---- */
+  .op-home-section {
+    padding: 60px 0;
+  }
+
+  .op-home-section-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .op-home-section-subtitle {
+    font-size: 15px;
+    color: #909499;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  /* ============================================================
+   * Module 1: Banner / Hero
+   * ============================================================ */
+  .op-home-banner {
+    padding: 80px 0 60px;
+    background: linear-gradient(180deg, #fff 0%, #f0f5ff 100%);
+    text-align: center;
+  }
+
+  .op-home-banner-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  .op-home-banner-desc {
+    font-size: 18px;
+    color: #909499;
+    margin-bottom: 48px;
+  }
+
+  .op-home-value-props {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+  }
+
+  .op-home-value-card {
+    flex: 1;
+    max-width: 320px;
+    padding: 28px 24px;
+    background: #fff;
+    border: 1px solid #e8ecf0;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .op-home-value-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .op-home-value-icon {
+    font-size: 36px;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .op-home-value-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+
+  .op-home-value-text {
+    font-size: 13px;
+    color: #909499;
+    line-height: 1.6;
+  }
+
+  /* ============================================================
+   * Module 2: Open Capabilities (能力展示)
+   * ============================================================ */
+  .op-home-capabilities {
+    background: #fff;
+  }
+
+  .op-home-cap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .op-home-cap-card {
+    padding: 24px 20px;
+    border: 1px solid #e8ecf0;
+    border-radius: 10px;
+    background: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .op-home-cap-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  }
+
+  .op-home-cap-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .op-home-cap-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+  }
+
+  .op-home-cap-text {
+    font-size: 13px;
+    color: #909499;
+    line-height: 1.6;
+  }
+
+  /* icon颜色 */
+  .op-home-cap-card[data-color="blue"]    .op-home-cap-icon { color: #1684fc; }
+  .op-home-cap-card[data-color="green"]   .op-home-cap-icon { color: #007e22; }
+  .op-home-cap-card[data-color="orange"]  .op-home-cap-icon { color: #ff8225; }
+  .op-home-cap-card[data-color="purple"]  .op-home-cap-icon { color: #7d67ff; }
+  .op-home-cap-card[data-color="cyan"]    .op-home-cap-icon { color: #13c2c2; }
+  .op-home-cap-card[data-color="red"]     .op-home-cap-icon { color: #f5222d; }
+
+  /* 业务线分组 */
+  .op-home-business {
+    margin-bottom: 40px;
+  }
+  .op-home-business:last-child {
+    margin-bottom: 0;
+  }
+  .op-home-business-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .op-home-business-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+  .op-home-business-icon i { font-size: 24px; }
+  /* per-business icon colors via data attribute or nth */
+  .op-home-business[data-color="blue"] .op-home-business-icon { background: #e3f2ff; color: #1684fc; }
+  .op-home-business[data-color="green"] .op-home-business-icon { background: #e6f7ed; color: #007e22; }
+  .op-home-business[data-color="orange"] .op-home-business-icon { background: #fff3e6; color: #ff8225; }
+  .op-home-business[data-color="cyan"] .op-home-business-icon { background: #e6f9fb; color: #0094a8; }
+  .op-home-business-info h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1c1d1e;
+    margin: 0 0 4px;
+  }
+  .op-home-business-info p {
+    font-size: 13px;
+    color: #909499;
+    margin: 0;
+  }
+  .op-home-business-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+  }
+
+  /* ============================================================
+   * Module 3: Integration Scenarios (接入场景)
+   * ============================================================ */
+  .op-home-scenarios {
+    background: var(--color-bg-secondary, #f4f5f7);
+  }
+
+  .op-home-scenario-grid {
+    display: flex;
+    gap: 24px;
+  }
+
+  .op-home-scenario-card {
+    flex: 1;
+    padding: 28px 24px;
+    background: #fff;
+    border: 1px solid #e8ecf0;
+    border-radius: 10px;
+    border-top: 3px solid #1684fc;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .op-home-scenario-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  }
+
+  .op-home-scenario-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--color-primary-light, #e3f2ff);
+    color: #1684fc;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .op-home-scenario-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--color-primary-light, #e3f2ff);
+    color: #1684fc;
+    margin-bottom: 10px;
+  }
+
+  .op-home-scenario-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+  }
+
+  .op-home-scenario-desc {
+    font-size: 13px;
+    color: #909499;
+    line-height: 1.7;
+  }
+
+  /* ============================================================
+   * Module 4: Onboarding Flow (接入流程)
+   * ============================================================ */
+  .op-home-flow {
+    background: #fff;
+  }
+
+  .op-home-flow-steps {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .op-home-flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    width: 140px;
+    text-align: center;
+  }
+
+  .op-home-flow-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid #1684fc;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: #1684fc;
+    margin-bottom: 12px;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .op-home-flow-circle:hover {
+    background: #1684fc;
+    color: #fff;
+  }
+
+  .op-home-flow-num {
+    font-size: 11px;
+    color: #909499;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .op-home-flow-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+
+  .op-home-flow-hint {
+    font-size: 12px;
+    color: #909499;
+  }
+
+  .op-home-flow-arrow {
+    display: flex;
+    align-items: center;
+    padding-top: 18px;
+    margin: 0 8px;
+    color: #d2d7dd;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  /* ============================================================
+   * Module 5: Bottom CTA
+   * ============================================================ */
+  .op-home-cta {
+    background: linear-gradient(135deg, #f0f5ff 0%, #e3f2ff 100%);
+    text-align: center;
+    padding: 64px 24px;
+  }
+
+  .op-home-cta-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+  }
+
+  .op-home-cta-desc {
+    font-size: 15px;
+    color: #909499;
+    margin-bottom: 28px;
+  }
+
+  .op-home-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 36px;
+    border-radius: 8px;
+    background: #1684fc;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(22, 132, 252, 0.3);
+  }
+
+  .op-home-cta-btn:hover {
+    background: #459dfd;
+    box-shadow: 0 6px 20px rgba(22, 132, 252, 0.4);
+  }
+
+  .op-home-cta-btn:active {
+    background: #1f61d5;
+  }
+
+  .op-home-cta-btn i {
+    font-size: 18px;
+  }
+
+  /* ============================================================
+   * Footer
+   * ============================================================ */
+  .op-home-footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 13px;
+    color: #909499;
+    border-top: 1px solid #e8ecf0;
+    background: #fff;
+  }
+
+  /* ============================================================
+   * Responsive
+   * ============================================================ */
+  @media (max-width: 900px) {
+    .op-home-banner-title {
+      font-size: 28px;
+    }
+
+    .op-home-banner-desc {
+      font-size: 15px;
+    }
+
+    .op-home-value-props {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .op-home-value-card {
+      max-width: 100%;
+    }
+
+    .op-home-cap-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .op-home-scenario-grid {
+      flex-direction: column;
+    }
+
+    .op-home-flow-steps {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .op-home-flow-arrow {
+      display: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .op-home-cap-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .op-home-banner {
+      padding: 60px 0 40px;
+    }
+
+    .op-home-section {
+      padding: 40px 0;
+    }
+
+    .op-home-flow-step {
+      width: 120px;
+    }
+  }
+  </style>
+</head>
+<body class="op-login-page">
+
+  <!-- 顶部导航 -->
+  <header id="opTopNav"></header>
+
+  <!-- ============================== -->
+  <!-- Module 1: Banner / Hero        -->
+  <!-- ============================== -->
+  <section class="op-home-banner">
+    <div class="op-home">
+      <h1 class="op-home-banner-title">SDMS开放平台</h1>
+      <p class="op-home-banner-desc">标准化API接口，让您的系统快速对接千仓仓库业务</p>
+      <div class="op-home-value-props">
+        <div class="op-home-value-card">
+          <span class="op-home-value-icon">&#x1F512;</span>
+          <div class="op-home-value-title">安全可靠</div>
+          <div class="op-home-value-text">API Key认证 + IP白名单 + 速率限制，多重安全保障</div>
+        </div>
+        <div class="op-home-value-card">
+          <span class="op-home-value-icon">&#x26A1;</span>
+          <div class="op-home-value-title">快速接入</div>
+          <div class="op-home-value-text">标准化接口规范，1-2周即可完成系统对接</div>
+        </div>
+        <div class="op-home-value-card">
+          <span class="op-home-value-icon">&#x1F310;</span>
+          <div class="op-home-value-title">全面覆盖</div>
+          <div class="op-home-value-text">订单、库存、费用、回调，覆盖仓库业务全场景</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== -->
+  <!-- Module 2: Open Capabilities    -->
+  <!-- ============================== -->
+  <section class="op-home-section op-home-capabilities">
+    <div class="op-home">
+      <div class="op-home-section-title">开放能力</div>
+      <div class="op-home-section-subtitle">按业务线选择您需要的接口能力</div>
+
+      <!-- 业务线1：干线业务 -->
+      <div class="op-home-business" data-color="blue">
+        <div class="op-home-business-head">
+          <div class="op-home-business-icon"><i class="ri-plane-line"></i></div>
+          <div class="op-home-business-info">
+            <h3>干线业务</h3>
+            <p>空运干线货物的入库、出库全流程对接</p>
+          </div>
+        </div>
+        <div class="op-home-business-cards">
+          <div class="op-home-cap-card" data-color="blue">
+            <i class="op-home-cap-icon ri-upload-cloud-2-line"></i>
+            <div class="op-home-cap-title">订单推送</div>
+            <div class="op-home-cap-text">向SDMS推送订单数据，支持创建、修改、取消操作</div>
+          </div>
+          <div class="op-home-cap-card" data-color="cyan">
+            <i class="op-home-cap-icon ri-truck-line"></i>
+            <div class="op-home-cap-title">车辆同步</div>
+            <div class="op-home-cap-text">同步车辆和司机信息，管理车辆入仓预约</div>
+          </div>
+          <div class="op-home-cap-card" data-color="green">
+            <i class="op-home-cap-icon ri-archive-2-line"></i>
+            <div class="op-home-cap-title">库存查询</div>
+            <div class="op-home-cap-text">实时查询仓库库存信息，掌握货物动态</div>
+          </div>
+          <div class="op-home-cap-card" data-color="orange">
+            <i class="op-home-cap-icon ri-money-cny-circle-line"></i>
+            <div class="op-home-cap-title">费用查询</div>
+            <div class="op-home-cap-text">查询费用明细和账单，透明化管理成本</div>
+          </div>
+          <div class="op-home-cap-card" data-color="purple">
+            <i class="op-home-cap-icon ri-mail-send-line"></i>
+            <div class="op-home-cap-title">回调事件</div>
+            <div class="op-home-cap-text">通过Webhook实时接收订单状态变更、入仓/出库完成等事件通知</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 业务线2：一件代发 -->
+      <div class="op-home-business" data-color="green">
+        <div class="op-home-business-head">
+          <div class="op-home-business-icon"><i class="ri-truck-line"></i></div>
+          <div class="op-home-business-info">
+            <h3>一件代发</h3>
+            <p>客户下单后代发发货，支持B2C/B2B</p>
+          </div>
+        </div>
+        <div class="op-home-business-cards">
+          <div class="op-home-cap-card" data-color="blue">
+            <i class="op-home-cap-icon ri-upload-cloud-2-line"></i>
+            <div class="op-home-cap-title">订单推送</div>
+            <div class="op-home-cap-text">向SDMS推送订单数据，支持创建、修改、取消操作</div>
+          </div>
+          <div class="op-home-cap-card" data-color="green">
+            <i class="op-home-cap-icon ri-archive-2-line"></i>
+            <div class="op-home-cap-title">库存查询</div>
+            <div class="op-home-cap-text">实时查询仓库库存信息，掌握货物动态</div>
+          </div>
+          <div class="op-home-cap-card" data-color="orange">
+            <i class="op-home-cap-icon ri-money-cny-circle-line"></i>
+            <div class="op-home-cap-title">费用查询</div>
+            <div class="op-home-cap-text">查询费用明细和账单，透明化管理成本</div>
+          </div>
+          <div class="op-home-cap-card" data-color="purple">
+            <i class="op-home-cap-icon ri-mail-send-line"></i>
+            <div class="op-home-cap-title">回调事件</div>
+            <div class="op-home-cap-text">通过Webhook实时接收订单状态变更、入仓/出库完成等事件通知</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 业务线3：退件重派 -->
+      <div class="op-home-business" data-color="orange">
+        <div class="op-home-business-head">
+          <div class="op-home-business-icon"><i class="ri-arrow-go-back-line"></i></div>
+          <div class="op-home-business-info">
+            <h3>退件重派</h3>
+            <p>退件到仓后重新派送或销毁处理</p>
+          </div>
+        </div>
+        <div class="op-home-business-cards">
+          <div class="op-home-cap-card" data-color="blue">
+            <i class="op-home-cap-icon ri-upload-cloud-2-line"></i>
+            <div class="op-home-cap-title">订单推送</div>
+            <div class="op-home-cap-text">向SDMS推送订单数据，支持创建、修改、取消操作</div>
+          </div>
+          <div class="op-home-cap-card" data-color="green">
+            <i class="op-home-cap-icon ri-archive-2-line"></i>
+            <div class="op-home-cap-title">库存查询</div>
+            <div class="op-home-cap-text">实时查询仓库库存信息，掌握货物动态</div>
+          </div>
+          <div class="op-home-cap-card" data-color="purple">
+            <i class="op-home-cap-icon ri-mail-send-line"></i>
+            <div class="op-home-cap-title">回调事件</div>
+            <div class="op-home-cap-text">通过Webhook实时接收订单状态变更、入仓/出库完成等事件通知</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 业务线4：备货中转 -->
+      <div class="op-home-business" data-color="cyan">
+        <div class="op-home-business-head">
+          <div class="op-home-business-icon"><i class="ri-archive-line"></i></div>
+          <div class="op-home-business-info">
+            <h3>备货中转</h3>
+            <p>跨境备货入库中转，支持批量操作</p>
+          </div>
+        </div>
+        <div class="op-home-business-cards">
+          <div class="op-home-cap-card" data-color="blue">
+            <i class="op-home-cap-icon ri-upload-cloud-2-line"></i>
+            <div class="op-home-cap-title">订单推送</div>
+            <div class="op-home-cap-text">向SDMS推送订单数据，支持创建、修改、取消操作</div>
+          </div>
+          <div class="op-home-cap-card" data-color="green">
+            <i class="op-home-cap-icon ri-archive-2-line"></i>
+            <div class="op-home-cap-title">库存查询</div>
+            <div class="op-home-cap-text">实时查询仓库库存信息，掌握货物动态</div>
+          </div>
+          <div class="op-home-cap-card" data-color="cyan">
+            <i class="op-home-cap-icon ri-stack-line"></i>
+            <div class="op-home-cap-title">批量接口</div>
+            <div class="op-home-cap-text">批量导入订单、批量查询库存，提升对接效率</div>
+          </div>
+          <div class="op-home-cap-card" data-color="purple">
+            <i class="op-home-cap-icon ri-mail-send-line"></i>
+            <div class="op-home-cap-title">回调事件</div>
+            <div class="op-home-cap-text">通过Webhook实时接收订单状态变更、入仓/出库完成等事件通知</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== -->
+  <!-- Module 3: Integration Scenarios -->
+  <!-- ============================== -->
+  <section class="op-home-section op-home-scenarios">
+    <div class="op-home">
+      <div class="op-home-section-title">典型接入场景</div>
+      <div class="op-home-section-subtitle">已服务多家客户，覆盖主流业务场景</div>
+      <div class="op-home-scenario-grid">
+        <div class="op-home-scenario-card">
+          <div class="op-home-scenario-icon">
+            <i class="ri-database-2-line"></i>
+          </div>
+          <div class="op-home-scenario-tag">数据同步</div>
+          <div class="op-home-scenario-title">ERP系统实时同步库存</div>
+          <div class="op-home-scenario-desc">ERP系统通过API实时查询SDMS库存数据，同步更新本地库存账，实现库存数据一致性。</div>
+        </div>
+        <div class="op-home-scenario-card">
+          <div class="op-home-scenario-icon">
+            <i class="ri-send-plane-2-line"></i>
+          </div>
+          <div class="op-home-scenario-tag">订单管理</div>
+          <div class="op-home-scenario-title">OMS系统自动推送订单</div>
+          <div class="op-home-scenario-desc">OMS系统通过标准API将订单推送到SDMS，自动触发仓库收货、上架等作业流程。</div>
+        </div>
+        <div class="op-home-scenario-card">
+          <div class="op-home-scenario-icon">
+            <i class="ri-route-line"></i>
+          </div>
+          <div class="op-home-scenario-tag">状态追踪</div>
+          <div class="op-home-scenario-title">物流轨迹实时追踪</div>
+          <div class="op-home-scenario-desc">通过回调事件实时接收出库、装车、发车等节点状态，构建完整的物流追踪链路。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== -->
+  <!-- Module 4: Onboarding Flow      -->
+  <!-- ============================== -->
+  <section class="op-home-section op-home-flow">
+    <div class="op-home">
+      <div class="op-home-section-title">如何接入</div>
+      <div class="op-home-section-subtitle">四步完成系统对接</div>
+      <div class="op-home-flow-steps">
+        <div class="op-home-flow-step">
+          <div class="op-home-flow-circle">
+            <i class="ri-user-add-line"></i>
+          </div>
+          <div class="op-home-flow-num">Step 1</div>
+          <div class="op-home-flow-label">注册申请</div>
+          <div class="op-home-flow-hint">填写开发者申请表</div>
+        </div>
+        <div class="op-home-flow-arrow">
+          <i class="ri-arrow-right-line"></i>
+        </div>
+        <div class="op-home-flow-step">
+          <div class="op-home-flow-circle">
+            <i class="ri-shield-check-line"></i>
+          </div>
+          <div class="op-home-flow-num">Step 2</div>
+          <div class="op-home-flow-label">审核通过</div>
+          <div class="op-home-flow-hint">管理员审批</div>
+        </div>
+        <div class="op-home-flow-arrow">
+          <i class="ri-arrow-right-line"></i>
+        </div>
+        <div class="op-home-flow-step">
+          <div class="op-home-flow-circle">
+            <i class="ri-key-2-line"></i>
+          </div>
+          <div class="op-home-flow-num">Step 3</div>
+          <div class="op-home-flow-label">获取Key</div>
+          <div class="op-home-flow-hint">系统分配API Key</div>
+        </div>
+        <div class="op-home-flow-arrow">
+          <i class="ri-arrow-right-line"></i>
+        </div>
+        <div class="op-home-flow-step">
+          <div class="op-home-flow-circle">
+            <i class="ri-code-s-slash-line"></i>
+          </div>
+          <div class="op-home-flow-num">Step 4</div>
+          <div class="op-home-flow-label">开始调用</div>
+          <div class="op-home-flow-hint">阅读文档集成接口</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== -->
+  <!-- Module 5: Bottom CTA           -->
+  <!-- ============================== -->
+  <section class="op-home-cta">
+    <div class="op-home-cta-title">准备好开始了吗？</div>
+    <div class="op-home-cta-desc">申请成为开发者，即刻接入SDMS开放平台</div>
+    <a href="open-platform-developer-apply.html" class="op-home-cta-btn">
+      <i class="ri-rocket-2-line"></i>
+      <span>立即申请成为开发者</span>
+    </a>
+  </section>
+
+  <!-- ============================== -->
+  <!-- Footer                         -->
+  <!-- ============================== -->
+  <footer class="op-home-footer">
+    &copy; 2026 千仓SDMS开放平台 | 运连网
+  </footer>
+
+  <script src="../assets/js/open-platform.js"></script>
+  <script>
+    /* ---- 初始化顶部导航 ---- */
+    OP.renderTopNav(OP.PUBLIC_MENUS, 'home', { public: true });
+  </script>
+</body>
+</html>

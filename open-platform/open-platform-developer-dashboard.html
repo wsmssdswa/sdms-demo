@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开放平台 - 概览仪表盘</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+<link rel="stylesheet" href="../assets/css/open-platform.css">
+<style>
+/* === 欢迎区 === */
+.op-dashboard-welcome {
+  margin-bottom: 24px;
+}
+
+.op-dashboard-welcome-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  margin: 0 0 4px;
+}
+
+.op-dashboard-welcome-sub {
+  font-size: 13px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+/* === 应用概览卡片网格 === */
+.op-dashboard-app-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+/* === 应用概览卡片 === */
+.op-dash-app-card {
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  box-shadow: var(--op-card-shadow);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.op-dash-app-card:hover {
+  box-shadow: 0 4px 12px 2px rgba(0, 0, 0, 0.08);
+}
+
+.op-dash-app-head {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+}
+
+.op-dash-app-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.op-dash-app-body {
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Key行（生产/测试） */
+.op-dash-key-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.op-dash-key-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-dash-key-row-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.op-dash-key-row-label i {
+  font-size: 14px;
+}
+
+/* 今日调用量 */
+.op-dash-key-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--color-text-secondary, #65686c);
+}
+
+.op-dash-key-stat-value {
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  font-size: 14px;
+}
+
+/* 配额进度 */
+.op-dash-key-quota {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.op-dash-key-quota-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-dash-key-quota-value {
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-dash-key-quota-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-bg-tertiary, #edeff2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.op-dash-key-quota-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.op-dash-key-quota-fill.green  { background: var(--color-success, #007e22); }
+.op-dash-key-quota-fill.yellow { background: var(--color-warning, #ff8225); }
+.op-dash-key-quota-fill.red    { background: var(--color-error, #ed0404); }
+
+/* 空状态 */
+.op-dash-app-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  box-shadow: var(--op-card-shadow);
+}
+
+.op-dash-app-empty-icon {
+  font-size: 40px;
+  color: var(--color-text-quaternary, #c2c5c8);
+  margin-bottom: 12px;
+}
+
+.op-dash-app-empty-text {
+  font-size: 13px;
+  color: var(--color-text-tertiary, #909499);
+  margin-bottom: 16px;
+}
+
+.op-dash-app-empty a {
+  color: var(--color-primary, #1684fc);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.op-dash-app-empty a:hover {
+  text-decoration: underline;
+}
+
+/* 分隔线 */
+.op-dash-key-divider {
+  height: 1px;
+  background: var(--color-border, #e7eaee);
+  margin: 0;
+}
+
+/* === 快速指标卡片 === */
+.op-dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.op-metric-card {
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  box-shadow: var(--op-card-shadow);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: box-shadow 0.2s ease;
+}
+
+.op-metric-card:hover {
+  box-shadow: 0 4px 12px 2px rgba(0, 0, 0, 0.08);
+}
+
+.op-metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.op-metric-icon.blue {
+  background: var(--color-primary-light, #e3f2ff);
+  color: var(--color-primary, #1684fc);
+}
+
+.op-metric-icon.green {
+  background: var(--color-success-light, #e5f2e8);
+  color: var(--color-success, #007e22);
+}
+
+.op-metric-icon.orange {
+  background: var(--color-warning-light, #fff2e9);
+  color: var(--color-warning, #ff8225);
+}
+
+.op-metric-icon.purple {
+  background: #f0ebff;
+  color: #7c5cfc;
+}
+
+.op-metric-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.op-metric-label {
+  font-size: 12px;
+  color: var(--color-text-tertiary, #909499);
+  white-space: nowrap;
+}
+
+.op-metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  line-height: 1.2;
+}
+
+/* === 双列布局（告警 + 快捷操作） === */
+.op-dashboard-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* === 告警列表 === */
+.op-alert-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.op-alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border, #e7eaee);
+  transition: background 0.15s ease;
+}
+
+.op-alert-item:last-child {
+  border-bottom: none;
+}
+
+.op-alert-item:hover {
+  background: rgba(22, 132, 252, 0.02);
+}
+
+.op-alert-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.op-alert-dot.red    { background: var(--color-error, #ed0404); }
+.op-alert-dot.yellow { background: var(--color-warning, #ff8225); }
+.op-alert-dot.blue   { background: var(--color-primary, #1684fc); }
+
+.op-alert-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.op-alert-desc {
+  font-size: 13px;
+  color: var(--color-text-primary, #1c1d1e);
+  line-height: 1.5;
+}
+
+.op-alert-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.op-alert-time {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+}
+
+.op-alert-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.op-alert-tag.error {
+  background: var(--color-error-light, #fff3f3);
+  color: var(--color-error, #ed0404);
+  border: 1px solid #ffccc7;
+}
+
+.op-alert-tag.warning {
+  background: var(--color-warning-light, #fff2e9);
+  color: var(--color-warning, #ff8225);
+  border: 1px solid #fed7aa;
+}
+
+.op-alert-tag.info {
+  background: var(--color-primary-light, #e3f2ff);
+  color: var(--color-primary, #1684fc);
+  border: 1px solid var(--color-primary-lighter, #d5e9fe);
+}
+
+/* === 快捷操作卡片 === */
+.op-shortcut-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 20px;
+}
+
+.op-shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-border, #e7eaee);
+  border-radius: 6px;
+  background: var(--color-bg-primary, #fff);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.op-shortcut-item:hover {
+  border-color: var(--color-primary, #1684fc);
+  background: var(--color-primary-light, #e3f2ff);
+}
+
+.op-shortcut-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  background: var(--color-bg-tertiary, #edeff2);
+  color: var(--color-text-secondary, #65686c);
+  transition: all 0.2s ease;
+}
+
+.op-shortcut-item:hover .op-shortcut-icon {
+  background: var(--color-primary, #1684fc);
+  color: #fff;
+}
+
+.op-shortcut-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.op-shortcut-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-shortcut-desc {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* === 响应式 === */
+@media (max-width: 1200px) {
+  .op-dashboard-app-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .op-dashboard-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .op-dashboard-bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .op-dashboard-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .op-shortcut-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="op-page no-sidebar">
+
+  <!-- 左侧导航栏 -->
+  <header id="opTopNav"></header>
+
+  <!-- 右侧主区域 -->
+  <div class="op-main">
+
+    <!-- 顶部标题栏 -->
+    <div class="op-header">
+      <div class="op-header-breadcrumb">
+        <a href="#">开放平台</a>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>概览仪表盘</span>
+      </div>
+      <div class="op-header-actions">
+        <a href="#" class="op-btn op-btn-default" style="font-size:12px;height:30px;padding:0 12px">
+          <i class="ri-question-line"></i> 帮助文档
+        </a>
+      </div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="op-content">
+
+      <!-- 欢迎区 -->
+      <div class="op-dashboard-welcome">
+        <h1 class="op-dashboard-welcome-title">欢迎回来，张三</h1>
+        <div class="op-dashboard-welcome-sub">运连网科技有限公司 | 开发者</div>
+      </div>
+
+      <!-- 应用概览卡片 -->
+      <div class="op-dashboard-app-grid" id="appGrid">
+        <!-- 由JS动态渲染 -->
+      </div>
+
+      <!-- 快速指标卡片 -->
+      <div class="op-dashboard-metrics">
+
+        <div class="op-metric-card">
+          <div class="op-metric-icon blue">
+            <i class="ri-pulse-line"></i>
+          </div>
+          <div class="op-metric-info">
+            <div class="op-metric-label">今日总调用量</div>
+            <div class="op-metric-value">3,403</div>
+          </div>
+        </div>
+
+        <div class="op-metric-card">
+          <div class="op-metric-icon green">
+            <i class="ri-checkbox-circle-line"></i>
+          </div>
+          <div class="op-metric-info">
+            <div class="op-metric-label">成功率</div>
+            <div class="op-metric-value">99.4%</div>
+          </div>
+        </div>
+
+        <div class="op-metric-card">
+          <div class="op-metric-icon orange">
+            <i class="ri-timer-line"></i>
+          </div>
+          <div class="op-metric-info">
+            <div class="op-metric-label">平均响应时间</div>
+            <div class="op-metric-value">86ms</div>
+          </div>
+        </div>
+
+        <div class="op-metric-card">
+          <div class="op-metric-icon purple">
+            <i class="ri-link"></i>
+          </div>
+          <div class="op-metric-info">
+            <div class="op-metric-label">回调成功率</div>
+            <div class="op-metric-value">98.2%</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 底部双列：告警 + 快捷操作 -->
+      <div class="op-dashboard-bottom">
+
+        <!-- 近期告警 -->
+        <div class="op-card">
+          <div class="op-card-head">
+            <span class="op-card-title">近期告警</span>
+            <span style="font-size:12px;color:var(--color-text-tertiary,#909499)">共5条</span>
+          </div>
+          <div class="op-alert-list" id="alertList">
+
+            <div class="op-alert-item">
+              <div class="op-alert-dot red"></div>
+              <div class="op-alert-content">
+                <div class="op-alert-desc">回调推送失败（INBOUND_COMPLETED事件，连续2次失败）</div>
+                <div class="op-alert-meta">
+                  <span class="op-alert-time">10分钟前</span>
+                  <span class="op-alert-tag error">错误</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="op-alert-item">
+              <div class="op-alert-dot yellow"></div>
+              <div class="op-alert-content">
+                <div class="op-alert-desc">配额使用率超过80%（生产Key已使用8,234/10,000）</div>
+                <div class="op-alert-meta">
+                  <span class="op-alert-time">30分钟前</span>
+                  <span class="op-alert-tag warning">警告</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="op-alert-item">
+              <div class="op-alert-dot blue"></div>
+              <div class="op-alert-content">
+                <div class="op-alert-desc">新接口上线（批量查询库存接口已开放）</div>
+                <div class="op-alert-meta">
+                  <span class="op-alert-time">1小时前</span>
+                  <span class="op-alert-tag info">提示</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="op-alert-item">
+              <div class="op-alert-dot red"></div>
+              <div class="op-alert-content">
+                <div class="op-alert-desc">API调用返回401（测试Key于09:15连续3次认证失败）</div>
+                <div class="op-alert-meta">
+                  <span class="op-alert-time">2小时前</span>
+                  <span class="op-alert-tag error">错误</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="op-alert-item">
+              <div class="op-alert-dot yellow"></div>
+              <div class="op-alert-content">
+                <div class="op-alert-desc">速率限制触发（生产Key于08:30触发速率限制）</div>
+                <div class="op-alert-meta">
+                  <span class="op-alert-time">3小时前</span>
+                  <span class="op-alert-tag warning">警告</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 快捷操作 -->
+        <div class="op-card">
+          <div class="op-card-head">
+            <span class="op-card-title">快捷操作</span>
+          </div>
+          <div class="op-shortcut-grid">
+
+            <a class="op-shortcut-item" href="open-platform-applications.html">
+              <div class="op-shortcut-icon">
+                <i class="ri-apps-2-line"></i>
+              </div>
+              <div class="op-shortcut-text">
+                <div class="op-shortcut-title">应用管理</div>
+                <div class="op-shortcut-desc">管理应用与Key配置</div>
+              </div>
+            </a>
+
+            <a class="op-shortcut-item" href="open-platform-api-keys.html">
+              <div class="op-shortcut-icon">
+                <i class="ri-key-2-line"></i>
+              </div>
+              <div class="op-shortcut-text">
+                <div class="op-shortcut-title">Key管理</div>
+                <div class="op-shortcut-desc">管理API密钥与配额</div>
+              </div>
+            </a>
+
+            <a class="op-shortcut-item" href="open-platform-api-docs.html">
+              <div class="op-shortcut-icon">
+                <i class="ri-book-2-line"></i>
+              </div>
+              <div class="op-shortcut-text">
+                <div class="op-shortcut-title">接口文档中心</div>
+                <div class="op-shortcut-desc">查看API接口说明与示例</div>
+              </div>
+            </a>
+
+            <a class="op-shortcut-item" href="open-platform-webhook.html">
+              <div class="op-shortcut-icon">
+                <i class="ri-link"></i>
+              </div>
+              <div class="op-shortcut-text">
+                <div class="op-shortcut-title">Webhook配置</div>
+                <div class="op-shortcut-desc">配置回调地址与事件订阅</div>
+              </div>
+            </a>
+
+            <a class="op-shortcut-item" href="open-platform-call-logs.html">
+              <div class="op-shortcut-icon">
+                <i class="ri-file-list-3-line"></i>
+              </div>
+              <div class="op-shortcut-text">
+                <div class="op-shortcut-title">调用日志</div>
+                <div class="op-shortcut-desc">查询API调用记录与状态</div>
+              </div>
+            </a>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast容器 -->
+<div class="op-toast-stack" id="opToastStack"></div>
+
+<script src="../assets/js/open-platform.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---- 初始化顶栏导航，高亮"概览仪表盘" ---- */
+  if (!OP.requireAuth()) return;
+  OP.renderTopNav(OP.DEV_MENUS, 'dashboard');
+
+  /* ---- 渲染应用概览卡片 ---- */
+  function formatNum(n) {
+    return n.toLocaleString('en-US');
+  }
+
+  function quotaColor(pct) {
+    if (pct >= 80) return 'red';
+    if (pct >= 50) return 'yellow';
+    return 'green';
+  }
+
+  function keyStatusLabel(status) {
+    var map = { active: '正常', disabled: '已禁用', pending: '待激活' };
+    return map[status] || '未知';
+  }
+
+  function keyStatusIcon(status) {
+    if (status === 'active') return '<i class="ri-check-line"></i>';
+    if (status === 'disabled') return '<i class="ri-forbid-line"></i>';
+    return '<i class="ri-time-line"></i>';
+  }
+
+  function keyStatusCls(status) {
+    if (status === 'active') return 'op-status-active';
+    if (status === 'disabled') return 'op-status-disabled';
+    return 'op-status-pending';
+  }
+
+  function renderKeyRow(label, icon, color, key) {
+    var pct = key.quota > 0 ? (key.used / key.quota * 100) : 0;
+    var pctDisplay = pct.toFixed(2);
+    return '<div class="op-dash-key-row">' +
+      '<div class="op-dash-key-row-header">' +
+        '<span class="op-dash-key-row-label"><i class="' + icon + '" style="color:' + color + '"></i>' + label + '</span>' +
+        '<span class="op-status ' + keyStatusCls(key.status) + '" style="font-size:11px;padding:1px 8px">' +
+          keyStatusIcon(key.status) + keyStatusLabel(key.status) +
+        '</span>' +
+      '</div>' +
+      '<div class="op-dash-key-stat">' +
+        '<span>今日调用</span>' +
+        '<span class="op-dash-key-stat-value">' + formatNum(key.used) + ' 次</span>' +
+      '</div>' +
+      '<div class="op-dash-key-quota">' +
+        '<div class="op-dash-key-quota-header">' +
+          '<span>配额</span>' +
+          '<span class="op-dash-key-quota-value">' + formatNum(key.used) + ' / ' + formatNum(key.quota) + '</span>' +
+        '</div>' +
+        '<div class="op-dash-key-quota-bar">' +
+          '<div class="op-dash-key-quota-fill ' + quotaColor(pct) + '" style="width:' + pctDisplay + '%"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderAppCards() {
+    var grid = document.getElementById('appGrid');
+    if (!grid) return;
+    var apps = OP.getApps();
+
+    if (!apps || apps.length === 0) {
+      grid.innerHTML =
+        '<div class="op-dash-app-empty">' +
+          '<div class="op-dash-app-empty-icon"><i class="ri-apps-2-line"></i></div>' +
+          '<div class="op-dash-app-empty-text">暂无应用，请先创建一个应用来开始使用API</div>' +
+          '<a href="open-platform-applications.html">前往创建 &rarr;</a>' +
+        '</div>';
+      return;
+    }
+
+    var html = '';
+    apps.forEach(function (app) {
+      html += '<div class="op-dash-app-card">' +
+        '<div class="op-dash-app-head">' +
+          '<div class="op-dash-app-title">' +
+            '<i class="ri-apps-2-line"></i>' +
+            app.name +
+          '</div>' +
+          OP.renderStatusTag(app.status) +
+        '</div>' +
+        '<div class="op-dash-app-body">' +
+          renderKeyRow('生产Key', 'ri-shield-check-line', 'var(--color-success,#007e22)', app.prodKey) +
+          '<div class="op-dash-key-divider"></div>' +
+          renderKeyRow('测试Key', 'ri-flask-line', 'var(--color-primary,#1684fc)', app.testKey) +
+        '</div>' +
+      '</div>';
+    });
+
+    grid.innerHTML = html;
+  }
+
+  renderAppCards();
+
+})();
+</script>
+</body>
+</html>

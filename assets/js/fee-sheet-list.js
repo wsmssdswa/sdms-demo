@@ -290,7 +290,7 @@
       '<div class="info-label">创建时间</div><div class="info-value">'+escapeHtml(item.createdAt||'—')+'</div>',
       '<div class="info-label">关联账单</div><div class="info-value">'+(item.billNo?'<a class="name-link" href="javascript:void(0)">'+escapeHtml(item.billNo)+'</a>':'—')+'</div>',
       '<div class="info-label">涉及币种</div><div class="info-value">'+escapeHtml(currencies)+'</div>',
-      '<div class="info-label">报价方案</div><div class="info-value">'+(item.quotationScheme?'<a class="name-link" href="./quotation-scheme-config.html">《'+escapeHtml(item.quotationSchemeName)+'》</a>':'—')+'</div>'
+      '<div class="info-label">报价方案</div><div class="info-value">'+(item.quotationScheme?'<a class="name-link" href="../quotation/quotation-scheme-config.html">《'+escapeHtml(item.quotationSchemeName)+'》</a>':'—')+'</div>'
     ].join('');
 
     const canEdit=item.status==='unbilled';
@@ -409,7 +409,7 @@
     if(action==='viewBill'){
       const billNoToId={'BL-20260514-001':1};
       const billId=billNoToId[link.dataset.billNo]||1;
-      window.location.href='./bill-detail.html?id='+billId;
+      window.location.href='../settlement/bill-detail.html?id='+billId;
       return;
     }
     handleAction(action,link.dataset.id);

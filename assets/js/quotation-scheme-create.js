@@ -47,7 +47,7 @@ const feeSelectConfirmBtn=document.getElementById('feeSelectConfirmBtn');
 
 const escapeHtml=(v)=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
-const FEE_PAGE_MAP={logistics:'logistics-fee-create.html',storage:'storage-fee-create.html',operation:'operation-fee-create.html'};
+const FEE_PAGE_MAP={logistics:'../fee/logistics-fee-create.html',storage:'../fee/storage-fee-create.html',operation:'../fee/operation-fee-create.html'};
 const getFeeItemUrl=(item)=>FEE_PAGE_MAP[item.category]+'?mode=edit&id='+item.id;
 
 /* ── Edit / View mode ── */

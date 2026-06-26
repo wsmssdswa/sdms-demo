@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增操作费（价目表）</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/sdms-design-tokens.css">
+  <link rel="stylesheet" href="../../assets/css/sdms-shell-common.css">
+  <link rel="stylesheet" href="../../assets/css/operation-fee-create-v3.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-bar" data-sdms-sidebar data-sidebar-key="finance"></aside>
+
+    <div class="page-shell">
+      <div class="header-tabs" data-sdms-header-tabs data-tab-set="finance-editor" data-tab-key="operation-fee-create" data-include-tools="true" data-user-name="张三"></div>
+
+      <div class="content-wrap">
+        <section class="page-card">
+          <!-- 页面标题栏 -->
+          <div class="page-card-head">
+            <div class="page-head-title">
+              <div class="page-title" id="pageTitleLabel">新增操作费</div>
+              <div class="page-title-sub">价目表式配置，填表即配规则</div>
+            </div>
+            <div class="head-actions">
+              <button class="btn btn-default" id="simBtn" type="button">
+                <i class="ri-calculator-line"></i>费用试算
+              </button>
+              <button class="btn btn-primary" id="saveBtn" type="button">
+                <i class="ri-save-line"></i>保存
+              </button>
+            </div>
+          </div>
+
+          <!-- 页面主体（可滚动） -->
+          <div style="flex:1;min-height:0;overflow:auto;padding:10px 10px 14px;">
+            <!-- ═══ 基本信息 ═══ -->
+            <div class="v3-form-panel">
+              <div class="v3-section-title">基本信息</div>
+              <form id="feeForm" novalidate>
+                <div class="v3-form-row">
+                  <div class="v3-field" data-field="chargeName">
+                    <div class="v3-field-label"><span class="v3-req">*</span><span>计费项名称</span></div>
+                    <input class="v3-input" id="chargeName" value="卸货费" maxlength="50" placeholder="请输入计费项名称">
+                    <div class="v3-field-tip"></div>
+                  </div>
+                  <div class="v3-field" data-field="feeItem">
+                    <div class="v3-field-label"><span class="v3-req">*</span><span>费用项</span></div>
+                    <select class="v3-select" id="feeItem">
+                      <option value="">请选择费用项</option>
+                      <option value="XHF-卸货费" selected>XHF-卸货费</option>
+                      <option value="RHF-入货费">RHF-入货费</option>
+                      <option value="SHF-上架费">SHF-上架费</option>
+                    </select>
+                    <div class="v3-field-tip"></div>
+                  </div>
+                  <div class="v3-field" data-field="warehouse">
+                    <div class="v3-field-label"><span class="v3-req">*</span><span>所属仓库</span></div>
+                    <select class="v3-select" id="warehouse">
+                      <option value="">请选择仓库</option>
+                      <option value="波兰海外仓" selected>波兰海外仓</option>
+                      <option value="德国海外仓">德国海外仓</option>
+                      <option value="深圳保税仓">深圳保税仓</option>
+                    </select>
+                    <div class="v3-field-tip"></div>
+                  </div>
+                  <div class="v3-field" data-field="inboundType">
+                    <div class="v3-field-label"><span class="v3-req">*</span><span>入库类型</span></div>
+                    <div class="v3-tag-select" id="inboundTypeSelect">
+                      <button class="v3-tag-trigger" id="inboundTypeTrigger" type="button" aria-expanded="false">
+                        <span class="v3-tag-value">
+                          <span id="inboundTypeLabel">尾程大货入库</span>
+                          <span class="v3-tag-close">×</span>
+                        </span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:#8594a8"><path d="m7 10 5 5 5-5z"/></svg>
+                      </button>
+                      <div class="v3-tag-menu" id="inboundTypeMenu">
+                        <div class="v3-tag-opt" data-value="尾程大货入库">尾程大货入库</div>
+                        <div class="v3-tag-opt" data-value="尾程小货入库">尾程小货入库</div>
+                        <div class="v3-tag-opt" data-value="干线入仓">干线入仓</div>
+                      </div>
+                    </div>
+                    <div class="v3-field-tip"></div>
+                  </div>
+                </div>
+                <div class="v3-form-row" style="margin-top:12px">
+                  <div class="v3-field" data-field="currency">
+                    <div class="v3-field-label"><span class="v3-req">*</span><span>币种</span></div>
+                    <select class="v3-select" id="currency">
+                      <option value="">请选择币种</option>
+                      <option value="EUR" selected>EUR</option>
+                      <option value="USD">USD</option>
+                      <option value="CNY">CNY</option>
+                    </select>
+                    <div class="v3-field-tip"></div>
+                  </div>
+                  <div class="v3-field" data-field="measureUnit">
+                    <div class="v3-field-label"><span class="v3-req">*</span><span>计量单位</span></div>
+                    <select class="v3-select" id="measureUnit">
+                      <option value="">请选择计量单位</option>
+                      <option value="kg" selected>kg</option>
+                      <option value="件">件</option>
+                      <option value="托">托</option>
+                    </select>
+                    <div class="v3-field-tip"></div>
+                  </div>
+                  <div class="v3-field" data-field="chargeUnit">
+                    <div class="v3-field-label"><span class="v3-req">*</span><span>默认计费单位</span></div>
+                    <select class="v3-select" id="chargeUnit">
+                      <option value="">请选择默认计费单位</option>
+                      <option value="柜">柜</option>
+                      <option value="箱" selected>箱</option>
+                      <option value="托">托</option>
+                      <option value="kg">kg</option>
+                      <option value="SKU">SKU</option>
+                      <option value="CBM" disabled>CBM(暂未开放)</option>
+                    </select>
+                    <div class="v3-field-tip"></div>
+                  </div>
+                  <div class="v3-field" data-field="chargeNode">
+                    <div class="v3-field-label"><span class="v3-req">*</span><span>计费节点</span></div>
+                    <select class="v3-select" id="chargeNode">
+                      <option value="">请选择计费节点</option>
+                      <option value="卸货完成" selected>卸货完成</option>
+                      <option value="收货完成">收货完成</option>
+                      <option value="上架完成">上架完成</option>
+                    </select>
+                    <div class="v3-field-tip"></div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- ═══ 计费规则（价目表）═══ -->
+            <div class="v3-form-panel" id="priceListPanel">
+              <div class="v3-section-title">计费规则（价目表）</div>
+
+              <!-- 维度配置栏 -->
+              <div class="v3-dim-bar">
+                <span class="v3-dim-label">维度：</span>
+                <div class="v3-dim-tags" id="dimTags"></div>
+                <div class="v3-dim-add">
+                  <button class="v3-dim-add-btn" id="dimAddBtn" type="button">+ 添加维度</button>
+                  <div class="v3-dim-dropdown" id="dimDropdown"></div>
+                </div>
+              </div>
+
+              <!-- 价目表 -->
+              <div class="v3-ptable-wrap" style="max-height:calc(100vh - 340px);overflow:auto">
+                <table class="v3-ptable" id="ptable"></table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="v3-toast-stack" id="toastStack"></div>
+
+  <!-- 费用试算弹窗 -->
+  <div class="v3-trial-mask" id="trialMask" aria-hidden="true">
+    <div class="v3-trial-dialog" role="dialog" aria-modal="true">
+      <div class="v3-trial-head">
+        <div class="v3-trial-title" id="trialTitle">费用试算</div>
+        <button class="v3-trial-close" id="trialClose" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="v3-trial-body">
+        <div class="v3-trial-form">
+          <div class="v3-trial-field">
+            <div class="v3-trial-form-label"><span class="v3-req">*</span><span>试算单号</span></div>
+            <div class="v3-trial-inline">
+              <input class="v3-trial-input" id="trialInput" type="text" value="SNBWAW250625A63149" placeholder="请输入试算单号">
+              <button class="v3-trial-run" id="trialRun" type="button">试算</button>
+            </div>
+          </div>
+        </div>
+        <div class="v3-trial-status" id="trialStatus"></div>
+        <div class="v3-trial-summary" id="trialSumm"></div>
+        <div class="v3-trial-board">
+          <div class="v3-trial-board-head">
+            <div>规则说明</div>
+            <div class="align-right" id="trialBoardHead">试算费用（€）</div>
+          </div>
+          <div class="v3-trial-board-scroll" id="trialScroll">
+            <div class="v3-trial-empty">请输入试算单号后点击试算</div>
+          </div>
+          <div class="v3-trial-total">
+            <div class="v3-trial-total-label">合计费用</div>
+            <div class="v3-trial-total-val" id="trialTotal">€0.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/sdms-header-tabs.js"></script>
+  <script src="../../assets/js/sdms-sidebar.js"></script>
+  <script src="../../assets/js/operation-fee-create-v3.js"></script>
+</body>
+</html>

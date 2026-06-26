@@ -1266,7 +1266,7 @@
     }
     function navigateToBiOrderReport(trigger) {
       localStorage.setItem(BI_REPORT_NAV_STORAGE_KEY, JSON.stringify(buildBiOrderNavigationPayload(trigger)));
-      window.location.href = './bi-consolidated-report-v2.html';
+      window.location.href = '../bi/bi-consolidated-report-v2.html';
     }
     function decorateBiOrderNavTargets() {
       document.querySelectorAll('[data-bi-order-nav]').forEach(target => {

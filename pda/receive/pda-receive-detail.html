@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PDA收货详情 — 千仓SDMS</title>
+  <style>
+    :root {
+      --nav-bg: #0F2B46;
+      --nav-bg-end: #1A3F66;
+      --brand: #2B6CB0;
+      --brand-bright: #3B82F6;
+      --surface: #FFFFFF;
+      --surface-alt: #F7F8FA;
+      --field-bg: #F2F4F7;       /* 表单输入框底 */
+      --text-primary: #1A202C;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --divider: #E2E8F0;
+      --warning: #F59E0B;        /* 结束收货橙 / 托盘图标 */
+      --warning-soft: rgba(245, 158, 11, 0.14);
+      --success: #22C55E;        /* 已上架绿 */
+      --danger: #EF4444;         /* 未上架 / 尺寸警示 */
+      --danger-soft: rgba(239, 68, 68, 0.10);
+      --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.10);
+      --shadow-fab: 0 10px 32px rgba(245, 158, 11, 0.45);
+      --frame-w: 750px;
+      --frame-h: 1536px;
+      --radius: 20px;
+      --radius-sm: 12px;
+      --font-ui: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      --font-mono: 'IBM Plex Mono', 'SF Mono', 'Cascadia Code', monospace;
+      --content-pad: 24px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-ui);
+      background: #EDF0F4;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── 固定画板 750×1536（绝对定位居中 + 等比缩放至一屏）── */
+    .pda-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: var(--frame-w);
+      height: var(--frame-h);
+      background: var(--surface-alt);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--divider);
+      box-shadow: 0 24px 80px rgba(15, 23, 42, 0.25);
+      transform: translate(-50%, -50%) scale(var(--frame-scale, 1));
+      transform-origin: center center;
+    }
+
+    /* ── 顶部导航栏 ── */
+    .nav-bar {
+      background: linear-gradient(135deg, var(--nav-bg) 0%, var(--nav-bg-end) 100%);
+      color: #fff;
+      padding: 0 24px;
+      height: 96px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .nav-bar .back {
+      width: 64px; height: 64px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 16px; transition: background 0.15s;
+    }
+    .nav-bar .back:active { background: rgba(255,255,255,0.12); }
+    .nav-bar .title {
+      font-family: var(--font-mono);
+      font-size: 32px; font-weight: 700; letter-spacing: 0.5px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .nav-bar .menu-btn {
+      width: 64px; height: 64px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 16px; transition: background 0.15s;
+    }
+    .nav-bar .menu-btn:active { background: rgba(255,255,255,0.12); }
+    .nav-bar .menu-btn svg { width: 40px; height: 40px; stroke: rgba(255,255,255,0.9); }
+
+    /* ── 头部信息区 ── */
+    .detail-header {
+      background: var(--surface);
+      padding: 8px var(--content-pad) 24px;
+      flex-shrink: 0;
+    }
+    .info-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      font-size: 26px;
+      border-bottom: 2px solid var(--divider);
+    }
+    .info-row:last-of-type { border-bottom: none; }
+    .info-row .label { color: var(--text-primary); font-weight: 500; flex-shrink: 0; }
+    .info-row .value {
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      text-align: right;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      margin-left: 16px;
+    }
+    .info-row .value.link { color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+    .info-row .value.link svg { width: 24px; height: 24px; fill: var(--text-muted); }
+
+    /* 入仓号切换 Tab（卡板列表上方，独立白底条）*/
+    .wh-tabs {
+      display: flex;
+      gap: 12px;
+      padding: 20px var(--content-pad);
+      background: var(--surface);
+      border-bottom: 2px solid var(--divider);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex-shrink: 0;
+    }
+    .wh-tab {
+      flex-shrink: 0;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--field-bg);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .wh-tab.active {
+      background: var(--brand);
+      color: #fff;
+    }
+
+    /* 统计三列（整单汇总）*/
+    .stats-row {
+      display: flex;
+      margin-top: 20px;
+      padding: 24px 0;
+      border-top: 2px solid var(--divider);
+    }
+    .stat-item { flex: 1; text-align: center; position: relative; }
+    .stat-item + .stat-item::before {
+      content: ""; position: absolute; left: 0; top: 15%; height: 70%; width: 2px; background: var(--divider);
+    }
+    .stat-item .stat-num {
+      font-family: var(--font-mono); font-size: 40px; font-weight: 700; color: var(--text-primary); line-height: 1.1;
+    }
+    .stat-item .stat-label { font-size: 22px; color: var(--text-muted); margin-top: 6px; }
+
+    /* 功能按钮三列 */
+    .action-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .action-btn {
+      flex: 1;
+      height: 80px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-ui);
+      font-size: 26px;
+      font-weight: 600;
+      border: 2px solid var(--divider);
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: transform 0.1s, background 0.15s;
+    }
+    .action-btn:active { transform: scale(0.97); }
+    .action-btn.primary {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    /* ── 托盘列表（可滚动）── */
+    .content {
+      flex: 1;
+      padding: 20px var(--content-pad) 180px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tray-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      animation: fadeInUp 0.35s ease-out both;
+    }
+    .tray-card:nth-child(2) { animation-delay: 0.06s; }
+    .tray-card:nth-child(3) { animation-delay: 0.12s; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tray-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .tray-icon {
+      width: 56px; height: 56px;
+      background: var(--warning-soft);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .tray-icon svg { width: 32px; height: 32px; }
+    .tray-no {
+      font-family: var(--font-mono);
+      font-size: 28px; font-weight: 600; color: var(--text-primary);
+    }
+    .tray-status {
+      margin-left: auto;
+      font-size: 22px; font-weight: 600;
+      padding: 4px 14px; border-radius: 6px;
+    }
+    .tray-status.unshelved { color: var(--danger); background: var(--danger-soft); }
+    .tray-status.shelved { color: var(--success); background: rgba(34,197,94,0.12); }
+    .tray-camera {
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .tray-camera svg { width: 32px; height: 32px; stroke: var(--text-muted); }
+
+    /* 托盘数据四列 */
+    .tray-stats {
+      display: flex;
+      margin-top: 20px;
+      padding: 18px 0;
+      border-top: 2px solid var(--divider);
+      border-bottom: 2px solid var(--divider);
+    }
+    .tstat { flex: 1; text-align: center; }
+    .tstat .ts-num { font-family: var(--font-mono); font-size: 30px; font-weight: 700; color: var(--text-primary); }
+    .tstat .ts-num.muted { color: var(--text-muted); }
+    .tstat .ts-label { font-size: 20px; color: var(--text-muted); margin-top: 4px; }
+
+    /* 尺寸警示 */
+    .tray-warn {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 16px;
+      font-size: 22px; font-weight: 600; color: var(--danger);
+    }
+    .tray-warn svg { width: 26px; height: 26px; }
+
+    /* 托盘操作四列 */
+    .tray-actions {
+      display: flex;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 2px solid var(--divider);
+    }
+    .taction {
+      flex: 1;
+      text-align: center;
+      font-size: 24px; font-weight: 600;
+      color: var(--brand);
+      cursor: pointer;
+      padding: 8px 0;
+    }
+    .taction.muted { color: var(--text-secondary); }
+    .taction:active { opacity: 0.6; }
+
+    .list-end {
+      text-align: center;
+      font-size: 22px;
+      color: var(--text-muted);
+      padding: 16px 0 8px;
+      letter-spacing: 2px;
+    }
+
+    /* ── 底部结束收货（橙色）── */
+    .bottom-bar {
+      position: absolute;
+      bottom: 0; left: 0; width: 100%;
+      padding: 24px var(--content-pad);
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(transparent, var(--surface-alt) 10%);
+      flex-shrink: 0;
+      animation: fabIn 0.5s ease-out 0.3s both;
+    }
+    @keyframes fabIn {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .finish-btn {
+      width: 100%;
+      height: 96px;
+      background: var(--warning);
+      color: #fff;
+      border: none;
+      border-radius: 32px;
+      font-family: var(--font-ui);
+      font-size: 32px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-fab);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .finish-btn:active { transform: scale(0.98); box-shadow: 0 4px 16px rgba(245,158,11,0.35); }
+
+    /* ── 弹窗遮罩（居中）── */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      z-index: 500;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-content {
+      background: var(--surface);
+      width: 100%;
+      max-height: 86%;
+      border-radius: 32px 32px 0 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    /* 抽屉把手 */
+    .modal-handle {
+      width: 72px; height: 8px;
+      background: var(--divider);
+      border-radius: 4px;
+      margin: 20px auto 20px;
+      flex-shrink: 0;
+    }
+    .modal-head {
+      position: relative;
+      text-align: center;
+      padding: 0 24px 20px;
+      border-bottom: 2px solid var(--divider);
+    }
+    .modal-title { font-size: 30px; font-weight: 700; color: var(--text-primary); }
+    .modal-close {
+      position: absolute;
+      right: 20px; top: 20px;
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 50%;
+    }
+    .modal-close:active { background: var(--surface-alt); }
+    .modal-close svg { width: 30px; height: 30px; stroke: var(--text-muted); }
+
+    .modal-body {
+      padding: 24px 32px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      flex: 1;
+    }
+
+    /* 表单项：标题在左、控件在右（左右布局，省垂直空间）*/
+    .form-row { margin-bottom: 18px; display: flex; align-items: center; gap: 16px; }
+    .form-label {
+      font-size: 26px; font-weight: 600; color: var(--text-primary);
+      width: 160px; flex-shrink: 0; margin-bottom: 0;
+    }
+    /* label 之后的控件占满右侧 */
+    .form-row:not(.form-row-block) > * + * { flex: 1; min-width: 0; }
+    /* 宽控件（长宽高表格）保持上下布局 */
+    .form-row-block { display: block; }
+    .form-row-block .form-label { width: auto; margin-bottom: 14px; }
+    .form-label .req { color: var(--danger); }
+
+    /* 通用输入框 */
+    .ui-input {
+      width: 100%;
+      height: 76px;
+      background: var(--field-bg);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      padding: 0 20px;
+      font-family: var(--font-ui);
+      font-size: 26px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .ui-input::placeholder { color: var(--text-muted); }
+    .ui-input:focus { border-color: var(--brand); background: var(--surface); }
+
+    /* 单选组（货物类型） */
+    .radio-group { display: flex; gap: 16px; }
+    .radio-item {
+      flex: 1;
+      height: 76px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      border: 2px solid var(--divider);
+      border-radius: 10px;
+      font-size: 26px; font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .radio-item .dot {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid var(--text-muted);
+    }
+    .radio-item.active {
+      border-color: var(--brand);
+      color: var(--brand);
+      background: rgba(43,108,176,0.06);
+    }
+    .radio-item.active .dot {
+      border-color: var(--brand);
+      background: radial-gradient(var(--brand) 45%, transparent 50%);
+    }
+
+    /* 拍照框 */
+    .photo-box {
+      width: 100%;
+      height: 88px;
+      background: var(--field-bg);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .photo-box:active { background: var(--divider); }
+    .photo-box svg { width: 34px; height: 34px; stroke: var(--brand); }
+
+    /* 下拉选择 */
+    .select-field {
+      width: 100%;
+      height: 76px;
+      background: var(--field-bg);
+      border-radius: 10px;
+      padding: 0 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 26px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .select-field svg { width: 28px; height: 28px; fill: var(--text-muted); }
+
+    /* 数字 + 按钮 */
+    .number-field { display: flex; gap: 14px; }
+    .number-field .ui-input { flex: 1; }
+    .add-btn {
+      width: 76px; height: 76px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 40px;
+      font-weight: 400;
+      line-height: 1;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.1s;
+    }
+    .add-btn:active { transform: scale(0.94); }
+
+    /* 长宽高表格 */
+    .size-table {
+      border: 2px solid var(--divider);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .st-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      align-items: stretch;
+    }
+    .st-row + .st-row { border-top: 2px solid var(--divider); }
+    .st-head { background: var(--surface-alt); }
+    .st-head span {
+      padding: 14px 0;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .st-head span.req { color: var(--danger); }
+    .st-cell {
+      border-left: 2px solid var(--divider);
+      display: flex; align-items: center; justify-content: center;
+      padding: 10px 6px;
+    }
+    .st-cell:first-child { border-left: none; }
+    .st-cell input {
+      width: 100%;
+      height: 60px;
+      background: var(--field-bg);
+      border: none;
+      border-radius: 8px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 24px;
+      color: var(--text-primary);
+      outline: none;
+    }
+    .st-cell input:focus { background: var(--surface); box-shadow: inset 0 0 0 2px var(--brand); }
+    .st-btn {
+      width: 100%;
+      height: 60px;
+      border: none;
+      border-radius: 8px;
+      font-size: 22px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .st-btn.spec { background: var(--brand); color: #fff; }
+    .st-btn.del { background: var(--divider); color: var(--text-secondary); }
+
+    .modal-footer {
+      padding: 20px 32px;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      border-top: 2px solid var(--divider);
+    }
+    .save-btn {
+      width: 100%;
+      height: 88px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-family: var(--font-ui);
+      font-size: 30px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .save-btn:active { transform: scale(0.98); }
+
+    /* ── Toast ── */
+    .toast {
+      position: absolute;
+      top: 116px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-16px);
+      background: rgba(15, 23, 42, 0.9);
+      color: #fff;
+      font-size: 26px;
+      padding: 18px 32px;
+      border-radius: 40px;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      box-shadow: 0 8px 32px rgba(15, 23, 42, 0.25);
+      max-width: 80%;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── 规格反算面板（覆盖在添加托盘弹窗之上，按整票预报体积反算件数）── */
+    .calc-overlay {
+      position: absolute; inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      z-index: 600; display: none;
+      flex-direction: column; justify-content: flex-end;
+    }
+    .calc-overlay.active { display: flex; animation: fadeIn 0.2s; }
+    .calc-panel {
+      background: var(--surface-alt);
+      width: 100%; height: 92%;
+      border-radius: 32px 32px 0 0;
+      display: flex; flex-direction: column; overflow: hidden;
+      animation: slideUp 0.3s ease-out;
+    }
+    .calc-head { background: var(--surface); padding: 0 24px 20px; border-bottom: 2px solid var(--divider); position: relative; text-align: center; }
+    .calc-handle { width: 72px; height: 8px; background: var(--divider); border-radius: 4px; margin: 18px auto; }
+    .calc-title { font-size: 30px; font-weight: 700; }
+    .calc-close { position: absolute; right: 20px; top: 40px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
+    .calc-close:active { background: var(--surface-alt); }
+    .calc-close svg { width: 30px; height: 30px; stroke: var(--text-muted); }
+    .calc-v { background: linear-gradient(135deg, #fff, var(--surface-alt)); padding: 22px 28px; display: flex; align-items: center; gap: 20px; border-bottom: 2px solid var(--divider); }
+    .calc-v .v-label { font-size: 22px; color: var(--text-muted); margin-bottom: 4px; }
+    .calc-v .v-num { font-family: var(--font-mono); font-size: 50px; font-weight: 700; color: var(--brand); line-height: 1; display: flex; align-items: baseline; }
+    .calc-v .v-num .unit { font-size: 24px; color: var(--text-secondary); margin-left: 4px; }
+    .calc-v .v-num input { font-family: var(--font-mono); font-size: 50px; font-weight: 700; color: var(--brand); line-height: 1; width: 210px; background: transparent; border: none; border-bottom: 3px solid var(--brand); outline: none; padding: 0 4px; }
+    .calc-v .v-meta { font-size: 21px; color: var(--text-muted); margin-top: 6px; }
+    .calc-v .tol-tag { margin-left: auto; padding: 8px 18px; border-radius: 10px; background: var(--warning-soft); color: var(--warning); font-size: 22px; font-weight: 700; flex-shrink: 0; }
+    .calc-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 22px 28px; }
+    .calc-sec-title { font-size: 26px; font-weight: 700; margin: 4px 0 16px; display: flex; align-items: center; gap: 12px; }
+    .calc-add-btn { margin-left: auto; padding: 8px 20px; background: var(--brand); color: #fff; border: none; border-radius: 8px; font-family: var(--font-ui); font-size: 22px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+    .calc-add-btn:active { transform: scale(0.96); }
+    .calc-sec-title .hint { font-size: 22px; font-weight: 400; color: var(--text-muted); }
+    .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 380px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-right: 4px; }
+    /* 紧凑规格卡片（2列，规格区独立滚动）*/
+    .calc-scard { position: relative; padding: 14px 12px; background: var(--surface); border: 2px solid var(--divider); border-radius: 10px; cursor: pointer; transition: all 0.15s; min-height: 78px; }
+    .calc-scard:active { transform: scale(0.98); }
+    .calc-scard.selected { border-color: var(--brand); background: rgba(43,108,176,0.08); }
+    .calc-scard .sc-dim { font-family: var(--font-mono); font-size: 23px; font-weight: 700; color: var(--text-primary); }
+    .calc-scard .sc-vol { font-family: var(--font-mono); font-size: 18px; color: var(--text-muted); margin-top: 4px; }
+    .calc-scard .sc-acts { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; }
+    .calc-scard .sc-edit, .calc-scard .sc-del { width: 48px; height: 48px; border-radius: 9px; background: rgba(255,255,255,0.92); display: flex; align-items: center; justify-content: center; }
+    .calc-scard .sc-edit:active, .calc-scard .sc-del:active { background: var(--divider); }
+    .calc-scard .sc-edit svg { width: 26px; height: 26px; stroke: var(--text-secondary); fill: none; stroke-width: 2; }
+    .calc-scard .sc-del svg { width: 26px; height: 26px; stroke: var(--danger); fill: none; stroke-width: 2; }
+    .calc-scard .sc-check { position: absolute; bottom: 8px; right: 10px; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--divider); display: flex; align-items: center; justify-content: center; }
+    .calc-scard.selected .sc-check { background: var(--brand); border-color: var(--brand); }
+    .calc-scard .sc-check svg { width: 16px; height: 16px; stroke: #fff; stroke-width: 3; fill: none; opacity: 0; }
+    .calc-scard.selected .sc-check svg { opacity: 1; }
+    .calc-add-scard { grid-column: 1 / -1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border: 2px dashed var(--brand); border-radius: 10px; color: var(--brand); font-size: 24px; font-weight: 600; cursor: pointer; background: rgba(43,108,176,0.04); }
+    .calc-add-scard svg { width: 28px; height: 28px; stroke: var(--brand); fill: none; stroke-width: 2; }
+    .calc-chip { background: var(--surface); border: 2px solid var(--divider); border-radius: var(--radius-sm); padding: 18px 16px; cursor: pointer; position: relative; transition: all 0.15s; min-height: 108px; }
+    .calc-chip:active { transform: scale(0.98); }
+    .calc-chip.selected { border-color: var(--brand); background: rgba(43,108,176,0.08); }
+    .calc-chip .cc-dim { font-family: var(--font-mono); font-size: 27px; font-weight: 700; color: var(--text-primary); margin-top: 8px; }
+    .calc-chip .cc-vol { font-family: var(--font-mono); font-size: 20px; color: var(--text-muted); margin-top: 6px; }
+    .calc-chip .cc-act { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; z-index: 2; }
+    .calc-chip .cc-edit, .calc-chip .cc-del { width: 40px; height: 40px; border-radius: 8px; background: rgba(255,255,255,0.92); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .calc-chip .cc-edit:active, .calc-chip .cc-del:active { background: var(--divider); }
+    .calc-chip .cc-edit svg { width: 24px; height: 24px; stroke: var(--text-secondary); fill: none; stroke-width: 2; }
+    .calc-chip .cc-del svg { width: 24px; height: 24px; stroke: var(--danger); fill: none; stroke-width: 2; }
+    .calc-chip .cc-check { position: absolute; bottom: 12px; right: 12px; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--divider); display: flex; align-items: center; justify-content: center; }
+    .calc-chip.selected .cc-check { background: var(--brand); border-color: var(--brand); }
+    .calc-chip .cc-check svg { width: 16px; height: 16px; stroke: #fff; stroke-width: 3; fill: none; opacity: 0; }
+    .calc-chip.selected .cc-check svg { opacity: 1; }
+    /* +添加规格 卡片 */
+    .calc-add-chip { border: 2px dashed var(--brand); border-radius: var(--radius-sm); padding: 18px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; color: var(--brand); background: rgba(43,108,176,0.04); min-height: 108px; }
+    .calc-add-chip:active { transform: scale(0.98); }
+    .calc-add-chip svg { width: 36px; height: 36px; stroke: var(--brand); fill: none; stroke-width: 2; }
+    .calc-add-chip span { font-size: 24px; font-weight: 600; }
+    /* 开始反算 主按钮 */
+    .calc-start-btn { width: 100%; padding: 20px; margin-top: 16px; background: linear-gradient(135deg, var(--brand), var(--brand-bright)); color: #fff; border: none; border-radius: var(--radius-sm); font-family: var(--font-ui); font-size: 28px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 18px rgba(43,108,176,0.3); transition: transform 0.12s; }
+    .calc-start-btn:active { transform: scale(0.98); }
+    .calc-start-btn:disabled { background: var(--divider); color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
+    /* mini 编辑表单（新增/编辑规格长宽高）*/
+    .calc-edit { background: var(--surface); border: 2px solid var(--brand); border-radius: var(--radius-sm); padding: 18px; margin-bottom: 16px; }
+    .calc-edit .ce-title { font-size: 24px; font-weight: 700; margin-bottom: 14px; }
+    .calc-edit .ce-fields { display: flex; gap: 10px; margin-bottom: 14px; }
+    .calc-edit .ce-field { flex: 1; }
+    .calc-edit .ce-field label { display: block; font-size: 20px; color: var(--text-muted); text-align: center; margin-bottom: 6px; }
+    .calc-edit .ce-field .ui-input { width: 100%; height: 72px; text-align: center; font-family: var(--font-mono); font-size: 26px; padding: 0; }
+    .calc-edit .ce-actions { display: flex; gap: 12px; }
+    .calc-edit .ce-ok { flex: 1; height: 72px; background: var(--brand); color: #fff; border: none; border-radius: 10px; font-size: 26px; font-weight: 700; cursor: pointer; }
+    .calc-edit .ce-cancel { width: 130px; height: 72px; background: var(--surface-alt); color: var(--text-secondary); border: none; border-radius: 10px; font-size: 26px; font-weight: 600; cursor: pointer; }
+    .calc-result { margin-top: 26px; }
+    .calc-empty { text-align: center; color: var(--text-muted); font-size: 22px; padding: 32px 0; background: var(--surface); border: 2px dashed var(--divider); border-radius: var(--radius-sm); }
+    .calc-row { display: flex; align-items: center; gap: 12px; background: var(--surface); padding: 16px 18px; border-radius: var(--radius-sm); margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+    .calc-row .cr-name { width: 120px; font-size: 24px; font-weight: 600; }
+    .calc-row .cr-dim { font-family: var(--font-mono); font-size: 20px; color: var(--text-muted); }
+    .cr-stepper { margin-left: auto; display: flex; align-items: center; gap: 4px; background: var(--field-bg); border-radius: 10px; padding: 3px; }
+    .cr-stepper button { width: 50px; height: 50px; border: none; background: var(--surface); border-radius: 8px; font-size: 28px; color: var(--brand); font-weight: 700; cursor: pointer; }
+    .cr-stepper button:disabled { color: var(--divider); }
+    .cr-stepper input { width: 64px; height: 50px; text-align: center; border: none; background: transparent; font-family: var(--font-mono); font-size: 26px; font-weight: 700; color: var(--text-primary); outline: none; }
+    .calc-row .cr-sub { width: 100px; text-align: right; font-family: var(--font-mono); font-size: 22px; font-weight: 600; }
+    .recalc-link { width: 100%; padding: 14px; margin-top: 4px; background: var(--surface); border: 2px solid var(--brand); color: var(--brand); border-radius: var(--radius-sm); font-size: 23px; font-weight: 600; cursor: pointer; }
+    .calc-foot { background: var(--surface); border-top: 2px solid var(--divider); padding: 16px 28px calc(16px + env(safe-area-inset-bottom,0px)); box-shadow: 0 -8px 24px rgba(15,23,42,0.08); }
+    .calc-sum { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+    .calc-sum .real { font-family: var(--font-mono); font-size: 22px; color: var(--text-secondary); }
+    .calc-sum .real b { font-size: 30px; color: var(--text-primary); }
+    .vbar { flex: 1; height: 12px; background: var(--surface-alt); border-radius: 7px; position: relative; overflow: hidden; }
+    .vbar-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 7px; transition: width 0.3s, background 0.3s; }
+    .vbar-mark { position: absolute; top: -3px; bottom: -3px; width: 3px; background: var(--text-primary); border-radius: 2px; }
+    .diff-pill { padding: 7px 16px; border-radius: 9px; font-family: var(--font-mono); font-size: 22px; font-weight: 700; white-space: nowrap; }
+    .diff-pill.ok { background: rgba(34,197,94,0.12); color: var(--success); }
+    .diff-pill.over { background: var(--danger-soft); color: var(--danger); }
+    .calc-warn-tip { text-align: center; font-size: 21px; color: var(--danger); font-weight: 600; margin-bottom: 10px; display: none; }
+    .calc-confirm { width: 100%; padding: 22px; border: none; border-radius: var(--radius); font-family: var(--font-ui); font-size: 28px; font-weight: 700; cursor: pointer; color: #fff; transition: transform 0.12s; }
+    .calc-confirm:active { transform: scale(0.98); }
+    .calc-confirm.ok { background: linear-gradient(135deg, var(--brand), var(--brand-bright)); }
+    .calc-confirm.over { background: linear-gradient(135deg, var(--warning), var(--danger)); }
+    /* 长宽高表格：规格反算触发按钮 + 反算带出行的规格标记 */
+    .calc-trigger { padding: 8px 20px; background: var(--brand); color: #fff; border: none; border-radius: 8px; font-size: 22px; font-weight: 600; cursor: pointer; }
+    .calc-trigger:active { transform: scale(0.96); }
+    .st-cell .spec-tag { font-size: 20px; color: var(--brand); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="pda-frame">
+
+    <!-- 顶部导航 -->
+    <div class="nav-bar">
+      <div class="back" onclick="history.back()">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </div>
+      <div class="title">YLWJT26060034A</div>
+      <div class="menu-btn" onclick="showToast('更多操作')">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </div>
+    </div>
+
+    <!-- 头部信息区 -->
+    <div class="detail-header">
+      <div class="info-row">
+        <span class="label">主单号:</span>
+        <span class="value">114-</span>
+      </div>
+      <div class="info-row" onclick="showToast('增值服务')" style="cursor:pointer">
+        <span class="label">增值服务:</span>
+        <span class="value link">暂无服务<svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg></span>
+      </div>
+      <div class="info-row" onclick="showToast('编辑收货备注')" style="cursor:pointer">
+        <span class="label">收货备注:</span>
+        <span class="value">请输入备注</span>
+      </div>
+
+      <div class="stats-row" id="statsRow"></div>
+
+      <div class="action-row">
+        <button class="action-btn" onclick="showToast('设置地磅')">设置地磅</button>
+        <button class="action-btn" onclick="showToast('呼叫AGV')">呼叫AGV</button>
+        <button class="action-btn" onclick="openCalc()">尺寸反算</button>
+        <button class="action-btn primary" onclick="openAddTray()">添加托盘</button>
+      </div>
+    </div>
+
+    <!-- 入仓号切换 + 托盘列表 -->
+    <div class="wh-tabs" id="whTabs"></div>
+    <div class="content" id="trayList"></div>
+
+    <!-- 底部结束收货 -->
+    <div class="bottom-bar">
+      <button class="finish-btn" onclick="finishReceive()">结束收货</button>
+    </div>
+
+    <!-- 添加托盘弹窗 -->
+    <div class="modal-overlay" id="addTrayModal" onclick="onOverlayClick(event)">
+      <div class="modal-content">
+        <div class="modal-handle"></div>
+        <div class="modal-head">
+          <span class="modal-title">添加托盘</span>
+          <div class="modal-close" onclick="closeAddTray()">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <!-- 货物类型 -->
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span> 货物类型</div>
+            <div class="radio-group" id="cargoType">
+              <div class="radio-item active" data-val="tray" onclick="selectCargo(this)"><span class="dot"></span>托盘货</div>
+              <div class="radio-item" data-val="bulk" onclick="selectCargo(this)"><span class="dot"></span>散货</div>
+            </div>
+          </div>
+
+          <!-- 原木照片 -->
+          <div class="form-row">
+            <div class="form-label">原木照片</div>
+            <div class="photo-box" onclick="showToast('拍照（模拟）')">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>点击拍照</span>
+            </div>
+          </div>
+
+          <!-- 托盘型号 -->
+          <div class="form-row">
+            <div class="form-label"><span class="req">*</span> 托盘型号</div>
+            <div class="select-field" onclick="showToast('选择托盘型号')">
+              <span>请选择</span>
+              <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+            </div>
+          </div>
+
+          <!-- 添加数量 -->
+          <div class="form-row">
+            <div class="form-label">添加数量</div>
+            <div class="number-field">
+              <input class="ui-input" id="addCount" type="text" value="1" inputmode="numeric">
+              <button class="add-btn" onclick="incCount()">+</button>
+            </div>
+          </div>
+
+          <!-- 地磅照片 -->
+          <div class="form-row">
+            <div class="form-label">地磅照片</div>
+            <div class="photo-box" onclick="showToast('拍照（模拟）')">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>点击拍照</span>
+            </div>
+          </div>
+
+          <!-- 重量 -->
+          <div class="form-row">
+            <div class="form-label">重量</div>
+            <input class="ui-input" type="text" placeholder="请输入" inputmode="decimal">
+          </div>
+
+          <!-- 尺寸不在托盘录入：由头部「整单尺寸反算」统一反算并切分到各托盘，点托盘卡查看明细 -->
+
+        </div>
+
+        <div class="modal-footer">
+          <button class="save-btn" onclick="saveTray()">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 规格反算面板（覆盖在添加托盘弹窗之上，按整票预报体积反算件数）-->
+    <div class="calc-overlay" id="calcOverlay">
+      <div class="calc-panel">
+        <div class="calc-head">
+          <div class="calc-handle"></div>
+          <div class="calc-title">规格反算</div>
+          <div class="calc-close" onclick="closeCalc()">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </div>
+        </div>
+        <div class="calc-v">
+          <div>
+            <div class="v-label">本入仓号目标总体积（可编辑）</div>
+            <div class="v-num"><input type="text" inputmode="decimal" id="calcVInput" value="0.00" onchange="setCalcV(this.value)" onfocus="this.select()"><span class="unit">m³</span></div>
+            <div class="v-meta" id="calcVMeta"></div>
+          </div>
+          <div class="tol-tag" id="calcTol">容差 ±3%</div>
+        </div>
+        <div class="calc-body">
+          <div class="calc-sec-title">选择尺寸规格 <span class="hint">可多选</span><button type="button" class="calc-add-btn" onclick="addSizeClick()">+ 添加规格</button></div>
+          <div id="calcEditBox"></div>
+          <div class="calc-grid" id="calcGrid"></div>
+          <button class="calc-start-btn" id="calcStartBtn" onclick="recalc(true)">反算</button>
+          <div class="calc-result" id="calcResultSec" style="display:none;">
+            <div class="calc-sec-title">反算结果 <span class="hint">可微调件数</span></div>
+            <div id="calcResultBody"></div>
+          </div>
+        </div>
+        <div class="calc-foot">
+          <div class="calc-sum">
+            <div class="real">件数 <b id="calcQty">0</b>/<span id="calcQtyN">0</span></div>
+            <div class="vbar"><div class="vbar-fill" id="calcFill"></div><div class="vbar-mark" id="calcMark"></div></div>
+            <div class="diff-pill ok" id="calcDiff">—</div>
+          </div>
+          <div class="calc-warn-tip" id="calcWarnTip">差额超容差，确认后将标记异常</div>
+          <button class="calc-confirm ok" id="calcConfirm" onclick="confirmCalc()">确认回填到表格</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 托盘尺寸抽屉（点托盘卡查看其尺寸明细）-->
+    <div class="modal-overlay" id="traySizeModal" onclick="if(event.target===this)closeTraySizes()">
+      <div class="modal-content">
+        <div class="modal-handle"></div>
+        <div class="modal-head">
+          <span class="modal-title">托盘尺寸 · <span id="traySizeNo"></span></span>
+          <div class="modal-close" onclick="closeTraySizes()">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </div>
+        </div>
+        <div class="modal-body"><div id="traySizeBody"></div></div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    // ── 画板等比缩放至视窗一屏（复用列表页）──
+    function fitFrame() {
+      var margin = 32;
+      var scaleW = (window.innerWidth  - margin) / 750;
+      var scaleH = (window.innerHeight - margin) / 1536;
+      var s = Math.min(scaleW, scaleH, 1);
+      document.documentElement.style.setProperty('--frame-scale', s.toFixed(4));
+    }
+    window.addEventListener('resize', fitFrame);
+    window.addEventListener('DOMContentLoaded', fitFrame);
+    fitFrame();
+
+    // ── 托盘数据（Mock，按入仓号 wh 分组）──
+    // status: unshelved=未上架(红) / shelved=已上架(绿)；sizeComplete=false 显示"尺寸数据不完整"
+    const TRAYS = [
+      { wh: '114-001', no: 'TTBP-A04480', status: 'unshelved', model: '-',     count: 1, weight: 0,  photo: '-', sizeComplete: false },
+      { wh: '114-001', no: 'TTBP-A04481', status: 'unshelved', model: '120标准', count: 3, weight: 45, photo: '1张', sizeComplete: true },
+      { wh: '114-002', no: 'TTBP-A04482', status: 'shelved',   model: '100标准', count: 2, weight: 30, photo: '1张', sizeComplete: true },
+      { wh: '114-002', no: 'TTBP-A04483', status: 'unshelved', model: '-',     count: 1, weight: 0,  photo: '-', sizeComplete: false },
+      { wh: '114-003', no: 'TTBP-A04484', status: 'shelved',   model: '120标准', count: 5, weight: 80, photo: '2张', sizeComplete: true }
+    ];
+
+    // ── 当前选中入仓号 ──
+    const state = { currentWh: '' };
+    // 入仓号列表（去重保序）
+    function getWarehouses() {
+      const seen = new Set(), list = [];
+      TRAYS.forEach(t => { if (!seen.has(t.wh)) { seen.add(t.wh); list.push(t.wh); } });
+      return list;
+    }
+
+    // ── XSS 转义 ──
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    // ── 渲染入仓号 Tab ──
+    function renderTabs() {
+      document.getElementById('whTabs').innerHTML = getWarehouses().map(wh =>
+        `<div class="wh-tab ${wh === state.currentWh ? 'active' : ''}" onclick="switchWh('${escapeHtml(wh)}')">${escapeHtml(wh)}</div>`
+      ).join('');
+    }
+
+    // ── 渲染整单统计（板数/件数/重量 由全部托盘汇总）──
+    function renderStats() {
+      const ts = TRAYS;
+      const boards = ts.length;
+      const pieces = ts.reduce((s, t) => s + (t.count || 0), 0);
+      const weight = ts.reduce((s, t) => s + (t.weight || 0), 0);
+      document.getElementById('statsRow').innerHTML = `
+        <div class="stat-item"><div class="stat-num">${boards}</div><div class="stat-label">总板数</div></div>
+        <div class="stat-item"><div class="stat-num">${pieces}</div><div class="stat-label">总件数</div></div>
+        <div class="stat-item"><div class="stat-num">${weight}</div><div class="stat-label">总重量</div></div>`;
+    }
+
+    // ── 切换入仓号 ──
+    function switchWh(wh) {
+      state.currentWh = wh;
+      renderTabs();
+      renderStats();
+      renderTrays();
+      // 切换入仓号：若反算面板已开，V 重置为新入仓号预报值并重新反算
+      if (calcOverlay.classList.contains('active')) {
+        calcState.v = WH_TARGET_V[wh] || 0;
+        calcState.editingId = undefined;
+        document.getElementById('calcEditBox').innerHTML = '';
+        recalc(false); renderCalcAll();
+      }
+    }
+
+    // ── 渲染托盘列表（当前入仓号）──
+    function renderTrays() {
+      const list = document.getElementById('trayList');
+      const traySvg = '<svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>';
+      const cameraSvg = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+      const warnSvg = '<svg viewBox="0 0 24 24" fill="#EF4444"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>';
+
+      list.innerHTML = TRAYS.filter(t => t.wh === state.currentWh).map(t => {
+        const statusText = t.status === 'unshelved' ? '未上架' : '已上架';
+        return `
+          <div class="tray-card" onclick="openTraySizes('${escapeHtml(t.no)}')" style="cursor:pointer">
+            <div class="tray-head">
+              <span class="tray-icon">${traySvg}</span>
+              <span class="tray-no">${escapeHtml(t.no)}</span>
+              <span class="tray-status ${t.status}">${statusText}</span>
+              <span class="tray-camera" onclick="event.stopPropagation(); showToast('托盘拍照：' + '${escapeHtml(t.no)}')">${cameraSvg}</span>
+            </div>
+            <div class="tray-stats">
+              <div class="tstat"><div class="ts-num ${t.model==='-'?'muted':''}">${escapeHtml(t.model)}</div><div class="ts-label">型号</div></div>
+              <div class="tstat"><div class="ts-num">${t.count}</div><div class="ts-label">件数</div></div>
+              <div class="tstat"><div class="ts-num">${t.weight}</div><div class="ts-label">重量</div></div>
+              <div class="tstat"><div class="ts-num ${t.photo==='-'?'muted':''}">${escapeHtml(t.photo)}</div><div class="ts-label">照片</div></div>
+            </div>
+            <div class="tray-actions">
+              <span class="taction muted" onclick="event.stopPropagation(); trayAction('更多','${escapeHtml(t.no)}')">更多</span>
+              <span class="taction muted" onclick="event.stopPropagation(); trayAction('复制','${escapeHtml(t.no)}')">复制</span>
+              <span class="taction muted" onclick="event.stopPropagation(); trayAction('编辑','${escapeHtml(t.no)}')">编辑</span>
+              <span class="taction" onclick="event.stopPropagation(); trayAction('上架','${escapeHtml(t.no)}')">${t.status==='unshelved'?'上架':'已上架'}</span>
+            </div>
+          </div>`;
+      }).join('') + `<div class="list-end">-- END --</div>`;
+    }
+
+    // ── 弹窗开关 ──
+    const addTrayModal = document.getElementById('addTrayModal');
+    function openAddTray() { addTrayModal.classList.add('active'); }
+    function closeAddTray() { addTrayModal.classList.remove('active'); }
+    function onOverlayClick(e) { if (e.target === addTrayModal) closeAddTray(); }
+
+    // 货物类型单选
+    function selectCargo(el) {
+      document.querySelectorAll('#cargoType .radio-item').forEach(r => r.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    // 添加数量 +
+    function incCount() {
+      const input = document.getElementById('addCount');
+      const v = parseInt(input.value, 10) || 0;
+      input.value = v + 1;
+    }
+
+    function saveTray() {
+      closeAddTray();
+      showToast('托盘已添加');
+    }
+
+    // ── 托盘操作 ──
+    function trayAction(action, no) {
+      if (action === '上架') { showToast('已上架：' + no); }
+      else { showToast(action + '：' + no); }
+    }
+    // 点托盘卡：弹出尺寸抽屉，查看该托盘被切分到的尺寸明细
+    function openTraySizes(no) {
+      const t = TRAYS.find(x => x.no === no);
+      if (!t) return;
+      document.getElementById('traySizeNo').textContent = t.no;
+      const body = document.getElementById('traySizeBody');
+      if (!t.sizes || !t.sizes.length) {
+        body.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:24px;padding:56px 0;line-height:1.6;">该托盘暂无尺寸明细<br/>请先点「整单尺寸反算」</div>`;
+      } else {
+        body.innerHTML = `<div class="size-table">
+          <div class="st-row st-head"><span>长</span><span>宽</span><span>高</span><span>数量</span><span>体积m³</span></div>
+          ${t.sizes.map(s => `<div class="st-row">
+            <div class="st-cell">${s.l}</div>
+            <div class="st-cell">${s.w}</div>
+            <div class="st-cell">${s.h}</div>
+            <div class="st-cell">${s.qty}</div>
+            <div class="st-cell">${(s.qty * s.volume).toFixed(3)}</div>
+          </div>`).join('')}
+        </div>`;
+      }
+      document.getElementById('traySizeModal').classList.add('active');
+    }
+    function closeTraySizes() { document.getElementById('traySizeModal').classList.remove('active'); }
+
+    function finishReceive() {
+      showToast('收货已结束');
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  规格反算（grill-me 共识：整票预报体积V → 反算件数 → 落当前托盘）
+    // ══════════════════════════════════════════════════════
+    // 尺寸规格库：owner=private 客户私有(常用置顶) / owner=public 通用预置
+    // 尺寸规格库（可增删改）：规格靠 {l,w,h,volume} 标识，无名称；owner=private 自定义 / public 预置
+    let SIZES = [
+      // 客户私有（该客户常用）
+      { id: 'CS', owner: 'private', l: 25, w: 18, h: 15 },
+      { id: 'CM', owner: 'private', l: 35, w: 28, h: 20 },
+      { id: 'CL', owner: 'private', l: 45, w: 35, h: 30 },
+      // 通用预置（国标/邮政标准箱）
+      { id: 'G01', owner: 'public', l: 20, w: 15, h: 10 },
+      { id: 'G02', owner: 'public', l: 23, w: 17, h: 12 },
+      { id: 'G03', owner: 'public', l: 26, w: 18, h: 13 },
+      { id: 'G04', owner: 'public', l: 28, w: 20, h: 14 },
+      { id: 'G05', owner: 'public', l: 30, w: 21, h: 16 },
+      { id: 'G06', owner: 'public', l: 31, w: 23, h: 16 },
+      { id: 'G07', owner: 'public', l: 33, w: 25, h: 18 },
+      { id: 'G08', owner: 'public', l: 35, w: 28, h: 19 },
+      { id: 'G09', owner: 'public', l: 36, w: 30, h: 20 },
+      { id: 'G10', owner: 'public', l: 40, w: 30, h: 25 },
+      { id: 'G11', owner: 'public', l: 41, w: 31, h: 27 },
+      { id: 'G12', owner: 'public', l: 43, w: 35, h: 28 },
+      { id: 'G13', owner: 'public', l: 45, w: 35, h: 30 },
+      { id: 'G14', owner: 'public', l: 48, w: 38, h: 32 },
+      { id: 'G15', owner: 'public', l: 50, w: 40, h: 35 },
+      { id: 'G16', owner: 'public', l: 52, w: 42, h: 36 },
+      { id: 'G17', owner: 'public', l: 55, w: 45, h: 38 },
+      { id: 'G18', owner: 'public', l: 58, w: 48, h: 40 },
+      { id: 'G19', owner: 'public', l: 60, w: 50, h: 42 },
+      { id: 'G20', owner: 'public', l: 63, w: 52, h: 45 },
+      { id: 'G21', owner: 'public', l: 65, w: 55, h: 48 },
+      { id: 'G22', owner: 'public', l: 68, w: 58, h: 50 }
+    ];
+    SIZES.forEach(s => { s.volume = +(s.l * s.w * s.h / 1000000).toFixed(6); });
+
+    // 各入仓号的预报目标体积V（m³）+ 整票预报件数N（均来源：客户预报）+ 容差
+    const WH_TARGET_V = { '114-001': 1.00, '114-002': 0.85, '114-003': 2.10 };
+    const WH_TARGET_N = { '114-001': 22, '114-002': 20, '114-003': 44 };
+    const TOLERANCE = 0.03;
+
+    // 反算状态：selected 已选规格、qty 件数、v 目标体积(可编辑)、editingId 编辑中规格(null=新增 / undefined=无)
+    const calcState = { selected: new Set(['CS', 'CM', 'CL']), qty: {}, v: 0, editingId: undefined };
+    const calcOverlay = document.getElementById('calcOverlay');
+
+    // 目标体积 V（用户可编辑覆盖预报值）；件数 N 取自预报
+    function getCalcV() { return calcState.v || 0; }
+    function getCalcN() { return WH_TARGET_N[state.currentWh] || 32; }
+
+    // 反算核心：带件数约束的整数规划（升级/降级贪心，逼近目标体积V）
+    // 反算：从「件数均衡」的起点出发，通过换件把总体积逼近 V，过程中保证每个选中规格 ≥1 件。
+    // V/N 落在规格范围中部 → 结果自然均衡；V/N 偏向某规格 → 该规格占多（凑 V），但所有规格都保留。
+    function planCalc(V, sizes, N) {
+      const k = sizes.length;
+      if (!k || !N) return sizes.map(() => 0);
+      // 1) 均衡起点：件数尽量均分到各规格
+      const qty = sizes.map(() => Math.floor(N / k));
+      for (let i = 0; i < N % k; i++) qty[i]++;            // 余数依次补到前几个规格
+      // 2) 换件凑 V：每次把 1 件从 a 换到 b，使 |总体积 - V| 最小化，保留每规格 ≥1
+      let cur = sizes.reduce((s, x, i) => s + x.volume * qty[i], 0);
+      let guard = 0, improved = true;
+      while (improved && guard++ < 5000) {
+        improved = false;
+        const curErr = Math.abs(cur - V);
+        let bestGain = 1e-9, from = -1, to = -1;
+        for (let a = 0; a < k; a++) {
+          if (qty[a] <= 1) continue;                       // 保留 ≥1 件，保证多规格都出现
+          for (let b = 0; b < k; b++) {
+            if (b === a) continue;
+            const gain = curErr - Math.abs(cur - sizes[a].volume + sizes[b].volume - V);
+            if (gain > bestGain) { bestGain = gain; from = a; to = b; }
+          }
+        }
+        if (from >= 0) { qty[from]--; qty[to]++; cur += sizes[to].volume - sizes[from].volume; improved = true; }
+      }
+      return qty;
+    }
+    function calcReal() {
+      return SIZES.filter(s => calcState.selected.has(s.id))
+        .reduce((sum, s) => sum + (calcState.qty[s.id] || 0) * s.volume, 0);
+    }
+
+    // ── 反算面板渲染 ──
+    function openCalc() {
+      calcState.v = WH_TARGET_V[state.currentWh] || 0;   // 进入时以该入仓号预报体积为初值
+      calcState.editingId = undefined;
+      calcState.qty = {};
+      calcState.selected.forEach(id => { calcState.qty[id] = 1; });   // 已选规格默认占位 1 件，待「反算」更新
+      document.getElementById('calcEditBox').innerHTML = '';
+      renderCalcAll(); calcOverlay.classList.add('active');
+    }
+    function closeCalc() { calcOverlay.classList.remove('active'); }
+
+    function renderCalcV() {
+      const inp = document.getElementById('calcVInput');
+      if (inp && document.activeElement !== inp) inp.value = getCalcV().toFixed(2);   // 非聚焦时才回填，避免打断输入
+      const overridden = calcState.v !== (WH_TARGET_V[state.currentWh] || 0);
+      document.getElementById('calcVMeta').textContent = '入仓号 ' + state.currentWh + ' · ' + (overridden ? '手动修改' : '来源：客户预报');
+      document.getElementById('calcTol').textContent = '容差 ±' + (TOLERANCE * 100) + '%';
+    }
+    // V 输入框变更：更新并重新反算
+    function setCalcV(val) {
+      const v = parseFloat(val);
+      calcState.v = isNaN(v) ? 0 : v;
+      renderCalcV(); renderCalcSum();   // 不自动反算，差额按当前数量 vs 新 V，引导用户点「反算」
+    }
+    function renderCalcGrid() {
+      const cards = SIZES.map(s => `
+        <div class="calc-scard${calcState.selected.has(s.id) ? ' selected' : ''}" onclick="toggleCalcSize('${s.id}')">
+          <div class="sc-acts">
+            <span class="sc-edit" onclick="event.stopPropagation(); editSizeClick('${s.id}')"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span>
+            <span class="sc-del" onclick="event.stopPropagation(); deleteSizeClick('${s.id}')"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+          </div>
+          <div class="sc-dim">${s.l}×${s.w}×${s.h}</div>
+          <div class="sc-vol">${s.volume.toFixed(4)}m³</div>
+        </div>`).join('');
+      document.getElementById('calcGrid').innerHTML = cards;
+      const startBtn = document.getElementById('calcStartBtn');
+      if (startBtn) startBtn.disabled = calcState.selected.size === 0;   // 无选中规格时禁用「反算」
+    }
+    function renderCalcResult() {
+      const sec = document.getElementById('calcResultSec');
+      const sel = SIZES.filter(s => calcState.selected.has(s.id));
+      if (!sel.length) { sec.style.display = 'none'; return; }
+      sec.style.display = 'block';
+      const rows = sel.filter(s => (calcState.qty[s.id] || 0) > 0);
+      const body = document.getElementById('calcResultBody');
+      if (!rows.length) { body.innerHTML = '<div class="calc-empty">所选规格件数均为0，请重新反算或调整</div>'; return; }
+      body.innerHTML = rows.map(s => {
+        const q = calcState.qty[s.id] || 0;
+        return `<div class="calc-row">
+          <div class="cr-name">${s.volume.toFixed(4)}m³</div>
+          <div class="cr-dim">${s.l}×${s.w}×${s.h}</div>
+          <div class="cr-stepper">
+            <button onclick="calcAdjust('${s.id}',-1)" ${q <= 0 ? 'disabled' : ''}>−</button>
+            <input type="number" inputmode="numeric" value="${q}" onchange="calcSet('${s.id}',this.value)" onfocus="this.select()"/>
+            <button onclick="calcAdjust('${s.id}',1)">+</button>
+          </div>
+          <div class="cr-sub">${(q * s.volume).toFixed(3)}</div>
+        </div>`;
+      }).join('');
+    }
+    function renderCalcSum() {
+      const real = calcReal(), V = getCalcV();
+      const N = getCalcN();
+      const qtySum = SIZES.filter(s => calcState.selected.has(s.id)).reduce((a, s) => a + (calcState.qty[s.id] || 0), 0);
+      const diff = real - V, pct = V > 0 ? Math.abs(diff) / V : 0, over = pct > TOLERANCE;
+      document.getElementById('calcQty').textContent = qtySum;
+      document.getElementById('calcQtyN').textContent = N;
+      const p = V > 0 ? Math.min(real / V, 1.2) / 1.2 * 100 : 0;
+      const fill = document.getElementById('calcFill');
+      fill.style.width = p + '%';
+      fill.style.background = over ? 'linear-gradient(90deg,#F59E0B,#EF4444)' : 'linear-gradient(90deg,#22C55E,#3B82F6)';
+      document.getElementById('calcMark').style.left = (1 / 1.2 * 100) + '%';
+      const pill = document.getElementById('calcDiff');
+      pill.className = 'diff-pill ' + (over ? 'over' : 'ok');
+      pill.textContent = (diff >= 0 ? '+' : '−') + Math.abs(diff).toFixed(3) + ' · ' + (pct * 100).toFixed(1) + '%';
+      const btn = document.getElementById('calcConfirm');
+      const tip = document.getElementById('calcWarnTip');
+      if (real === 0) { btn.className = 'calc-confirm ok'; btn.textContent = '请先选择规格'; tip.style.display = 'none'; }
+      else if (qtySum !== N) { btn.className = 'calc-confirm over'; btn.textContent = '件数和需等于 ' + N + '（当前 ' + qtySum + '）'; tip.style.display = 'block'; tip.textContent = '件数和 ' + qtySum + ' ≠ 反算件数 ' + N + '，请调整'; }
+      else if (over) { btn.className = 'calc-confirm over'; btn.textContent = '确认切分（将标记异常）'; tip.style.display = 'block'; tip.textContent = '体积差额超容差，确认后将标记异常'; }
+      else { btn.className = 'calc-confirm ok'; btn.textContent = '确认切分到各托盘'; tip.style.display = 'none'; }
+    }
+    function renderCalcAll() { renderCalcV(); renderCalcGrid(); renderCalcResult(); renderCalcSum(); }
+
+    // ── 规格增删改（mini 表单：新增/编辑复用，editingId 区分）──
+    function addSizeClick() { calcState.editingId = null; renderCalcEdit(); }
+    function editSizeClick(id) { calcState.editingId = id; renderCalcEdit(); }
+    function cancelSizeEdit() { calcState.editingId = undefined; document.getElementById('calcEditBox').innerHTML = ''; }
+    function deleteSizeClick(id) {
+      SIZES = SIZES.filter(s => s.id !== id);
+      calcState.selected.delete(id);
+      delete calcState.qty[id];
+      calcState.editingId = undefined;
+      document.getElementById('calcEditBox').innerHTML = '';
+      recalc(false); renderCalcAll();
+      showToast('已删除规格');
+    }
+    // 渲染 mini 编辑表单（editingId=null 新增 / =id 编辑）
+    function renderCalcEdit() {
+      const s = calcState.editingId ? SIZES.find(x => x.id === calcState.editingId) : null;
+      const l = s ? s.l : '', w = s ? s.w : '', h = s ? s.h : '';
+      document.getElementById('calcEditBox').innerHTML = `
+        <div class="calc-edit">
+          <div class="ce-title">${s ? '编辑规格' : '新增规格'}（长×宽×高 cm）</div>
+          <div class="ce-fields">
+            <div class="ce-field"><label>长</label><input class="ui-input" id="ceL" type="text" inputmode="numeric" value="${l}"></div>
+            <div class="ce-field"><label>宽</label><input class="ui-input" id="ceW" type="text" inputmode="numeric" value="${w}"></div>
+            <div class="ce-field"><label>高</label><input class="ui-input" id="ceH" type="text" inputmode="numeric" value="${h}"></div>
+          </div>
+          <div class="ce-actions">
+            <button class="ce-ok" onclick="saveSize()">确定</button>
+            <button class="ce-cancel" onclick="cancelSizeEdit()">取消</button>
+          </div>
+        </div>`;
+      const first = document.getElementById('ceL'); if (first) first.focus();
+    }
+    function saveSize() {
+      const l = parseInt(document.getElementById('ceL').value, 10);
+      const w = parseInt(document.getElementById('ceW').value, 10);
+      const h = parseInt(document.getElementById('ceH').value, 10);
+      if (!l || !w || !h || l <= 0 || w <= 0 || h <= 0) { showToast('请输入有效的长宽高'); return; }
+      const dup = SIZES.find(x => x.id !== calcState.editingId && x.l === l && x.w === w && x.h === h);
+      if (dup) { showToast('已存在相同尺寸的规格'); }
+      const vol = +(l * w * h / 1000000).toFixed(6);
+      if (calcState.editingId) {
+        const s = SIZES.find(x => x.id === calcState.editingId);
+        if (s) { s.l = l; s.w = w; s.h = h; s.volume = vol; }
+      } else {
+        SIZES.push({ id: 'S' + Date.now(), owner: 'private', l, w, h, volume: vol, hot: false });
+      }
+      cancelSizeEdit();
+      recalc(false); renderCalcAll();   // 新增/编辑后若该规格已选中，重新反算
+    }
+
+    function toggleCalcSize(id) {
+      if (calcState.selected.has(id)) { calcState.selected.delete(id); delete calcState.qty[id]; }
+      else { calcState.selected.add(id); calcState.qty[id] = 1; }   // 新选规格默认占位 1 件，待「反算」更新
+      renderCalcGrid(); renderCalcResult(); renderCalcSum();
+    }
+    function recalc(manual) {
+      const sel = SIZES.filter(s => calcState.selected.has(s.id));
+      const qty = planCalc(getCalcV(), sel, getCalcN());
+      calcState.qty = {}; sel.forEach((s, i) => { calcState.qty[s.id] = qty[i]; });
+      if (manual) { renderCalcAll(); showToast('已按目标体积重新反算'); }
+    }
+    function calcAdjust(id, d) {
+      calcState.qty[id] = Math.max(0, (calcState.qty[id] || 0) + d);
+      if (calcState.qty[id] === 0) calcState.selected.delete(id);   // 件数减到 0 → 联动取消选中该规格
+      renderCalcGrid(); renderCalcResult(); renderCalcSum();
+    }
+    function calcSet(id, v) {
+      calcState.qty[id] = Math.max(0, parseInt(v) || 0);
+      if (calcState.qty[id] === 0) calcState.selected.delete(id);
+      renderCalcGrid(); renderCalcResult(); renderCalcSum();
+    }
+
+    // 确认反算：按各托盘件数比例，把整单尺寸切分到当前入仓号的每个托盘
+    function confirmCalc() {
+      const real = calcReal();
+      if (real === 0) return;
+      const qtySum = SIZES.filter(s => calcState.selected.has(s.id)).reduce((a, s) => a + (calcState.qty[s.id] || 0), 0);
+      if (qtySum !== getCalcN()) { showToast('件数和需等于反算件数 ' + getCalcN()); return; }
+      const V = getCalcV();
+      const over = V > 0 && Math.abs(real - V) / V > TOLERANCE;
+      const whole = SIZES.filter(s => calcState.selected.has(s.id) && (calcState.qty[s.id] || 0) > 0)
+        .map(s => ({ l: s.l, w: s.w, h: s.h, volume: s.volume, qty: calcState.qty[s.id] }));
+      distributeSizes(whole, TRAYS.filter(t => t.wh === state.currentWh));
+      closeCalc();
+      renderTrays();
+      showToast(over ? '已反算并切分到各托盘，差额超容差已标记异常' : '已反算并切分到各托盘');
+    }
+    // 切分：整单尺寸 whole 按各托盘件数比例分到 trays（最大余数法，保证每托盘件数=该托盘物理件数）
+    function distributeSizes(whole, trays) {
+      const N = whole.reduce((s, x) => s + x.qty, 0) || 1;
+      trays.forEach(t => {
+        const raw = whole.map(ws => t.count * ws.qty / N);
+        const ints = raw.map(Math.floor);
+        let sum = ints.reduce((a, b) => a + b, 0);
+        const fracs = raw.map((r, i) => ({ i, f: r - ints[i] })).sort((a, b) => b.f - a.f);
+        for (let k = 0; k < fracs.length && sum < t.count; k++) { ints[fracs[k].i]++; sum++; }
+        while (sum > t.count) { let mi = 0; for (let i = 1; i < ints.length; i++) if (ints[i] > ints[mi]) mi = i; if (ints[mi] <= 0) break; ints[mi]--; sum--; }
+        t.sizes = whole.map((ws, i) => ({ l: ws.l, w: ws.w, h: ws.h, volume: ws.volume, qty: ints[i] })).filter(x => x.qty > 0);
+      });
+    }
+
+    // ── Toast ──
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    // ESC 关闭弹窗（反算面板 > 尺寸抽屉 > 添加托盘弹窗）
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      if (calcOverlay.classList.contains('active')) closeCalc();
+      else if (document.getElementById('traySizeModal').classList.contains('active')) closeTraySizes();
+      else if (addTrayModal.classList.contains('active')) closeAddTray();
+    });
+
+    // ── 初始渲染 ──
+    state.currentWh = getWarehouses()[0] || '';
+    renderTabs();
+    renderStats();
+    renderTrays();
+  </script>
+</body>
+</html>

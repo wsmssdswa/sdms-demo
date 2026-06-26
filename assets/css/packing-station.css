@@ -1,0 +1,1011 @@
+/* ============================================================
+   packing-station.css — 打包台登录页+主页共用样式
+   设计风格：深空终端 (Dark Operations Terminal)
+   设计DNA：深空灰底 · 青绿光晕 · 毛玻璃卡片 · 物流扫描仪色
+   ============================================================ */
+
+/* ---------- 设计变量 ---------- */
+:root {
+  /* 背景 */
+  --ps-bg: #0a0a0a;
+  --ps-bg-elevated: #141414;
+  --ps-bg-card: #18181b;
+  --ps-bg-input: #0f0f0f;
+
+  /* 强调色 — 青色(cyan) */
+  --ps-accent: #22D3EE;
+  --ps-accent-hover: #06B6D4;
+  --ps-accent-light: rgba(34, 211, 238, 0.08);
+  --ps-accent-focus: rgba(34, 211, 238, 0.15);
+  --ps-accent-glow: rgba(34, 211, 238, 0.12);
+
+  /* 文字色 — 亮色系(暗底) */
+  --ps-text-primary: #f0f0f0;
+  --ps-text-secondary: #a0a0a0;
+  --ps-text-muted: #6b6b6b;
+  --ps-text-light: #505050;
+  --ps-text-placeholder: #404040;
+
+  /* 边框 */
+  --ps-border: rgba(255, 255, 255, 0.06);
+  --ps-border-subtle: rgba(255, 255, 255, 0.04);
+  --ps-border-hover: rgba(255, 255, 255, 0.10);
+
+  /* 毛玻璃 */
+  --ps-glass-bg: rgba(255, 255, 255, 0.04);
+  --ps-glass-blur: 20px;
+  --ps-glass-border: rgba(255, 255, 255, 0.08);
+
+  /* 功能卡片渐变色 */
+  --ps-grad-blue: linear-gradient(135deg, #22D3EE, #06B6D4);
+  --ps-grad-green: linear-gradient(135deg, #22C55E, #16A34A);
+  --ps-grad-orange: linear-gradient(135deg, #F97316, #EA580C);
+  --ps-grad-purple: linear-gradient(135deg, #8B5CF6, #7C3AED);
+  --ps-grad-cyan: linear-gradient(135deg, #06B6D4, #0891B2);
+  --ps-grad-red: linear-gradient(135deg, #EF4444, #DC2626);
+
+  /* 尺寸 */
+  --ps-nav-height: 52px;
+  --ps-radius: 12px;
+  --ps-radius-sm: 8px;
+}
+
+/* ============================================================
+   登录页 — 全屏背景图 + 左侧浮动卡片
+   ============================================================ */
+
+/* ---------- 全局容器 ---------- */
+.ps-login-page {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 48px;
+  padding-top: 12vh;
+  box-sizing: border-box;
+  position: relative;
+  background: #0a0e17;
+}
+
+/* 虚化背景层 */
+.ps-login-page::before {
+  content: '';
+  position: absolute;
+  top: -12px; left: -12px; right: -12px; bottom: -12px;
+  background: url('../../image/image.png') center / cover no-repeat;
+  filter: blur(8px);
+  opacity: 0.55;
+  z-index: 0;
+}
+
+/* 暗色遮罩 — 增强卡片可读性 */
+.ps-login-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 14, 23, 0.25);
+  z-index: 1;
+}
+
+/* 旧装饰类 — 隐藏 */
+.ps-login-decor { display: none; }
+.ps-decor-shape, .ps-decor-line, .ps-decor-dot { display: none; }
+.ps-login-bg { display: none; }
+.ps-login-left { display: none; }
+.ps-login-right,
+.ps-right-grid, .ps-right-glow,
+.ps-hub, .ps-hub-ring, .ps-hub-icon, .ps-hub-text,
+.ps-node, .ps-node-icon, .ps-node-label,
+.ps-lines, .ps-bg-floats, .ps-float-tag,
+.ps-bg-particles, .ps-particle,
+.ps-bg-grid, .ps-bg-route, .ps-bg-data,
+.ps-bg-glow, .ps-bg-glow-secondary { display: none; }
+
+/* ---------- 页面标题组（Logo + 大字 + 装饰线） ---------- */
+.ps-login-hero {
+  z-index: 2;
+  position: relative;
+  text-align: center;
+  animation: ps-hero-enter 0.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@keyframes ps-hero-enter {
+  from { opacity: 0; transform: translateY(-20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 横排容器：logo左 + 标题右 */
+.ps-login-hero-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Logo图标 */
+.ps-login-hero-logo {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #22D3EE, #06B6D4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 24px rgba(34, 211, 238, 0.3);
+}
+.ps-login-hero-logo i {
+  font-size: 28px;
+  color: #fff;
+}
+
+/* 标题文字 — 渐变色 */
+.ps-login-hero-text {
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: 6px;
+  background: linear-gradient(180deg, #fff 0%, #67E8F9 45%, #22D3EE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 16px rgba(34, 211, 238, 0.35));
+  white-space: nowrap;
+}
+
+/* 装饰分割线 ── ◆ ── */
+.ps-login-hero-line {
+  margin-top: 20px;
+  height: 1px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ps-login-hero-line::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(34,211,238,0.35) 50%, transparent 100%);
+}
+.ps-login-hero-line::after {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 1px;
+  background: rgba(34,211,238,0.6);
+  transform: rotate(45deg);
+  z-index: 1;
+  box-shadow: 0 0 8px rgba(34,211,238,0.4);
+}
+
+/* ---------- 登录卡片（透明毛玻璃） ---------- */
+.ps-login-card {
+  width: 380px;
+  padding: 32px 36px 28px;
+  background: rgba(15, 20, 40, 0.45);
+  backdrop-filter: blur(32px) saturate(1.2);
+  -webkit-backdrop-filter: blur(32px) saturate(1.2);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  z-index: 2;
+  position: relative;
+  animation: ps-card-enter 0.6s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@keyframes ps-card-enter {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ---------- 卡片头部（已移至hero，隐藏） ---------- */
+.ps-login-header { display: none; }
+.ps-login-logo {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: var(--ps-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  box-shadow: 0 4px 20px rgba(34, 211, 238, 0.2);
+}
+.ps-login-logo i {
+  font-size: 20px;
+  color: #fff;
+}
+.ps-login-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ps-text-primary);
+  letter-spacing: 1px;
+}
+.ps-login-subtitle {
+  font-size: 12px;
+  color: var(--ps-text-muted);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+}
+
+/* ---------- 编码区 ---------- */
+.ps-code-field {
+  margin-bottom: 20px;
+}
+.ps-code-field-header { display: none; }
+.ps-code-field-label { display: none; }
+
+.ps-code-display {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--ps-radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ps-code-display-code {
+  color: var(--ps-text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+.ps-code-display-name {
+  color: var(--ps-text-secondary);
+  font-size: 12px;
+}
+.ps-code-display-check {
+  color: var(--ps-accent);
+  font-size: 14px;
+}
+.ps-code-display-edit {
+  margin-left: auto;
+  color: var(--ps-accent);
+  font-size: 11px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+  font-family: inherit;
+}
+.ps-code-display-edit:hover {
+  background: var(--ps-accent-light);
+}
+
+/* ---------- 表单字段 ---------- */
+.ps-field {
+  margin-bottom: 18px;
+}
+.ps-field-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.ps-field-hint {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+/* ---------- 输入框（透明暗色） ---------- */
+.ps-input-wrap {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--ps-radius-sm);
+  padding: 0 12px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.ps-input-wrap:focus-within {
+  border-color: rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+}
+.ps-input-wrap i {
+  color: var(--ps-text-light);
+  font-size: 15px;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+.ps-input-wrap:focus-within i {
+  color: var(--ps-accent);
+}
+.ps-input {
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--ps-text-primary);
+  font-size: 13px;
+  flex: 1;
+  height: 100%;
+  font-family: inherit;
+}
+.ps-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+.ps-input-mono {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  letter-spacing: 0.5px;
+}
+.ps-input-toggle {
+  color: var(--ps-text-light);
+  font-size: 15px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: color 0.2s;
+}
+.ps-input-toggle:hover {
+  color: var(--ps-text-secondary);
+}
+
+/* 错误状态 */
+.ps-input-wrap.error {
+  border-color: #EF4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+.ps-error-msg {
+  color: #EF4444;
+  font-size: 11px;
+  margin-top: 4px;
+  display: none;
+}
+.ps-error-msg.show {
+  display: block;
+}
+
+/* ---------- 登录按钮 ---------- */
+.ps-login-btn {
+  background: var(--ps-accent);
+  border: none;
+  border-radius: var(--ps-radius-sm);
+  padding: 0;
+  height: 42px;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  margin-top: 24px;
+  font-family: inherit;
+}
+.ps-login-btn:hover {
+  background: var(--ps-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(34, 211, 238, 0.25);
+}
+.ps-login-btn:active {
+  transform: translateY(0);
+}
+.ps-login-btn.loading {
+  pointer-events: none;
+  opacity: 0.75;
+}
+.ps-login-btn.loading .ps-btn-text {
+  visibility: hidden;
+}
+.ps-login-btn .ps-btn-spinner {
+  display: none;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+  animation: ps-spin 1s linear infinite;
+  color: #fff;
+}
+.ps-login-btn.loading .ps-btn-spinner {
+  display: block;
+}
+@keyframes ps-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* 底部状态 */
+.ps-login-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 10px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+.ps-footer-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--ps-accent);
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+  flex-shrink: 0;
+}
+
+/* 旧的左侧面板类 — 不再使用 */
+.ps-login-brand,
+.ps-login-brand-content,
+.ps-login-brand-mark,
+.ps-login-brand-line,
+.ps-login-brand-copy { display: none; }
+.ps-login-form { display: none; }
+.ps-login-form-inner { display: none; }
+.ps-login-form-header { display: none; }
+
+/* ---------- 抖动动画（错误反馈） ---------- */
+@keyframes ps-shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(6px); }
+  20%, 40%, 60%, 80% { transform: translateX(-6px); }
+}
+.ps-login-form-inner.shake {
+  animation: ps-shake 0.4s ease-in-out;
+}
+.ps-login-card.shake {
+  animation: ps-shake 0.4s ease-in-out;
+}
+
+/* ---------- 页面淡出 ---------- */
+.ps-login-page.fade-out {
+  animation: ps-fade-out 0.4s ease forwards;
+}
+@keyframes ps-fade-out {
+  to { opacity: 0; }
+}
+
+/* ============================================================
+   弹窗（暗色主题）
+   ============================================================ */
+.ps-modal-mask {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+.ps-modal-mask.visible {
+  opacity: 1;
+  visibility: visible;
+}
+.ps-modal {
+  background: var(--ps-bg-elevated);
+  border: 1px solid var(--ps-glass-border);
+  border-radius: var(--ps-radius);
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  transform: scale(0.96) translateY(8px);
+  transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.ps-modal-mask.visible .ps-modal {
+  transform: scale(1) translateY(0);
+}
+.ps-modal-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ps-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ps-modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ps-text-primary);
+}
+.ps-modal-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--ps-text-muted);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.15s;
+}
+.ps-modal-close:hover {
+  color: var(--ps-text-primary);
+}
+.ps-modal-body {
+  padding: 16px 20px;
+}
+.ps-modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--ps-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 仓库选择列表项 */
+.ps-warehouse-item {
+  padding: 12px 14px;
+  border-radius: var(--ps-radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.15s;
+  margin-bottom: 4px;
+}
+.ps-warehouse-item:last-child { margin-bottom: 0; }
+.ps-warehouse-item:hover { background: rgba(255, 255, 255, 0.04); }
+.ps-warehouse-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ps-text-primary);
+}
+.ps-warehouse-item-code {
+  font-size: 11px;
+  color: var(--ps-text-muted);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* 确认弹窗 */
+.ps-confirm-text {
+  font-size: 13px;
+  color: var(--ps-text-secondary);
+  line-height: 1.6;
+}
+
+/* 弹窗按钮 */
+.ps-modal-btn {
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+.ps-modal-btn-default {
+  background: transparent;
+  border: 1px solid var(--ps-border);
+  color: var(--ps-text-secondary);
+}
+.ps-modal-btn-default:hover {
+  border-color: var(--ps-border-hover);
+  color: var(--ps-text-primary);
+}
+.ps-modal-btn-primary {
+  background: var(--ps-accent);
+  border: 1px solid var(--ps-accent);
+  color: #fff;
+}
+.ps-modal-btn-primary:hover { background: var(--ps-accent-hover); }
+.ps-modal-btn-danger {
+  background: #EF4444;
+  border: 1px solid #EF4444;
+  color: #fff;
+}
+.ps-modal-btn-danger:hover { background: #DC2626; }
+
+/* ============================================================
+   Toast（暗色）
+   ============================================================ */
+.ps-toast-stack {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.ps-toast {
+  background: var(--ps-bg-elevated);
+  border: 1px solid var(--ps-glass-border);
+  border-radius: var(--ps-radius-sm);
+  padding: 10px 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ps-text-primary);
+  animation: ps-toast-in 0.3s ease;
+  pointer-events: auto;
+}
+.ps-toast-error   { border-left: 3px solid #EF4444; }
+.ps-toast-success { border-left: 3px solid var(--ps-accent); }
+.ps-toast-info    { border-left: 3px solid #22D3EE; }
+@keyframes ps-toast-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   主页（浅色主题 — 一线人员工作站）
+   ============================================================ */
+
+/* ---------- 全局 ---------- */
+.ps-home-page {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  background: #F0F2F5;
+  color: #1F2937;
+  animation: ps-page-enter 0.3s ease both;
+}
+@keyframes ps-page-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---------- 顶部导航栏（深色） ---------- */
+.ps-nav {
+  height: var(--ps-nav-height);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background: #1F2937;
+  color: #fff;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.ps-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.ps-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ps-nav-brand-icon {
+  display: none;
+}
+.ps-nav-brand-logo {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--ps-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ps-nav-brand-logo i {
+  font-size: 14px;
+  color: #fff;
+}
+.ps-nav-brand-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #fff;
+}
+.ps-nav-brand-tag {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 11px;
+  margin-left: 4px;
+}
+.ps-nav-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.ps-nav-warehouse {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.ps-nav-warehouse i {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+}
+.ps-nav-warehouse-name {
+  color: rgba(255, 255, 255, 0.75);
+}
+.ps-nav-warehouse-code {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 11px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+.ps-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+}
+.ps-nav-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 0;
+  transition: color 0.15s;
+}
+.ps-nav-action:hover { color: rgba(255, 255, 255, 0.85); }
+.ps-nav-user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.75);
+}
+.ps-nav-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(34, 211, 238, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ps-nav-avatar i {
+  font-size: 13px;
+  color: #67E8F9;
+}
+.ps-nav-username {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ---------- 数据看板条 ---------- */
+.ps-dashboard {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  background: transparent;
+}
+.ps-dashboard-item {
+  flex: 1;
+  background: #fff;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: var(--ps-radius-sm);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.ps-dashboard-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--ps-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.ps-dashboard-icon.blue   { background: #F0F9FF; color: #22D3EE; }
+.ps-dashboard-icon.green  { background: #ECFDF5; color: #10B981; }
+.ps-dashboard-icon.orange { background: #FFF7ED; color: #F97316; }
+.ps-dashboard-icon.accent { background: #F0F9FF; color: #22D3EE; }
+.ps-dashboard-label {
+  font-size: 12px;
+  color: #6B7280;
+}
+.ps-dashboard-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1F2937;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+.ps-dashboard-value span {
+  font-size: 12px;
+  color: #9CA3AF;
+  font-weight: 400;
+}
+
+/* ---------- 内容区 ---------- */
+.ps-content {
+  padding: 4px 24px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ---------- 功能卡片 ---------- */
+.ps-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 14px;
+}
+.ps-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.ps-func-card {
+  background: #fff;
+  border-radius: var(--ps-radius-sm);
+  padding: 18px;
+  border: 1px solid #E5E7EB;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  animation: ps-card-fade-up 0.5s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.ps-func-card:nth-child(1) { animation-delay: 0.05s; }
+.ps-func-card:nth-child(2) { animation-delay: 0.10s; }
+.ps-func-card:nth-child(3) { animation-delay: 0.15s; }
+.ps-func-card:nth-child(4) { animation-delay: 0.20s; }
+.ps-func-card:nth-child(5) { animation-delay: 0.25s; }
+.ps-func-card:nth-child(6) { animation-delay: 0.30s; }
+@keyframes ps-card-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ps-func-card:hover {
+  transform: translateY(-2px);
+  border-color: #D1D5DB;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+.ps-func-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.ps-func-card-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--ps-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.ps-func-card-icon.blue   { background: var(--ps-grad-blue); }
+.ps-func-card-icon.green  { background: var(--ps-grad-green); }
+.ps-func-card-icon.orange { background: var(--ps-grad-orange); }
+.ps-func-card-icon.purple { background: var(--ps-grad-purple); }
+.ps-func-card-icon.cyan   { background: var(--ps-grad-cyan); }
+.ps-func-card-icon.red    { background: var(--ps-grad-red); }
+.ps-func-card-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1F2937;
+}
+.ps-func-card-desc {
+  font-size: 11px;
+  color: #9CA3AF;
+  margin-top: 2px;
+}
+.ps-func-card-shortcut {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #F3F4F6;
+  color: #6B7280;
+}
+.ps-func-card-shortcut i { font-size: 10px; }
+
+/* ---------- 任务列表 ---------- */
+.ps-task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.ps-task-viewall {
+  font-size: 12px;
+  color: #22D3EE;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.ps-task-viewall:hover { text-decoration: underline; }
+.ps-task-table-wrap {
+  background: #fff;
+  border-radius: var(--ps-radius-sm);
+  border: 1px solid #E5E7EB;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.ps-task-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.ps-task-table th {
+  text-align: left;
+  padding: 10px 16px;
+  background: #F9FAFB;
+  border-bottom: 1px solid #E5E7EB;
+  font-size: 12px;
+  color: #6B7280;
+  font-weight: 500;
+}
+.ps-task-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #F3F4F6;
+  font-size: 12px;
+  color: #374151;
+}
+.ps-task-table tr:last-child td { border-bottom: none; }
+.ps-task-table tr:hover td { background: #F9FAFB; }
+.ps-task-id {
+  color: #22D3EE;
+  font-weight: 500;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 11px;
+}
+.ps-task-time { color: #9CA3AF; }
+.ps-task-action {
+  color: #22D3EE;
+  font-size: 11px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 0;
+}
+.ps-task-action:hover { text-decoration: underline; }
+
+/* ---------- 仓库切换下拉（浅色） ---------- */
+.ps-warehouse-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: var(--ps-radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  min-width: 240px;
+  z-index: 200;
+  display: none;
+  margin-top: 4px;
+}
+.ps-warehouse-dropdown.open { display: block; }
+.ps-warehouse-dropdown-title {
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #9CA3AF;
+  border-bottom: 1px solid #E5E7EB;
+}
+.ps-warehouse-dropdown-item {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 13px;
+  color: #1F2937;
+}
+.ps-warehouse-dropdown-item:hover { background: #F3F4F6; }
+.ps-warehouse-dropdown-item.active {
+  background: #F0F9FF;
+  color: #22D3EE;
+  font-weight: 500;
+}
+.ps-warehouse-dropdown-item-code {
+  font-size: 11px;
+  color: #9CA3AF;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}

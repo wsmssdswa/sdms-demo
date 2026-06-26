@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开放平台 - 开发者申请</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+<link rel="stylesheet" href="../assets/css/open-platform.css">
+</head>
+<body>
+
+<!-- Demo状态切换器 -->
+<div class="op-state-switcher">
+  <span><i class="ri-flask-line"></i> 状态模拟：</span>
+  <select id="stateSwitcher">
+    <option value="none">未申请</option>
+    <option value="pending">待审批</option>
+    <option value="active">已激活</option>
+    <option value="rejected">已驳回</option>
+  </select>
+</div>
+
+<header id="opTopNav"></header>
+<div class="op-page no-sidebar">
+
+  <!-- 右侧主区域 -->
+  <div class="op-main">
+
+    <!-- 顶部标题栏 -->
+    <div class="op-header">
+      <div class="op-header-breadcrumb">
+        <a href="#">开放平台</a>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>申请入口</span>
+      </div>
+      <div class="op-header-actions">
+        <a href="#" class="op-btn op-btn-default" style="font-size:12px;height:30px;padding:0 12px">
+          <i class="ri-question-line"></i> 帮助文档
+        </a>
+      </div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="op-content">
+
+      <!-- ========== 未申请状态 ========== -->
+      <div id="stateNone" class="op-card">
+        <div class="op-card-head">
+          <span class="op-card-title"><i class="ri-user-add-line" style="margin-right:6px;color:var(--color-primary)"></i>申请成为开发者</span>
+        </div>
+        <div class="op-card-body">
+          <div class="op-alert op-alert-info" style="margin-bottom:24px">
+            <i class="ri-information-line"></i>
+            <div>
+              申请成为开发者后，您可以获得API调用权限，集成SDMS仓库数据到您的业务系统。
+              API Key将归属您的公司账号，同公司开发者共享权限。
+            </div>
+          </div>
+
+          <form id="applyForm" class="op-form" onsubmit="return false">
+
+            <!-- 公司名称（只读） -->
+            <div class="op-form-row">
+              <label class="op-form-label">公司名称</label>
+              <input class="op-input" type="text" value="运连网科技有限公司" readonly>
+            </div>
+
+            <!-- 联系人姓名 -->
+            <div class="op-form-row">
+              <label class="op-form-label">联系人姓名<span class="required">*</span></label>
+              <input class="op-input" type="text" id="contactName" maxlength="30" placeholder="请输入您的真实姓名">
+              <div class="op-error-msg" id="errName">请输入联系人姓名</div>
+            </div>
+
+            <!-- 联系电话 -->
+            <div class="op-form-row">
+              <label class="op-form-label">联系电话<span class="required">*</span></label>
+              <input class="op-input" type="tel" id="contactPhone" maxlength="11" placeholder="请输入11位手机号">
+              <div class="op-error-msg" id="errPhone">请输入正确的11位手机号</div>
+            </div>
+
+            <!-- 联系邮箱 -->
+            <div class="op-form-row">
+              <label class="op-form-label">联系邮箱<span class="required">*</span></label>
+              <input class="op-input" type="email" id="contactEmail" maxlength="100" placeholder="example@company.com">
+              <div class="op-error-msg" id="errEmail">请输入正确的邮箱地址</div>
+            </div>
+
+            <!-- 用途说明 -->
+            <div class="op-form-row">
+              <label class="op-form-label">用途说明<span class="required">*</span></label>
+              <textarea class="op-textarea" id="purposeDesc" rows="4" maxlength="500" placeholder="请描述您的接入场景和业务需求"></textarea>
+              <div class="op-error-msg" id="errPurpose">请输入用途说明</div>
+            </div>
+
+            <!-- 申请接口范围 -->
+            <div class="op-form-row">
+              <label class="op-form-label">申请接口范围<span class="required">*</span></label>
+              <div class="op-tag-group" id="apiScopeGroup">
+                <div class="op-tag-item" data-value="trunk" onclick="toggleTag(this)">
+                  <i class="ri-check-line"></i>干线业务
+                </div>
+                <div class="op-tag-item" data-value="dropshipping" onclick="toggleTag(this)">
+                  <i class="ri-check-line"></i>一件代发
+                </div>
+                <div class="op-tag-item" data-value="return" onclick="toggleTag(this)">
+                  <i class="ri-check-line"></i>退件重派
+                </div>
+                <div class="op-tag-item" data-value="stocking" onclick="toggleTag(this)">
+                  <i class="ri-check-line"></i>备货中转
+                </div>
+              </div>
+              <div class="op-error-msg" id="errScope">请至少选择一个接口范围</div>
+            </div>
+
+            <!-- 预计日调用量 -->
+            <div class="op-form-row">
+              <label class="op-form-label">预计日调用量<span class="required">*</span></label>
+              <select class="op-select" id="dailyVolume">
+                <option value="">请选择</option>
+                <option value="<1k">&lt;1千</option>
+                <option value="1k-10k">1千~1万</option>
+                <option value="10k-100k">1万~10万</option>
+                <option value=">100k">&gt;10万</option>
+              </select>
+              <div class="op-error-msg" id="errVolume">请选择预计日调用量</div>
+            </div>
+
+            <!-- 提交按钮 -->
+            <div class="op-form-row" style="margin-top:28px">
+              <button class="op-btn op-btn-primary op-btn-lg" type="button" id="submitBtn">
+                <i class="ri-send-plane-line"></i>提交申请
+              </button>
+              <button class="op-btn op-btn-default" type="button" id="resetBtn" style="margin-left:8px;height:42px">
+                重置
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- ========== 待审批状态 ========== -->
+      <div id="statePending" class="op-card" style="display:none">
+        <div class="op-card-head">
+          <span class="op-card-title"><i class="ri-user-add-line" style="margin-right:6px;color:var(--color-primary)"></i>开发者申请</span>
+          <div id="pendingStatus"></div>
+        </div>
+        <div class="op-card-body">
+          <div class="op-alert op-alert-warning" style="margin-bottom:24px">
+            <i class="ri-time-line"></i>
+            <div>您的开发者申请已提交，正在等待管理员审批。审批通过后将自动生成API Key，届时您可在Key管理中查看。</div>
+          </div>
+
+          <h4 style="font-size:14px;font-weight:700;margin:0 0 16px;color:var(--color-text-primary)">申请信息</h4>
+          <div class="op-info-row"><span class="op-info-label">公司名称</span><span class="op-info-value">运连网科技有限公司</span></div>
+          <div class="op-info-row"><span class="op-info-label">联系人姓名</span><span class="op-info-value" id="pendingName">张三</span></div>
+          <div class="op-info-row"><span class="op-info-label">联系电话</span><span class="op-info-value" id="pendingPhone">13800138000</span></div>
+          <div class="op-info-row"><span class="op-info-label">联系邮箱</span><span class="op-info-value" id="pendingEmail">zhangsan@yunlian.com</span></div>
+          <div class="op-info-row"><span class="op-info-label">用途说明</span><span class="op-info-value" id="pendingPurpose">对接ERP系统，实现入库单、出库单自动推送至SDMS仓库执行</span></div>
+          <div class="op-info-row"><span class="op-info-label">申请接口范围</span><span class="op-info-value" id="pendingScope">干线业务、一件代发</span></div>
+          <div class="op-info-row"><span class="op-info-label">预计日调用量</span><span class="op-info-value" id="pendingVolume">1千~1万</span></div>
+          <div class="op-info-row"><span class="op-info-label">提交时间</span><span class="op-info-value" id="pendingTime"></span></div>
+        </div>
+      </div>
+
+      <!-- ========== 已激活状态 ========== -->
+      <div id="stateActive" class="op-card" style="display:none">
+        <div class="op-card-body">
+          <div class="op-result-card">
+            <div class="op-result-icon success">
+              <i class="ri-shield-check-line"></i>
+            </div>
+            <div class="op-result-title">您已是开发者</div>
+            <div class="op-result-desc">
+              您的开发者权限已激活，可以开始使用API接口。API Key已自动生成，请在Key管理中查看。
+            </div>
+            <div class="op-result-actions">
+              <a href="#" class="op-btn op-btn-primary op-btn-lg">
+                <i class="ri-key-2-line"></i>Key管理
+              </a>
+              <a href="#" class="op-btn op-btn-default op-btn-lg">
+                <i class="ri-book-2-line"></i>接口文档
+              </a>
+            </div>
+
+            <!-- 快速信息 -->
+            <div style="margin-top:36px;text-align:left;max-width:480px;display:inline-block">
+              <div style="background:var(--color-bg-secondary);border-radius:8px;padding:20px">
+                <h4 style="margin:0 0 14px;font-size:14px;font-weight:700;color:var(--color-text-primary)">开发者信息</h4>
+                <div class="op-info-row"><span class="op-info-label">公司名称</span><span class="op-info-value">运连网科技有限公司</span></div>
+                <div class="op-info-row"><span class="op-info-label">API Key</span><span class="op-info-value" style="font-family:monospace;font-size:12px;color:var(--color-primary)">sdms_a3f8c2e1·······</span></div>
+                <div class="op-info-row"><span class="op-info-label">激活时间</span><span class="op-info-value">2026-06-08 14:30:00</span></div>
+                <div class="op-info-row">
+                  <span class="op-info-label">状态</span>
+                  <span class="op-info-value" id="activeStatus"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== 已驳回状态 ========== -->
+      <div id="stateRejected" class="op-card" style="display:none">
+        <div class="op-card-head">
+          <span class="op-card-title"><i class="ri-user-add-line" style="margin-right:6px;color:var(--color-error)"></i>开发者申请</span>
+          <div id="rejectedStatus"></div>
+        </div>
+        <div class="op-card-body">
+          <div class="op-alert op-alert-error" style="margin-bottom:24px">
+            <i class="ri-error-warning-line"></i>
+            <div>
+              <div style="font-weight:700;margin-bottom:4px">您的申请已被驳回</div>
+              <div>驳回原因：申请信息不完整，请补充具体的使用场景和对接系统名称后重新提交。</div>
+            </div>
+          </div>
+
+          <h4 style="font-size:14px;font-weight:700;margin:0 0 16px;color:var(--color-text-primary)">申请信息</h4>
+          <div class="op-info-row"><span class="op-info-label">公司名称</span><span class="op-info-value">运连网科技有限公司</span></div>
+          <div class="op-info-row"><span class="op-info-label">联系人姓名</span><span class="op-info-value">张三</span></div>
+          <div class="op-info-row"><span class="op-info-label">联系电话</span><span class="op-info-value">138****0000</span></div>
+          <div class="op-info-row"><span class="op-info-label">联系邮箱</span><span class="op-info-value">zhangsan@yunlian.com</span></div>
+          <div class="op-info-row"><span class="op-info-label">申请接口范围</span><span class="op-info-value">干线业务、一件代发</span></div>
+          <div class="op-info-row"><span class="op-info-label">驳回时间</span><span class="op-info-value">2026-06-09 10:15:00</span></div>
+
+          <div style="margin-top:24px">
+            <button class="op-btn op-btn-primary op-btn-lg" id="reApplyBtn">
+              <i class="ri-refresh-line"></i>重新申请
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast容器 -->
+<div class="op-toast-stack" id="opToastStack"></div>
+
+<!-- 确认提交弹窗（由JS控制） -->
+
+<script src="../assets/js/open-platform.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---- 初始化顶栏 ---- */
+  if (!OP.requireAuth()) return;
+  OP.renderTopNav(OP.DEV_MENUS, 'apply');
+
+  /* ---- 初始状态渲染 ---- */
+  document.getElementById('pendingTime').textContent = OP.Mock.now();
+  document.getElementById('pendingStatus').innerHTML = OP.renderStatusTag('pending');
+  document.getElementById('activeStatus').innerHTML  = OP.renderStatusTag('active');
+  document.getElementById('rejectedStatus').innerHTML = OP.renderStatusTag('rejected');
+
+  /* ---- 状态面板映射 ---- */
+  var panels = {
+    none:     document.getElementById('stateNone'),
+    pending:  document.getElementById('statePending'),
+    active:   document.getElementById('stateActive'),
+    rejected: document.getElementById('stateRejected')
+  };
+
+  function switchState(state) {
+    for (var k in panels) {
+      if (panels.hasOwnProperty(k)) {
+        panels[k].style.display = k === state ? '' : 'none';
+      }
+    }
+  }
+
+  /* ---- 状态切换器 ---- */
+  var switcher = document.getElementById('stateSwitcher');
+  switcher.addEventListener('change', function () {
+    switchState(this.value);
+  });
+
+  /* ---- 标签切换 ---- */
+  window.toggleTag = function (el) {
+    el.classList.toggle('selected');
+  };
+
+  /* ---- 获取已选标签值 ---- */
+  function getSelectedScopes() {
+    var items = document.querySelectorAll('#apiScopeGroup .op-tag-item.selected');
+    var vals = [];
+    for (var i = 0; i < items.length; i++) {
+      vals.push(items[i].getAttribute('data-value'));
+    }
+    return vals;
+  }
+
+  /* ---- 标签文本映射 ---- */
+  var scopeLabels = {
+    trunk: '干线业务',
+    dropshipping: '一件代发',
+    return: '退件重派',
+    stocking: '备货中转'
+  };
+
+  var volumeLabels = {
+    '<1k': '<1千',
+    '1k-10k': '1千~1万',
+    '10k-100k': '1万~10万',
+    '>100k': '>10万'
+  };
+
+  /* ---- 表单校验 ---- */
+  function validate() {
+    var valid = true;
+
+    // 联系人姓名
+    var name = document.getElementById('contactName').value.trim();
+    if (!name) {
+      showError('contactName', 'errName');
+      valid = false;
+    } else {
+      hideError('contactName', 'errName');
+    }
+
+    // 手机号
+    var phone = document.getElementById('contactPhone').value.trim();
+    if (!phone || !/^1\d{10}$/.test(phone)) {
+      showError('contactPhone', 'errPhone');
+      valid = false;
+    } else {
+      hideError('contactPhone', 'errPhone');
+    }
+
+    // 邮箱
+    var email = document.getElementById('contactEmail').value.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError('contactEmail', 'errEmail');
+      valid = false;
+    } else {
+      hideError('contactEmail', 'errEmail');
+    }
+
+    // 用途说明
+    var purpose = document.getElementById('purposeDesc').value.trim();
+    if (!purpose) {
+      showError('purposeDesc', 'errPurpose');
+      valid = false;
+    } else {
+      hideError('purposeDesc', 'errPurpose');
+    }
+
+    // 接口范围
+    var scopes = getSelectedScopes();
+    if (scopes.length === 0) {
+      document.getElementById('errScope').classList.add('show');
+      valid = false;
+    } else {
+      document.getElementById('errScope').classList.remove('show');
+    }
+
+    // 日调用量
+    var volume = document.getElementById('dailyVolume').value;
+    if (!volume) {
+      document.getElementById('errVolume').classList.add('show');
+      valid = false;
+    } else {
+      document.getElementById('errVolume').classList.remove('show');
+    }
+
+    return valid;
+  }
+
+  function showError(inputId, errId) {
+    var input = document.getElementById(inputId);
+    var err = document.getElementById(errId);
+    if (input) input.classList.add('error');
+    if (err) err.classList.add('show');
+  }
+
+  function hideError(inputId, errId) {
+    var input = document.getElementById(inputId);
+    var err = document.getElementById(errId);
+    if (input) input.classList.remove('error');
+    if (err) err.classList.remove('show');
+  }
+
+  function clearAllErrors() {
+    var inputs = document.querySelectorAll('.op-input.error, .op-textarea.error');
+    for (var i = 0; i < inputs.length; i++) inputs[i].classList.remove('error');
+    var errs = document.querySelectorAll('.op-error-msg.show');
+    for (var j = 0; j < errs.length; j++) errs[j].classList.remove('show');
+  }
+
+  /* ---- 提交 ---- */
+  document.getElementById('submitBtn').addEventListener('click', function () {
+    if (!validate()) return;
+
+    var name    = document.getElementById('contactName').value.trim();
+    var phone   = document.getElementById('contactPhone').value.trim();
+    var email   = document.getElementById('contactEmail').value.trim();
+    var purpose = document.getElementById('purposeDesc').value.trim();
+    var scopes  = getSelectedScopes();
+    var volume  = document.getElementById('dailyVolume').value;
+
+    var scopeText = scopes.map(function (s) { return scopeLabels[s] || s; }).join('、');
+    var volumeText = volumeLabels[volume] || volume;
+
+    // 填充待审批面板
+    document.getElementById('pendingName').textContent    = name;
+    document.getElementById('pendingPhone').textContent   = phone;
+    document.getElementById('pendingEmail').textContent   = email;
+    document.getElementById('pendingPurpose').textContent = purpose;
+    document.getElementById('pendingScope').textContent   = scopeText;
+    document.getElementById('pendingVolume').textContent  = volumeText;
+    document.getElementById('pendingTime').textContent    = OP.Mock.now();
+
+    // 确认弹窗
+    OP.showConfirm(
+      '请确认您的申请信息无误，提交后将进入审批流程。<br><br>' +
+      '<strong>联系人：</strong>' + name + '<br>' +
+      '<strong>接口范围：</strong>' + scopeText + '<br>' +
+      '<strong>日调用量：</strong>' + volumeText,
+      function () {
+        // 切换到待审批
+        switchState('pending');
+        switcher.value = 'pending';
+        OP.showToast('申请已提交，请等待审批', 'success');
+      },
+      {
+        title: '确认提交申请',
+        confirmText: '确认提交'
+      }
+    );
+  });
+
+  /* ---- 重置 ---- */
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    document.getElementById('contactName').value   = '';
+    document.getElementById('contactPhone').value  = '';
+    document.getElementById('contactEmail').value  = '';
+    document.getElementById('purposeDesc').value   = '';
+    document.getElementById('dailyVolume').value   = '';
+
+    var tags = document.querySelectorAll('#apiScopeGroup .op-tag-item.selected');
+    for (var i = 0; i < tags.length; i++) {
+      tags[i].classList.remove('selected');
+    }
+
+    clearAllErrors();
+    OP.showToast('表单已重置', 'info');
+  });
+
+  /* ---- 重新申请 ---- */
+  document.getElementById('reApplyBtn').addEventListener('click', function () {
+    switchState('none');
+    switcher.value = 'none';
+    // 预填信息
+    document.getElementById('contactName').value  = '张三';
+    document.getElementById('contactPhone').value = '13800138000';
+    document.getElementById('contactEmail').value = 'zhangsan@yunlian.com';
+    document.getElementById('purposeDesc').value  = '';
+  });
+
+  /* ---- 输入实时清除错误 ---- */
+  var fieldMap = {
+    contactName:  'errName',
+    contactPhone: 'errPhone',
+    contactEmail: 'errEmail',
+    purposeDesc:  'errPurpose'
+  };
+  for (var fieldId in fieldMap) {
+    if (fieldMap.hasOwnProperty(fieldId)) {
+      (function (fid, eid) {
+        var el = document.getElementById(fid);
+        if (el) {
+          el.addEventListener('input', function () {
+            hideError(fid, eid);
+          });
+        }
+      })(fieldId, fieldMap[fieldId]);
+    }
+  }
+
+  // 日调用量
+  document.getElementById('dailyVolume').addEventListener('change', function () {
+    document.getElementById('errVolume').classList.remove('show');
+  });
+
+  // 标签组
+  document.getElementById('apiScopeGroup').addEventListener('click', function () {
+    var scopes = getSelectedScopes();
+    if (scopes.length > 0) {
+      document.getElementById('errScope').classList.remove('show');
+    }
+  });
+
+})();
+</script>
+</body>
+</html>

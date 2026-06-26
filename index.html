@@ -6,174 +6,322 @@
     <title>千仓SDMS-原型演示</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        .card { transition: all .15s ease; }
+        .card:hover { transform: translateY(-1px); }
+        html { scroll-behavior: smooth; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <div class="max-w-6xl mx-auto py-12 px-4">
-        <div class="text-center mb-12">
+    <div class="max-w-7xl mx-auto py-10 px-4">
+
+        <!-- ========== 顶部标题 ========== -->
+        <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 mb-2">千仓SDMS原型演示</h1>
-            <p class="text-gray-600">供应链数据管理系统-前端原型页面索引</p>
+            <p class="text-gray-600">仓库管理系统 · 前端原型索引 · 共 <span class="font-semibold text-gray-800">52</span> 个页面 / 5 个端</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <a href="wms-workbench-v2.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-blue-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">WMS工作台V2</h3>
-                        <p class="mt-1 text-sm text-gray-500">仓库管理系统主工作台，包含KPI指标、待办事项、快捷入口和模块化布局。</p>
-                        <span class="inline-block mt-3 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">工作台</span>
-                    </div>
-                </div>
-            </a>
+        <!-- ========== 端快捷导航 ========== -->
+        <nav class="flex flex-wrap gap-2 mb-10 sticky top-0 bg-gray-100/90 backdrop-blur py-3 z-10 -mx-4 px-4 border-b border-gray-200">
+            <a href="#pc" class="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-orange-400 hover:text-orange-600">🖥 租户后台 <span class="text-gray-400">30</span></a>
+            <a href="#pda" class="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-blue-400 hover:text-blue-600">📱 PDA端 <span class="text-gray-400">4</span></a>
+            <a href="#miniapp" class="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-emerald-400 hover:text-emerald-600">💚 小程序端 <span class="text-gray-400">4</span></a>
+            <a href="#packing" class="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-purple-400 hover:text-purple-600">💻 打包台 <span class="text-gray-400">2</span></a>
+            <a href="#op" class="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-sky-400 hover:text-sky-600">🔌 开放平台 <span class="text-gray-400">12</span></a>
+        </nav>
 
-            <a href="bi-consolidated-report-v2.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-orange-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19h16M7 16V8m5 8V5m5 11v-6"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">BI综合报表V2</h3>
-                        <p class="mt-1 text-sm text-gray-500">统一报表目录、筛选区、AI分析和明细表格的一体化报表页面。</p>
-                        <span class="inline-block mt-3 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">报表中心</span>
-                    </div>
-                </div>
-            </a>
+        <!-- ========== 租户后台 ========== -->
+        <section id="pc" class="mb-12 scroll-mt-20">
+            <div class="flex items-center gap-3 mb-5">
+                <span class="text-2xl">🖥</span>
+                <h2 class="text-xl font-bold text-gray-900">租户后台</h2>
+                <span class="text-sm text-gray-400">PC Web · 费用 / 报价 / 结算 / 报表 / 出库</span>
+            </div>
 
-            <a href="unified-report-center.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-blue-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 19.5A2.5 2.5 0 016.5 17H20"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">统一报表中心</h3>
-                        <p class="mt-1 text-sm text-gray-500">整合入库/出库/库存/订单四大业务域的统一数据分析入口，支持自定义报表和订阅推送。</p>
-                        <span class="inline-block mt-3 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">报表中心</span>
-                    </div>
+            <!-- 费用 -->
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">费用管理 <span class="text-gray-400 font-normal">9</span></h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="pc-admin/fee/fee-sheet-list.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-green-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">💰</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">费用单管理</div><span class="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded">费用</span></div>
+                    </a>
+                    <a href="pc-admin/fee/operation-fee-config.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-green-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">⚙️</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">操作费管理</div><span class="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded">操作费</span></div>
+                    </a>
+                    <a href="pc-admin/fee/operation-fee-create-v3.html" class="card flex items-center gap-3 bg-white rounded-lg border-2 border-green-300 hover:border-green-500 hover:shadow-md p-3.5">
+                        <span class="text-xl">➕</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">新增操作费(价目表)</div><div class="flex gap-1 mt-0.5"><span class="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded">操作费</span><span class="text-[10px] text-white bg-green-500 px-1.5 py-0.5 rounded">最新</span></div></div>
+                    </a>
+                    <a href="pc-admin/fee/operation-fee-create-v2.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md p-3.5 opacity-70">
+                        <span class="text-xl">➕</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-600 text-sm truncate">新增操作费 V2</div><div class="flex gap-1 mt-0.5"><span class="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">历史</span></div></div>
+                    </a>
+                    <a href="pc-admin/fee/operation-fee-create.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md p-3.5 opacity-70">
+                        <span class="text-xl">➕</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-600 text-sm truncate">新增操作费 V1</div><div class="flex gap-1 mt-0.5"><span class="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">历史</span></div></div>
+                    </a>
+                    <a href="pc-admin/fee/storage-fee-config.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-green-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">⚙️</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">仓储费管理</div><span class="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded">仓储费</span></div>
+                    </a>
+                    <a href="pc-admin/fee/storage-fee-create.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-green-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">➕</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">新增仓储费</div><span class="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded">仓储费</span></div>
+                    </a>
+                    <a href="pc-admin/fee/logistics-fee-config.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-green-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">⚙️</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">物流费管理</div><span class="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded">物流费</span></div>
+                    </a>
+                    <a href="pc-admin/fee/logistics-fee-create.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-green-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">➕</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">新增物流费</div><span class="text-[10px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded">物流费</span></div>
+                    </a>
                 </div>
-            </a>
+            </div>
 
-            <a href="operation-fee-config.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-green-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">操作费管理</h3>
-                        <p class="mt-1 text-sm text-gray-500">操作费规则配置与列表管理，支持筛选、分页、启停和删除。</p>
-                        <span class="inline-block mt-3 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">财务管理</span>
-                    </div>
+            <!-- 报价 -->
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">报价管理 <span class="text-gray-400 font-normal">4</span></h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="pc-admin/quotation/quotation-scheme-config.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-teal-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">⚙️</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">报价方案管理</div><span class="text-[10px] text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded">报价</span></div>
+                    </a>
+                    <a href="pc-admin/quotation/quotation-scheme-create.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-teal-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">➕</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">新增报价方案</div><span class="text-[10px] text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded">报价</span></div>
+                    </a>
+                    <a href="pc-admin/quotation/supplier-quotation-config.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-teal-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">⚙️</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">供应商报价方案管理</div><span class="text-[10px] text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded">供应商报价</span></div>
+                    </a>
+                    <a href="pc-admin/quotation/supplier-quotation-create.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-teal-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">➕</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">新增供应商报价</div><span class="text-[10px] text-teal-600 bg-teal-50 px-1.5 py-0.5 rounded">供应商报价</span></div>
+                    </a>
                 </div>
-            </a>
+            </div>
 
-            <a href="trunk-order-list.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-blue-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">干线订单列表</h3>
-                        <p class="mt-1 text-sm text-gray-500">干线订单卡片式列表，支持状态筛选、搜索查询、进度展示和分页。</p>
-                        <span class="inline-block mt-3 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">业务管理</span>
-                    </div>
+            <!-- 结算 -->
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">结算与账单 <span class="text-gray-400 font-normal">4</span></h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="pc-admin/settlement/settlement-list.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-emerald-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">💳</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">结算单管理</div><span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">结算</span></div>
+                    </a>
+                    <a href="pc-admin/settlement/settlement-detail.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-emerald-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📄</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">结算单详情</div><span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">结算</span></div>
+                    </a>
+                    <a href="pc-admin/settlement/bill-list.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-emerald-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">🧾</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">账单管理</div><span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">账单</span></div>
+                    </a>
+                    <a href="pc-admin/settlement/bill-detail.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-emerald-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📄</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">账单详情</div><span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">账单</span></div>
+                    </a>
                 </div>
-            </a>
+            </div>
 
-            <a href="operation-fee-create.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-green-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">新增/编辑操作费</h3>
-                        <p class="mt-1 text-sm text-gray-500">操作费规则新增与编辑页面，支持规则配置、试算和规则弹窗编辑。</p>
-                        <span class="inline-block mt-3 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">财务管理</span>
-                    </div>
+            <!-- 报表 -->
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">报表与分析 <span class="text-gray-400 font-normal">3</span></h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="pc-admin/bi/unified-report-center.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-orange-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📊</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">统一报表中心</div><span class="text-[10px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">报表</span></div>
+                    </a>
+                    <a href="pc-admin/bi/bi-consolidated-report-v2.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-orange-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📈</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">BI综合报表V2</div><span class="text-[10px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">报表</span></div>
+                    </a>
+                    <a href="pc-admin/bi/bi-order-aggregate-workbench.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-orange-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📉</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">订单聚合分析工作台</div><span class="text-[10px] text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">报表</span></div>
+                    </a>
                 </div>
-            </a>
+            </div>
 
-            <a href="abnormal-detail-pc.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-orange-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">异常详情(PC端)</h3>
-                        <p class="mt-1 text-sm text-gray-500">仓库作业异常详情查看与处理，适用于PC端异常分析和跟进。</p>
-                        <span class="inline-block mt-3 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">异常管理</span>
-                    </div>
+            <!-- 出库发货 -->
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">出库发货 <span class="text-gray-400 font-normal">4</span></h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="pc-admin/outbound/trunk-order-list.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-cyan-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">🚚</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">干线订单列表</div><span class="text-[10px] text-cyan-600 bg-cyan-50 px-1.5 py-0.5 rounded">干线</span></div>
+                    </a>
+                    <a href="pc-admin/outbound/trunk-outbound-pending-list.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-cyan-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">🚛</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">干线待出库列表</div><span class="text-[10px] text-cyan-600 bg-cyan-50 px-1.5 py-0.5 rounded">干线</span></div>
+                    </a>
+                    <a href="pc-admin/outbound/outbound-load-send-modal.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-cyan-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📦</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">出库配载发送弹窗</div><span class="text-[10px] text-cyan-600 bg-cyan-50 px-1.5 py-0.5 rounded">配载</span></div>
+                    </a>
+                    <a href="pc-admin/outbound/receipt-signature.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-indigo-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">✍️</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">发送签收单</div><span class="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">签收</span></div>
+                    </a>
                 </div>
-            </a>
+            </div>
 
-            <a href="driver-receipt-confirm.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-purple-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">司机签收确认</h3>
-                        <p class="mt-1 text-sm text-gray-500">司机端签收确认页面，用于送货完成后的电子签收。</p>
-                        <span class="inline-block mt-3 text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded">移动端</span>
-                    </div>
+            <!-- 账户 / WMS -->
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">账户与工作台 <span class="text-gray-400 font-normal">2</span></h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="pc-admin/account/account-list.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-purple-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">👤</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">费用流水</div><span class="text-[10px] text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">账户</span></div>
+                    </a>
+                    <a href="pc-admin/wms/wms-workbench-v2.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-rose-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">🖥️</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">WMS工作台V2</div><span class="text-[10px] text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded">工作台</span></div>
+                    </a>
                 </div>
-            </a>
+            </div>
 
-            <a href="outbound-load-send-modal.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-amber-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-8 4h6m-9 6h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">发车派送弹窗</h3>
-                        <p class="mt-1 text-sm text-gray-500">出库发车派送弹窗原型，用于装车完成后的发车与派送确认。</p>
-                        <span class="inline-block mt-3 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">出库管理</span>
-                    </div>
+            <!-- 其他 -->
+            <div>
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">其他 <span class="text-gray-400 font-normal">4</span></h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="pc-admin/misc/abnormal-detail-pc.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-red-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">⚠️</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">异常信息详情</div><span class="text-[10px] text-red-600 bg-red-50 px-1.5 py-0.5 rounded">异常</span></div>
+                    </a>
+                    <a href="pc-admin/misc/sjzy-ui-ux-component-preview.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-gray-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">🧩</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">UI组件预览</div><span class="text-[10px] text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">组件库</span></div>
+                    </a>
+                    <a href="pc-admin/misc/crm-project-plan.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-slate-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📋</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">医美CRM项目规划</div><span class="text-[10px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">其他项目</span></div>
+                    </a>
+                    <a href="pc-admin/misc/ym.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-slate-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📋</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">AI医美咨询实训系统</div><span class="text-[10px] text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">其他项目</span></div>
+                    </a>
                 </div>
-            </a>
+            </div>
+        </section>
 
-            <a href="receipt-signature.html" class="block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-200 hover:border-indigo-400">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-semibold text-gray-900">签收回单</h3>
-                        <p class="mt-1 text-sm text-gray-500">签收回单查看与管理，支持签名结果展示和回单信息浏览。</p>
-                        <span class="inline-block mt-3 text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded">回单管理</span>
-                    </div>
+        <!-- ========== PDA端 ========== -->
+        <section id="pda" class="mb-12 scroll-mt-20">
+            <div class="flex items-center gap-3 mb-5">
+                <span class="text-2xl">📱</span>
+                <h2 class="text-xl font-bold text-gray-900">PDA端</h2>
+                <span class="text-sm text-gray-400">仓库手持终端 · 收货 / 出库</span>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">收货</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="pda/receive/pda-receive-list.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📥</span>
+                        <div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">PDA订单收货</div><span class="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">收货</span></div>
+                    </a>
+                    <a href="pda/receive/pda-receive-detail.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📋</span>
+                        <div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">PDA收货详情</div><span class="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">收货</span></div>
+                    </a>
                 </div>
-            </a>
-        </div>
+            </div>
 
-        <div class="mt-12 text-center text-sm text-gray-500">
-            <p>运连网科技有限公司 · 千仓SDMS供应链数据管理系统</p>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">出库</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="pda/outbound/pda-outbound-list.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📤</span>
+                        <div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">PDA订单出库</div><span class="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">出库</span></div>
+                    </a>
+                    <a href="pda/outbound/pda-outbound-detail.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📦</span>
+                        <div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">PDA出库详情</div><span class="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">出库</span></div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== 小程序端 ========== -->
+        <section id="miniapp" class="mb-12 scroll-mt-20">
+            <div class="flex items-center gap-3 mb-5">
+                <span class="text-2xl">💚</span>
+                <h2 class="text-xl font-bold text-gray-900">小程序端</h2>
+                <span class="text-sm text-gray-400">司机 / 外部人员手机端 · 挑货 / 签收</span>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">入仓挑货</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="miniapp/pick/pick-task-list.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-emerald-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">🔍</span>
+                        <div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">入仓挑货</div><span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">挑货</span></div>
+                    </a>
+                    <a href="miniapp/pick/pick-scan.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-emerald-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📷</span>
+                        <div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">扫码挑货</div><span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">挑货</span></div>
+                    </a>
+                    <a href="miniapp/pick/pick-upload.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-emerald-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">📑</span>
+                        <div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">上传清单</div><span class="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">挑货</span></div>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold text-gray-500 mb-2 ml-1">签收确认</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    <a href="miniapp/receipt/driver-receipt-confirm.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-indigo-400 hover:shadow-md p-3.5">
+                        <span class="text-xl">✍️</span>
+                        <div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">签收单确认-司机端</div><span class="text-[10px] text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">司机签收</span></div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== 打包台 ========== -->
+        <section id="packing" class="mb-12 scroll-mt-20">
+            <div class="flex items-center gap-3 mb-5">
+                <span class="text-2xl">💻</span>
+                <h2 class="text-xl font-bold text-gray-900">打包台</h2>
+                <span class="text-sm text-gray-400">工位机 · 打包作业</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <a href="packing-station/packing-station-login.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-purple-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">🔐</span>
+                    <div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">打包工作站登录</div><span class="text-[10px] text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">登录</span></div>
+                </a>
+                <a href="packing-station/packing-station-home.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-purple-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">📦</span>
+                    <div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">打包工作站</div><span class="text-[10px] text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">打包</span></div>
+                </a>
+            </div>
+        </section>
+
+        <!-- ========== 开放平台 ========== -->
+        <section id="op" class="mb-12 scroll-mt-20">
+            <div class="flex items-center gap-3 mb-5">
+                <span class="text-2xl">🔌</span>
+                <h2 class="text-xl font-bold text-gray-900">开放平台</h2>
+                <span class="text-sm text-gray-400">开发者中心 · 对外集成</span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <a href="open-platform/open-platform-home.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">🏠</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">开放平台首页</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">首页</span></div>
+                </a>
+                <a href="open-platform/open-platform-login.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">🔐</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">开放平台登录</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">登录</span></div>
+                </a>
+                <a href="open-platform/open-platform-developer-apply.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">📝</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">开发者申请</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">申请</span></div>
+                </a>
+                <a href="open-platform/open-platform-developer-dashboard.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">📊</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">概览仪表盘</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">开发者</span></div>
+                </a>
+                <a href="open-platform/open-platform-applications.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">🧩</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">应用管理</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">开发者</span></div>
+                </a>
+                <a href="open-platform/open-platform-api-keys.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">🔑</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">API Key管理</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">开发者</span></div>
+                </a>
+                <a href="open-platform/open-platform-api-docs.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">📖</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">接口文档</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">文档</span></div>
+                </a>
+                <a href="open-platform/open-platform-webhook.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">🔔</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">Webhook管理</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">开发者</span></div>
+                </a>
+                <a href="open-platform/open-platform-call-logs.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">📜</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">调用日志</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">日志</span></div>
+                </a>
+                <a href="open-platform/open-platform-stats.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">📈</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">统计报表</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">统计</span></div>
+                </a>
+                <a href="open-platform/open-platform-admin-developers.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">👥</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">开发者管理</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">运营管理</span></div>
+                </a>
+                <a href="open-platform/open-platform-admin-monitor.html" class="card flex items-center gap-3 bg-white rounded-lg border border-gray-200 hover:border-sky-400 hover:shadow-md p-3.5">
+                    <span class="text-xl">🛡️</span><div class="flex-1 min-w-0"><div class="font-medium text-gray-800 text-sm truncate">全局监控看板</div><span class="text-[10px] text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">运营管理</span></div>
+                </a>
+            </div>
+        </section>
+
+        <!-- ========== 页脚 ========== -->
+        <div class="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
+            <p>运连网科技有限公司 · 千仓SDMS仓库管理系统</p>
+            <p class="mt-1 text-xs text-gray-400">原型按端(租户后台 / PDA / 小程序 / 打包台 / 开放平台)分区，租户后台下按业务域分组</p>
         </div>
     </div>
 </body>

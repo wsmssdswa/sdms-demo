@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开放平台 - 统计报表</title>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/sdms-design-tokens.css">
+<link rel="stylesheet" href="../assets/css/open-platform.css">
+<style>
+/* === 顶部控制区 === */
+.op-stats-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.op-control-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.op-btn-group {
+  display: inline-flex;
+  border: 1px solid var(--color-border-strong, #d2d7dd);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.op-btn-group .op-gbtn {
+  height: 32px;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: #fff;
+  color: var(--color-text-secondary, #65686c);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border-right: 1px solid var(--color-border-strong, #d2d7dd);
+  font-family: inherit;
+}
+
+.op-btn-group .op-gbtn:last-child {
+  border-right: none;
+}
+
+.op-btn-group .op-gbtn:hover {
+  background: var(--color-bg-secondary, #f4f5f7);
+}
+
+.op-btn-group .op-gbtn.active {
+  background: var(--color-primary, #1684fc);
+  color: #fff;
+  border-color: var(--color-primary, #1684fc);
+}
+
+.op-btn-group .op-gbtn.active + .op-gbtn {
+  border-left-color: var(--color-primary, #1684fc);
+}
+
+.op-date-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+
+.op-date-range .op-input {
+  height: 32px;
+  font-size: 12px;
+  width: 130px;
+}
+
+.op-date-range .op-sep {
+  color: var(--color-text-tertiary, #909499);
+  font-size: 12px;
+}
+
+/* === 核心指标卡片 === */
+.op-metric-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.op-metric-card {
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  box-shadow: var(--op-card-shadow);
+  padding: 20px;
+  transition: box-shadow 0.2s ease;
+}
+
+.op-metric-card:hover {
+  box-shadow: 0 4px 12px 2px rgba(0, 0, 0, 0.1);
+}
+
+.op-metric-label {
+  font-size: 13px;
+  color: var(--color-text-tertiary, #909499);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.op-metric-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.op-metric-change {
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.op-metric-change.up {
+  color: var(--color-success, #007e22);
+}
+
+.op-metric-change.down {
+  color: var(--color-error, #ff4d4f);
+}
+
+.op-metric-change.up-good {
+  color: var(--color-success, #007e22);
+}
+
+.op-metric-change.down-good {
+  color: var(--color-success, #007e22);
+}
+
+.op-metric-change.up-bad {
+  color: var(--color-error, #ff4d4f);
+}
+
+/* === 图表卡片通用 === */
+.op-chart-card {
+  background: var(--color-bg-primary, #fff);
+  border: 1px solid var(--op-card-border);
+  border-radius: var(--op-card-radius);
+  box-shadow: var(--op-card-shadow);
+  margin-bottom: 20px;
+}
+
+.op-chart-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--op-card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.op-chart-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1c1d1e);
+}
+
+.op-chart-body {
+  padding: 20px;
+}
+
+/* === CSS柱状图 === */
+.op-bar-chart {
+  position: relative;
+  height: 240px;
+  display: flex;
+  align-items: flex-end;
+  padding-left: 50px;
+  padding-bottom: 32px;
+}
+
+.op-bar-y-axis {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 32px;
+  width: 50px;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-right: 10px;
+}
+
+.op-bar-y-label {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  line-height: 1;
+}
+
+.op-bar-grid {
+  position: absolute;
+  left: 50px;
+  right: 0;
+  top: 0;
+  bottom: 32px;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.op-bar-grid-line {
+  border-top: 1px dashed var(--color-border, #e7eaee);
+}
+
+.op-bar-area {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.op-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  max-width: 80px;
+}
+
+.op-bar-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #65686c);
+  white-space: nowrap;
+}
+
+.op-bar-col {
+  width: 36px;
+  min-height: 4px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, #459dfd 0%, #1684fc 100%);
+  transition: height 0.4s ease;
+}
+
+.op-bar-label {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  margin-top: 4px;
+  position: absolute;
+  bottom: -28px;
+  white-space: nowrap;
+}
+
+.op-bar-x-axis {
+  display: flex;
+  justify-content: space-around;
+  padding-left: 50px;
+  margin-top: 8px;
+}
+
+.op-bar-x-label {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  flex: 1;
+  text-align: center;
+  max-width: 80px;
+}
+
+/* === CSS折线图（SVG方式） === */
+.op-line-chart-wrap {
+  position: relative;
+  padding-left: 50px;
+  padding-bottom: 28px;
+}
+
+.op-line-svg {
+  width: 100%;
+  height: 200px;
+}
+
+.op-line-y-axis {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 28px;
+  width: 50px;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-right: 10px;
+}
+
+.op-line-y-label {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  line-height: 1;
+}
+
+.op-line-x-axis {
+  display: flex;
+  justify-content: space-around;
+  padding-left: 50px;
+  margin-top: 8px;
+}
+
+.op-line-x-label {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  text-align: center;
+}
+
+.op-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.op-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-secondary, #65686c);
+}
+
+.op-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* === 错误分布区域 === */
+.op-error-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* === 横向柱状图 === */
+.op-hbar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.op-hbar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.op-hbar-label {
+  width: 140px;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary, #65686c);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.op-hbar-track {
+  flex: 1;
+  height: 20px;
+  background: var(--color-bg-tertiary, #edeff2);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.op-hbar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #ff8225 0%, #ff4d4f 100%);
+  transition: width 0.4s ease;
+  min-width: 2px;
+}
+
+.op-hbar-fill.blue {
+  background: linear-gradient(90deg, #459dfd 0%, #1684fc 100%);
+}
+
+.op-hbar-count {
+  width: 50px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1c1d1e);
+  text-align: right;
+}
+
+/* === 回调统计 === */
+.op-callback-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.op-retry-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  height: 160px;
+  padding-left: 0;
+  padding-top: 20px;
+}
+
+.op-retry-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 4px;
+}
+
+.op-retry-bar-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #65686c);
+  white-space: nowrap;
+}
+
+.op-retry-bar-col {
+  width: 48px;
+  min-height: 4px;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+
+.op-retry-bar-label {
+  font-size: 11px;
+  color: var(--color-text-tertiary, #909499);
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+/* === 响应式 === */
+@media (max-width: 900px) {
+  .op-metric-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .op-error-grid {
+    grid-template-columns: 1fr;
+  }
+  .op-callback-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<header id="opTopNav"></header>
+<div class="op-page no-sidebar">
+
+  <!-- 右侧主区域 -->
+  <div class="op-main">
+
+    <!-- 顶部标题栏 -->
+    <div class="op-header">
+      <div class="op-header-breadcrumb">
+        <a href="#">开放平台</a>
+        <i class="ri-arrow-right-s-line"></i>
+        <span>统计报表</span>
+      </div>
+      <div class="op-header-actions">
+        <a href="#" class="op-btn op-btn-default" style="font-size:12px;height:30px;padding:0 12px">
+          <i class="ri-download-line"></i> 导出报表
+        </a>
+      </div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="op-content">
+
+      <!-- 顶部控制区 -->
+      <div class="op-stats-controls">
+        <div class="op-control-group">
+          <!-- 时间维度 -->
+          <div class="op-btn-group" id="timeRangeGroup">
+            <button class="op-gbtn active" data-range="7d">近7天</button>
+            <button class="op-gbtn" data-range="30d">近30天</button>
+            <button class="op-gbtn" data-range="custom">自定义</button>
+          </div>
+          <!-- 自定义日期选择器（默认隐藏） -->
+          <div class="op-date-range" id="customDateRange" style="display:none">
+            <input type="date" class="op-input" value="2026-06-03">
+            <span class="op-sep">~</span>
+            <input type="date" class="op-input" value="2026-06-09">
+          </div>
+        </div>
+        <!-- Key类型 -->
+        <div class="op-control-group">
+          <div class="op-btn-group" id="keyTypeGroup">
+            <button class="op-gbtn active" data-type="all">全部</button>
+            <button class="op-gbtn" data-type="prod">生产Key</button>
+            <button class="op-gbtn" data-type="test">测试Key</button>
+          </div>
+          <!-- 应用筛选 -->
+          <select id="appFilter" class="op-select" style="width:160px">
+            <option value="">全部应用</option>
+            <!-- populated from OP.getApps() -->
+          </select>
+        </div>
+      </div>
+
+      <!-- 核心指标卡片 -->
+      <div class="op-metric-cards">
+        <div class="op-metric-card">
+          <div class="op-metric-label">总调用量</div>
+          <div class="op-metric-value">12,847</div>
+          <div class="op-metric-change up-bad">
+            <i class="ri-arrow-up-line"></i> 8.3%
+          </div>
+        </div>
+        <div class="op-metric-card">
+          <div class="op-metric-label">成功率</div>
+          <div class="op-metric-value">99.2%</div>
+          <div class="op-metric-change up-good">
+            <i class="ri-arrow-up-line"></i> 0.3%
+          </div>
+        </div>
+        <div class="op-metric-card">
+          <div class="op-metric-label">平均响应时间</div>
+          <div class="op-metric-value">86ms</div>
+          <div class="op-metric-change down-good">
+            <i class="ri-arrow-down-line"></i> 12ms
+          </div>
+        </div>
+        <div class="op-metric-card">
+          <div class="op-metric-label">错误数</div>
+          <div class="op-metric-value">103</div>
+          <div class="op-metric-change up-bad">
+            <i class="ri-arrow-up-line"></i> 15
+          </div>
+        </div>
+      </div>
+
+      <!-- 调用量趋势图 -->
+      <div class="op-chart-card">
+        <div class="op-chart-header">
+          <div class="op-chart-title">调用量趋势</div>
+        </div>
+        <div class="op-chart-body">
+          <div class="op-bar-chart" id="barChart">
+            <!-- Y轴 -->
+            <div class="op-bar-y-axis">
+              <span class="op-bar-y-label">0</span>
+              <span class="op-bar-y-label">1000</span>
+              <span class="op-bar-y-label">2000</span>
+              <span class="op-bar-y-label">3000</span>
+            </div>
+            <!-- 网格线 -->
+            <div class="op-bar-grid">
+              <div class="op-bar-grid-line"></div>
+              <div class="op-bar-grid-line"></div>
+              <div class="op-bar-grid-line"></div>
+              <div class="op-bar-grid-line" style="border-top:none"></div>
+            </div>
+            <!-- 柱状图区域 -->
+            <div class="op-bar-area" id="barArea">
+              <!-- JS动态渲染 -->
+            </div>
+          </div>
+          <!-- X轴 -->
+          <div class="op-bar-x-axis" id="barXAxis"></div>
+        </div>
+      </div>
+
+      <!-- 成功率趋势图 -->
+      <div class="op-chart-card">
+        <div class="op-chart-header">
+          <div class="op-chart-title">成功率趋势</div>
+        </div>
+        <div class="op-chart-body">
+          <div class="op-line-chart-wrap">
+            <!-- Y轴 -->
+            <div class="op-line-y-axis">
+              <span class="op-line-y-label">98%</span>
+              <span class="op-line-y-label">98.5%</span>
+              <span class="op-line-y-label">99%</span>
+              <span class="op-line-y-label">99.5%</span>
+              <span class="op-line-y-label">100%</span>
+            </div>
+            <!-- SVG折线 -->
+            <svg class="op-line-svg" id="successRateSvg" preserveAspectRatio="none"></svg>
+          </div>
+          <div class="op-line-x-axis" id="successRateXAxis"></div>
+        </div>
+      </div>
+
+      <!-- 响应时间趋势图 -->
+      <div class="op-chart-card">
+        <div class="op-chart-header">
+          <div class="op-chart-title">响应时间趋势（P50/P95/P99）</div>
+          <div class="op-chart-legend">
+            <div class="op-legend-item">
+              <span class="op-legend-dot" style="background:#1684fc"></span>P50
+            </div>
+            <div class="op-legend-item">
+              <span class="op-legend-dot" style="background:#ff8225"></span>P95
+            </div>
+            <div class="op-legend-item">
+              <span class="op-legend-dot" style="background:#ff4d4f"></span>P99
+            </div>
+          </div>
+        </div>
+        <div class="op-chart-body">
+          <div class="op-line-chart-wrap">
+            <!-- Y轴 -->
+            <div class="op-line-y-axis">
+              <span class="op-line-y-label">0</span>
+              <span class="op-line-y-label">100</span>
+              <span class="op-line-y-label">200</span>
+              <span class="op-line-y-label">300</span>
+              <span class="op-line-y-label">400</span>
+            </div>
+            <!-- SVG折线 -->
+            <svg class="op-line-svg" id="responseTimeSvg" preserveAspectRatio="none"></svg>
+          </div>
+          <div class="op-line-x-axis" id="responseTimeXAxis"></div>
+        </div>
+      </div>
+
+      <!-- 错误分布区域 -->
+      <div class="op-error-grid">
+        <!-- 左侧：按错误码分布 -->
+        <div class="op-chart-card">
+          <div class="op-chart-header">
+            <div class="op-chart-title">错误码分布</div>
+          </div>
+          <div class="op-chart-body">
+            <div class="op-hbar-chart" id="errorCodeChart"></div>
+          </div>
+        </div>
+        <!-- 右侧：按接口错误分布 -->
+        <div class="op-chart-card">
+          <div class="op-chart-header">
+            <div class="op-chart-title">接口错误分布</div>
+          </div>
+          <div class="op-chart-body">
+            <div class="op-hbar-chart" id="apiErrorChart"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 回调统计区域 -->
+      <div class="op-chart-card">
+        <div class="op-chart-header">
+          <div class="op-chart-title">回调统计</div>
+        </div>
+        <div class="op-chart-body">
+          <!-- 3个指标卡片 -->
+          <div class="op-callback-metrics">
+            <div class="op-metric-card">
+              <div class="op-metric-label">回调推送总量</div>
+              <div class="op-metric-value">8,234</div>
+            </div>
+            <div class="op-metric-card">
+              <div class="op-metric-label">回调成功率</div>
+              <div class="op-metric-value">97.8%</div>
+            </div>
+            <div class="op-metric-card">
+              <div class="op-metric-label">平均响应时间</div>
+              <div class="op-metric-value">245ms</div>
+            </div>
+          </div>
+          <!-- 重试次数分布 -->
+          <div style="margin-top:8px">
+            <div style="font-size:13px;font-weight:600;color:var(--color-text-primary,#1c1d1e);margin-bottom:12px">重试次数分布</div>
+            <div class="op-bar-chart" id="retryBarChart" style="height:160px;padding-left:50px;padding-bottom:32px">
+              <!-- Y轴 -->
+              <div class="op-bar-y-axis">
+                <span class="op-bar-y-label">0</span>
+                <span class="op-bar-y-label">2k</span>
+                <span class="op-bar-y-label">4k</span>
+                <span class="op-bar-y-label">6k</span>
+                <span class="op-bar-y-label">8k</span>
+              </div>
+              <!-- 网格线 -->
+              <div class="op-bar-grid">
+                <div class="op-bar-grid-line"></div>
+                <div class="op-bar-grid-line"></div>
+                <div class="op-bar-grid-line"></div>
+                <div class="op-bar-grid-line"></div>
+                <div class="op-bar-grid-line" style="border-top:none"></div>
+              </div>
+              <div class="op-bar-area" id="retryBarArea"></div>
+            </div>
+            <div class="op-bar-x-axis" id="retryBarXAxis"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /op-content -->
+  </div><!-- /op-main -->
+</div><!-- /op-page -->
+
+<script src="../assets/js/open-platform.js"></script>
+<script>
+;(function () {
+  'use strict';
+
+  /* 渲染顶栏 */
+  if (!OP.requireAuth()) return;
+  OP.renderTopNav(OP.DEV_MENUS, 'stats');
+
+  /* ========================
+   * 顶部控制区交互
+   * ======================== */
+
+  // 按钮组通用切换
+  function initBtnGroup(groupId, onSwitch) {
+    var group = document.getElementById(groupId);
+    if (!group) return;
+    var btns = group.querySelectorAll('.op-gbtn');
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        btns.forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        if (typeof onSwitch === 'function') onSwitch(btn);
+      });
+    });
+  }
+
+  // 时间维度切换
+  var customDateRange = document.getElementById('customDateRange');
+  initBtnGroup('timeRangeGroup', function (btn) {
+    var range = btn.getAttribute('data-range');
+    customDateRange.style.display = range === 'custom' ? 'flex' : 'none';
+  });
+
+  // Key类型切换
+  initBtnGroup('keyTypeGroup', function (btn) {
+    // 切换Key类型时可以重新加载图表数据
+  });
+
+  // 应用筛选下拉
+  var appFilter = document.getElementById('appFilter');
+  var apps = OP.getApps();
+  apps.forEach(function (app) {
+    var opt = document.createElement('option');
+    opt.value = app.id;
+    opt.textContent = app.name;
+    appFilter.appendChild(opt);
+  });
+
+  /* ========================
+   * Mock数据
+   * ======================== */
+  var dates = ['6/3', '6/4', '6/5', '6/6', '6/7', '6/8', '6/9'];
+  var callData   = [1856, 2103, 1920, 2340, 1980, 2510, 2138];
+  var successData = [99.1, 98.8, 99.3, 99.5, 98.9, 99.4, 99.2];
+  var p50Data    = [45, 52, 48, 41, 55, 43, 50];
+  var p95Data    = [120, 135, 128, 115, 142, 125, 130];
+  var p99Data    = [280, 310, 295, 265, 325, 290, 305];
+
+  var errorCodeData = [
+    { code: '20001', desc: '订单号重复', count: 31 },
+    { code: '10001', desc: '认证失败',   count: 23 },
+    { code: '30001', desc: '系统错误',   count: 19 },
+    { code: '10002', desc: '格式校验失败', count: 18 },
+    { code: '20002', desc: '仓库不存在', count: 12 }
+  ];
+
+  var apiErrorData = [
+    { api: '/api/order/create',   count: 28 },
+    { api: '/api/inventory/query', count: 22 },
+    { api: '/api/warehouse/bind',  count: 19 },
+    { api: '/api/order/cancel',    count: 17 },
+    { api: '/api/inventory/sync',  count: 13 }
+  ];
+
+  var retryData = [
+    { label: '0次（首次成功）', value: 7892 },
+    { label: '1次', value: 245 },
+    { label: '2次', value: 78 },
+    { label: '3次', value: 19 }
+  ];
+
+  /* ========================
+   * 调用量柱状图
+   * ======================== */
+  var barArea  = document.getElementById('barArea');
+  var barXAxis = document.getElementById('barXAxis');
+  var maxCall  = Math.max.apply(null, callData);
+  var chartHeight = 208 - 32; // bar-chart height - bottom padding
+
+  callData.forEach(function (val, i) {
+    var pct = (val / 3000) * 100;
+    var item = document.createElement('div');
+    item.className = 'op-bar-item';
+    item.innerHTML =
+      '<span class="op-bar-value">' + val.toLocaleString() + '</span>' +
+      '<div class="op-bar-col" style="height:' + pct + '%"></div>';
+    barArea.appendChild(item);
+
+    var xLabel = document.createElement('div');
+    xLabel.className = 'op-bar-x-label';
+    xLabel.textContent = dates[i];
+    barXAxis.appendChild(xLabel);
+  });
+
+  /* ========================
+   * 成功率折线图（SVG）
+   * ======================== */
+  function renderSvgLine(svgEl, xAxisEl, data, datesArr, yMin, yMax, color, showDots) {
+    var svg = document.getElementById(svgEl);
+    var xAxis = document.getElementById(xAxisEl);
+    if (!svg) return;
+
+    var w = svg.clientWidth || 800;
+    var h = 200;
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+
+    var padX = 10;
+    var padY = 10;
+    var chartW = w - padX * 2;
+    var chartH = h - padY * 2;
+
+    function xPos(idx) {
+      return padX + (idx / (data.length - 1)) * chartW;
+    }
+    function yPos(val) {
+      var ratio = (val - yMin) / (yMax - yMin);
+      return padY + chartH - ratio * chartH;
+    }
+
+    // 构建path
+    var pathD = '';
+    var areaD = '';
+    data.forEach(function (val, i) {
+      var x = xPos(i);
+      var y = yPos(val);
+      if (i === 0) {
+        pathD += 'M' + x + ' ' + y;
+        areaD += 'M' + x + ' ' + (padY + chartH) + ' L' + x + ' ' + y;
+      } else {
+        pathD += ' L' + x + ' ' + y;
+        areaD += ' L' + x + ' ' + y;
+      }
+    });
+    areaD += ' L' + xPos(data.length - 1) + ' ' + (padY + chartH) + ' Z';
+
+    var ns = 'http://www.w3.org/2000/svg';
+
+    // 渐变填充区域
+    if (showDots !== false) {
+      var gradId = svgEl + '_grad';
+      var defs = document.createElementNS(ns, 'defs');
+      var grad = document.createElementNS(ns, 'linearGradient');
+      grad.setAttribute('id', gradId);
+      grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
+      grad.setAttribute('x2', '0'); grad.setAttribute('y2', '1');
+      var stop1 = document.createElementNS(ns, 'stop');
+      stop1.setAttribute('offset', '0%');
+      stop1.setAttribute('stop-color', color);
+      stop1.setAttribute('stop-opacity', '0.15');
+      var stop2 = document.createElementNS(ns, 'stop');
+      stop2.setAttribute('offset', '100%');
+      stop2.setAttribute('stop-color', color);
+      stop2.setAttribute('stop-opacity', '0.02');
+      grad.appendChild(stop1);
+      grad.appendChild(stop2);
+      defs.appendChild(grad);
+      svg.appendChild(defs);
+
+      var areaEl = document.createElementNS(ns, 'path');
+      areaEl.setAttribute('d', areaD);
+      areaEl.setAttribute('fill', 'url(#' + gradId + ')');
+      areaEl.setAttribute('stroke', 'none');
+      svg.appendChild(areaEl);
+    }
+
+    // 折线
+    var lineEl = document.createElementNS(ns, 'path');
+    lineEl.setAttribute('d', pathD);
+    lineEl.setAttribute('fill', 'none');
+    lineEl.setAttribute('stroke', color);
+    lineEl.setAttribute('stroke-width', '2.5');
+    lineEl.setAttribute('stroke-linecap', 'round');
+    lineEl.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(lineEl);
+
+    // 数据点
+    data.forEach(function (val, i) {
+      var x = xPos(i);
+      var y = yPos(val);
+
+      // 外圈
+      var circle = document.createElementNS(ns, 'circle');
+      circle.setAttribute('cx', x);
+      circle.setAttribute('cy', y);
+      circle.setAttribute('r', '5');
+      circle.setAttribute('fill', '#fff');
+      circle.setAttribute('stroke', color);
+      circle.setAttribute('stroke-width', '2.5');
+      svg.appendChild(circle);
+
+      // 数值标签
+      var text = document.createElementNS(ns, 'text');
+      text.setAttribute('x', x);
+      text.setAttribute('y', y - 12);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('font-size', '11');
+      text.setAttribute('font-weight', '600');
+      text.setAttribute('fill', '#65686c');
+      text.textContent = val + '%';
+      svg.appendChild(text);
+    });
+
+    // X轴
+    if (xAxis) {
+      xAxis.innerHTML = '';
+      datesArr.forEach(function (d) {
+        var el = document.createElement('div');
+        el.className = 'op-line-x-label';
+        el.textContent = d;
+        xAxis.appendChild(el);
+      });
+    }
+  }
+
+  function renderMultiLine(svgEl, xAxisEl, lines, datesArr, yMin, yMax) {
+    var svg = document.getElementById(svgEl);
+    var xAxis = document.getElementById(xAxisEl);
+    if (!svg) return;
+
+    var w = svg.clientWidth || 800;
+    var h = 200;
+    svg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+
+    var padX = 10;
+    var padY = 10;
+    var chartW = w - padX * 2;
+    var chartH = h - padY * 2;
+
+    function xPos(idx) {
+      return padX + (idx / (datesArr.length - 1)) * chartW;
+    }
+    function yPos(val) {
+      var ratio = (val - yMin) / (yMax - yMin);
+      return padY + chartH - ratio * chartH;
+    }
+
+    var ns = 'http://www.w3.org/2000/svg';
+
+    // 横向网格线
+    var gridSteps = [0, 100, 200, 300, 400];
+    gridSteps.forEach(function (val) {
+      var y = yPos(val);
+      var gridLine = document.createElementNS(ns, 'line');
+      gridLine.setAttribute('x1', padX);
+      gridLine.setAttribute('y1', y);
+      gridLine.setAttribute('x2', padX + chartW);
+      gridLine.setAttribute('y2', y);
+      gridLine.setAttribute('stroke', '#e7eaee');
+      gridLine.setAttribute('stroke-dasharray', '4 3');
+      svg.appendChild(gridLine);
+    });
+
+    lines.forEach(function (line) {
+      // 折线
+      var pathD = '';
+      line.data.forEach(function (val, i) {
+        var x = xPos(i);
+        var y = yPos(val);
+        if (i === 0) pathD += 'M' + x + ' ' + y;
+        else pathD += ' L' + x + ' ' + y;
+      });
+
+      var lineEl = document.createElementNS(ns, 'path');
+      lineEl.setAttribute('d', pathD);
+      lineEl.setAttribute('fill', 'none');
+      lineEl.setAttribute('stroke', line.color);
+      lineEl.setAttribute('stroke-width', '2.5');
+      lineEl.setAttribute('stroke-linecap', 'round');
+      lineEl.setAttribute('stroke-linejoin', 'round');
+      svg.appendChild(lineEl);
+
+      // 数据点
+      line.data.forEach(function (val, i) {
+        var x = xPos(i);
+        var y = yPos(val);
+        var circle = document.createElementNS(ns, 'circle');
+        circle.setAttribute('cx', x);
+        circle.setAttribute('cy', y);
+        circle.setAttribute('r', '4');
+        circle.setAttribute('fill', '#fff');
+        circle.setAttribute('stroke', line.color);
+        circle.setAttribute('stroke-width', '2');
+        svg.appendChild(circle);
+      });
+    });
+
+    // X轴
+    if (xAxis) {
+      xAxis.innerHTML = '';
+      datesArr.forEach(function (d) {
+        var el = document.createElement('div');
+        el.className = 'op-line-x-label';
+        el.textContent = d;
+        xAxis.appendChild(el);
+      });
+    }
+  }
+
+  // 渲染成功率折线图
+  renderSvgLine('successRateSvg', 'successRateXAxis', successData, dates, 98, 100, '#1684fc');
+
+  // 渲染响应时间折线图
+  renderMultiLine('responseTimeSvg', 'responseTimeXAxis', [
+    { data: p50Data, color: '#1684fc' },
+    { data: p95Data, color: '#ff8225' },
+    { data: p99Data, color: '#ff4d4f' }
+  ], dates, 0, 400);
+
+  /* ========================
+   * 错误码分布（横向柱状图）
+   * ======================== */
+  var errorCodeChart = document.getElementById('errorCodeChart');
+  var maxErrorCode = Math.max.apply(null, errorCodeData.map(function (d) { return d.count; }));
+
+  errorCodeData.forEach(function (item) {
+    var pct = (item.count / maxErrorCode) * 100;
+    var row = document.createElement('div');
+    row.className = 'op-hbar-item';
+    row.innerHTML =
+      '<span class="op-hbar-label">' + item.code + ' ' + item.desc + '</span>' +
+      '<div class="op-hbar-track">' +
+      '  <div class="op-hbar-fill" style="width:' + pct + '%"></div>' +
+      '</div>' +
+      '<span class="op-hbar-count">' + item.count + '次</span>';
+    errorCodeChart.appendChild(row);
+  });
+
+  /* ========================
+   * 接口错误分布（横向柱状图）
+   * ======================== */
+  var apiErrorChart = document.getElementById('apiErrorChart');
+  var maxApiError = Math.max.apply(null, apiErrorData.map(function (d) { return d.count; }));
+
+  apiErrorData.forEach(function (item) {
+    var pct = (item.count / maxApiError) * 100;
+    var row = document.createElement('div');
+    row.className = 'op-hbar-item';
+    row.innerHTML =
+      '<span class="op-hbar-label" title="' + item.api + '">' + item.api + '</span>' +
+      '<div class="op-hbar-track">' +
+      '  <div class="op-hbar-fill blue" style="width:' + pct + '%"></div>' +
+      '</div>' +
+      '<span class="op-hbar-count">' + item.count + '次</span>';
+    apiErrorChart.appendChild(row);
+  });
+
+  /* ========================
+   * 重试次数分布柱状图
+   * ======================== */
+  var retryBarArea  = document.getElementById('retryBarArea');
+  var retryBarXAxis = document.getElementById('retryBarXAxis');
+  var maxRetry = Math.max.apply(null, retryData.map(function (d) { return d.value; }));
+  // Y轴最大值按8000
+  var retryYMax = 8000;
+
+  var retryColors = ['#1684fc', '#459dfd', '#ff8225', '#ff4d4f'];
+
+  retryData.forEach(function (item, i) {
+    var pct = (item.value / retryYMax) * 100;
+    var el = document.createElement('div');
+    el.className = 'op-bar-item';
+    el.innerHTML =
+      '<span class="op-bar-value">' + item.value.toLocaleString() + '</span>' +
+      '<div class="op-bar-col" style="height:' + pct + '%;background:' + retryColors[i] + '"></div>';
+    retryBarArea.appendChild(el);
+
+    var xLabel = document.createElement('div');
+    xLabel.className = 'op-bar-x-label';
+    xLabel.textContent = item.label;
+    retryBarXAxis.appendChild(xLabel);
+  });
+
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PDA订单收货 — 千仓SDMS</title>
+  <style>
+    :root {
+      --nav-bg: #0F2B46;
+      --nav-bg-end: #1A3F66;
+      --brand: #2B6CB0;
+      --brand-bright: #3B82F6;
+      --brand-glow: rgba(59, 130, 246, 0.35);
+      --surface: #FFFFFF;
+      --surface-alt: #F7F8FA;
+      --text-primary: #1A202C;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --divider: #E2E8F0;
+      --status-receiving: #3B82F6;   /* 收货中：品牌亮蓝 */
+      --status-received: #22C55E;     /* 已收货：绿 */
+      --danger: #EF4444;              /* 无主单警示 */
+      --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.10);
+      --shadow-fab: 0 10px 32px rgba(43, 108, 176, 0.45);
+      /* 固定 750×1536 设计稿画板 */
+      --frame-w: 750px;
+      --frame-h: 1536px;
+      --radius: 20px;
+      --radius-sm: 12px;
+      --font-ui: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      /* 字体栈仅作本地回退，不发起网络请求，避免国外字体CDN白屏 */
+      --font-mono: 'IBM Plex Mono', 'SF Mono', 'Cascadia Code', monospace;
+      --content-pad: 24px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-ui);
+      background: #EDF0F4;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── 固定设计稿画板 750×1536（绝对定位居中 + 等比缩放至一屏）── */
+    .pda-frame {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: var(--frame-w);
+      height: var(--frame-h);
+      background: var(--surface-alt);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--divider);
+      box-shadow: 0 24px 80px rgba(15, 23, 42, 0.25);
+      transform: translate(-50%, -50%) scale(var(--frame-scale, 1));
+      transform-origin: center center;
+    }
+
+    /* ── 顶部导航栏（88px 设计稿高度）── */
+    .nav-bar {
+      background: linear-gradient(135deg, var(--nav-bg) 0%, var(--nav-bg-end) 100%);
+      color: #fff;
+      padding: 0 32px;
+      height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-bar .back {
+      width: 64px; height: 64px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 16px; transition: background 0.15s;
+    }
+    .nav-bar .back:active { background: rgba(255,255,255,0.12); }
+    .nav-bar .title { font-size: 34px; font-weight: 700; letter-spacing: 0.5px; }
+    .nav-bar .notify {
+      width: 64px; height: 64px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 16px; position: relative; transition: background 0.15s;
+    }
+    .nav-bar .notify:active { background: rgba(255,255,255,0.12); }
+    .nav-bar .notify svg { width: 40px; height: 40px; fill: rgba(255,255,255,0.85); }
+    .nav-bar .notify .badge {
+      position: absolute; top: 10px; right: 10px;
+      width: 14px; height: 14px;
+      background: var(--danger); border-radius: 50%; border: 2.5px solid var(--nav-bg);
+    }
+
+    /* ── 搜索栏 ── */
+    .search-bar { padding: 20px var(--content-pad); background: var(--surface); }
+    .search-input {
+      width: 100%;
+      height: 80px;
+      background: var(--surface-alt);
+      border: 2px solid var(--divider);
+      border-radius: 40px;
+      padding: 0 28px 0 80px;
+      font-family: var(--font-ui);
+      font-size: 26px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 28px center;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus { border-color: var(--brand); box-shadow: 0 0 0 6px rgba(43, 108, 176, 0.1); }
+
+    /* ── 内容区 ── */
+    .content {
+      flex: 1; padding: 20px var(--content-pad) 168px;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── 收货卡片 ── */
+    .receive-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: box-shadow 0.15s, transform 0.1s;
+      animation: fadeInUp 0.35s ease-out both;
+    }
+    .receive-card:nth-child(1) { animation-delay: 0.02s; }
+    .receive-card:nth-child(2) { animation-delay: 0.08s; }
+    .receive-card:nth-child(3) { animation-delay: 0.14s; }
+    .receive-card:nth-child(4) { animation-delay: 0.20s; }
+    .receive-card:nth-child(5) { animation-delay: 0.26s; }
+    .receive-card:nth-child(6) { animation-delay: 0.32s; }
+    .receive-card:nth-child(7) { animation-delay: 0.38s; }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .receive-card:active { transform: scale(0.99); box-shadow: var(--shadow-md); }
+
+    /* 卡片头部：状态 + 主标识 + 时间 */
+    .card-header {
+      display: flex;
+      align-items: center;
+    }
+    .card-header .status-tag { flex-shrink: 0; }
+
+    /* 主标识：司机卡=车牌 / 仓库卡=添加人 */
+    .ref-no {
+      margin-left: 20px;
+      font-family: var(--font-mono);
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ref-label {
+      margin-left: 20px;
+      font-size: 24px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .ref-name {
+      margin-left: 8px;
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .card-time {
+      margin-left: auto;
+      font-size: 24px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+
+    .status-tag {
+      padding: 6px 18px; border-radius: 8px;
+      font-size: 22px; font-weight: 600; color: #fff; letter-spacing: 0.5px;
+    }
+    .status-tag.receiving { background: var(--status-receiving); }
+    .status-tag.received { background: var(--status-received); }
+
+    /* 单号列表 */
+    .order-lines {
+      border-top: 2px solid var(--divider);
+      padding-top: 4px;
+      margin-top: 24px;
+    }
+    .order-line {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 22px 0;
+      border-bottom: 2px solid var(--divider);
+    }
+    .order-line:last-of-type { border-bottom: none; }
+    .order-line .order-no {
+      font-family: var(--font-mono);
+      font-size: 28px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .order-line .order-ref {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      color: var(--text-muted);
+    }
+    /* 无主单标签：贴在订单号后，表示该单系统未预报、无主单 */
+    .no-master-tag {
+      margin-left: auto;
+      padding: 5px 16px;
+      border-radius: 8px;
+      font-size: 22px;
+      font-weight: 600;
+      background: var(--danger);
+      color: #fff;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .order-line.foldable.folded { display: none; }
+
+    .fold-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 12px 0 4px;
+      font-size: 24px;
+      color: var(--brand);
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .fold-hint:active { opacity: 0.7; }
+    .fold-hint svg {
+      width: 28px; height: 28px; fill: var(--brand);
+      transition: transform 0.25s ease;
+    }
+    .fold-hint.expanded svg { transform: rotate(90deg); }
+
+    /* 卡片底部：发送签收单按钮（仅司机卡·收货中） */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 2px solid var(--divider);
+    }
+    .btn-action {
+      padding: 14px 32px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-ui);
+      font-size: 24px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-action:active { background: #1E4F8A; transform: scale(0.96); }
+
+    /* ── 空态 ── */
+    .empty-state {
+      text-align: center;
+      padding: 120px 40px;
+      color: var(--text-muted);
+    }
+    .empty-state svg { width: 96px; height: 96px; fill: var(--divider); margin-bottom: 24px; }
+    .empty-state .empty-text { font-size: 28px; }
+
+    /* ── 底部添加收货按钮 ── */
+    .fab-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 24px var(--content-pad);
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(transparent, var(--surface-alt) 20%);
+      z-index: 100;
+      animation: fabIn 0.5s ease-out 0.3s both;
+    }
+    @keyframes fabIn {
+      from { opacity: 0; transform: translateY(32px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fab-bar .btn-fab {
+      width: 100%;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-bright) 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      font-family: var(--font-ui);
+      font-size: 30px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-fab);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .fab-bar .btn-fab:active {
+      transform: scale(0.98);
+      box-shadow: 0 4px 16px rgba(43, 108, 176, 0.35);
+    }
+    .fab-bar .btn-fab .fab-icon {
+      width: 44px; height: 44px;
+      background: rgba(255,255,255,0.25); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; font-weight: 400; line-height: 1;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: absolute;
+      top: 108px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-16px);
+      background: rgba(15, 23, 42, 0.9);
+      color: #fff;
+      font-size: 26px;
+      padding: 18px 32px;
+      border-radius: 40px;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      box-shadow: 0 8px 32px rgba(15, 23, 42, 0.25);
+      max-width: 80%;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div class="pda-frame">
+    <!-- 顶部导航 -->
+    <div class="nav-bar">
+      <div class="back" onclick="history.back()">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </div>
+      <div class="title">订单收货</div>
+      <div class="notify" onclick="showToast('暂无新通知')">
+        <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+        <span class="badge"></span>
+      </div>
+    </div>
+
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+      <input class="search-input" id="searchInput" type="text" placeholder="请输入入仓号、订单号、工作单号、主/分单号">
+    </div>
+
+    <!-- 收货列表（按时间降序，两类卡混排） -->
+    <div class="content" id="receiveList"></div>
+
+    <!-- 底部添加收货按钮 -->
+    <div class="fab-bar">
+      <button class="btn-fab" onclick="addReceive()">
+        <span class="fab-icon">＋</span>
+        添加收货
+      </button>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    // ── 画板等比缩放至视窗一屏（750×1536 按比例完整显示，视窗够大时保持 1:1）──
+    function fitFrame() {
+      var margin = 32;                       // 视窗留白，给阴影呼吸
+      var scaleW = (window.innerWidth  - margin) / 750;
+      var scaleH = (window.innerHeight - margin) / 1536;
+      var s = Math.min(scaleW, scaleH, 1);   // 取宽高较小约束，且不放大
+      document.documentElement.style.setProperty('--frame-scale', s.toFixed(4));
+    }
+    window.addEventListener('resize', fitFrame);
+    window.addEventListener('DOMContentLoaded', fitFrame);
+    fitFrame();
+
+    // ── 收货单数据（Mock） ──
+    // source:  driver=司机入仓登记(显示车牌) / warehouse=仓库直接添加(显示添加人)
+    // status:  receiving=收货中 / received=已收货
+    // orders[].masterNo: null=该单系统未预报、无主单(行末红色标识) / 字符串=有主单(不标识)
+    const RECEIVE_DATA = [
+      // ── 司机登记卡（有车牌、无添加人）──
+      {
+        id: 'R001', source: 'driver', status: 'receiving',
+        plate: '粤B1CT59', registeredCount: 2,
+        orders: [{ no: '23123123', sub: '', masterNo: null }],
+        time: '06-05 17:23'
+      },
+      {
+        id: 'R002', source: 'driver', status: 'receiving',
+        plate: '粤A8E2F6', registeredCount: 5,
+        orders: [
+          { no: '23145678', sub: '', masterNo: 'MA20260605001' },
+          { no: '23145679', sub: '', masterNo: null },
+          { no: '23145680', sub: '', masterNo: 'MA20260605001' }
+        ],
+        time: '06-05 08:15'
+      },
+      {
+        id: 'R003', source: 'driver', status: 'received',
+        plate: '沪C12345', registeredCount: 3,
+        orders: [
+          { no: 'BSISZX26040300', sub: '(099-)', masterNo: 'MA20260604012' },
+          { no: 'YLWJT26050035', sub: '(099-)', masterNo: 'MA20260604012' }
+        ],
+        time: '06-04 16:20'
+      },
+      // ── 仓库自建卡（无车牌、显示添加人）──
+      {
+        id: 'R004', source: 'warehouse', status: 'receiving',
+        operator: '严振范',
+        orders: [{ no: 'BSISZX26060122', sub: '(099-)', masterNo: 'MA20260605088' }],
+        time: '06-05 09:40'
+      },
+      {
+        id: 'R005', source: 'warehouse', status: 'received',
+        operator: '严振范',
+        orders: [{ no: 'BSISZX26060121', sub: '(099-)', masterNo: null }],
+        time: '06-05 09:30'
+      },
+      {
+        id: 'R006', source: 'warehouse', status: 'received',
+        operator: '严振范',
+        orders: [{ no: 'BSISZX26060106', sub: '(099-)', masterNo: 'MA20260604099' }],
+        time: '06-05 09:30'
+      },
+      {
+        id: 'R007', source: 'warehouse', status: 'received',
+        operator: '冯进龙',
+        orders: [
+          { no: 'YLWJT26050031', sub: '(099-)', masterNo: 'MA20260604033' },
+          { no: 'YLWJT26050032', sub: '(099-)', masterNo: null }
+        ],
+        time: '06-04 18:40'
+      }
+    ];
+
+    // ── 全局状态 ──
+    const state = { keyword: '' };
+
+    // 单号折叠阈值：超过 2 个折叠
+    const ORDER_FOLD_THRESHOLD = 2;
+
+    // ── XSS 转义 ──
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    // ── 渲染单号列表（>2 折叠；无主单单号行末贴红色标识）──
+    function renderOrders(orders) {
+      if (!orders || !orders.length) return '';
+      const visible = orders.slice(0, ORDER_FOLD_THRESHOLD);
+      const folded = orders.slice(ORDER_FOLD_THRESHOLD);
+      const hasFold = folded.length > 0;
+
+      // 单行：单号 + 分单号 + (无主单时)红色标识
+      // 仅折叠的单号带 foldable class，visible 不带（避免收起时误隐藏）
+      const lineHtml = (o, isFolded) => `
+        <div class="order-line${isFolded ? ' foldable folded' : ''}">
+          <span class="order-no">${escapeHtml(o.no)}</span>
+          ${o.sub ? `<span class="order-ref">${escapeHtml(o.sub)}</span>` : ''}
+          ${(o.masterNo === null || o.masterNo === undefined) ? '<span class="no-master-tag">无主单</span>' : ''}
+        </div>`;
+
+      let html = '<div class="order-lines">';
+      html += visible.map(o => lineHtml(o, false)).join('');
+      if (hasFold) {
+        html += folded.map(o => lineHtml(o, true)).join('');
+        html += `
+          <div class="fold-hint" onclick="event.stopPropagation(); toggleOrders(this)">
+            <span class="fold-text">还有${folded.length}单</span>
+            <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+          </div>`;
+      }
+      html += '</div>';
+      return html;
+    }
+
+    // ── 渲染单张卡片（按 source 分流）──
+    function renderCard(item) {
+      const statusText = item.status === 'receiving' ? '收货中' : '已收货';
+      const isDriver = item.source === 'driver';
+
+      // 头部主标识：司机卡=车牌 / 仓库卡=添加人
+      const identity = isDriver
+        ? `<span class="ref-no">${escapeHtml(item.plate)}</span>`
+        : `<span class="ref-label">添加人</span><span class="ref-name">${escapeHtml(item.operator)}</span>`;
+
+      const ordersHtml = renderOrders(item.orders);
+
+      // 发送签收单：仅司机卡·收货中
+      let footerHtml = '';
+      if (isDriver && item.status === 'receiving') {
+        footerHtml = `
+          <div class="card-footer">
+            <button class="btn-action" onclick="event.stopPropagation(); sendReceipt('${escapeHtml(item.id)}')">发送签收单</button>
+          </div>`;
+      }
+
+      return `
+        <div class="receive-card" onclick="goDetail('${escapeHtml(item.id)}')">
+          <div class="card-header">
+            <span class="status-tag ${item.status}">${statusText}</span>
+            ${identity}
+            <span class="card-time">${escapeHtml(item.time)}</span>
+          </div>
+          ${ordersHtml}
+          ${footerHtml}
+        </div>`;
+    }
+
+    // ── 统一渲染列表 ──
+    function render() {
+      const list = document.getElementById('receiveList');
+      const kw = state.keyword.trim().toLowerCase();
+
+      // 跨字段模糊匹配：车牌 / 添加人 / 各单号
+      const filtered = RECEIVE_DATA.filter(item => {
+        if (!kw) return true;
+        const haystack = [
+          item.plate, item.operator,
+          ...(item.orders || []).map(o => (o.no + ' ' + (o.sub || '')).trim())
+        ].filter(Boolean).join(' ').toLowerCase();
+        return haystack.includes(kw);
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+            <div class="empty-text">未找到相关收货单</div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(renderCard).join('');
+    }
+
+    // ── 单号折叠/展开（复用出库列表页 toggleFold 逻辑）──
+    function toggleOrders(hint) {
+      const card = hint.closest('.receive-card');
+      const foldableLines = card.querySelectorAll('.order-line.foldable');
+      const isExpanded = hint.classList.toggle('expanded');
+      foldableLines.forEach(line => line.classList.toggle('folded', !isExpanded));
+      hint.querySelector('.fold-text').textContent = isExpanded ? '收起' : '还有' + foldableLines.length + '单';
+    }
+
+    // ── 事件处理 ──
+    function goDetail(id) {
+      location.href = 'pda-receive-detail.html';
+    }
+
+    function sendReceipt(id) {
+      const item = RECEIVE_DATA.find(d => d.id === id);
+      if (!item) return;
+      showToast('已发送签收单：' + item.plate);
+    }
+
+    function addReceive() {
+      showToast('跳转到添加收货页');
+    }
+
+    // ── Toast（2.4s 自动消失）──
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+    }
+
+    // ── 搜索（防抖 240ms）──
+    const searchInput = document.getElementById('searchInput');
+    let searchTimer = null;
+    searchInput.addEventListener('input', e => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        state.keyword = e.target.value;
+        render();
+      }, 240);
+    });
+
+    // ── 初始渲染 ──
+    render();
+  </script>
+</body>
+</html>

@@ -3,97 +3,97 @@
     workbench: {
       label: '工作台V2',
       icon: 'ri-dashboard-3-line',
-      href: './wms-workbench-v2.html'
+      href: '../wms/wms-workbench-v2.html'
     },
     report: {
       label: 'BI综合报表V2',
       icon: 'ri-line-chart-line',
-      href: './bi-consolidated-report-v2.html'
+      href: '../bi/bi-consolidated-report-v2.html'
     },
     'operation-fee': {
       label: '操作费管理',
       icon: 'ri-money-cny-box-line',
-      href: './operation-fee-config.html'
+      href: '../fee/operation-fee-config.html'
     },
     'operation-fee-create': {
       label: '新增操作费',
       icon: 'ri-money-cny-box-line',
-      href: './operation-fee-create.html',
+      href: '../fee/operation-fee-create.html',
       labelId: 'pageTabLabel'
     },
     'logistics-fee': {
       label: '物流费管理',
       icon: 'ri-truck-line',
-      href: './logistics-fee-config.html'
+      href: '../fee/logistics-fee-config.html'
     },
     'logistics-fee-create': {
       label: '新增物流费',
       icon: 'ri-truck-line',
-      href: './logistics-fee-create.html',
+      href: '../fee/logistics-fee-create.html',
       labelId: 'pageTabLabel'
     },
     'storage-fee': {
       label: '仓储费管理',
       icon: 'ri-store-2-line',
-      href: './storage-fee-config.html'
+      href: '../fee/storage-fee-config.html'
     },
     'storage-fee-create': {
       label: '新增仓储费',
       icon: 'ri-store-2-line',
-      href: './storage-fee-create.html',
+      href: '../fee/storage-fee-create.html',
       labelId: 'pageTabLabel'
     },
     'quotation-scheme': {
       label: '报价方案',
       icon: 'ri-file-list-3-line',
-      href: './quotation-scheme-config.html'
+      href: '../quotation/quotation-scheme-config.html'
     },
     'quotation-scheme-create': {
       label: '新增报价方案',
       icon: 'ri-file-list-3-line',
-      href: './quotation-scheme-create.html',
+      href: '../quotation/quotation-scheme-create.html',
       labelId: 'pageTabLabel'
     },
     'supplier-quotation': {
       label: '供应商报价',
       icon: 'ri-file-list-3-line',
-      href: './supplier-quotation-config.html'
+      href: '../quotation/supplier-quotation-config.html'
     },
     'supplier-quotation-create': {
       label: '新增供应商报价',
       icon: 'ri-file-list-3-line',
-      href: './supplier-quotation-create.html',
+      href: '../quotation/supplier-quotation-create.html',
       labelId: 'pageTabLabel'
     },
     'fee-sheet': {
       label: '费用单管理',
       icon: 'ri-receipt-line',
-      href: './fee-sheet-list.html'
+      href: '../fee/fee-sheet-list.html'
     },
     'bill-list': {
       label: '账单管理',
       icon: 'ri-bill-line',
-      href: './bill-list.html'
+      href: '../settlement/bill-list.html'
     },
     'settlement-list': {
       label: '结算管理',
       icon: 'ri-exchange-cny-line',
-      href: './settlement-list.html'
+      href: '../settlement/settlement-list.html'
     },
     'account': {
       label: '费用流水',
       icon: 'ri-wallet-3-line',
-      href: './account-list.html'
+      href: '../account/account-list.html'
     },
     'trunk-outbound-pending': {
       label: '干线待出库',
       icon: 'ri-truck-line',
-      href: './trunk-outbound-pending-list.html'
+      href: '../outbound/trunk-outbound-pending-list.html'
     },
     'trunk-order-list': {
       label: '干线订单列表',
       icon: 'ri-file-list-3-line',
-      href: './trunk-order-list.html'
+      href: '../outbound/trunk-order-list.html'
     }
   };
 

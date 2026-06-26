@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>千仓SDMS - 打包工作站</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/packing-station.css">
+</head>
+<body class="ps-home-page">
+
+  <!-- 顶部导航栏 -->
+  <nav class="ps-nav">
+    <div class="ps-nav-left">
+      <div class="ps-nav-brand">
+        <div class="ps-nav-brand-logo"><i class="ri-box-3-fill"></i></div>
+        <span class="ps-nav-brand-title">千仓SDMS</span>
+        <span class="ps-nav-brand-tag">打包工作站</span>
+      </div>
+      <div class="ps-nav-divider"></div>
+      <div class="ps-nav-warehouse">
+        <i class="ri-building-2-line"></i>
+        <span class="ps-nav-warehouse-name" id="navWarehouseName">--</span>
+        <span class="ps-nav-warehouse-code" id="navWarehouseCode">--</span>
+      </div>
+    </div>
+    <div class="ps-nav-right">
+      <div class="ps-nav-action" id="switchWarehouseBtn" style="display:none">
+        <i class="ri-refresh-line"></i>
+        <span>切换仓库</span>
+      </div>
+      <div class="ps-nav-divider"></div>
+      <div class="ps-nav-user">
+        <div class="ps-nav-avatar"><i class="ri-user-line"></i></div>
+        <span id="navUsername">--</span>
+      </div>
+      <div class="ps-nav-action" id="logoutBtn">
+        <i class="ri-logout-box-r-line"></i>
+        <span>退出</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 数据看板条 -->
+  <div class="ps-dashboard" id="dashboard">
+    <!-- 由JS渲染 -->
+  </div>
+
+  <!-- 主内容区 -->
+  <div class="ps-content">
+
+    <!-- 功能卡片 -->
+    <div class="ps-section-title">功能入口</div>
+    <div class="ps-cards" id="funcCards">
+      <!-- 由JS渲染 -->
+    </div>
+
+    <!-- 最近待处理 -->
+    <div class="ps-task-header">
+      <div class="ps-section-title" style="margin-bottom:0">最近待处理</div>
+      <button class="ps-task-viewall">查看全部 →</button>
+    </div>
+    <div class="ps-task-table-wrap">
+      <table class="ps-task-table">
+        <thead>
+          <tr>
+            <th>任务单号</th>
+            <th>客户</th>
+            <th>目的地</th>
+            <th>件数</th>
+            <th>下单时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="taskTableBody">
+          <!-- 由JS渲染 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="../assets/js/packing-station.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    // ---- 登录状态检查 ----
+
+    var token = PS.lsGet(PS.STORAGE_KEYS.token);
+    if (!token) {
+      window.location.href = 'packing-station-login.html';
+      return;
+    }
+
+    // ---- 读取用户和仓库信息 ----
+
+    var userStr    = PS.lsGet(PS.STORAGE_KEYS.user);
+    var whStr      = PS.lsGet(PS.STORAGE_KEYS.warehouse);
+    var codeType   = PS.lsGet(PS.STORAGE_KEYS.type);
+    var user       = userStr ? JSON.parse(userStr) : { username: 'unknown', name: '未知' };
+    var warehouse  = whStr ? JSON.parse(whStr) : { code: '--', name: '--' };
+
+    // ---- 渲染导航栏 ----
+
+    document.getElementById('navWarehouseName').textContent = warehouse.name;
+    document.getElementById('navWarehouseCode').textContent = warehouse.code;
+    document.getElementById('navUsername').textContent = user.name || user.username;
+
+    // 租户模式显示切换仓库
+    if (codeType === 'tenant') {
+      var switchBtn = document.getElementById('switchWarehouseBtn');
+      switchBtn.style.display = 'flex';
+
+      var tenantCode = PS.lsGet(PS.STORAGE_KEYS.code);
+      var warehouses = PS.getWarehousesForTenant(tenantCode);
+
+      switchBtn.addEventListener('click', function () {
+        PS.showWarehouseModal(warehouses, function (selected) {
+          PS.lsSet(PS.STORAGE_KEYS.warehouse, JSON.stringify({ code: selected.code, name: selected.name }));
+          document.getElementById('navWarehouseName').textContent = selected.name;
+          document.getElementById('navWarehouseCode').textContent = selected.code;
+          PS.showToast('已切换至 ' + selected.name, 'success');
+        });
+      });
+    }
+
+    // 退出登录
+    document.getElementById('logoutBtn').addEventListener('click', function () {
+      PS.showConfirm('确定退出登录？', function () {
+        PS.lsRemove(PS.STORAGE_KEYS.token);
+        PS.lsRemove(PS.STORAGE_KEYS.user);
+        window.location.href = 'packing-station-login.html';
+      }, { title: '退出确认', confirmText: '退出', type: 'danger' });
+    });
+
+    // ---- 渲染看板 ----
+
+    var dashboardData = PS.DASHBOARD_DATA;
+    var dashboardEl = document.getElementById('dashboard');
+    var items = [
+      { label: '待打包',     value: dashboardData.pending,    icon: 'ri-inbox-line',            color: 'blue' },
+      { label: '今日已完成', value: dashboardData.completed,  icon: 'ri-check-double-line',     color: 'green' },
+      { label: '异常待处理', value: dashboardData.abnormal,   icon: 'ri-error-warning-line',    color: 'orange' },
+      { label: '今日效率',   value: dashboardData.efficiency, icon: 'ri-speed-line',            color: 'accent', suffix: '%' }
+    ];
+    dashboardEl.innerHTML = items.map(function (item) {
+      return '<div class="ps-dashboard-item">' +
+        '<div class="ps-dashboard-icon ' + item.color + '"><i class="' + item.icon + '"></i></div>' +
+        '<div>' +
+          '<div class="ps-dashboard-label">' + item.label + '</div>' +
+          '<div class="ps-dashboard-value">' + item.value + (item.suffix ? '<span>' + item.suffix + '</span>' : '') + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    // ---- 渲染功能卡片 ----
+
+    var funcCardsEl = document.getElementById('funcCards');
+    funcCardsEl.innerHTML = PS.FUNC_CARDS.map(function (card) {
+      return '<div class="ps-func-card" data-key="' + card.key + '">' +
+        '<div class="ps-func-card-top">' +
+          '<div class="ps-func-card-icon ' + card.color + '"><i class="' + card.icon + '"></i></div>' +
+          '<div>' +
+            '<div class="ps-func-card-name">' + card.name + '</div>' +
+            '<div class="ps-func-card-desc">' + card.desc + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ps-func-card-shortcut ' + card.color + '">' +
+          '<i class="ri-keyboard-line"></i>' + card.shortcut +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    // 卡片点击
+    funcCardsEl.addEventListener('click', function (e) {
+      var card = e.target.closest('.ps-func-card');
+      if (card) {
+        var key = card.getAttribute('data-key');
+        PS.showToast('即将进入：' + PS.FUNC_CARDS.filter(function(c){ return c.key === key; })[0].name, 'info');
+      }
+    });
+
+    // ---- 渲染任务列表 ----
+
+    var taskTbody = document.getElementById('taskTableBody');
+    taskTbody.innerHTML = PS.RECENT_TASKS.map(function (task) {
+      return '<tr>' +
+        '<td class="ps-task-id">' + task.id + '</td>' +
+        '<td>' + task.customer + '</td>' +
+        '<td>' + task.destination + '</td>' +
+        '<td>' + task.qty + '件</td>' +
+        '<td class="ps-task-time">' + task.time + '</td>' +
+        '<td><button class="ps-task-action" data-id="' + task.id + '">去打包</button></td>' +
+      '</tr>';
+    }).join('');
+
+    taskTbody.addEventListener('click', function (e) {
+      var btn = e.target.closest('.ps-task-action');
+      if (btn) {
+        PS.showToast('即将进入任务：' + btn.getAttribute('data-id'), 'info');
+      }
+    });
+
+    // ---- 快捷键 ----
+
+    document.addEventListener('keydown', function (e) {
+      var keyMap = { F1: 0, F2: 1, F3: 2, F4: 3, F5: 4, F6: 5 };
+      if (keyMap.hasOwnProperty(e.key)) {
+        e.preventDefault();
+        var cards = funcCardsEl.querySelectorAll('.ps-func-card');
+        var idx = keyMap[e.key];
+        if (cards[idx]) cards[idx].click();
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>
